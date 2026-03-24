@@ -39,47 +39,18 @@ pnpm run <script>
 | Test files | mirror source name + `.test.ts(x)` | `composition.test.ts` |
 | Constant files | `kebab-case.ts` | `rotation-sets.ts` |
 
-Component folders follow the **index barrel pattern**:
+Component folders group related files with no index barrel. Import directly from the file containing what you need:
+
 ```
 src/components/Rack/
-├── index.tsx          ← public export (re-exports RackRoot or default)
-├── RackRoot.tsx       ← top-level component for this domain
+├── RackRoot.tsx
 ├── RackTile.tsx
-└── rack.types.ts      ← local types if needed (not exported outside folder)
+└── rack.types.ts
 ```
 
-Import from the folder, never from internal files:
 ```typescript
-// ✓
-import { Rack } from '@/components/Rack'
-
-// ✗
-import { RackTile } from '@/components/Rack/RackTile'
-```
-
----
-
-## Path Aliases
-
-Configure in `vite.config.ts` and `tsconfig.json`:
-
-```typescript
-// tsconfig.json paths
-"@/*": ["./src/*"]
-```
-
-Always use the alias for cross-folder imports. Use relative imports only for files within the same folder:
-
-```typescript
-// ✓ cross-folder
-import { composeSyllable } from '@/lib/jamo/composition'
-import { GameContext } from '@/state/GameContext'
-
-// ✓ same folder
-import { RackTile } from './RackTile'
-
-// ✗ relative cross-folder
-import { composeSyllable } from '../../lib/jamo/composition'
+// ✓ direct import
+import { RackTile } from '../components/Rack/RackTile'
 ```
 
 ---
@@ -194,10 +165,15 @@ export function useGame() {
 - Use spread for shallow copies; for nested updates produce a full new object tree
 - `structuredClone` is acceptable for cloning the jamo pool frequency map at the start of validation (not in the reducer — domain logic only)
 
-### Avoiding re-render traps
+### Memoization
 
-- Memoize expensive derived values with `useMemo`; memoize callbacks passed as props with `useCallback` only when the child is wrapped in `React.memo`
-- Do not `useMemo` or `useCallback` by default — only when a specific re-render problem is observed or anticipated
+This project targets **React 19 with the React Compiler enabled**. The compiler handles memoization of components, callbacks, and derived values automatically — do not add manual `useMemo` or `useCallback` calls speculatively.
+
+Manual memoization is only appropriate in two cases:
+1. The React Compiler is explicitly disabled for a subtree (via `'use no memo'` directive) — document why
+2. A specific, measured performance problem exists that the compiler is not resolving
+
+If the compiler is not available in the project setup for any reason, flag this before adding manual memoization wholesale.
 
 ---
 
@@ -207,7 +183,7 @@ These are the strictest rules in the codebase because the downstream agent is mo
 
 1. **No React imports** anywhere under `src/lib/`. Not `useState`, not `useEffect`, not `ReactNode`. If you find yourself wanting to import React in `src/lib/`, you are in the wrong file.
 
-2. **No side effects**. Functions must be pure: same input → same output, no mutation of arguments, no I/O. The only exception is `loader.ts` which calls `fetch` — and it must be the only such exception.
+2. **No side effects**. Functions must be pure: same input → same output, no mutation of arguments, no I/O.
 
 3. **All functions explicitly typed**. No inferred return types on exported functions.
 
@@ -251,7 +227,7 @@ export function isGuessValid(guess: string[], pool: JamoPool): ValidationResult
 
 ```typescript
 // ✓
-import { cn } from '@/lib/utils/cn'
+import { cn } from '../../lib/utils/cn'
 <div className={cn('rounded px-2', isActive && 'bg-primary', className)} />
 
 // ✗
@@ -260,13 +236,9 @@ import { cn } from '@/lib/utils/cn'
 
 - `cn` utility lives at `src/lib/utils/cn.ts` and is the only file in `src/lib/` allowed to import from a UI-adjacent package (`clsx`, `tailwind-merge`)
 
----
-
-## Testing Conventions
-
 ### Unit tests (`vitest`)
 
-- Location: `tests/lib/**/*.test.ts` mirroring `src/lib/**/*.ts`
+- Location: colocated with source — `src/lib/jamo/composition.test.ts` lives next to `src/lib/jamo/composition.ts`
 - Every test file imports only from `src/lib/` — no React, no components, no state
 - Test naming: `describe('<functionName>')` → `it('<does what> when <condition>')`
 
@@ -282,7 +254,7 @@ describe('getRotationOptions', () => {
 
 ### E2E tests (`playwright`)
 
-- Location: `tests/e2e/**/*.spec.ts`
+- Location: `src/e2e/**/*.spec.ts` — colocated under src, separate from unit tests by folder
 - Cover complete player flows (load game → build character → submit guess → see evaluation)
 - Do not test implementation details — test observable UI behavior only
 - Use `data-testid` attributes for stable selectors; never select by class name or text content that might change
@@ -294,7 +266,7 @@ describe('getRotationOptions', () => {
 - **oxlint** enforces rules defined in `.oxlintrc.json` at repo root — do not disable rules inline without a comment explaining why
 - **oxfmt** enforces formatting — run `pnpm oxfmt src/` to format; CI fails on `pnpm oxfmt --check src/`
 - No `eslint-disable` comments — oxlint does not use ESLint directives
-- Imports are ordered: (1) Node built-ins, (2) external packages, (3) internal `@/` aliases, (4) relative imports. A blank line between each group.
+- Imports are ordered: (1) Node built-ins, (2) external packages, (3) relative imports from parent directories `../`, (4) relative imports from the same directory `./`. A blank line between each group.
 
 ---
 
