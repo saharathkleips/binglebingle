@@ -254,7 +254,7 @@ describe('getRotationOptions', () => {
 
 ### E2E tests (`playwright`)
 
-- Location: `src/e2e/**/*.spec.ts` — colocated under src, separate from unit tests by folder
+- Location: `tests/**/*.spec.ts` — root-level `tests/` folder, separate from `src/` entirely
 - Cover complete player flows (load game → build character → submit guess → see evaluation)
 - Do not test implementation details — test observable UI behavior only
 - Use `data-testid` attributes for stable selectors; never select by class name or text content that might change
@@ -303,4 +303,3 @@ const jongseongIdx = JONGSEONG_INDEX_TABLE[jamo] ?? 0
 - Commit messages: imperative mood, present tense — `add rotation set lookup`, not `added rotation set lookup`
 - No commits directly to `main` — all changes via PR; CI must pass before merge
 - Each commit should leave the codebase in a buildable, passing-tests state
-
