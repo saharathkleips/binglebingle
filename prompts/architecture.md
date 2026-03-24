@@ -1,6 +1,6 @@
 # architecture.md
 > Jamo Word Game — System Architecture
-> Last updated: revision 2
+> Last updated: revision 3 (locked)
 
 ---
 
@@ -83,12 +83,24 @@ This section is foundational. The coding agent must implement it exactly as spec
 
 ### Scope of Modern Hangul Jamo
 
-The game uses only **modern hangul jamo** from the Hangul Jamo Unicode block. Archaic jamo are excluded entirely.
+The game uses only **modern hangul jamo**. Archaic jamo are excluded entirely.
 
 **Basic consonants (14):** ㄱ ㄴ ㄷ ㄹ ㅁ ㅂ ㅅ ㅇ ㅈ ㅊ ㅋ ㅌ ㅍ ㅎ
 **Double consonants (5):** ㄲ ㄸ ㅃ ㅆ ㅉ
 **Basic vowels (10):** ㅏ ㅑ ㅓ ㅕ ㅗ ㅛ ㅜ ㅠ ㅡ ㅣ
 **Complex vowels / diphthongs (11):** ㅐ ㅒ ㅔ ㅖ ㅘ ㅙ ㅚ ㅝ ㅞ ㅟ ㅢ
+
+---
+
+### Core Mechanic: Rotate → Combine → Compose
+
+The central creative loop of the game is:
+
+1. **Rotate** a jamo from the pool into a different jamo within its equivalence set
+2. **Combine** two jamo tokens to form a more complex jamo
+3. **Compose** a set of jamo (choseong + jungseong + optional jongseong) into a syllable block
+
+These three operations are independent and can be applied in sequence. A player may rotate a jamo *then* combine the result — this is intentional and is one of the primary sources of puzzle depth. The engine must apply them in this order when validating a guess: first check whether all jamo used can be derived (via rotation and/or combination) from the pool, then check that syllable composition rules are satisfied.
 
 ---
 
@@ -106,7 +118,7 @@ export const ROTATION_SETS: readonly (readonly string[])[] = [
 ];
 ```
 
-A jamo not appearing in any set cannot be rotated. Lookup:
+A jamo not appearing in any set cannot be rotated. Lookup signature:
 
 ```typescript
 // Returns all jamo this one can become (excluding itself), or []
@@ -117,10 +129,9 @@ export function getRotationOptions(jamo: string): string[]
 
 ### Composition Rules
 
-Jamo can be **combined** to form more complex jamo. Composition is distinct from rotation — it takes two jamo tokens and produces one new jamo. Three combination types exist:
+Jamo can be **combined** to form more complex jamo. Combination takes two jamo tokens and produces one new jamo. It is mechanically distinct from rotation.
 
 #### 1. Double consonants (쌍자음)
-Two identical basic consonants combine into one double consonant:
 
 | Input    | Output |
 |----------|--------|
@@ -131,26 +142,32 @@ Two identical basic consonants combine into one double consonant:
 | ㅈ + ㅈ | ㅉ     |
 
 #### 2. Complex vowels (복합모음)
-Two basic or already-composed vowels combine:
 
-| Input      | Output |
-|------------|--------|
-| ㅏ + ㅣ   | ㅐ     |
-| ㅑ + ㅣ   | ㅒ     |
-| ㅓ + ㅣ   | ㅔ     |
-| ㅕ + ㅣ   | ㅖ     |
-| ㅗ + ㅏ   | ㅘ     |
-| ㅗ + ㅐ   | ㅙ     |
-| ㅗ + ㅣ   | ㅚ     |
-| ㅜ + ㅓ   | ㅝ     |
-| ㅜ + ㅔ   | ㅞ     |
-| ㅜ + ㅣ   | ㅟ     |
-| ㅡ + ㅣ   | ㅢ     |
+| Input      | Output | Notes                      |
+|------------|--------|----------------------------|
+| ㅏ + ㅣ   | ㅐ     |                            |
+| ㅑ + ㅣ   | ㅒ     |                            |
+| ㅓ + ㅣ   | ㅔ     |                            |
+| ㅕ + ㅣ   | ㅖ     |                            |
+| ㅗ + ㅏ   | ㅘ     |                            |
+| ㅗ + ㅐ   | ㅙ     | ㅐ must be formed first    |
+| ㅗ + ㅣ   | ㅚ     |                            |
+| ㅜ + ㅓ   | ㅝ     |                            |
+| ㅜ + ㅔ   | ㅞ     | ㅔ must be formed first    |
+| ㅜ + ㅣ   | ㅟ     |                            |
+| ㅡ + ㅣ   | ㅢ     |                            |
 
-Note: ㅙ = ㅗ + ㅐ and ㅞ = ㅜ + ㅔ. Since ㅐ = ㅏ+ㅣ and ㅔ = ㅓ+ㅣ, these are two-step compositions. The player must form the intermediate vowel first (see A8 below).
+**Key rule**: A composed complex vowel is simply a valid vowel. The Composer does not distinguish between "basic" and "complex" vowels in the jungseong slot — it only cares that the token in that slot is a valid vowel jamo. A complex vowel may also be decomposed back into its constituents by the player.
+
+ㅙ and ㅞ require **two composition steps**:
+- ㅙ: first form ㅐ (ㅏ + ㅣ), then form ㅙ (ㅗ + ㅐ)
+- ㅞ: first form ㅔ (ㅓ + ㅣ), then form ㅞ (ㅜ + ㅔ)
+
+The Composer must support staging an intermediate composed vowel before using it in a syllable block.
 
 #### 3. Compound batchim (겹받침)
-Two consonants combine into a compound final consonant. **Only valid in jongseong (final consonant) position.**
+
+**Only valid in jongseong (final consonant) position.** Cannot appear as choseong.
 
 | Input      | Output |
 |------------|--------|
@@ -184,7 +201,7 @@ syllableCodepoint = 0xAC00
 
 The choseong index table and jongseong index table are **different orderings** — a jamo's choseong index ≠ its jongseong index. Both tables must be hardcoded in `jamo-data.ts`.
 
-**Orthographic rule**: A syllable block cannot begin with a vowel. If the player's intended initial sound is a vowel, the silent consonant ㅇ (ieung) must be used as choseong.
+**Orthographic rule**: A syllable block cannot begin with a vowel. If the intended initial position is a vowel sound, the silent consonant ㅇ (ieung) must be used as choseong.
 
 ---
 
@@ -194,9 +211,8 @@ The choseong index table and jongseong index table are **different orderings** �
 
 - All jamo definitions, Unicode codepoints, choseong/jongseong index tables
 - Rotation equivalence sets and `getRotationOptions()`
-- Combination rules: `combineJamo()`, double consonants, complex vowels, compound batchim
-- Syllable block composition: `composeSyllable(choseong, jungseong, jongseong?)`
-- Syllable block decomposition: `decomposeSyllable(syllable)` → `{ choseong, jungseong, jongseong }`
+- Combination rules: `combineJamo()`, `decomposeJamo()`
+- Syllable block: `composeSyllable(choseong, jungseong, jongseong?)`, `decomposeSyllable(syllable)`
 
 **Zero knowledge of game rules.**
 
@@ -204,7 +220,7 @@ The choseong index table and jongseong index table are **different orderings** �
 
 ### `src/lib/engine/` — Game Rules
 
-- **Validation**: given a guess (array of syllable blocks) and the pool, confirm every character is constructible from the pool (using rotations and combinations), treating the pool as fully reset. No character in the guess needs to exist as a "real word."
+- **Validation**: given a guess (array of syllable blocks) and the pool, confirm every character is constructible from the pool via rotation and/or combination. Pool is treated as fully reset for each guess. Submission need not be a real word; it need not use all available jamo.
 - **Evaluation**: given a guess and the target word, return per-character `TileResult` (`"green" | "yellow" | "gray"`)
 - **Scoring**: given guess count, return score
 
@@ -214,25 +230,73 @@ The choseong index table and jongseong index table are **different orderings** �
 
 ### `src/lib/puzzle/` — Puzzle Data
 
-- `Puzzle` type
+- `Puzzle` type (target word, jamo pool, difficulty, word length)
 - `loadPuzzles()` — fetches `public/data/puzzles.json`
-- `selectPuzzle(puzzles, strategy)` — returns one puzzle by date-seed or random
-- Build-time validation: target word reachable from pool
+- `selectPuzzle(puzzles, strategy)` — date-seed or random
+- Difficulty tiers: `"easy"` (3 chars) | `"medium"` (4 chars) | `"hard"` (5 chars) — extensible enum
 
 ---
 
 ### `src/state/` — Game State Machine
 
-Single `useReducer` + `Context`. Pool is immutable canonical state; never mutated during guess construction. Draft state is ephemeral and reset on submit/cancel.
+Single `useReducer` + `Context`. Pool is immutable canonical state, never mutated during guess construction. Draft state is ephemeral, reset on submit/cancel.
 
 ---
 
 ### `src/components/` — UI
 
-- **Rack**: jamo pool display; tap to rotate, drag to Composer
-- **Composer**: syllable assembly area; assign jamo to slots, combine jamo within slots
+- **Rack**: jamo pool display; tap to rotate (cycle through rotation set), drag to Composer
+- **Composer**: syllable assembly area; assign jamo to choseong/jungseong/jongseong slots; supports combining jamo within the working area and decomposing composed jamo back into constituents
 - **Board**: guess history grid with tile coloring
 - **Modals**: HowToPlay, Results/Score
+
+---
+
+## CI/CD and Code Quality
+
+All quality gates run in GitHub Actions before merge and before deployment.
+
+### Pipeline: `.github/workflows/ci.yml`
+
+```
+on: push (all branches) + pull_request
+
+jobs:
+  quality:
+    - oxlint         # lint (fast Rust-based ESLint-compatible linter)
+    - oxfmt check    # formatting check (Rust-based, Prettier-compatible)
+    - tsc --noEmit   # type checking
+
+  test:
+    - vitest run     # unit tests (domain logic only at MVP)
+
+  build:
+    - vite build     # production build
+
+deploy:
+  needs: [quality, test, build]
+  if: branch == main
+  - Upload dist/ to GitHub Pages via actions/deploy-pages
+```
+
+### Pipeline: `.github/workflows/deploy.yml`
+
+Deployment uses the official `actions/deploy-pages` action targeting GitHub Pages. No separate `gh-pages` branch is maintained — the Pages source is set to **GitHub Actions** in the repo settings.
+
+### Tooling versions pinned in `package.json`
+
+```jsonc
+{
+  "devDependencies": {
+    "oxlint": "...",          // linting
+    // oxfmt is a standalone binary — installed via script or action step
+    "vitest": "...",          // unit testing
+    "typescript": "..."
+  }
+}
+```
+
+> **Note for agent**: oxfmt is not an npm package — it is a standalone binary. The CI step must download the correct binary for the runner OS (linux-x64) and run `oxfmt --check src/`. A setup script or composite action should handle this. Do not attempt to install oxfmt via npm.
 
 ---
 
@@ -240,15 +304,21 @@ Single `useReducer` + `Context`. Pool is immutable canonical state; never mutate
 
 | Decision | Rationale |
 |---|---|
+| Rotate → combine → compose as ordered operations | Core game mechanic; validation must check in this order |
 | Rotation as equivalence sets | Simple lookup, designer-controlled, UX-agnostic |
-| Composition as separate operation from rotation | Mechanically distinct; conflating them breaks validation logic |
+| Composition separate from rotation | Mechanically distinct; conflating them breaks validation |
 | Pool resets each guess | Specified; simplifies validation and state |
-| Pure domain logic layer (`src/lib/` has no React) | Unit-testable in isolation |
+| Composed vowels are just vowels | Composer is position-aware, not type-aware; no special casing needed |
+| Pure domain logic (`src/lib/` has no React) | Fully unit-testable in isolation |
 | `useReducer` + Context | Small action set; explicit typing aids coding agent |
-| Jamo pool as frequency map | O(1) availability checks |
-| `@dnd-kit/core` | Touch/pointer sensor support; works on iOS Safari |
-| `vite-plugin-pwa` | Workbox SW generated from config; no manual SW authoring |
-| GitHub Pages via `gh-pages` branch | `vite.config.ts` must set `base: '/<repo-name>/'` |
+| Jamo pool as frequency map | O(1) availability checks during validation |
+| `@dnd-kit/core` for drag-and-drop | Touch/pointer sensors; works on iOS Safari |
+| `vite-plugin-pwa` | Workbox SW from config; no manual SW authoring |
+| GitHub Actions + `actions/deploy-pages` | No separate gh-pages branch; cleaner deployment model |
+| oxlint + oxfmt | Fast Rust-based quality tools; enforced in CI before merge and deploy |
+| Difficulty tiers (easy/medium/hard) | Extensible enum on `Puzzle`; UI surfaces tier to player |
+| Date-seeded daily puzzle | Consistent Wordle-like daily experience; dev mode adds overrides |
+| No hard guess limit (MVP) | Designer decision; may be added post-MVP via config |
 
 ---
 
@@ -264,6 +334,8 @@ Single `useReducer` + `Context`. Pool is immutable canonical state; never mutate
 | Internationalization | Post-MVP |
 | Archaic / historical jamo | Out of modern hangul scope |
 | Complex/compound jamo as *given* pool items | Always constructed from basic jamo; never in starting pool |
+| Hard guess limit | No maximum guesses in MVP; may add post-MVP |
+| NIKL corpus integration | Post-MVP; hand-curated word list used to start |
 
 ---
 
@@ -271,6 +343,10 @@ Single `useReducer` + `Context`. Pool is immutable canonical state; never mutate
 
 ```
 /
+├── .github/
+│   └── workflows/
+│       ├── ci.yml            # lint, fmt-check, typecheck, test, build
+│       └── deploy.yml        # deploy to GitHub Pages on main
 ├── public/
 │   ├── data/
 │   │   └── puzzles.json
@@ -281,18 +357,18 @@ Single `useReducer` + `Context`. Pool is immutable canonical state; never mutate
 │   │   ├── jamo/
 │   │   │   ├── jamo-data.ts      # jamo defs, index tables, rotation sets, combination rules
 │   │   │   ├── rotation.ts       # getRotationOptions()
-│   │   │   └── composition.ts    # combineJamo(), composeSyllable(), decomposeSyllable()
+│   │   │   └── composition.ts    # combineJamo(), decomposeJamo(), composeSyllable(), decomposeSyllable()
 │   │   ├── engine/
 │   │   │   ├── evaluate.ts       # evaluateGuess()
 │   │   │   ├── validate.ts       # isGuessValid()
 │   │   │   └── scoring.ts        # calculateScore()
 │   │   └── puzzle/
-│   │       ├── loader.ts
-│   │       └── types.ts
+│   │       ├── loader.ts         # loadPuzzles(), selectPuzzle()
+│   │       └── types.ts          # Puzzle, Difficulty
 │   ├── state/
 │   │   ├── GameContext.tsx
 │   │   ├── gameReducer.ts
-│   │   └── types.ts
+│   │   └── types.ts              # GameState, GameAction
 │   ├── components/
 │   │   ├── Rack/
 │   │   ├── Composer/
@@ -301,7 +377,7 @@ Single `useReducer` + `Context`. Pool is immutable canonical state; never mutate
 │   ├── App.tsx
 │   └── main.tsx
 ├── tests/
-│   └── lib/
+│   └── lib/                      # unit tests for pure domain logic
 ├── vite.config.ts
 ├── tailwind.config.ts
 └── tsconfig.json
@@ -309,25 +385,17 @@ Single `useReducer` + `Context`. Pool is immutable canonical state; never mutate
 
 ---
 
-## ⚑ Open Assumptions — Answer Before Proceeding
+## Resolved Decisions (no further input needed)
 
-**A3 — Word length per puzzle**
-Assuming word length is fixed per puzzle and declared in the puzzle JSON. Puzzles may vary in length (e.g. 2–5 characters). Confirm?
+| # | Decision |
+|---|---|
+| A1 | Rotation = equivalence sets; UX cycles clockwise |
+| A2 | Pool resets fully between guesses |
+| A3 | Word length 3/4/5 by difficulty (easy/medium/hard); extensible |
+| A4 | Compound batchim valid in jongseong only |
+| A5 | Hand-curated word list for MVP; NIKL integration post-MVP |
+| A6 | Date-seeded daily puzzle; dev mode supports random/date-override |
+| A7 | No hard guess limit in MVP |
+| A8 | Composed vowels are just valid vowels; decomposition supported |
+| A9 | Rotate-then-combine confirmed as core game mechanic |
 
-**A4 — Compound batchim position constraint**
-Compound batchim (ㄳ, ㄵ, etc.) are valid only in jongseong position. They cannot appear as choseong. This matches Korean orthographic rules. Confirm?
-
-**A5 — Word list source**
-No word list was specified. A decision is needed before `plan-puzzle.md`. Options: hand-curated, NIKL corpus subset (license check needed), or your own authored list.
-
-**A6 — Puzzle selection strategy**
-Assuming date-seeded daily puzzle (same puzzle for all players on a given day), with random fallback for development. Confirm or specify alternative.
-
-**A7 — Maximum guesses / lose condition**
-The brief specifies scoring by guess count but no maximum. Is there a hard limit (e.g. 6 guesses) after which the game ends in failure? Or is the game endless until the player guesses correctly?
-
-**A8 — Two-step complex vowel UX**
-ㅙ and ㅞ require two composition steps (e.g. ㅗ + (ㅏ+ㅣ)). The Composer must support holding an intermediate composed vowel before it's used in a syllable. Flagging now so it's deliberately designed in `plan-composer.md`.
-
-**A9 — Rotation then combination**
-Can a player rotate a jamo and then combine it? E.g. rotate ㄱ→ㄴ, then combine ㄴ+ㅈ→ㄵ? Assuming **yes**. Confirm?
