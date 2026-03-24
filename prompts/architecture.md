@@ -1,5 +1,6 @@
 # architecture.md
 > Jamo Word Game — System Architecture
+> Last updated: revision 2
 
 ---
 
@@ -26,7 +27,7 @@ User ──► GitHub Pages (static assets)
         └── Domain Logic Layer
 ```
 
-All game logic — puzzle loading, guess evaluation, jamo rotation — executes entirely in the browser.
+All game logic — puzzle loading, guess evaluation, jamo rotation, composition — executes entirely in the browser.
 
 ---
 
@@ -49,8 +50,9 @@ All game logic — puzzle loading, guess evaluation, jamo rotation — executes 
 │                                                              │
 │   GameContext  +  useReducer(gameReducer, initialState)      │
 │                                                              │
-│   Actions: START_GAME | COMPOSE_CHARACTER | REMOVE_JAMO     │
-│            SUBMIT_GUESS | CLEAR_DRAFT | RESET_GAME          │
+│   Actions: START_GAME | ROTATE_JAMO | COMBINE_JAMO          │
+│            COMPOSE_CHARACTER | REMOVE_JAMO | SUBMIT_GUESS   │
+│            CLEAR_DRAFT | RESET_GAME                         │
 └────────────────────────┬─────────────────────────────────────┘
                          │ pure function calls
 ┌────────────────────────▼─────────────────────────────────────┐
@@ -68,9 +70,121 @@ All game logic — puzzle loading, guess evaluation, jamo rotation — executes 
 │                    ASSET / DATA LAYER                        │
 │                                                              │
 │  public/data/puzzles.json   — puzzle definitions             │
-│  src/lib/jamo/jamo-data.ts  — jamo defs + rotation graph    │
+│  src/lib/jamo/jamo-data.ts  — all jamo defs, rotation sets, │
+│                               composition rules              │
 └──────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## The Korean Jamo Model
+
+This section is foundational. The coding agent must implement it exactly as specified.
+
+### Scope of Modern Hangul Jamo
+
+The game uses only **modern hangul jamo** from the Hangul Jamo Unicode block. Archaic jamo are excluded entirely.
+
+**Basic consonants (14):** ㄱ ㄴ ㄷ ㄹ ㅁ ㅂ ㅅ ㅇ ㅈ ㅊ ㅋ ㅌ ㅍ ㅎ
+**Double consonants (5):** ㄲ ㄸ ㅃ ㅆ ㅉ
+**Basic vowels (10):** ㅏ ㅑ ㅓ ㅕ ㅗ ㅛ ㅜ ㅠ ㅡ ㅣ
+**Complex vowels / diphthongs (11):** ㅐ ㅒ ㅔ ㅖ ㅘ ㅙ ㅚ ㅝ ㅞ ㅟ ㅢ
+
+---
+
+### Rotation Rules
+
+Rotation is modeled as **equivalence sets**. Any jamo in a set can become any other member of that set. There is no ordering or directionality in the data model — the UX layer decides how to cycle (e.g. clockwise on tap).
+
+```typescript
+// src/lib/jamo/jamo-data.ts
+export const ROTATION_SETS: readonly (readonly string[])[] = [
+  ["ㄱ", "ㄴ"],
+  ["ㅏ", "ㅓ", "ㅗ", "ㅜ"],
+  ["ㅣ", "ㅡ"],
+  ["ㅑ", "ㅕ", "ㅛ", "ㅠ"],
+];
+```
+
+A jamo not appearing in any set cannot be rotated. Lookup:
+
+```typescript
+// Returns all jamo this one can become (excluding itself), or []
+export function getRotationOptions(jamo: string): string[]
+```
+
+---
+
+### Composition Rules
+
+Jamo can be **combined** to form more complex jamo. Composition is distinct from rotation — it takes two jamo tokens and produces one new jamo. Three combination types exist:
+
+#### 1. Double consonants (쌍자음)
+Two identical basic consonants combine into one double consonant:
+
+| Input    | Output |
+|----------|--------|
+| ㄱ + ㄱ | ㄲ     |
+| ㄷ + ㄷ | ㄸ     |
+| ㅂ + ㅂ | ㅃ     |
+| ㅅ + ㅅ | ㅆ     |
+| ㅈ + ㅈ | ㅉ     |
+
+#### 2. Complex vowels (복합모음)
+Two basic or already-composed vowels combine:
+
+| Input      | Output |
+|------------|--------|
+| ㅏ + ㅣ   | ㅐ     |
+| ㅑ + ㅣ   | ㅒ     |
+| ㅓ + ㅣ   | ㅔ     |
+| ㅕ + ㅣ   | ㅖ     |
+| ㅗ + ㅏ   | ㅘ     |
+| ㅗ + ㅐ   | ㅙ     |
+| ㅗ + ㅣ   | ㅚ     |
+| ㅜ + ㅓ   | ㅝ     |
+| ㅜ + ㅔ   | ㅞ     |
+| ㅜ + ㅣ   | ㅟ     |
+| ㅡ + ㅣ   | ㅢ     |
+
+Note: ㅙ = ㅗ + ㅐ and ㅞ = ㅜ + ㅔ. Since ㅐ = ㅏ+ㅣ and ㅔ = ㅓ+ㅣ, these are two-step compositions. The player must form the intermediate vowel first (see A8 below).
+
+#### 3. Compound batchim (겹받침)
+Two consonants combine into a compound final consonant. **Only valid in jongseong (final consonant) position.**
+
+| Input      | Output |
+|------------|--------|
+| ㄱ + ㅅ   | ㄳ     |
+| ㄴ + ㅈ   | ㄵ     |
+| ㄴ + ㅎ   | ㄶ     |
+| ㄹ + ㄱ   | ㄺ     |
+| ㄹ + ㅁ   | ㄻ     |
+| ㄹ + ㅂ   | ㄼ     |
+| ㄹ + ㅅ   | ㄽ     |
+| ㄹ + ㅌ   | ㄾ     |
+| ㄹ + ㅍ   | ㄿ     |
+| ㄹ + ㅎ   | ㅀ     |
+| ㅂ + ㅅ   | ㅄ     |
+
+---
+
+### Syllable Block Composition
+
+Korean syllable blocks are composed from:
+- **Choseong (초성)**: initial consonant — required
+- **Jungseong (중성)**: vowel — required
+- **Jongseong (종성)**: final consonant — optional
+
+Unicode composition formula:
+```
+syllableCodepoint = 0xAC00
+  + (choseongIndex × 21 + jungseongIndex) × 28
+  + jongseongIndex
+```
+
+The choseong index table and jongseong index table are **different orderings** — a jamo's choseong index ≠ its jongseong index. Both tables must be hardcoded in `jamo-data.ts`.
+
+**Orthographic rule**: A syllable block cannot begin with a vowel. If the player's intended initial sound is a vowel, the silent consonant ㅇ (ieung) must be used as choseong.
 
 ---
 
@@ -78,87 +192,63 @@ All game logic — puzzle loading, guess evaluation, jamo rotation — executes 
 
 ### `src/lib/jamo/` — Korean Linguistics Core
 
-Responsible for everything that is a fact about the Korean writing system:
+- All jamo definitions, Unicode codepoints, choseong/jongseong index tables
+- Rotation equivalence sets and `getRotationOptions()`
+- Combination rules: `combineJamo()`, double consonants, complex vowels, compound batchim
+- Syllable block composition: `composeSyllable(choseong, jungseong, jongseong?)`
+- Syllable block decomposition: `decomposeSyllable(syllable)` → `{ choseong, jungseong, jongseong }`
 
-- The 14 base consonants and 10 base vowels and their Unicode codepoints
-- The rotation graph: which jamo can be derived from which by rotation
-- **Character composition**: given a choseong (초성) + jungseong (중성) + optional jongseong (종성), produce the correct Unicode syllable block (U+AC00–U+D7A3)
-- **Character decomposition**: given a syllable block, return its constituent choseong / jungseong / jongseong
-
-The Unicode composition formula is:
-```
-syllable = 0xAC00 + (choseong_index × 21 + jungseong_index) × 28 + jongseong_index
-```
-
-This module has **zero knowledge of game rules**. It knows about language, not about guessing.
+**Zero knowledge of game rules.**
 
 ---
 
 ### `src/lib/engine/` — Game Rules
 
-Responsible for:
+- **Validation**: given a guess (array of syllable blocks) and the pool, confirm every character is constructible from the pool (using rotations and combinations), treating the pool as fully reset. No character in the guess needs to exist as a "real word."
+- **Evaluation**: given a guess and the target word, return per-character `TileResult` (`"green" | "yellow" | "gray"`)
+- **Scoring**: given guess count, return score
 
-- **Validation**: given a submitted guess (array of syllable blocks) and the current jamo pool, confirm every character in the guess is constructible from the available (possibly rotated) jamo, and that the collective jamo cost does not exceed the pool
-- **Evaluation**: given a guess and the target word, return per-character `Tile` results (`"green" | "yellow" | "gray"`)
-- **Scoring**: given the number of guesses taken, return a score
-
-This module knows about game rules but has **zero knowledge of UI or state shape**.
+**Zero knowledge of UI or state shape.**
 
 ---
 
 ### `src/lib/puzzle/` — Puzzle Data
 
-Responsible for:
-
-- The `Puzzle` type definition (target word, available jamo pool, word length, optional metadata)
-- Loading a puzzle from the static JSON bundle (by index, by date hash, or randomly)
-- Validating that a puzzle's jamo pool is internally consistent (i.e., the target word can actually be spelled from the pool using rotations)
+- `Puzzle` type
+- `loadPuzzles()` — fetches `public/data/puzzles.json`
+- `selectPuzzle(puzzles, strategy)` — returns one puzzle by date-seed or random
+- Build-time validation: target word reachable from pool
 
 ---
 
 ### `src/state/` — Game State Machine
 
-A single `useReducer` + `Context`. All UI reads from context; all mutations go through dispatched actions. No component holds authoritative game state.
+Single `useReducer` + `Context`. Pool is immutable canonical state; never mutated during guess construction. Draft state is ephemeral and reset on submit/cancel.
 
 ---
 
 ### `src/components/` — UI
 
-Pure React components. Receive data via props or context. Dispatch actions. No business logic.
-
-Sub-domains within UI:
-- **Rack**: displays the available jamo pool; tracks which jamo are currently "in use" in the draft
-- **Composer**: the working area where the player builds one character at a time by assigning jamo to choseong / jungseong / jongseong slots. This is where the drag-and-drop UX lives.
-- **Board**: renders the guess history as a grid of colored tiles
+- **Rack**: jamo pool display; tap to rotate, drag to Composer
+- **Composer**: syllable assembly area; assign jamo to slots, combine jamo within slots
+- **Board**: guess history grid with tile coloring
 - **Modals**: HowToPlay, Results/Score
 
 ---
 
 ## Key Technical Decisions
 
-### 1. Pure domain logic layer (no React in `src/lib/`)
-**Why**: The jamo composition and game evaluation logic is complex and must be unit-tested in isolation. Mixing it with React lifecycle makes testing painful and the 9B downstream agent more likely to produce bugs. Every function in `src/lib/` should be importable in a Node.js test runner with no mocking.
-
-### 2. `useReducer` + `Context` (not Zustand or Redux)
-**Why**: The state shape is simple (one active game at a time) and the action set is small and well-defined. Adding a state library is an unnecessary dependency. `useReducer` forces explicit action typing which aids the coding agent.
-
-### 3. Jamo pool modeled as a frequency map, not an array
-**Why**: The pool `{ ㄱ: 3, ㅏ: 3, ㅎ: 1, ㅇ: 1 }` makes it O(1) to check availability and decrement. An array of strings would require repeated filtering.
-
-### 4. Rotations modeled as a directed adjacency list
-**Why**: Rotation is not necessarily symmetric or transitive. `ㅏ` rotates into `ㅜ`, `ㅓ`, and `ㅗ` — but does `ㅜ` rotate back into `ㅏ`? This is a game design question (see Assumptions). The adjacency list `{ ㅏ: [ㅜ, ㅓ, ㅗ], ㄱ: [ㄴ], ... }` keeps the designer in control without requiring the engine to infer anything.
-
-### 5. Puzzle data as static JSON on `public/data/puzzles.json`
-**Why**: No backend needed. The file is fetched once, cached by the service worker, and never changes at runtime. Puzzle selection (daily / random) is computed client-side from the array index.
-
-### 6. `@dnd-kit/core` for drag-and-drop
-**Why**: It has first-class support for pointer and touch sensors (critical for mobile), is actively maintained, and separates drag logic from rendering. React DnD is older and HTML5-drag-API-based (broken on iOS). Native touch handling from scratch is fragile.
-
-### 7. Vite + `vite-plugin-pwa`
-**Why**: Generates a Workbox-based service worker from config with no manual SW writing. Handles precache manifest, asset versioning, and offline strategy automatically.
-
-### 8. GitHub Pages deployment via `gh-pages` branch
-**Why**: `vite build` output goes to `dist/`. A CI step (GitHub Actions) pushes `dist/` to the `gh-pages` branch. `vite.config.ts` must set `base: '/<repo-name>/'`.
+| Decision | Rationale |
+|---|---|
+| Rotation as equivalence sets | Simple lookup, designer-controlled, UX-agnostic |
+| Composition as separate operation from rotation | Mechanically distinct; conflating them breaks validation logic |
+| Pool resets each guess | Specified; simplifies validation and state |
+| Pure domain logic layer (`src/lib/` has no React) | Unit-testable in isolation |
+| `useReducer` + Context | Small action set; explicit typing aids coding agent |
+| Jamo pool as frequency map | O(1) availability checks |
+| `@dnd-kit/core` | Touch/pointer sensor support; works on iOS Safari |
+| `vite-plugin-pwa` | Workbox SW generated from config; no manual SW authoring |
+| GitHub Pages via `gh-pages` branch | `vite.config.ts` must set `base: '/<repo-name>/'` |
 
 ---
 
@@ -166,43 +256,43 @@ Sub-domains within UI:
 
 | Out of scope | Reason |
 |---|---|
-| Multiplayer or shared puzzles | No backend |
-| User accounts or leaderboards | No backend |
-| Compound jamo (ㄳ, ㄵ, ㅘ, ㅝ, etc.) | Significant added complexity; revisit post-MVP |
-| Double consonants (ㄲ, ㄸ, ㅃ, ㅆ, ㅉ) | Same — post-MVP |
-| Animated jamo rotation (visual spin) | UX iteration deferred |
+| Multiplayer / shared sessions | No backend |
+| User accounts / leaderboards | No backend |
+| Animated jamo rotation (visual spin effect) | UX iteration deferred |
 | Server-side puzzle validation | Static only |
 | Accessibility / screen reader support | Post-MVP pass |
-| Internationalization (UI in English and Korean) | Post-MVP |
+| Internationalization | Post-MVP |
+| Archaic / historical jamo | Out of modern hangul scope |
+| Complex/compound jamo as *given* pool items | Always constructed from basic jamo; never in starting pool |
 
 ---
 
-## File Structure (top level)
+## File Structure
 
 ```
 /
 ├── public/
 │   ├── data/
-│   │   └── puzzles.json          # puzzle definitions
-│   ├── icons/                    # PWA icons
+│   │   └── puzzles.json
+│   ├── icons/
 │   └── manifest.webmanifest
 ├── src/
 │   ├── lib/
 │   │   ├── jamo/
-│   │   │   ├── jamo-data.ts      # consonant/vowel defs + rotation graph
-│   │   │   ├── rotation.ts       # getRotations(), canRotateTo()
-│   │   │   └── composition.ts    # compose(), decompose()
+│   │   │   ├── jamo-data.ts      # jamo defs, index tables, rotation sets, combination rules
+│   │   │   ├── rotation.ts       # getRotationOptions()
+│   │   │   └── composition.ts    # combineJamo(), composeSyllable(), decomposeSyllable()
 │   │   ├── engine/
 │   │   │   ├── evaluate.ts       # evaluateGuess()
 │   │   │   ├── validate.ts       # isGuessValid()
 │   │   │   └── scoring.ts        # calculateScore()
 │   │   └── puzzle/
-│   │       ├── loader.ts         # loadPuzzle(), selectPuzzle()
-│   │       └── types.ts          # Puzzle type
+│   │       ├── loader.ts
+│   │       └── types.ts
 │   ├── state/
 │   │   ├── GameContext.tsx
 │   │   ├── gameReducer.ts
-│   │   └── types.ts              # GameState, GameAction
+│   │   └── types.ts
 │   ├── components/
 │   │   ├── Rack/
 │   │   ├── Composer/
@@ -211,7 +301,7 @@ Sub-domains within UI:
 │   ├── App.tsx
 │   └── main.tsx
 ├── tests/
-│   └── lib/                      # unit tests for pure domain logic
+│   └── lib/
 ├── vite.config.ts
 ├── tailwind.config.ts
 └── tsconfig.json
@@ -219,62 +309,25 @@ Sub-domains within UI:
 
 ---
 
-## ⚑ Assumptions — Review Before Handing to Agent
+## ⚑ Open Assumptions — Answer Before Proceeding
 
-The following are decisions I made that are not stated in the brief. **Each one needs your explicit sign-off.**
+**A3 — Word length per puzzle**
+Assuming word length is fixed per puzzle and declared in the puzzle JSON. Puzzles may vary in length (e.g. 2–5 characters). Confirm?
 
----
-
-**A1 — Rotation graph direction (MUST REVIEW)**
-
-I'm modeling rotation as a directed graph. The current proposal is that rotation is **one-directional from the base jamo**:
-
-- `ㄱ → ㄴ` (but ㄴ is NOT listed as rotating to anything by default)
-- `ㅏ → ㅓ, ㅗ, ㅜ` (but ㅓ/ㅗ/ㅜ don't rotate to anything)
-
-This means the player's pool is expressed in "base" jamo only, and the player decides how to rotate them. If you want rotation to be bidirectional or chained (e.g., ㄱ→ㄴ→ㄷ→...), the graph definition in `jamo-data.ts` needs to reflect that. **Please provide or approve the complete rotation mapping before implementation.**
-
----
-
-**A2 — Jamo pool consumption model (MUST REVIEW)**
-
-My reading of the example: jamo are consumed when used. If you have `{ ㄱ: 3 }` and use two to form `국` (ㄱ as choseong + rotated-to-ㄱ as jongseong), you have 1 ㄱ remaining for that guess. A guess does **not** need to use all available jamo — you can submit a guess with fewer characters than the target word length.
-
-**Please confirm this is correct.** Alternative reading: the pool resets between guesses (jamo are never permanently consumed). The implementation differs significantly.
-
----
-
-**A3 — Word length per puzzle (MUST REVIEW)**
-
-The example shows 3 characters. I'm assuming word length is fixed per puzzle (defined in the puzzle JSON), not globally fixed. So puzzles might be 2–5 characters, and each puzzle declares its own `wordLength`.
-
----
-
-**A4 — Compound jamo are out of scope (flagged as Non-Goal)**
-
-I'm treating ㄳ, ㅘ, ㄵ etc. as entirely out of scope. If a target word requires a compound final consonant (받침), that puzzle would not be included in the word list. Confirm this is acceptable.
-
----
+**A4 — Compound batchim position constraint**
+Compound batchim (ㄳ, ㄵ, etc.) are valid only in jongseong position. They cannot appear as choseong. This matches Korean orthographic rules. Confirm?
 
 **A5 — Word list source**
-
-No word list source was specified. Possible options:
-- A curated hand-authored list of N-syllable common nouns
-- A subset of the [NIKL (국립국어원) public corpus](https://corpus.korean.go.kr/) — verify license
-- Custom list authored by you
-
-**The word list must be finalized before puzzle generation can work.** I'm treating it as a black box for now; the architecture doesn't care where it comes from.
-
----
+No word list was specified. A decision is needed before `plan-puzzle.md`. Options: hand-curated, NIKL corpus subset (license check needed), or your own authored list.
 
 **A6 — Puzzle selection strategy**
+Assuming date-seeded daily puzzle (same puzzle for all players on a given day), with random fallback for development. Confirm or specify alternative.
 
-I'm assuming a **date-seeded daily puzzle** (one puzzle per calendar day, same for all players — like Wordle) with a fallback to random for development. If you want something different (random every session, user-selectable difficulty), the `selectPuzzle()` function signature needs to change.
+**A7 — Maximum guesses / lose condition**
+The brief specifies scoring by guess count but no maximum. Is there a hard limit (e.g. 6 guesses) after which the game ends in failure? Or is the game endless until the player guesses correctly?
 
----
+**A8 — Two-step complex vowel UX**
+ㅙ and ㅞ require two composition steps (e.g. ㅗ + (ㅏ+ㅣ)). The Composer must support holding an intermediate composed vowel before it's used in a syllable. Flagging now so it's deliberately designed in `plan-composer.md`.
 
-**A7 — Guess count and "losing"**
-
-The brief describes scoring by guess count but doesn't mention a maximum number of guesses (i.e., a lose condition). I'm assuming there is a maximum (6 is the Wordle convention). If the game should never end in failure, the state machine needs adjustment.
-
----
+**A9 — Rotation then combination**
+Can a player rotate a jamo and then combine it? E.g. rotate ㄱ→ㄴ, then combine ㄴ+ㅈ→ㄵ? Assuming **yes**. Confirm?
