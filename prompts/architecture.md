@@ -143,27 +143,27 @@ Jamo can be **combined** to form more complex jamo. Combination takes two jamo t
 
 #### 2. Complex vowels (복합모음)
 
-| Input      | Output | Notes                      |
-|------------|--------|----------------------------|
-| ㅏ + ㅣ   | ㅐ     |                            |
-| ㅑ + ㅣ   | ㅒ     |                            |
-| ㅓ + ㅣ   | ㅔ     |                            |
-| ㅕ + ㅣ   | ㅖ     |                            |
-| ㅗ + ㅏ   | ㅘ     |                            |
-| ㅗ + ㅐ   | ㅙ     | ㅐ must be formed first    |
-| ㅗ + ㅣ   | ㅚ     |                            |
-| ㅜ + ㅓ   | ㅝ     |                            |
-| ㅜ + ㅔ   | ㅞ     | ㅔ must be formed first    |
-| ㅜ + ㅣ   | ㅟ     |                            |
-| ㅡ + ㅣ   | ㅢ     |                            |
+| Input      | Output | Constituent atoms  |
+|------------|--------|--------------------|
+| ㅏ + ㅣ   | ㅐ     | ㅏ ㅣ              |
+| ㅑ + ㅣ   | ㅒ     | ㅑ ㅣ              |
+| ㅓ + ㅣ   | ㅔ     | ㅓ ㅣ              |
+| ㅕ + ㅣ   | ㅖ     | ㅕ ㅣ              |
+| ㅗ + ㅏ   | ㅘ     | ㅗ ㅏ              |
+| ㅗ + ㅏ + ㅣ | ㅙ  | ㅗ ㅏ ㅣ           |
+| ㅗ + ㅣ   | ㅚ     | ㅗ ㅣ              |
+| ㅜ + ㅓ   | ㅝ     | ㅜ ㅓ              |
+| ㅜ + ㅓ + ㅣ | ㅞ  | ㅜ ㅓ ㅣ           |
+| ㅜ + ㅣ   | ㅟ     | ㅜ ㅣ              |
+| ㅡ + ㅣ   | ㅢ     | ㅡ ㅣ              |
 
 **Key rule**: A composed complex vowel is simply a valid vowel. The Composer does not distinguish between "basic" and "complex" vowels in the jungseong slot — it only cares that the token in that slot is a valid vowel jamo. A complex vowel may also be decomposed back into its constituents by the player.
 
-ㅙ and ㅞ require **two composition steps**:
-- ㅙ: first form ㅐ (ㅏ + ㅣ), then form ㅙ (ㅗ + ㅐ)
-- ㅞ: first form ㅔ (ㅓ + ㅣ), then form ㅞ (ㅜ + ㅔ)
+ㅙ and ㅞ are composed of **three atomic vowels** and combination is **associative** — both bracketing orders produce the same result:
+- ㅙ = ㅗ + ㅏ + ㅣ: player may form `(ㅗ + ㅏ) + ㅣ` = `ㅘ + ㅣ`, or `ㅗ + (ㅏ + ㅣ)` = `ㅗ + ㅐ`
+- ㅞ = ㅜ + ㅓ + ㅣ: player may form `(ㅜ + ㅓ) + ㅣ` = `ㅝ + ㅣ`, or `ㅜ + (ㅓ + ㅣ)` = `ㅜ + ㅔ`
 
-The Composer must support staging an intermediate composed vowel before using it in a syllable block.
+Since UX forces binary operations (only two tokens can be combined at once), an intermediary step is always required regardless of path. The Composer must support staging an intermediate composed vowel before the next combination step.
 
 #### 3. Compound batchim (겹받침)
 
@@ -230,10 +230,10 @@ The choseong index table and jongseong index table are **different orderings** �
 
 ### `src/lib/puzzle/` — Puzzle Data
 
-- `Puzzle` type (target word, jamo pool, difficulty, word length)
+- `Puzzle` type (target word, jamo pool, word length — no difficulty field)
 - `loadPuzzles()` — fetches `public/data/puzzles.json`
 - `selectPuzzle(puzzles, strategy)` — date-seed or random
-- Difficulty tiers: `"easy"` (3 chars) | `"medium"` (4 chars) | `"hard"` (5 chars) — extensible enum
+- Difficulty is a **UI/presentation concern only** — derived from word length (3 → easy, 4 → medium, 5 → hard) and never stored on the puzzle. The UI layer maps `wordLength` to a display label.
 
 ---
 
@@ -283,24 +283,48 @@ deploy:
 
 Deployment uses the official `actions/deploy-pages` action targeting GitHub Pages. No separate `gh-pages` branch is maintained — the Pages source is set to **GitHub Actions** in the repo settings.
 
-### Tooling versions pinned in `package.json`
+### Tooling
+
+Package manager: **pnpm**. All install commands use `pnpm add`.
 
 ```jsonc
+// devDependencies (representative — pin exact versions at scaffold time)
 {
-  "devDependencies": {
-    "oxlint": "...",          // linting
-    // oxfmt is a standalone binary — installed via script or action step
-    "vitest": "...",          // unit testing
-    "typescript": "..."
-  }
+  "oxlint": "...",       // linting
+  "oxfmt": "...",        // formatting (standard npm package — pnpm add -D oxfmt)
+  "vitest": "...",       // unit tests (domain logic)
+  "playwright": "...",   // e2e tests
+  "typescript": "..."
 }
 ```
 
-> **Note for agent**: oxfmt is not an npm package — it is a standalone binary. The CI step must download the correct binary for the runner OS (linux-x64) and run `oxfmt --check src/`. A setup script or composite action should handle this. Do not attempt to install oxfmt via npm.
+### Pipeline: `.github/workflows/ci.yml`
 
----
+```
+on: push (all branches) + pull_request
 
-## Key Technical Decisions
+jobs:
+  quality:
+    - oxlint             # lint
+    - oxfmt --check      # format check
+    - tsc --noEmit       # type check
+
+  test:
+    - vitest run         # unit tests (src/lib/)
+    - playwright test    # e2e tests
+
+  build:
+    - vite build         # production build
+
+deploy:
+  needs: [quality, test, build]
+  if: branch == main
+  - Upload dist/ to GitHub Pages via actions/deploy-pages
+```
+
+### Pipeline: `.github/workflows/deploy.yml`
+
+Deployment uses the official `actions/deploy-pages` action. No separate `gh-pages` branch is maintained — the Pages source is set to **GitHub Actions** in the repo settings.
 
 | Decision | Rationale |
 |---|---|
@@ -316,7 +340,9 @@ Deployment uses the official `actions/deploy-pages` action targeting GitHub Page
 | `vite-plugin-pwa` | Workbox SW from config; no manual SW authoring |
 | GitHub Actions + `actions/deploy-pages` | No separate gh-pages branch; cleaner deployment model |
 | oxlint + oxfmt | Fast Rust-based quality tools; enforced in CI before merge and deploy |
-| Difficulty tiers (easy/medium/hard) | Extensible enum on `Puzzle`; UI surfaces tier to player |
+| Difficulty derived from word length (UI only) | No difficulty field on `Puzzle`; UI maps wordLength → label |
+| pnpm as package manager | Specified; consistent with modern TS project conventions |
+| Vitest (unit) + Playwright (e2e) | Vitest for pure domain logic; Playwright for full browser interaction flows |
 | Date-seeded daily puzzle | Consistent Wordle-like daily experience; dev mode adds overrides |
 | No hard guess limit (MVP) | Designer decision; may be added post-MVP via config |
 
@@ -396,6 +422,6 @@ Deployment uses the official `actions/deploy-pages` action targeting GitHub Page
 | A5 | Hand-curated word list for MVP; NIKL integration post-MVP |
 | A6 | Date-seeded daily puzzle; dev mode supports random/date-override |
 | A7 | No hard guess limit in MVP |
-| A8 | Composed vowels are just valid vowels; decomposition supported |
+| A8 | ㅙ/ㅞ are three-atom vowels; combination is associative — both bracketing paths valid; Composer stages intermediates |
 | A9 | Rotate-then-combine confirmed as core game mechanic |
 
