@@ -2,22 +2,20 @@
 > Jamo Word Game — Data Types, Interfaces, and State Shape
 > Status: draft — awaiting review
 
-This document is the single source of truth for every type in the codebase. All types are TypeScript. All jamo strings use **Hangul Compatibility Jamo codepoints (U+3130–U+318F)** unless explicitly noted otherwise (see architecture.md for why).
+This document is the single source of truth for every type in the codebase. All types are TypeScript. All jamo strings use **Hangul Compatibility Jamo codepoints (U+3130–U+318F)** unless explicitly noted otherwise.
 
 ---
 
-## 1. Primitive: Jamo
+## 1. Jamo Primitives
 
-A jamo is simply a `string` — one Unicode compatibility jamo character. No wrapper type needed.
+A jamo is a plain `string` — one Unicode compatibility jamo character. No wrapper type.
 
-### Rotation Lookup
-
-Rotation sets are defined as an array of sets (for readability), then built into a `Map` for O(1) lookup:
+### Rotation
 
 ```typescript
 // src/lib/jamo/jamo-data.ts
 
-// Source of truth — edit this to change rotation rules
+// Source of truth for rotation rules — edit here only
 export const ROTATION_SETS: readonly (readonly string[])[] = [
   ['ㄱ', 'ㄴ'],
   ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ'],
@@ -25,32 +23,30 @@ export const ROTATION_SETS: readonly (readonly string[])[] = [
   ['ㅑ', 'ㅕ', 'ㅛ', 'ㅠ'],
 ]
 
-// Derived at module load — do not edit directly
-// Maps each jamo to the other members of its set
+// Derived from ROTATION_SETS at module load — used for all runtime lookups
 export const ROTATION_MAP: ReadonlyMap<string, readonly string[]>
 ```
-
-`ROTATION_MAP` is built once from `ROTATION_SETS` at module initialisation. All runtime lookups use the map, never the array.
 
 ```typescript
 // src/lib/jamo/rotation.ts
 
-// Returns the other members of this jamo's rotation set, or [] if not rotatable
+// All jamo this one can become (excluding itself), or [] if not rotatable
 export function getRotationOptions(jamo: string): readonly string[]
 
-// Returns the next jamo when cycling clockwise through the set (wraps around)
+// The next jamo when cycling clockwise through the rotation set (wraps around)
+// Returns null if the jamo is not rotatable
 export function getNextRotation(jamo: string): string | null
 ```
 
-### Combination Rules
+### Combination
 
-Combination is **commutative** — order of inputs does not matter. `ㅗ+ㅏ` and `ㅏ+ㅗ` both produce `ㅘ`.
+Combination is **commutative** — argument order does not matter.
 
 ```typescript
 // src/lib/jamo/jamo-data.ts
 
 type CombinationRule = {
-  inputs: readonly [string, string]   // canonical pair — stored in sorted order
+  inputs: readonly [string, string]  // canonical unordered pair
   output: string
   kind: 'doubleConsonant' | 'complexVowel' | 'compoundBatchim'
 }
@@ -58,172 +54,187 @@ type CombinationRule = {
 export const COMBINATION_RULES: readonly CombinationRule[]
 ```
 
-The lookup function handles commutativity internally:
-
 ```typescript
 // src/lib/jamo/composition.ts
 
-// Returns the combined jamo if the pair has a rule, or null
-// Order of arguments does not matter
+// Returns the combined jamo if a rule exists for this pair, or null
+// Order of arguments does not matter: combineJamo('ㅗ','ㅏ') === combineJamo('ㅏ','ㅗ')
 export function combineJamo(a: string, b: string): string | null
 ```
 
 ### Syllable Block Composition
 
-Korean syllable blocks are built from three positions: choseong (initial consonant), jungseong (vowel), jongseong (optional final consonant). The Unicode formula requires a position-specific integer index for each jamo — not a codepoint, a table-defined ordinal. Critically, **the same jamo has different index values depending on position**. For example, ㄱ is index `0` as choseong and index `1` as jongseong. These tables are fixed by the Unicode standard.
+A Korean syllable block is built from choseong (initial consonant) + jungseong (vowel) + optional jongseong (final consonant). The Unicode standard assigns each jamo a position-specific integer index. **The same jamo has a different index value depending on its position** — this is fixed by the Unicode standard, not the application.
 
 ```typescript
 // src/lib/jamo/jamo-data.ts
 
-// Maps compatibility jamo → its ordinal in the Unicode choseong sequence
-export const CHOSEONG_INDEX: Readonly<Record<string, number>>
-
-// Maps compatibility jamo → its ordinal in the Unicode jungseong sequence  
+// Each maps a compatibility jamo string to its Unicode position ordinal
+export const CHOSEONG_INDEX:  Readonly<Record<string, number>>
 export const JUNGSEONG_INDEX: Readonly<Record<string, number>>
-
-// Maps compatibility jamo → its ordinal in the Unicode jongseong sequence
-// The empty string '' maps to 0 (no final consonant)
 export const JONGSEONG_INDEX: Readonly<Record<string, number>>
+// JONGSEONG_INDEX[''] === 0  (no final consonant)
 ```
 
 ```typescript
 // src/lib/jamo/composition.ts
 
-// Composes a syllable block codepoint from its parts
-// Returns null if inputs are not valid for their positions
+// Composes three parts into a syllable block codepoint string
+// Returns null if inputs are not valid for their respective positions
 export function composeSyllable(
   choseong: string,
   jungseong: string,
-  jongseong?: string
+  jongseong?: string,
 ): string | null
 
 // Decomposes a syllable block back into its parts
-// Returns null if the input is not a valid syllable block (U+AC00–U+D7A3)
+// Returns null if the input is not in the syllable block range U+AC00–U+D7A3
 export function decomposeSyllable(
-  syllable: string
+  syllable: string,
 ): { choseong: string; jungseong: string; jongseong: string | null } | null
 ```
 
 ---
 
-## 2. Core: Character (글자)
+## 2. Character (글자)
 
-`Character` is the central abstraction. A character is an ordered list of jamo. It can be **complete** (forms a valid Korean syllable block) or **incomplete** (a partial or intermediate form the player is building toward).
+`Character` is the central abstraction. A character is an **ordered list of jamo** representing the current state of what the player is building. It may be complete (a valid syllable block) or incomplete (an intermediate or partial form).
 
 ```typescript
-// src/lib/jamo/types.ts
+// src/lib/character/types.ts
 
 type Character = {
-  jamo: readonly string[]   // ordered list of component jamo
+  jamo: readonly string[]
 }
 ```
 
-Completeness is **derived, not stored**:
+### `resolveCharacter`
+
+This is the core function of the model. It takes the raw jamo list and reduces it to its simplest resolved form by applying combination rules first, then syllable composition.
 
 ```typescript
-// src/lib/jamo/composition.ts
+// src/lib/character/character.ts
 
-// Returns true if this character's jamo can be composed into a valid syllable block
-export function isComplete(character: Character): boolean
-
-// Returns the composed syllable string if complete, or null if incomplete
-// e.g. ['ㅎ','ㅏ','ㄴ'] → '한', ['ㅏ','ㅣ'] → null (no choseong yet)
+// Reduces a character's jamo list to its resolved form.
+// Returns the resolved string, or null if the jamo cannot be meaningfully reduced.
 export function resolveCharacter(character: Character): string | null
 ```
 
-**Examples of Character states:**
+**How resolution works, step by step:**
 
-| `jamo` | `isComplete` | `resolveCharacter` | Notes |
-|---|---|---|---|
-| `['ㄱ']` | false | null | Single consonant, no vowel |
-| `['ㄱ', 'ㅏ']` | true | `'가'` | Valid syllable |
-| `['ㅎ', 'ㅏ', 'ㄴ']` | true | `'한'` | With jongseong |
-| `['ㅏ', 'ㅣ']` | false | null | Combined vowel ㅐ, still no choseong |
-| `['ㄱ', 'ㄱ']` | false | null | Two consonants — not yet a valid syllable but can combine to ㄲ |
+If the jamo list has two entries and a combination rule exists for them, the result is the combined jamo:
+- `['ㅏ', 'ㅣ']` → `combineJamo('ㅏ','ㅣ')` → `'ㅐ'`
+- `['ㄱ', 'ㄱ']` → `combineJamo('ㄱ','ㄱ')` → `'ㄲ'`
 
-The pool uses `Character` as its token type. Each token starts as a single-jamo Character and may grow through combination or change through rotation.
+If the list contains a consonant followed by a vowel (with optional second consonant), syllable composition is attempted:
+- `['ㅎ', 'ㅐ']` → `composeSyllable('ㅎ','ㅐ')` → `'해'`
+- `['ㄱ', 'ㅏ', 'ㄱ']` → `composeSyllable('ㄱ','ㅏ','ㄱ')` → `'각'`
+- `['ㅎ', 'ㅏ', 'ㄴ']` → `composeSyllable('ㅎ','ㅏ','ㄴ')` → `'한'`
+
+If the list is a single jamo with no further reduction possible, it returns that jamo as-is:
+- `['ㄱ']` → `'ㄱ'`
+- `['ㅐ']` → `'ㅐ'`  (already a combined vowel — resolves to itself)
+
+If the jamo cannot be reduced (e.g. two consonants with no combination rule), returns `null`:
+- `['ㄱ', 'ㅎ']` → `null` (no combination rule, cannot compose a syllable)
+
+### `isComplete`
+
+```typescript
+// Returns true if resolveCharacter produces a valid Korean syllable block (U+AC00–U+D7A3)
+export function isComplete(character: Character): boolean
+```
+
+A complete character is one that resolves to a syllable block — not a bare jamo, not an intermediate combined jamo, not null. `'해'` is complete; `'ㅐ'` is not.
 
 ---
 
 ## 3. Word
 
-A word is the target the player is guessing. It is the primary data entity of the game.
+A `Word` is a branded string — the target the player is guessing. Everything else is derived from it.
 
 ```typescript
 // src/lib/word/types.ts
 
-type Word = {
-  value: string           // the target as a string of syllable blocks, e.g. '한국어'
-  pool: readonly string[] // the initial jamo pool — an ordered list of base jamo strings
-                          // e.g. ['ㅎ', 'ㄱ', 'ㄱ', 'ㄱ', 'ㅇ', 'ㅏ', 'ㅏ', 'ㅏ']
+type Word = string & { readonly _brand: 'Word' }
+
+function createWord(s: string): Word {
+  // validate that s is a non-empty string of Korean syllable blocks
+  return s as Word
 }
 ```
 
-**Derived from Word (not stored):**
+Derived properties — computed, never stored:
 
 ```typescript
-// The characters of the word as an array — use spread for Unicode safety
-// '한국어'.length === 3 but [...'한국어'].length === 3 — both work for syllable blocks,
-// but spread is always correct for Korean text
-const characters: string[] = [...word.value]
-const wordLength: number = characters.length
+// The individual syllable block characters, e.g. [...'한국어'] → ['한','국','어']
+const chars: string[] = [...word]
+
+// The number of characters (Unicode-safe)
+const length: number = [...word].length
 ```
 
-`word.value` itself serves as the natural unique identifier — no separate `id` field needed.
+The word string is its own natural identifier — no separate `id` field.
 
-The `pool` array defines **how many of each jamo exist**, not just which jamo. Duplicate entries represent multiple tokens of the same jamo. Order within the array is used to establish stable token identity (token at index 0, token at index 1, etc.).
+The jamo pool for a word is derived by a function in `src/lib/word/`:
+
+```typescript
+// Decomposes every character of a word into its constituent jamo
+// Returns an ordered list of base jamo — one entry per pool token
+// e.g. '한국어' → ['ㅎ','ㄱ','ㄱ','ㄱ','ㅇ','ㅏ','ㅏ','ㅏ']  (with rotations accounting for ㄴ,ㅜ,ㅓ)
+// Note: pool jamo are always base/unrotated forms
+export function derivePool(word: Word): readonly string[]
+```
 
 ---
 
 ## 4. Pool State
 
-The pool is the player's working area. It starts as one `Character` token per entry in `word.pool`. The player rotates and combines tokens to build complete characters for submission.
+The pool is the collection of jamo tokens available to the player each round. Each token starts as a single-jamo `Character` and may be transformed through rotation and combination during play.
 
 ```typescript
 // src/state/types.ts
 
 type PoolToken = {
-  id: number              // stable index matching position in word.pool — never changes
-  character: Character    // current state — starts as single-jamo, grows through play
-  origin: string          // the original jamo from word.pool — needed for reset
+  id: number          // stable index into the original pool array — never changes
+  character: Character
 }
 
 type PoolState = readonly PoolToken[]
 ```
 
-**Derived from PoolState:**
+`id` is the token's stable identity across state updates. It is used by the reducer to locate a specific token and by the UI to key rendered elements. It does not encode position or ordering — it is just a unique number.
+
+The initial pool is constructed once per word and reconstructed on reset:
 
 ```typescript
-// Returns a fresh pool reset to initial state from a word
-function initialPool(word: Word): PoolState
-
-// Which tokens are currently in submission slots (not available in pool)
-function getSubmittedTokenIds(submission: SubmissionState): number[]
-
-// Available tokens = all tokens minus those placed in submission
-function getAvailableTokens(pool: PoolState, submission: SubmissionState): PoolToken[]
+// Constructs a fresh pool from a word — one single-jamo token per pool entry
+export function createInitialPool(word: Word): PoolState
 ```
 
-Pool resets fully to `initialPool(word)` after each guess is submitted.
+After submission, reset is **composable** — the application decides which tokens to restore and which to keep in place. A full reset calls `createInitialPool`. A partial reset (e.g. keeping correct characters in their submission slots) is built from that same function plus selective restoration logic determined later.
 
 ---
 
-## 5. Submission
+## 5. Submission State
 
-The submission area holds the characters the player has placed for their current guess.
+The submission area holds one slot per character in the target word.
 
 ```typescript
 // src/state/types.ts
 
-// A slot in the submission row — either occupied by a token or empty
 type SubmissionSlot =
   | { filled: true;  tokenId: number; character: Character }
   | { filled: false }
 
-type SubmissionState = readonly SubmissionSlot[]  // length === [...word.value].length
+type SubmissionState = readonly SubmissionSlot[]  // length always equals [...word].length
 ```
 
-A guess can only be submitted when every slot is filled with a **complete** character.
+**Rules:**
+- A slot may be filled with a complete **or** incomplete character — whether incomplete characters may be placed in slots is a UX decision left open for now
+- A guess may only be submitted when every filled slot contains a **complete** character (`isComplete` returns true)
+- An empty slot is treated as `'absent'` in the evaluation
+- The player does not need to fill every slot to submit — unfilled slots produce `'absent'` results
 
 ---
 
@@ -231,22 +242,22 @@ A guess can only be submitted when every slot is filled with a **complete** char
 
 ### `CharacterResult`
 
-Semantic names — not colors. Colors are a UI decision.
+Semantic names — colours are a UI decision.
 
 ```typescript
 type CharacterResult =
-  | 'correct'   // character is in the word at this exact position
+  | 'correct'   // character is at the right position
   | 'present'   // character is in the word but at a different position
-  | 'absent'    // character does not appear in the word at all
+  | 'absent'    // character is not in the word (or slot was empty)
 ```
 
 ### `EvaluatedCharacter`
 
-The character and its result are tied together — never stored in separate parallel arrays.
+Character and result are always stored together — no parallel arrays.
 
 ```typescript
 type EvaluatedCharacter = {
-  character: string       // the syllable string, e.g. '한'
+  character: string       // the resolved syllable string, or null for an empty slot
   result: CharacterResult
 }
 ```
@@ -254,7 +265,7 @@ type EvaluatedCharacter = {
 ### `GuessRecord`
 
 ```typescript
-type GuessRecord = readonly EvaluatedCharacter[]  // length === word length
+type GuessRecord = readonly EvaluatedCharacter[]  // length === [...word].length
 ```
 
 ---
@@ -265,15 +276,16 @@ type GuessRecord = readonly EvaluatedCharacter[]  // length === word length
 // src/state/types.ts
 
 type GameState = {
-  word: Word                    // the current target word (also acts as puzzle id)
-  pool: PoolState               // current state of all jamo tokens
-  submission: SubmissionState   // current guess being built
-  guesses: readonly GuessRecord[] // history of submitted guesses, oldest first
-  devSettings: DevSettings
+  word: Word
+  pool: PoolState
+  submission: SubmissionState
+  guesses: readonly GuessRecord[]
 }
 ```
 
-`won` is derived, not stored:
+**On `readonly` arrays:** `readonly GuessRecord[]` means the array cannot be mutated in place (no `.push()`). The reducer returns new state by spreading: `guesses: [...state.guesses, newRecord]`. This is standard reducer pattern and does not prevent the array from growing.
+
+**`won` is derived, not stored:**
 
 ```typescript
 function isWon(state: GameState): boolean {
@@ -282,85 +294,69 @@ function isWon(state: GameState): boolean {
 }
 ```
 
-There is no `'idle'` status. The application layer decides whether to render the game or an intro/loading screen by checking whether `word` is loaded. The game component assumes it always has a word.
+There is no `status` field and no `'idle'` state. The application layer controls whether a game is active by deciding whether to render the game component at all. The game component always assumes it has a valid `word`.
 
 **Invariants:**
-- `submission.length === [...state.word.value].length` always
-- `pool` and `submission` are reset to initial state after each `SUBMIT_GUESS`
+- `submission.length === [...state.word].length` at all times
+- `pool` and `submission` are reset (fully or partially) after `SUBMIT_GUESS`
 - `guesses` grows by one record per `SUBMIT_GUESS`
 
-### `INITIAL_GAME_STATE`
-
-Cannot be a static constant — depends on the word. Constructed by:
+The initial state factory:
 
 ```typescript
-function createInitialGameState(word: Word, devSettings?: DevSettings): GameState
+export function createInitialGameState(word: Word): GameState {
+  return {
+    word,
+    pool: createInitialPool(word),
+    submission: Array.from({ length: [...word].length }, () => ({ filled: false })),
+    guesses: [],
+  }
+}
 ```
 
 ---
 
 ## 8. Game Actions and the Reducer
 
-### What a discriminated union is
-
-`GameAction` is a TypeScript **discriminated union** — a union type where every member has a `type` field with a unique string literal value. This lets TypeScript narrow which specific action you have inside a switch statement.
+`GameAction` is a discriminated union — every member has a `type` field with a unique string literal. TypeScript narrows the type inside each `switch` case so `action.payload` is always fully typed.
 
 ```typescript
+// src/state/types.ts
+
 type GameAction =
   | { type: 'ROTATE_TOKEN';     payload: { tokenId: number; targetJamo: string } }
   | { type: 'COMBINE_TOKENS';   payload: { tokenIdA: number; tokenIdB: number } }
   | { type: 'SPLIT_TOKEN';      payload: { tokenId: number } }
-  | { type: 'PLACE_CHARACTER';  payload: { tokenId: number; slotIndex: number } }
+  | { type: 'PLACE_TOKEN';      payload: { tokenId: number; slotIndex: number } }
   | { type: 'REMOVE_FROM_SLOT'; payload: { slotIndex: number } }
   | { type: 'SUBMIT_GUESS';     payload: { evaluation: GuessRecord } }
   | { type: 'RESET_ROUND' }
 ```
 
-`useReducer` works like this:
-```typescript
-// In a component or hook:
-dispatch({ type: 'ROTATE_TOKEN', payload: { tokenId: 2, targetJamo: 'ㄴ' } })
+### Action Semantics
 
-// In the reducer:
-function gameReducer(state: GameState, action: GameAction): GameState {
-  switch (action.type) {
-    case 'ROTATE_TOKEN': {
-      // TypeScript knows action.payload is { tokenId, targetJamo } here
-      const { tokenId, targetJamo } = action.payload
-      // ... return new state
-    }
-    case 'RESET_ROUND': {
-      // TypeScript knows there is no action.payload here
-      // ...
-    }
-  }
-}
-```
+**`ROTATE_TOKEN`** — changes the single jamo of a pool token to `targetJamo`. `targetJamo` must be a member of that jamo's rotation set. Only valid for single-jamo tokens (a multi-jamo character cannot be rotated as a whole).
 
-### Action semantics
+**`COMBINE_TOKENS`** — merges token B's character into token A's, producing a new character whose jamo list is the concatenation of both. Token B is removed from the pool. Validity (whether the resulting jamo list can be resolved) does not need to be checked here — `resolveCharacter` determines that at render time. The reducer just merges the lists and removes B.
 
-**`ROTATE_TOKEN`** — changes the jamo of a single pool token to `targetJamo`. `targetJamo` must be a member of the token's current jamo's rotation set. Only valid for single-jamo tokens (a combined token cannot be rotated as a whole).
+**`SPLIT_TOKEN`** — decomposes a multi-jamo token back into individual single-jamo tokens, one per jamo in the current character's list. The original token's `id` is reused for the first resulting token; new ids are assigned to the rest. Per M2: split produces tokens with the jamo as they are now — no rollback to pre-rotation state.
 
-**`COMBINE_TOKENS`** — merges token B into token A. The new character is `combineJamo(A.jamo[0], B.jamo[0])` (or the appropriate combination). Token B is removed from the pool. Only valid if the two tokens can produce a valid combination.
+**`PLACE_TOKEN`** — moves a token from the pool into a submission slot. Removes the token from `pool`, sets `submission[slotIndex]` to filled with that token's current character. Whether incomplete characters may be placed is a UX decision — the action itself does not enforce completeness.
 
-**`SPLIT_TOKEN`** — decomposes a combined token back into its constituent jamo, each becoming a new single-jamo token. The original single tokens are restored (using `origin`).
+**`REMOVE_FROM_SLOT`** — returns a token from a submission slot back to the pool. Sets the slot to `{ filled: false }`.
 
-**`PLACE_CHARACTER`** — moves a complete token from the pool into a submission slot. Token must be complete (`isComplete(token.character) === true`).
+**`SUBMIT_GUESS`** — receives a pre-computed `GuessRecord` in its payload (computed by the engine *before* dispatch), appends it to `guesses`, then resets pool and submission. The reducer does not compute evaluation — it only records it.
 
-**`REMOVE_FROM_SLOT`** — returns a token from a submission slot back to the pool.
-
-**`SUBMIT_GUESS`** — receives a pre-computed `GuessRecord` (computed by the engine before dispatching), appends it to `guesses`, then resets `pool` and `submission` to initial state.
-
-**`RESET_ROUND`** — resets `pool` and `submission` without adding to `guesses`. Used for clear/restart within the same word.
-
-> **Agent note**: `SUBMIT_GUESS` receives pre-computed evaluation in its payload. The UI calls `evaluateGuess()` from `src/lib/engine/evaluate.ts` *before* dispatching. The reducer only records the result. It does not compute it.
+**`RESET_ROUND`** — resets pool and submission without appending to guesses. Used for clear/restart within the same word.
 
 ---
 
 ## 9. Dev Settings
 
+Dev settings live in application state, not game state.
+
 ```typescript
-// src/state/types.ts
+// src/state/types.ts  (or src/app/types.ts — TBD at scaffold time)
 
 type WordSelectionStrategy =
   | { kind: 'daily' }
@@ -385,36 +381,32 @@ Dev settings are not persisted to `localStorage`.
 
 ## 10. Persistence
 
-Stored in `localStorage`. Loaded and saved outside of `GameState`.
-
 ```typescript
-// key: 'jamo-game-score-history'
+// localStorage key: 'jamo-game-score-history'
+
 type ScoreRecord = {
-  word: string            // the word value serves as the puzzle identifier
+  word: string          // the word string is the identifier
   guessCount: number
-  completedAt: string     // ISO 8601 datetime
+  completedAt: string   // ISO 8601 datetime
 }
 
 type ScoreHistory = ScoreRecord[]
 ```
 
-Other settings (e.g. default difficulty preference) may be added to a separate `UserSettings` key — extensible later.
+A separate `UserSettings` key may be added later for preferences such as default difficulty. Not modelled yet.
 
 ---
 
 ## ⚑ Open Assumptions — Review Before Proceeding
 
-**M1 — Pool token identity via array index**
-Each token in the pool has a stable `id` matching its position in `word.pool`. This means if `word.pool` is `['ㄱ', 'ㄱ', 'ㄱ']`, there are three distinct tokens with ids 0, 1, 2, all initially holding `ㄱ`. The UI can display them as separate interactive tiles. Confirm this is the intended model, or specify an alternative identity scheme.
+**M1 — COMBINE_TOKENS just concatenates jamo lists**
+The reducer concatenates the two characters' jamo arrays and removes token B. It does not call `combineJamo` or check validity. `resolveCharacter` handles resolution at read time. This means the pool can transiently contain characters like `['ㄱ', 'ㅎ']` which resolve to null — the UI shows them as incomplete/invalid. Confirm this is the right model, or whether the reducer should only allow combinations that produce a valid result.
 
-**M2 — SPLIT_TOKEN restores to original jamo**
-When a combined token is split, the constituent tokens are restored using `origin` — the original pool jamo, not the jamo at the time of combination. This means a token that was rotated, then combined, then split goes back to its pre-rotation state. Confirm this is correct, or whether split should restore to the pre-combination state (which may have been rotated).
+**M2 — Empty submission slots produce `'absent'`**
+An unfilled slot is evaluated as `'absent'` — the same result as a character that exists in the wrong position but for the wrong reason. If absent-by-omission needs to be distinguished from absent-by-wrong-character in the UI (e.g. different visual treatment), `CharacterResult` would need a fourth variant. Flagging for UX review.
 
-**M3 — COMBINE_TOKENS removes one token**
-Combining tokens A and B removes B from the pool and mutates A. This means the pool shrinks by one token during a round. On `RESET_ROUND` or `SUBMIT_GUESS`, the full token list is restored. Confirm.
+**M3 — `derivePool` produces base/unrotated jamo**
+`derivePool('한국어')` must return the jamo from `word.pool` in their unrotated form — even though the word contains ㄴ (a rotated ㄱ) and ㅜ/ㅓ (rotated ㅏ). The pool gives the player base jamo to work with; the player applies rotations themselves. This means `derivePool` needs a reverse-rotation lookup: given a jamo in the word, find its base form in a rotation set. Confirm this is the intended design for puzzle authoring, or whether the puzzle author specifies the pool explicitly.
 
-**M4 — Submission rejects incomplete characters**
-`PLACE_CHARACTER` is only valid when `isComplete(token.character)` is true. An incomplete character (e.g. a combined vowel still missing a choseong) cannot be placed in a submission slot. Confirm.
-
-**M5 — Word loading not modelled here**
-How words are loaded (fetch from JSON, import, etc.) is left to `plan-word.md`. This document only models the shape of `Word`. Confirm this is the right boundary.
+**M4 — `SPLIT_TOKEN` id assignment**
+When a token splits from one into N tokens, only the first retains the original `id`. The rest receive new ids (e.g. incrementing from `pool.length`). A monotonic counter needs to live somewhere in state. Alternatively, ids could be reassigned from scratch on every split. Flagging as an implementation detail that needs a decision before the reducer is written.
