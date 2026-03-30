@@ -46,9 +46,9 @@ Combination is **commutative** — argument order does not matter.
 // src/lib/jamo/jamo-data.ts
 
 type CombinationRule = {
-  inputs: readonly [string, string]  // canonical unordered pair
+  inputs: readonly [string, string]
   output: string
-  kind: 'doubleConsonant' | 'complexVowel' | 'compoundBatchim'
+  kind: 'doubleConsonant' | 'complexVowel'  // compound batchim handled by upgradeJongseong
 }
 
 export const COMBINATION_RULES: readonly CombinationRule[]
@@ -346,7 +346,13 @@ type GameAction =
 
 **`ROTATE_TOKEN`** — changes the single jamo of a pool token to `targetJamo`. `targetJamo` must be a member of that jamo's rotation set. Only valid for single-jamo tokens (a multi-jamo character cannot be rotated as a whole).
 
-**`COMBINE_TOKENS`** — attempts to combine token A and token B. The reducer calls `combineJamo` on the two characters' resolved jamo; if the result is null (no valid combination rule exists), the action is a no-op and state is returned unchanged. If valid, the combined jamo becomes A's new single-jamo character and token B is removed from the pool. Players cannot produce an invalid intermediate state — invalid combinations are rejected at the action level.
+**`COMBINE_TOKENS`** — branches on context. Two cases:
+
+1. **Pool combination**: both tokens are standalone (single-jamo) pool tokens. The reducer calls `combineJamo(A.jamo[0], B.jamo[0])`. If the result is null (no rule), the action is a no-op. If valid, token A's character becomes `{ jamo: [result] }` and token B is removed from the pool. Handles double consonants and complex vowels only.
+
+2. **Jongseong upgrade**: token A is a complete character (choseong + jungseong + single-consonant jongseong) and token B is a single consonant. The reducer calls `upgradeJongseong(A.jamo[2], B.jamo[0])`. If valid, token A's jamo list becomes `[choseong, jungseong, compoundBatchim]` and token B is removed from the pool. This is the only path to creating compound batchim — they are never standalone pool tokens.
+
+If neither case applies (e.g. trying to add a consonant to a character with no jongseong yet, or combining two complete characters), the action is a no-op.
 
 **`SPLIT_TOKEN`** — decomposes a multi-jamo token back into individual single-jamo tokens, one per jamo in the current character's list. Per M2: tokens are restored with their current jamo — no rollback to pre-rotation state. After splitting, all token ids in the pool are reassigned from scratch (0, 1, 2, … in order). No id counter is needed in state.
 

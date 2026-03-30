@@ -101,9 +101,9 @@ export const ROTATION_MAP: ReadonlyMap<string, readonly string[]> = (() => {
 
 ---
 
-### Step 3 — `jamo-data.ts`: Combination Rules
+### Step 3 — `jamo-data.ts`: Combination Rules and Jongseong Upgrade Rules
 
-Write out all combination rules as a flat array. Order within `inputs` is canonical (sorted) — commutativity is handled in `combineJamo`, not here.
+Combination rules cover only **doubleConsonants** and **complexVowels**. Compound batchim are not produced by combination — they are handled separately via jongseong upgrade (see Step 5a).
 
 ```typescript
 export const COMBINATION_RULES: readonly CombinationRule[] = [
@@ -126,27 +126,40 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
   { inputs: ['ㅜ', 'ㅔ'], output: 'ㅞ', kind: 'complexVowel' },
   { inputs: ['ㅜ', 'ㅣ'], output: 'ㅟ', kind: 'complexVowel' },
   { inputs: ['ㅡ', 'ㅣ'], output: 'ㅢ', kind: 'complexVowel' },
-
-  // Compound batchim (jongseong only — enforced at composition, not here)
-  { inputs: ['ㄱ', 'ㅅ'], output: 'ㄳ', kind: 'compoundBatchim' },
-  { inputs: ['ㄴ', 'ㅈ'], output: 'ㄵ', kind: 'compoundBatchim' },
-  { inputs: ['ㄴ', 'ㅎ'], output: 'ㄶ', kind: 'compoundBatchim' },
-  { inputs: ['ㄹ', 'ㄱ'], output: 'ㄺ', kind: 'compoundBatchim' },
-  { inputs: ['ㄹ', 'ㅁ'], output: 'ㄻ', kind: 'compoundBatchim' },
-  { inputs: ['ㄹ', 'ㅂ'], output: 'ㄼ', kind: 'compoundBatchim' },
-  { inputs: ['ㄹ', 'ㅅ'], output: 'ㄽ', kind: 'compoundBatchim' },
-  { inputs: ['ㄹ', 'ㅌ'], output: 'ㄾ', kind: 'compoundBatchim' },
-  { inputs: ['ㄹ', 'ㅍ'], output: 'ㄿ', kind: 'compoundBatchim' },
-  { inputs: ['ㄹ', 'ㅎ'], output: 'ㅀ', kind: 'compoundBatchim' },
-  { inputs: ['ㅂ', 'ㅅ'], output: 'ㅄ', kind: 'compoundBatchim' },
 ]
 
-// Derived lookup map built at module load.
-// Key is the canonical sorted pair joined with '|', e.g. 'ㄱ|ㅅ'
+// Derived lookup — key is sorted input pair joined with '|'
 export const COMBINATION_MAP: ReadonlyMap<string, CombinationRule>
 ```
 
-Build `COMBINATION_MAP` by iterating `COMBINATION_RULES` and keying each rule by its sorted input pair.
+Jongseong upgrade rules are stored separately. Each rule defines which single jongseong + additional consonant produces a compound batchim jongseong:
+
+```typescript
+type JongseongUpgradeRule = {
+  existing: string    // the single consonant already in jongseong position
+  additional: string  // the consonant being added
+  output: string      // the resulting compound batchim
+}
+
+export const JONGSEONG_UPGRADE_RULES: readonly JongseongUpgradeRule[] = [
+  { existing: 'ㄱ', additional: 'ㅅ', output: 'ㄳ' },
+  { existing: 'ㄴ', additional: 'ㅈ', output: 'ㄵ' },
+  { existing: 'ㄴ', additional: 'ㅎ', output: 'ㄶ' },
+  { existing: 'ㄹ', additional: 'ㄱ', output: 'ㄺ' },
+  { existing: 'ㄹ', additional: 'ㅁ', output: 'ㄻ' },
+  { existing: 'ㄹ', additional: 'ㅂ', output: 'ㄼ' },
+  { existing: 'ㄹ', additional: 'ㅅ', output: 'ㄽ' },
+  { existing: 'ㄹ', additional: 'ㅌ', output: 'ㄾ' },
+  { existing: 'ㄹ', additional: 'ㅍ', output: 'ㄿ' },
+  { existing: 'ㄹ', additional: 'ㅎ', output: 'ㅀ' },
+  { existing: 'ㅂ', additional: 'ㅅ', output: 'ㅄ' },
+]
+
+// Derived lookup — key is 'existing|additional'
+export const JONGSEONG_UPGRADE_MAP: ReadonlyMap<string, string>
+```
+
+Note: jongseong upgrade is **not** commutative — `existing` and `additional` are ordered. `ㄱ+ㅅ→ㄳ` is valid; `ㅅ+ㄱ` is not.
 
 ---
 
@@ -188,6 +201,33 @@ export function combineJamo(a: string, b: string): string | null {
 ```
 
 **Gotcha**: The `inputs` arrays in `COMBINATION_RULES` must be stored in the same sorted order that `makeCombinationKey` produces, otherwise lookups will fail for half the combinations. Either sort `inputs` when building the map, or enforce sorted order in the data definition.
+
+**What `combineJamo` does NOT handle**: compound batchim. `combineJamo('ㄱ', 'ㅅ')` returns `null`. Use `upgradeJongseong` instead.
+
+---
+
+### Step 5a — `composition.ts`: `upgradeJongseong`
+
+This function is the only path to creating compound batchim. It is called when the player adds a consonant to a character that already has a choseong, jungseong, and single-consonant jongseong.
+
+```typescript
+// Returns the compound batchim produced by combining existingJongseong with additional,
+// or null if no upgrade rule exists for this pair.
+// Not commutative — order of arguments matters.
+export function upgradeJongseong(
+  existingJongseong: string,
+  additional: string,
+): string | null {
+  const key = `${existingJongseong}|${additional}`
+  return JONGSEONG_UPGRADE_MAP.get(key) ?? null
+}
+```
+
+**When to call this vs `combineJamo`**: the caller (the `COMBINE_TOKENS` reducer case) is responsible for deciding which function applies based on context:
+- If combining two standalone pool tokens → call `combineJamo`
+- If adding a consonant to a Character that already has choseong + jungseong + single jongseong → call `upgradeJongseong`
+
+The distinction lives in the reducer, not in these functions.
 
 ---
 
@@ -328,14 +368,21 @@ Every exported function must have tests covering the cases below. Tests live col
 - `combineJamo('ㅏ','ㅣ')` === `'ㅐ'`
 - `combineJamo('ㅣ','ㅏ')` === `'ㅐ'` (commutative)
 - `combineJamo('ㄱ','ㄱ')` === `'ㄲ'`
-- `combineJamo('ㄱ','ㅎ')` === `null`
+- `combineJamo('ㄱ','ㅎ')` === `null` (no rule)
+- `combineJamo('ㄱ','ㅅ')` === `null` (compound batchim — not handled by combineJamo)
+- `upgradeJongseong('ㄱ','ㅅ')` === `'ㄳ'`
+- `upgradeJongseong('ㄹ','ㄱ')` === `'ㄺ'`
+- `upgradeJongseong('ㅅ','ㄱ')` === `null` (not commutative)
+- `upgradeJongseong('ㄱ','ㄱ')` === `null` (no such compound batchim)
 - `composeSyllable('ㄱ','ㅏ')` === `'가'`
 - `composeSyllable('ㅎ','ㅏ','ㄴ')` === `'한'`
-- `composeSyllable('ㅎ','ㅏ','ㄱ')` — valid jongseong
-- `composeSyllable('ㄸ','ㅏ','ㅃ')` === `null` (ㅃ not valid jongseong)
+- `composeSyllable('ㅎ','ㅞ','ㄳ')` === `'훿'`
 - `composeSyllable('ㅇ','ㅏ')` === `'아'` (silent ieung as choseong)
+- `composeSyllable('ㄸ','ㅏ')` is valid (ㄸ is valid choseong)
+- `composeSyllable('ㅎ','ㅏ','ㅃ')` === `null` (ㅃ not valid jongseong)
 - `decomposeSyllable('한')` === `{ choseong:'ㅎ', jungseong:'ㅏ', jongseong:'ㄴ' }`
 - `decomposeSyllable('가')` === `{ choseong:'ㄱ', jungseong:'ㅏ', jongseong: null }`
+- `decomposeSyllable('훿')` === `{ choseong:'ㅎ', jungseong:'ㅞ', jongseong:'ㄳ' }`
 - `decomposeSyllable('ㄱ')` === `null` (not a syllable block)
 - All decomposed jamo use compatibility codepoints
 
