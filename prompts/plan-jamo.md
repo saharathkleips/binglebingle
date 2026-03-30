@@ -259,78 +259,45 @@ export type Character = {
 }
 ```
 
-`resolveCharacter` applies rules in order until one succeeds or all fail:
+Since combination is always pairwise and `combineJamo` always returns a single jamo string, combinations collapse immediately into a new single-jamo token — they are never accumulated in a list. The multi-jamo state in a Character only occurs during syllable composition, where the player places a choseong, jungseong, and optional jongseong together. These are always already-resolved single jamo (which may themselves be the output of prior combination steps). Therefore **a Character's jamo list is always length 1, 2, or 3** — never longer.
+
+For example, 훿 (ㅎ + ㅞ + ㄳ) has 6 atomic jamo but the player builds it as:
+- `ㅓ + ㅣ → ㅔ` (combine, collapse to single token)
+- `ㅜ + ㅔ → ㅞ` (combine, collapse)
+- `ㄱ + ㅅ → ㄳ` (combine, collapse)
+- Compose `ㅎ + ㅞ + ㄳ → 훿` (jamo list is `['ㅎ','ㅞ','ㄳ']`)
 
 ```typescript
 export function resolveCharacter(character: Character): string | null {
   const { jamo } = character
 
-  // Single jamo — returns itself
+  if (jamo.length === 0) return null
+
+  // Single jamo — returns itself (may be a combined jamo like ㅐ or ㄳ)
   if (jamo.length === 1) return jamo[0]
 
-  // Two jamo — attempt combination
+  // Two jamo — attempt combination first, then syllable composition
   if (jamo.length === 2) {
     const combined = combineJamo(jamo[0], jamo[1])
     if (combined !== null) return combined
-
-    // No combination rule: attempt syllable composition (consonant + vowel)
     return composeSyllable(jamo[0], jamo[1]) ?? null
   }
 
-  // Three jamo — attempt syllable composition with jongseong
+  // Three jamo — syllable composition: choseong + jungseong + jongseong
   if (jamo.length === 3) {
-    // Could be: cho + jung + jong  OR  cho + (combined vowel resolved inline)
-    // Try direct composition first
-    const direct = composeSyllable(jamo[0], jamo[1], jamo[2])
-    if (direct !== null) return direct
-
-    // Try combining first two jamo into a complex vowel, then compose
-    const combinedVowel = combineJamo(jamo[1], jamo[2])
-    if (combinedVowel !== null) {
-      return composeSyllable(jamo[0], combinedVowel) ?? null
-    }
-
-    return null
+    return composeSyllable(jamo[0], jamo[1], jamo[2]) ?? null
   }
 
-  // Four jamo — only valid path: cho + combined vowel (2 jamo) + jong
-  // e.g. ['ㅎ', 'ㅏ', 'ㅣ', 'ㄴ'] → compose('ㅎ', combineJamo('ㅏ','ㅣ')='ㅐ', 'ㄴ') → '핸'
-  if (jamo.length === 4) {
-    const vowel = combineJamo(jamo[1], jamo[2])
-    if (vowel !== null) {
-      return composeSyllable(jamo[0], vowel, jamo[3]) ?? null
-    }
-    return null
-  }
-
-  // Five jamo — cho + three-atom vowel (ㅙ/ㅞ type) + jong
-  // e.g. ['ㅎ', 'ㅗ', 'ㅏ', 'ㅣ', 'ㄴ'] → vowel = ㅗ+ㅏ=ㅘ, then ㅘ+ㅣ=ㅙ, compose
-  if (jamo.length === 5) {
-    const v1 = combineJamo(jamo[1], jamo[2])
-    if (v1 !== null) {
-      const v2 = combineJamo(v1, jamo[3])
-      if (v2 !== null) {
-        return composeSyllable(jamo[0], v2, jamo[4]) ?? null
-      }
-    }
-    return null
-  }
-
+  // Should not be reachable — combining always collapses to a single jamo
   return null
-}
-
-export function isComplete(character: Character): boolean {
-  const resolved = resolveCharacter(character)
-  if (resolved === null) return false
-  const cp = resolved.codePointAt(0)
-  return cp !== undefined && cp >= 0xAC00 && cp <= 0xD7A3
 }
 ```
 
 **Edge cases to handle:**
 - `jamo` is empty: return `null`
-- Jamo lists longer than 5: not currently reachable given the combination rules, but return `null` defensively
-- `['ㅐ']` — a single already-combined jamo: returns `'ㅐ'` (resolves to itself); `isComplete` returns false since `'ㅐ'`.codePointAt(0) is not in the syllable range
+- `['ㅐ']` — a single already-combined jamo: returns `'ㅐ'`; `isComplete` returns false (not in syllable range)
+- `['ㄱ', 'ㅎ']` — two jamo with no combination rule and not a valid syllable: returns `null`
+- `['ㄳ']` — a single compound batchim (valid jongseong): returns `'ㄳ'`; `isComplete` returns false (bare jamo)
 
 ---
 
@@ -374,23 +341,26 @@ Every exported function must have tests covering the cases below. Tests live col
 
 ### `character.test.ts`
 - `resolveCharacter({ jamo: ['ㄱ'] })` === `'ㄱ'`
-- `resolveCharacter({ jamo: ['ㅏ', 'ㅣ'] })` === `'ㅐ'`
-- `resolveCharacter({ jamo: ['ㄱ', 'ㄱ'] })` === `'ㄲ'`
-- `resolveCharacter({ jamo: ['ㅎ', 'ㅐ'] })` === `'해'`
-- `resolveCharacter({ jamo: ['ㅎ', 'ㅏ', 'ㄴ'] })` === `'한'`
-- `resolveCharacter({ jamo: ['ㄱ', 'ㅎ'] })` === `null`
+- `resolveCharacter({ jamo: ['ㅐ'] })` === `'ㅐ'` (already-combined vowel resolves to itself)
+- `resolveCharacter({ jamo: ['ㅏ', 'ㅣ'] })` === `'ㅐ'` (combination)
+- `resolveCharacter({ jamo: ['ㄱ', 'ㄱ'] })` === `'ㄲ'` (double consonant)
+- `resolveCharacter({ jamo: ['ㄱ', 'ㅏ'] })` === `'가'` (syllable, no jongseong)
+- `resolveCharacter({ jamo: ['ㅎ', 'ㅐ'] })` === `'해'` (syllable with combined vowel)
+- `resolveCharacter({ jamo: ['ㅎ', 'ㅏ', 'ㄴ'] })` === `'한'` (syllable with jongseong)
+- `resolveCharacter({ jamo: ['ㅎ', 'ㅞ', 'ㄳ'] })` === `'훿'` (complex vowel + compound batchim, already collapsed)
+- `resolveCharacter({ jamo: ['ㄱ', 'ㅎ'] })` === `null` (no combination rule, not a valid syllable)
 - `resolveCharacter({ jamo: [] })` === `null`
 - `isComplete({ jamo: ['ㄱ', 'ㅏ'] })` === `true`
-- `isComplete({ jamo: ['ㅏ', 'ㅣ'] })` === `false` (resolves to ㅐ, not a syllable)
+- `isComplete({ jamo: ['ㅏ', 'ㅣ'] })` === `false` (resolves to ㅐ, not a syllable block)
 - `isComplete({ jamo: ['ㄱ'] })` === `false`
+- `isComplete({ jamo: ['ㅎ', 'ㅏ', 'ㄴ'] })` === `true`
 - Round-trip: `decomposeSyllable(composeSyllable('ㅎ','ㅏ','ㄴ')!)` returns correct parts
 
 ---
 
-## ⚑ Assumptions
+## Resolved Assumptions
 
-**J1 — `resolveCharacter` handles jamo combinations inline**
-Rather than pre-combining jamo into a single intermediate token before passing to `resolveCharacter`, the function inspects the raw list and applies combinations internally. This means a character like `['ㅎ', 'ㅏ', 'ㅣ', 'ㄴ']` is valid as an intermediate state in the pool — it resolves to `'핸'` (ㅐ = ㅏ+ㅣ, then compose ㅎ+ㅐ+ㄴ). The pool does not need to eagerly collapse intermediate states. Confirm this is correct, or whether combinations should always be collapsed immediately into a single-jamo token before being stored.
-
-**J2 — Maximum jamo list length is 5**
-The longest possible character is choseong + three-atom vowel (2 jamo) + jongseong = 5 jamo. This is only reachable via ㅙ or ㅞ paths. `resolveCharacter` handles up to 5 and returns null for longer lists. If new combination rules are added that create longer chains, this function must be revisited.
+| # | Decision |
+|---|---|
+| J1 | Combining is always pairwise and collapses immediately to a single jamo. A Character's jamo list is always length 1, 2, or 3. `resolveCharacter` handles no cases beyond 3. |
+| J2 | 훿 (6 atomic jamo) is reachable but the Character list at composition time is still `['ㅎ','ㅞ','ㄳ']` — max 3 — because each pairwise combination collapses before the next step. |
