@@ -176,15 +176,24 @@ const length: number = [...word].length
 
 The word string is its own natural identifier — no separate `id` field.
 
-The jamo pool for a word is derived by a function in `src/lib/word/`:
+The jamo pool for a word is derived in two steps:
 
 ```typescript
-// Decomposes every character of a word into its constituent jamo
-// Returns an ordered list of base jamo — one entry per pool token
-// e.g. '한국어' → ['ㅎ','ㄱ','ㄱ','ㄱ','ㅇ','ㅏ','ㅏ','ㅏ']  (with rotations accounting for ㄴ,ㅜ,ㅓ)
-// Note: pool jamo are always base/unrotated forms
+// Step 1 — decompose every character of the word into its constituent jamo,
+// leaving them in their natural (possibly rotated) form.
+// e.g. '한국어' → ['ㅎ', 'ㄴ', 'ㄱ', 'ㅜ', 'ㄱ', 'ㅇ', 'ㅓ']
 export function derivePool(word: Word): readonly string[]
+
+// Step 2 — rotate each jamo to the 0-index member of its rotation set.
+// This normalizes the pool to a clean slate that does not reveal
+// information about the target word.
+// e.g. ['ㄴ'] → ['ㄱ'] (ㄴ is index 1 in ['ㄱ','ㄴ'], so it becomes ㄱ)
+//      ['ㅓ'] → ['ㅏ'] (ㅓ is index 1 in ['ㅏ','ㅓ','ㅗ','ㅜ'], so it becomes ㅏ)
+//      ['ㅎ'] → ['ㅎ'] (not rotatable — unchanged)
+export function normalizePool(jamo: readonly string[]): readonly string[]
 ```
+
+Game initialization calls both in sequence: `normalizePool(derivePool(word))`. `derivePool` is also useful independently for decomposing arbitrary words or characters outside of game initialization.
 
 ---
 
@@ -337,9 +346,9 @@ type GameAction =
 
 **`ROTATE_TOKEN`** — changes the single jamo of a pool token to `targetJamo`. `targetJamo` must be a member of that jamo's rotation set. Only valid for single-jamo tokens (a multi-jamo character cannot be rotated as a whole).
 
-**`COMBINE_TOKENS`** — merges token B's character into token A's, producing a new character whose jamo list is the concatenation of both. Token B is removed from the pool. Validity (whether the resulting jamo list can be resolved) does not need to be checked here — `resolveCharacter` determines that at render time. The reducer just merges the lists and removes B.
+**`COMBINE_TOKENS`** — attempts to combine token A and token B. The reducer calls `combineJamo` on the two characters' resolved jamo; if the result is null (no valid combination rule exists), the action is a no-op and state is returned unchanged. If valid, the combined jamo becomes A's new single-jamo character and token B is removed from the pool. Players cannot produce an invalid intermediate state — invalid combinations are rejected at the action level.
 
-**`SPLIT_TOKEN`** — decomposes a multi-jamo token back into individual single-jamo tokens, one per jamo in the current character's list. The original token's `id` is reused for the first resulting token; new ids are assigned to the rest. Per M2: split produces tokens with the jamo as they are now — no rollback to pre-rotation state.
+**`SPLIT_TOKEN`** — decomposes a multi-jamo token back into individual single-jamo tokens, one per jamo in the current character's list. Per M2: tokens are restored with their current jamo — no rollback to pre-rotation state. After splitting, all token ids in the pool are reassigned from scratch (0, 1, 2, … in order). No id counter is needed in state.
 
 **`PLACE_TOKEN`** — moves a token from the pool into a submission slot. Removes the token from `pool`, sets `submission[slotIndex]` to filled with that token's current character. Whether incomplete characters may be placed is a UX decision — the action itself does not enforce completeness.
 
@@ -397,16 +406,11 @@ A separate `UserSettings` key may be added later for preferences such as default
 
 ---
 
-## ⚑ Open Assumptions — Review Before Proceeding
+## Resolved Assumptions
 
-**M1 — COMBINE_TOKENS just concatenates jamo lists**
-The reducer concatenates the two characters' jamo arrays and removes token B. It does not call `combineJamo` or check validity. `resolveCharacter` handles resolution at read time. This means the pool can transiently contain characters like `['ㄱ', 'ㅎ']` which resolve to null — the UI shows them as incomplete/invalid. Confirm this is the right model, or whether the reducer should only allow combinations that produce a valid result.
-
-**M2 — Empty submission slots produce `'absent'`**
-An unfilled slot is evaluated as `'absent'` — the same result as a character that exists in the wrong position but for the wrong reason. If absent-by-omission needs to be distinguished from absent-by-wrong-character in the UI (e.g. different visual treatment), `CharacterResult` would need a fourth variant. Flagging for UX review.
-
-**M3 — `derivePool` produces base/unrotated jamo**
-`derivePool('한국어')` must return the jamo from `word.pool` in their unrotated form — even though the word contains ㄴ (a rotated ㄱ) and ㅜ/ㅓ (rotated ㅏ). The pool gives the player base jamo to work with; the player applies rotations themselves. This means `derivePool` needs a reverse-rotation lookup: given a jamo in the word, find its base form in a rotation set. Confirm this is the intended design for puzzle authoring, or whether the puzzle author specifies the pool explicitly.
-
-**M4 — `SPLIT_TOKEN` id assignment**
-When a token splits from one into N tokens, only the first retains the original `id`. The rest receive new ids (e.g. incrementing from `pool.length`). A monotonic counter needs to live somewhere in state. Alternatively, ids could be reassigned from scratch on every split. Flagging as an implementation detail that needs a decision before the reducer is written.
+| # | Decision |
+|---|---|
+| M1 | `COMBINE_TOKENS` validates via `combineJamo` — invalid combinations are a no-op. Players cannot reach an unresolvable state. |
+| M2 | Absent-by-omission and absent-by-wrong-character are the same result — both are `'absent'`. No fourth variant needed. |
+| M3 | Pool derivation is two steps: `derivePool` decomposes the word into natural jamo; `normalizePool` rotates each to its 0-index rotation state. Run once at game init. `derivePool` remains useful standalone. |
+| M4 | On `SPLIT_TOKEN`, all pool token ids are reassigned from scratch. No counter in state. |
