@@ -162,6 +162,13 @@ function createWord(s: string): Word {
   // validate that s is a non-empty string of Korean syllable blocks
   return s as Word
 }
+
+// Strategies for selecting a word — used by game setup and dev settings
+type WordSelectionStrategy =
+  | { kind: 'daily' }
+  | { kind: 'random' }
+  | { kind: 'fixed'; word: string }
+  | { kind: 'byDate'; date: string }    // ISO date 'YYYY-MM-DD'
 ```
 
 Derived properties — computed, never stored:
@@ -372,12 +379,7 @@ Dev settings live in application state, not game state.
 
 ```typescript
 // src/state/types.ts  (or src/app/types.ts — TBD at scaffold time)
-
-type WordSelectionStrategy =
-  | { kind: 'daily' }
-  | { kind: 'random' }
-  | { kind: 'fixed'; word: string }
-  | { kind: 'byDate'; date: string }    // ISO date 'YYYY-MM-DD'
+// WordSelectionStrategy is imported from src/lib/word/types.ts
 
 type DevSettings = {
   enabled: boolean

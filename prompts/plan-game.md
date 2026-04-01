@@ -251,12 +251,27 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'SUBMIT_GUESS': {
       const { evaluation } = action.payload
-      // evaluation is pre-computed by the engine before dispatch
+      // After submission:
+      // - 'correct' slots remain filled exactly as submitted
+      // - 'present' and 'absent' slots are cleared; their tokens return to the pool as-is
+      // Pool tokens that were not placed are already in the pool and unchanged.
+
+      const returnedTokens: PoolToken[] = []
+      const newSubmission: SubmissionSlot[] = state.submission.map((slot, i) => {
+        const result = evaluation[i]?.result
+        if (slot.filled && result !== 'correct') {
+          // Return this token to the pool
+          returnedTokens.push({ id: slot.tokenId, character: slot.character })
+          return { filled: false }
+        }
+        return slot   // keep correct slots filled
+      })
+
       return {
         ...state,
         guesses: [...state.guesses, evaluation],
-        pool: createInitialGameState(state.word).pool,
-        submission: createInitialGameState(state.word).submission,
+        pool: [...state.pool, ...returnedTokens],
+        submission: newSubmission,
       }
     }
 
@@ -441,7 +456,10 @@ Build helpers:
 
 **`SUBMIT_GUESS`**
 - Evaluation appended to `guesses`
-- Pool and submission reset to initial state
+- `'correct'` slots remain filled with their submitted character
+- `'present'` slots cleared; token returned to pool in current state
+- `'absent'` slots cleared; token returned to pool in current state
+- Pool tokens that were never placed remain in pool unchanged
 - `guesses` grows by 1
 
 **`RESET_ROUND`**
@@ -461,16 +479,11 @@ Mock `fetch` in tests:
 
 ---
 
-## ⚑ Assumptions
+## Resolved Assumptions
 
-**G1 — SPLIT_TOKEN always splits the last jamo**
-The current reducer splits the last jamo of a token's character, leaving the rest intact. For example `['ㅎ','ㅐ','ㄴ']` splits to `['ㅎ','ㅐ']` and `['ㄴ']`. This is a provisional choice — the UX may want to split a specific jamo rather than always the last. The reducer can be updated when the interaction model is defined. Confirm provisional behaviour is acceptable.
-
-**G2 — REMOVE_FROM_SLOT restores the token's current character**
-When a token is returned from a submission slot to the pool, it retains its current character (possibly rotated or combined). It does not reset to its initial single-jamo state. Confirm.
-
-**G3 — SUBMIT_GUESS resets pool and submission fully**
-After submission, pool and submission reset to `createInitialGameState` state — all tokens back to base rotation, all slots empty. Partial reset (keeping correct characters) is a UX enhancement noted in plan-models.md but not implemented in MVP. Confirm full reset is acceptable for now.
-
-**G4 — WordSelectionStrategy lives in `src/lib/word/types.ts`**
-Moved from `src/state/types.ts` (where plan-models.md placed it). It is a word-selection concept used by game setup, not a state-shape concept. `DevSettings` (app-layer) holds a `WordSelectionStrategy` value.
+| # | Decision |
+|---|---|
+| G1 | `SPLIT_TOKEN` always splits the last jamo. For `핸` → `해` + `ㄴ`; for `해` → `ㅎ` + `ㅐ`; for `ㅐ` → `ㅏ` + `ㅣ`. Matches natural Korean character decomposition. |
+| G2 | `REMOVE_FROM_SLOT` returns the token with its current character — no reset to original jamo. |
+| G3 | `SUBMIT_GUESS` does a partial reset: `'correct'` slots stay filled; `'present'` and `'absent'` slots are cleared and their tokens return to the pool as-is. Unplaced pool tokens are untouched. |
+| G4 | `WordSelectionStrategy` lives in `src/lib/word/types.ts`. Updated in plan-models.md. |
