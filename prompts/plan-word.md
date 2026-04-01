@@ -63,56 +63,59 @@ export function createWord(s: string): Word | null {
 
 ### Step 3 — `word.ts`: `decomposeJamo`
 
-A single decomposition function that takes any jamo — basic, complex vowel, or compound batchim — and returns its basic constituents. Replaces the separate `expandJongseong` / `expandJungseong` functions from the earlier draft.
+Decomposes a jamo by **one step** into its immediate constituents. This mirrors the player action: breaking a combination returns the two jamo it was made from, not all the way to atomic parts. The player can break again if they want to go further.
 
 ```typescript
 import { COMBINATION_RULES, JONGSEONG_UPGRADE_RULES } from '../jamo/jamo-data'
 
-// Decomposes a jamo into its basic constituents.
-// - Basic jamo (ㄱ, ㅏ, etc.) return themselves: ['ㄱ']
-// - Complex vowels decompose recursively via combination rules: 'ㅐ' → ['ㅏ','ㅣ']
-// - Compound batchim decompose via jongseong upgrade rules: 'ㄳ' → ['ㄱ','ㅅ']
+// Decomposes a jamo into its immediate constituents (one step only).
+// Returns a two-element array if a decomposition rule exists, or [jamo] if it is already basic.
+// e.g. 'ㅐ' → ['ㅏ','ㅣ']
+// e.g. 'ㅙ' → ['ㅗ','ㅐ']   (not ['ㅗ','ㅏ','ㅣ'] — that requires a second call)
+// e.g. 'ㄳ' → ['ㄱ','ㅅ']
+// e.g. 'ㄱ' → ['ㄱ']        (basic — no rule)
 export function decomposeJamo(jamo: string): string[] {
-  // Check compound batchim first (jongseong upgrade rules)
   const batchimRule = JONGSEONG_UPGRADE_RULES.find(r => r.output === jamo)
   if (batchimRule) return [batchimRule.existing, batchimRule.additional]
 
-  // Check complex vowel (combination rules)
   const vowelRule = COMBINATION_RULES.find(r => r.output === jamo)
-  if (vowelRule) {
-    // Recurse: an input may itself be complex (e.g. ㅙ = ㅗ + ㅐ, ㅐ = ㅏ + ㅣ)
-    return [...decomposeJamo(vowelRule.inputs[0]), ...decomposeJamo(vowelRule.inputs[1])]
-  }
+  if (vowelRule) return [vowelRule.inputs[0], vowelRule.inputs[1]]
 
-  // Basic jamo — return as-is
   return [jamo]
 }
 ```
-
-Recursion depth is bounded at 2 — no complex vowel or compound batchim requires more than two decomposition steps.
 
 ---
 
 ### Step 4 — `word.ts`: `derivePool`
 
-Decomposes every syllable in the word into its basic jamo constituents. The result is an ordered flat array — one entry per basic jamo token, in reading order (choseong, then jungseong components, then jongseong components for each character).
+Fully decomposes every syllable in the word to basic jamo. Unlike `decomposeJamo`, this must reach the atomic level — no complex vowels, double consonants, or compound batchim in the output. It does this by repeatedly applying `decomposeJamo` on each jamo until nothing further decomposes (i.e. `decomposeJamo` returns a single-element array containing the jamo itself).
 
 ```typescript
 import { decomposeSyllable } from '../jamo/composition'
 
-// Returns the basic jamo constituents of a word, in reading order.
-// All complex vowels and compound batchim are fully decomposed to basic jamo.
-// Jamo are in their natural (unmodified) form — not yet normalized.
-// e.g. '해' → ['ㅎ','ㅏ','ㅣ']        (ㅐ decomposed)
-// e.g. '훿' → ['ㅎ','ㅜ','ㅓ','ㅣ','ㄱ','ㅅ']  (ㅞ and ㄳ decomposed)
+// Fully decomposes a single jamo to its basic constituents by iterating decomposeJamo
+// until stable. e.g. 'ㅙ' → one step gives ['ㅗ','ㅐ'], second gives ['ㅗ','ㅏ','ㅣ']
+function toBasicJamo(jamo: string): string[] {
+  let current = [jamo]
+  while (true) {
+    const next = current.flatMap(j => decomposeJamo(j))
+    if (next.length === current.length && next.every((j, i) => j === current[i])) return current
+    current = next
+  }
+}
+
+// Returns the fully decomposed basic jamo constituents of a word, in reading order.
+// e.g. '해' → ['ㅎ','ㅏ','ㅣ']
+// e.g. '훿' → ['ㅎ','ㅜ','ㅓ','ㅣ','ㄱ','ㅅ']
 export function derivePool(word: Word): readonly string[] {
   return [...word].flatMap(syllable => {
     const parts = decomposeSyllable(syllable)
-    if (parts === null) return []  // should not occur for a valid Word
+    if (parts === null) return []
     return [
-      ...decomposeJamo(parts.choseong),
-      ...decomposeJamo(parts.jungseong),
-      ...(parts.jongseong !== null ? decomposeJamo(parts.jongseong) : []),
+      ...toBasicJamo(parts.choseong),
+      ...toBasicJamo(parts.jungseong),
+      ...(parts.jongseong !== null ? toBasicJamo(parts.jongseong) : []),
     ]
   })
 }
@@ -156,14 +159,14 @@ const poolJamo = normalizePool(derivePool(word))
 - `createWord('hello')` returns `null`
 - `createWord('한a')` returns `null`
 
-**`decomposeJamo`**
-- `decomposeJamo('ㄱ')` → `['ㄱ']` (basic consonant)
-- `decomposeJamo('ㅏ')` → `['ㅏ']` (basic vowel)
-- `decomposeJamo('ㅐ')` → `['ㅏ','ㅣ']` (complex vowel)
-- `decomposeJamo('ㅙ')` → `['ㅗ','ㅏ','ㅣ']` (multi-step complex vowel)
-- `decomposeJamo('ㅞ')` → `['ㅜ','ㅓ','ㅣ']` (multi-step complex vowel)
-- `decomposeJamo('ㄳ')` → `['ㄱ','ㅅ']` (compound batchim)
-- `decomposeJamo('ㄺ')` → `['ㄹ','ㄱ']` (compound batchim)
+**`decomposeJamo`** (one step only)
+- `decomposeJamo('ㄱ')` → `['ㄱ']` (basic — no rule)
+- `decomposeJamo('ㅏ')` → `['ㅏ']` (basic — no rule)
+- `decomposeJamo('ㅐ')` → `['ㅏ','ㅣ']`
+- `decomposeJamo('ㅙ')` → `['ㅗ','ㅐ']` (one step — not `['ㅗ','ㅏ','ㅣ']`)
+- `decomposeJamo('ㅞ')` → `['ㅜ','ㅔ']` (one step)
+- `decomposeJamo('ㄳ')` → `['ㄱ','ㅅ']`
+- `decomposeJamo('ㄺ')` → `['ㄹ','ㄱ']`
 
 **`derivePool`**
 - `derivePool(가)` → `['ㄱ','ㅏ']`
@@ -179,10 +182,9 @@ const poolJamo = normalizePool(derivePool(word))
 
 ---
 
-## ⚑ Assumptions
+## Resolved Assumptions
 
-**W1 — `decomposeJamo` always produces basic jamo**
-The function assumes that no combination rule chains deeper than two levels. This holds for all current rules — ㅙ decomposes to ㅗ + ㅐ, and ㅐ decomposes to ㅏ + ㅣ, giving a max recursion depth of 2. If new combination rules are added that create deeper chains, this function will still handle them correctly due to the recursive implementation, but the depth bound should be re-verified.
-
-**W2 — Pool jamo are always basic after `derivePool`**
-The pool returned by `derivePool` contains only basic consonants and vowels — never complex vowels or compound batchim. This is the contract callers rely on. The test for '훿' verifies this for the most complex possible input.
+| # | Decision |
+|---|---|
+| W1 | `decomposeJamo` is one step — returns immediate constituents. `toBasicJamo` iterates until stable with no depth limit. No depth bound to verify. |
+| W2 | `derivePool` always produces only basic jamo. The 훿 test case verifies this for the most complex possible input. |
