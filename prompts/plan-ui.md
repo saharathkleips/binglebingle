@@ -173,7 +173,11 @@ Fixed-length row of slots matching `[...state.word].length`. Each slot is either
 
 **Empty slot**: a drop target. Accepts tokens dragged from the pool. On drop, dispatches `PLACE_TOKEN`.
 
-**Filled slot**: renders the token's current character (via `resolveCharacter`). Tapping a filled slot or dragging it back toward the pool dispatches `REMOVE_FROM_SLOT`.
+**Filled slot**: renders the token's current character (via `resolveCharacter`). Two ways to remove:
+- **Tap** the filled slot → dispatches `REMOVE_FROM_SLOT`
+- **Drag** the token out of the slot back toward the pool → dispatches `REMOVE_FROM_SLOT`
+
+Filled slots are therefore both drag sources and drop targets. A drag that starts on a filled slot and ends anywhere other than another empty slot returns the token to the pool.
 
 Slots do not use the `Token` component — they are simpler display elements that only need to show the resolved character and handle removal. The full `Token` interaction model (rotate, split) is pool-only.
 
@@ -192,7 +196,7 @@ type PoolProps = { won: boolean }
 // Dispatches: (via Token) ROTATE_TOKEN, COMBINE_TOKENS, SPLIT_TOKEN, PLACE_TOKEN
 ```
 
-When `won` is true, the pool renders a win state instead of interactive tokens — shows the score (`calculateScore(state.guesses)`) and the target word. Styling is deferred; for MVP a simple text display is sufficient.
+When `won` is true, the pool renders a win state — score (`calculateScore(state.guesses)`) and the target word displayed in or adjacent to the pool area. The Board remains fully visible and non-interactive; the final guess row already shows all `'correct'` tiles, effectively revealing the target word.
 
 ---
 
@@ -367,16 +371,6 @@ src/
 | U4 | Drag token onto empty submission slot → place |
 | U5 | Incomplete tokens may be placed in submission slots; `canSubmit` gates submission |
 | U6 | Invalid combine → shake animation on the dragged token; CSS only, required for MVP |
-
----
-
-## ⚑ Open Questions
-
-**UI1 — Basic non-rotatable, non-splittable tokens**
-A single basic jamo that is not in any rotation set (e.g. ㅎ, ㄷ, ㄹ) cannot be tapped to rotate or split. It is drag-only. Should tapping such a token do anything at all (e.g. a brief highlight to indicate it was registered), or remain fully inert to taps?
-
-**UI2 — Drag-to-remove from submission slot**
-Currently, removing a token from a submission slot is done by tapping the slot. Should dragging a filled slot token back toward the pool also work? Adds polish but requires the slot to be a drag source as well as a drop target.
-
-**UI3 — Win state pool content**
-When `isWon`, the pool area shows the score and word. Should the actual token grid also remain visible (frozen, non-interactive) beneath the win overlay, or be replaced entirely?
+| UI1 | Single basic non-rotatable, non-splittable tokens are inert to taps — drag only, no tap feedback |
+| UI2 | Dragging a filled submission slot token back toward the pool also dispatches `REMOVE_FROM_SLOT` — slots are both drop targets and drag sources |
+| UI3 | On win, the pool area shows score and word overlaid or adjacent; the Board (guess history) remains fully visible and non-interactive since the final row shows the correct word |
