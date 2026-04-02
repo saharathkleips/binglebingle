@@ -7,7 +7,7 @@
 
 ## Scope
 
-This document covers component structure, interaction model, and data flow. Visual design and styling are out of scope for MVP — components should render functionally correct, unstyled or minimally styled HTML.
+Component structure, interaction model, and data flow. Visual design and styling are deferred — components should render functionally correct with minimal or no styling for MVP. The exception is the token shake animation (U6), which is required even in MVP to confirm invalid actions are detected.
 
 ---
 
@@ -15,19 +15,20 @@ This document covers component structure, interaction model, and data flow. Visu
 
 ```
 App
-├── [loading screen — while setupGame() is pending]
+├── NavBar
+├── InstructionsScreen   [shown on first load and on demand; dismissible]
 └── GameProvider
-    ├── Board
-    │   └── GuessRow (× guesses.length)
-    │       └── EvaluatedTile (× word length)
-    ├── SubmissionRow
-    │   └── SubmissionSlot (× word length)
-    │       └── Token (when filled)
-    ├── Pool
-    │   └── Token (× pool.length)
-    └── Controls
-        ├── SubmitButton
-        └── ResetButton
+    └── Game
+        ├── Board
+        │   └── GuessRow (× guesses.length)
+        │       └── EvaluatedTile (× word length)
+        ├── SubmissionRow
+        │   └── SubmissionSlot (× word length)
+        ├── Pool                          [transforms to win state when isWon]
+        │   └── Token (× pool.length)
+        └── Controls
+            ├── SubmitButton              [becomes ShareButton when isWon]
+            └── ResetButton
 ```
 
 ---
@@ -36,12 +37,13 @@ App
 
 **File**: `src/App.tsx`
 
-Responsible for loading the game before anything else renders. Calls `setupGame()` on mount, holds the result, renders a loading state while pending and the `GameProvider` tree once resolved.
+Starts `setupGame()` immediately on mount. Shows `InstructionsScreen` while loading — by the time the player dismisses instructions, the game is typically ready. If it isn't, a brief inline loading indicator appears where the game will be.
 
 ```typescript
 export function App() {
   const [initialState, setInitialState] = useState<GameState | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showInstructions, setShowInstructions] = useState(true)
 
   useEffect(() => {
     setupGame(devSettings.strategy)
@@ -49,13 +51,63 @@ export function App() {
       .catch(e => setError(String(e)))
   }, [])
 
-  if (error) return <div>Failed to load game: {error}</div>
-  if (!initialState) return <div>Loading…</div>
-  return <GameProvider initialState={initialState}> <Game /> </GameProvider>
+  return (
+    <>
+      <NavBar onShowInstructions={() => setShowInstructions(true)} />
+      {showInstructions && (
+        <InstructionsScreen onDismiss={() => setShowInstructions(false)} />
+      )}
+      {error && <div>Failed to load: {error}</div>}
+      {!error && !initialState && !showInstructions && <div>Loading…</div>}
+      {initialState && (
+        <GameProvider initialState={initialState}>
+          <Game />
+        </GameProvider>
+      )}
+    </>
+  )
 }
 ```
 
-Dev settings are held in `App` local state (not game state). A dev panel toggled by a key combination or URL param (`?dev=1`) allows changing the selection strategy and re-calling `setupGame`.
+Dev settings (`DevSettings`) live in `App` local state. A dev panel is accessible via `?dev=1` URL param, allowing strategy override and game reset without a full page reload.
+
+---
+
+## NavBar
+
+**File**: `src/components/NavBar.tsx`
+
+Persistent across all states. Contains:
+- Game name (left)
+- Instructions button — re-shows `InstructionsScreen` (right)
+- Settings button — opens a settings panel (placeholder for MVP; panel is empty) (right)
+
+```typescript
+type NavBarProps = {
+  onShowInstructions: () => void
+}
+```
+
+---
+
+## InstructionsScreen
+
+**File**: `src/components/InstructionsScreen.tsx`
+
+Shown on first load and when the instructions button is tapped. Overlays or replaces the game area. Contains:
+- Brief explanation of the game
+- Examples of rotation (show ㄱ → ㄴ)
+- Examples of combination (show ㅏ + ㅣ → ㅐ)
+- Examples of submission and tile results (`correct` / `present` / `absent`)
+- Dismiss button ("Play" on first load, "Close" when re-opened mid-game)
+
+```typescript
+type InstructionsScreenProps = {
+  onDismiss: () => void
+}
+```
+
+No game state is read here — instructions are static content.
 
 ---
 
@@ -63,20 +115,25 @@ Dev settings are held in `App` local state (not game state). A dev panel toggled
 
 **File**: `src/components/Game.tsx`
 
-The root game component. Reads `useGame()` and orchestrates layout. No logic — just composition.
+Root game component. Reads `useGame()` and decides what to render based on win state.
 
 ```typescript
 export function Game() {
+  const { state } = useGame()
+  const won = isWon(state)
+
   return (
     <>
       <Board />
       <SubmissionRow />
-      <Pool />
-      <Controls />
+      <Pool won={won} />
+      <Controls won={won} />
     </>
   )
 }
 ```
+
+When `won` is true, `Pool` renders a win state and `Controls` renders a share affordance. No separate results screen — the game area transforms in place.
 
 ---
 
@@ -84,20 +141,20 @@ export function Game() {
 
 **File**: `src/components/Board/Board.tsx`
 
-Renders the history of submitted guesses. One `GuessRow` per entry in `state.guesses`.
+Renders the history of submitted guesses. One `GuessRow` per `GuessRecord` in `state.guesses`.
 
 ```typescript
-// Reads: state.guesses, state.word
+// Reads: state.guesses
 // Dispatches: nothing
 ```
 
 ### GuessRow
 
-One row per `GuessRecord`. One `EvaluatedTile` per `EvaluatedCharacter`.
+One row per `GuessRecord` (array of `EvaluatedCharacter`).
 
 ### EvaluatedTile
 
-Displays a single evaluated character. Receives `character: string` and `result: CharacterResult`. An empty slot (`character === ''`) renders a blank tile. The `result` prop drives the visual state (`correct` / `present` / `absent`) — styling deferred.
+Displays one `EvaluatedCharacter`. Props: `character: string`, `result: CharacterResult`. Empty slot (`character === ''`) renders a blank placeholder. Result drives visual state — styling deferred.
 
 ---
 
@@ -105,20 +162,20 @@ Displays a single evaluated character. Receives `character: string` and `result:
 
 **File**: `src/components/SubmissionRow/SubmissionRow.tsx`
 
-Renders the current guess being built. One `SubmissionSlot` per position in the target word, always fixed length.
+Fixed-length row of slots matching `[...state.word].length`. Each slot is either empty or contains a token.
 
 ```typescript
-// Reads: state.submission, state.word
-// Dispatches: REMOVE_FROM_SLOT
+// Reads: state.submission
+// Dispatches: REMOVE_FROM_SLOT (via slot tap or drag-out)
 ```
 
 ### SubmissionSlot
 
-A single slot in the current guess. Two states:
-- **Empty**: renders a placeholder. Acts as a drop target (accepts tokens dragged from the pool) and a tap target (if a pool token is selected, tapping an empty slot places it here).
-- **Filled**: renders the `Token` currently occupying the slot. Tapping or pressing an action on the token removes it back to the pool (`REMOVE_FROM_SLOT`).
+**Empty slot**: a drop target. Accepts tokens dragged from the pool. On drop, dispatches `PLACE_TOKEN`.
 
-The slot always knows its `slotIndex` and passes it down.
+**Filled slot**: renders the token's current character (via `resolveCharacter`). Tapping a filled slot or dragging it back toward the pool dispatches `REMOVE_FROM_SLOT`.
+
+Slots do not use the `Token` component — they are simpler display elements that only need to show the resolved character and handle removal. The full `Token` interaction model (rotate, split) is pool-only.
 
 ---
 
@@ -126,14 +183,16 @@ The slot always knows its `slotIndex` and passes it down.
 
 **File**: `src/components/Pool/Pool.tsx`
 
-Renders all tokens currently in `state.pool`. This is the player's primary working area.
+The player's primary working area. Renders all tokens in `state.pool` as interactive `Token` components.
 
 ```typescript
+type PoolProps = { won: boolean }
+
 // Reads: state.pool
-// Dispatches: (via Token interactions) ROTATE_TOKEN, COMBINE_TOKENS, SPLIT_TOKEN, PLACE_TOKEN
+// Dispatches: (via Token) ROTATE_TOKEN, COMBINE_TOKENS, SPLIT_TOKEN, PLACE_TOKEN
 ```
 
-Tokens in the pool are draggable (to submission slots or onto other tokens). Tokens also respond to tap interactions.
+When `won` is true, the pool renders a win state instead of interactive tokens — shows the score (`calculateScore(state.guesses)`) and the target word. Styling is deferred; for MVP a simple text display is sufficient.
 
 ---
 
@@ -141,51 +200,71 @@ Tokens in the pool are draggable (to submission slots or onto other tokens). Tok
 
 **File**: `src/components/Token/Token.tsx`
 
-The fundamental interactive element. Appears in both `Pool` and `SubmissionRow` contexts. Its behaviour differs by context.
+The core interactive element. Only appears in the pool.
 
 ```typescript
 type TokenProps = {
   tokenId: number
   character: Character
-  context: 'pool' | 'submission'
-  slotIndex?: number          // defined when context === 'submission'
 }
 ```
 
-### What a Token displays
+### Display
 
-Calls `resolveCharacter(character)` and displays the result. If `resolveCharacter` returns null (invalid intermediate state — should not occur given reducer invariants), displays the raw jamo joined as a string as a fallback.
+Calls `resolveCharacter(character)` and displays the result. Every valid token state the reducer can produce is guaranteed to resolve — the reducer's no-op invariants ensure no token ever holds an unresolvable character. The only tokens in the pool are:
 
-### Token interactions
+- Single basic jamo: `['ㄱ']` → displays `'ㄱ'`
+- Single combined jamo: `['ㅐ']` → displays `'ㅐ'` (already resolved by prior combine)
+- Partial syllable (cho + jung): `['ㄱ','ㅏ']` → displays `'가'`
+- Complete syllable (cho + jung + jong): `['ㄱ','ㅏ','ㄱ']` → displays `'각'`
 
-This is the core UX surface. The exact gestures are open for iteration, but the following model is proposed for MVP:
+`resolveCharacter` handles all of these. No null fallback is needed in practice.
 
-**Tap (single tap):**
-- Pool token, not selected → **select** it (highlight it as the active token)
-- Pool token, already selected → **deselect**
-- Pool token, when another token is already selected → **combine** the two (`COMBINE_TOKENS`); deselect both regardless of result
-- Empty submission slot, when a pool token is selected → **place** the selected token (`PLACE_TOKEN`)
-- Filled submission slot token → **remove** it back to pool (`REMOVE_FROM_SLOT`)
+### Tap interaction
 
-**Rotate button / secondary tap:**
-A dedicated rotate affordance on the token (e.g. a small button, or a long press). Fires `ROTATE_TOKEN` with the next rotation target from `getNextRotation`. If the token is not rotatable, the affordance is hidden or disabled.
+**Single tap on a rotatable token** (single basic jamo that is in a rotation set):
+→ `ROTATE_TOKEN` with `targetJamo = getNextRotation(character.jamo[0])`
 
-**Split button / secondary tap:**
-A dedicated split affordance. Fires `SPLIT_TOKEN`. Hidden or disabled if `character.jamo.length <= 1`.
+**Single tap on a non-rotatable / multi-jamo token** (complex vowel, double consonant, partial syllable, complete syllable):
+→ `SPLIT_TOKEN` — decomposes the last jamo by one step
 
-**Drag:**
-Pool tokens are draggable. Dragging a token onto another pool token attempts `COMBINE_TOKENS`. Dragging a token onto an empty submission slot fires `PLACE_TOKEN`. Dragging onto a filled submission slot is a no-op for MVP (swap behaviour deferred).
+This covers all token states cleanly:
+- Basic non-rotatable jamo (ㅎ, ㄷ, etc.): tap does nothing (no rotate, no split — single jamo cannot split). The token is inert to taps; drag-only.
+- Rotatable jamo (ㄱ, ㅏ, etc.): tap rotates.
+- Everything else: tap splits.
 
-> **Note**: drag and tap interactions must coexist. On mobile, a tap that becomes a drag should not also fire the tap handler. `@dnd-kit/core` handles this via its pointer sensor with a distance threshold — a drag only activates after a small movement, leaving short taps to the tap handler.
+### Drag interaction
 
-### Selection state
+Tokens are draggable via `@dnd-kit/core` with a pointer and touch sensor. A drag only activates after a small movement threshold, so short taps fire the tap handler without interference.
 
-A single selected token id is held in local `Pool` component state (not game state — selection is transient UI state with no game meaning). Passed down to each `Token` as an `isSelected` prop.
+**Drag onto another pool token**: attempt combine.
+1. Check validity before dispatching: call `combineJamo(a, b)` or `upgradeJongseong(existing, additional)` based on context (see plan-game.md `COMBINE_TOKENS` branching).
+2. If valid → dispatch `COMBINE_TOKENS`.
+3. If invalid → **do not dispatch**; trigger shake animation on the dragged token instead.
+
+**Drag onto an empty submission slot**: dispatch `PLACE_TOKEN`.
+
+**Drag onto a filled submission slot**: no-op for MVP.
+
+### Shake animation
+
+When a combine attempt is invalid (pre-dispatch check returns null), the token plays a brief CSS shake animation. This is the only animation required for MVP — it confirms to the player that the action was attempted and failed.
+
+Implementation: a local boolean state `shaking` on the `Token` component. Set to `true` on invalid combine, reset to `false` via `onAnimationEnd`. Drives a CSS class.
 
 ```typescript
-// In Pool.tsx
-const [selectedTokenId, setSelectedTokenId] = useState<number | null>(null)
+const [shaking, setShaking] = useState(false)
+
+function handleInvalidCombine() {
+  setShaking(true)
+}
+
+// On the token element:
+// className={shaking ? 'token token--shake' : 'token'}
+// onAnimationEnd={() => setShaking(false)}
 ```
+
+The CSS animation itself is a simple translateX keyframe — trivial to add even without a full design pass.
 
 ---
 
@@ -194,69 +273,58 @@ const [selectedTokenId, setSelectedTokenId] = useState<number | null>(null)
 **File**: `src/components/Controls/Controls.tsx`
 
 ```typescript
+type ControlsProps = { won: boolean }
+
 // Reads: state.submission, state.guesses, state.word (via useGame)
-// Dispatches: SUBMIT_GUESS (after evaluating), RESET_ROUND
+// Dispatches: SUBMIT_GUESS, RESET_ROUND
 ```
 
 ### SubmitButton
 
-Calls `canSubmit(state.submission)` on each render. Disabled when `canSubmit` returns `{ valid: false }`. On click:
-1. Call `evaluateGuess(state.submission, state.word)` to get the `GuessRecord`
-2. Check `isWon` on the result
-3. Dispatch `SUBMIT_GUESS` with the evaluation
-4. If won, show the results screen (local state in `App` or `Game`)
+When `won` is false:
+- Calls `canSubmit(state.submission)` on each render
+- Disabled when `canSubmit` returns `{ valid: false }`
+- On click: call `evaluateGuess(state.submission, state.word)`, dispatch `SUBMIT_GUESS` with the result
+
+When `won` is true:
+- Renders as a "Share" placeholder button (no share functionality in MVP — button exists but is inert or shows a coming-soon message)
 
 ### ResetButton
 
-Dispatches `RESET_ROUND`. Clears pool and submission back to round-start state without affecting guess history.
-
----
-
-## Results Screen
-
-**File**: `src/components/ResultsScreen.tsx`
-
-Shown when `isWon(state)` is true. Displays:
-- The target word
-- The number of guesses taken (`calculateScore(state.guesses).guessCount`)
-- The full guess history (reuses `Board` or a simplified version)
-
-Triggered by the `Game` component watching `isWon(state)`:
-
-```typescript
-// In Game.tsx
-const { state } = useGame()
-if (isWon(state)) return <ResultsScreen />
-```
+Always present. Dispatches `RESET_ROUND`. Resets pool and submission to round-start state without clearing guess history.
 
 ---
 
 ## Data Flow Summary
 
 ```
-setupGame()
-  └── createInitialGameState(word)
-        └── GameProvider (initialState)
-              └── useGame() → { state, dispatch }
+App.mount → setupGame() [async, runs during InstructionsScreen]
+  → createInitialGameState(word) → GameProvider(initialState)
+    → useGame() → { state, dispatch }
 
-state.pool          → Pool → Token (pool context)
-state.submission    → SubmissionRow → SubmissionSlot → Token (submission context)
-state.guesses       → Board → GuessRow → EvaluatedTile
+state.pool        → Pool → Token (tap: rotate or split) (drag: combine or place)
+state.submission  → SubmissionRow → SubmissionSlot (tap: remove) (drop: place)
+state.guesses     → Board → GuessRow → EvaluatedTile
 
-Token tap/drag
-  → ROTATE_TOKEN
-  → COMBINE_TOKENS
-  → SPLIT_TOKEN
-  → PLACE_TOKEN
-  → REMOVE_FROM_SLOT
+Token drag onto token
+  → combineJamo / upgradeJongseong check
+  → valid   → dispatch COMBINE_TOKENS
+  → invalid → shake animation (no dispatch)
+
+Token drag onto empty slot
+  → dispatch PLACE_TOKEN
+
+SubmissionSlot tap (filled)
+  → dispatch REMOVE_FROM_SLOT
 
 SubmitButton click
-  → canSubmit(state.submission)       [engine]
-  → evaluateGuess(state.submission, state.word)  [engine]
-  → dispatch(SUBMIT_GUESS)
+  → canSubmit(state.submission)
+  → evaluateGuess(state.submission, state.word)
+  → dispatch SUBMIT_GUESS
 
 isWon(state) === true
-  → ResultsScreen
+  → Pool shows win state (score + word)
+  → SubmitButton becomes Share placeholder
 ```
 
 ---
@@ -266,48 +334,49 @@ isWon(state) === true
 ```
 src/
 ├── App.tsx
-├── components/
-│   ├── Game.tsx
-│   ├── Board/
-│   │   ├── Board.tsx
-│   │   ├── GuessRow.tsx
-│   │   └── EvaluatedTile.tsx
-│   ├── SubmissionRow/
-│   │   ├── SubmissionRow.tsx
-│   │   └── SubmissionSlot.tsx
-│   ├── Pool/
-│   │   └── Pool.tsx
-│   ├── Token/
-│   │   └── Token.tsx
-│   ├── Controls/
-│   │   ├── Controls.tsx
-│   │   ├── SubmitButton.tsx
-│   │   └── ResetButton.tsx
-│   └── ResultsScreen.tsx
+└── components/
+    ├── NavBar.tsx
+    ├── InstructionsScreen.tsx
+    ├── Game.tsx
+    ├── Board/
+    │   ├── Board.tsx
+    │   ├── GuessRow.tsx
+    │   └── EvaluatedTile.tsx
+    ├── SubmissionRow/
+    │   ├── SubmissionRow.tsx
+    │   └── SubmissionSlot.tsx
+    ├── Pool/
+    │   └── Pool.tsx
+    ├── Token/
+    │   └── Token.tsx
+    └── Controls/
+        ├── Controls.tsx
+        ├── SubmitButton.tsx
+        └── ResetButton.tsx
 ```
-
-`Token` is its own top-level component folder because it is used in multiple contexts. Everything else is scoped to its parent.
 
 ---
 
-## ⚑ Open UX Questions
+## Resolved UX Decisions
 
-These are decisions that will affect implementation but depend on how the game feels to play. They do not need to be answered before the agent starts — the component structure supports iteration on all of them.
+| # | Decision |
+|---|---|
+| U1 | Tap a rotatable token → rotate (cycles via `getNextRotation`) |
+| U2 | Drag token onto another token → combine (validity checked pre-dispatch) |
+| U3 | Tap a non-rotatable / multi-jamo token → split (one step via `decomposeJamo`) |
+| U4 | Drag token onto empty submission slot → place |
+| U5 | Incomplete tokens may be placed in submission slots; `canSubmit` gates submission |
+| U6 | Invalid combine → shake animation on the dragged token; CSS only, required for MVP |
 
-**U1 — Rotate gesture**
-Current proposal: a dedicated small rotate button on each rotatable token. Alternative: long press on the token rotates it. Which feels better on mobile?
+---
 
-**U2 — Combine gesture**
-Current proposal: tap-to-select then tap-another-to-combine, plus drag-onto for pointer users. Is there a cleaner single-gesture model?
+## ⚑ Open Questions
 
-**U3 — Split gesture**
-Current proposal: a dedicated split button on multi-jamo tokens. When should split be available — always, or only when the token is in the pool (not in a submission slot)?
+**UI1 — Basic non-rotatable, non-splittable tokens**
+A single basic jamo that is not in any rotation set (e.g. ㅎ, ㄷ, ㄹ) cannot be tapped to rotate or split. It is drag-only. Should tapping such a token do anything at all (e.g. a brief highlight to indicate it was registered), or remain fully inert to taps?
 
-**U4 — Slot placement**
-Current proposal: tap selected token → tap empty slot to place. Should placing also be possible by dragging directly from pool to slot? (Yes per architecture.md, but the tap model is primary on mobile.)
+**UI2 — Drag-to-remove from submission slot**
+Currently, removing a token from a submission slot is done by tapping the slot. Should dragging a filled slot token back toward the pool also work? Adds polish but requires the slot to be a drag source as well as a drop target.
 
-**U5 — Can incomplete characters be placed in submission slots?**
-Confirmed as a UX question in plan-models.md. For MVP: allow placement but disable submit (the `canSubmit` gate handles this). This lets players "reserve" a slot while still building the character.
-
-**U6 — Visual feedback for invalid actions**
-When a combine attempt produces no result (no rule exists), should there be feedback (brief shake, flash) or silent no-op? For MVP: silent no-op is fine — revisit when styling begins.
+**UI3 — Win state pool content**
+When `isWon`, the pool area shows the score and word. Should the actual token grid also remain visible (frozen, non-interactive) beneath the win overlay, or be replaced entirely?
