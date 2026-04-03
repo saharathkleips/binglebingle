@@ -1,57 +1,106 @@
-# 빙글빙글 — Stitch Design Prompt
+# 빙글빙글 — Stitch Design Prompts
 
-## How to Use This File
+## Approach
 
-Start with the **Initial Prompt** below to establish the visual language. After the first generation, use the **Follow-up Prompts** one at a time — one change per prompt. Do not combine multiple changes in a single prompt or Stitch will regenerate the full layout and lose prior decisions.
+Build the design iteratively — one prompt per step. Do not move to the next prompt
+until the current output looks right. One change at a time.
 
-Start in **mobile portrait orientation**. Do not use web layout.
+Start in **mobile portrait**, standard phone dimensions.
 
 ---
 
-## Initial Prompt — Main Game Screen
+## Prompt 1 — Visual Language and Skeleton
 
-A mobile word game app called 빙글빙글. Design the main game screen.
+A simple mobile game called 빙글빙글. Establish the visual style only — no game
+logic, no complex components.
 
 **Visual direction:**
-Inspired by Korean dancheong (단청) — traditional temple decorative paintwork. Bold geometric compartmentalisation, strong outlines containing flat colour. Colour palette strictly follows obangsaek (오방색): deep blue-green (청), vermillion red (적), golden yellow (황), white (백), and near-black (흑). Saturated, intentional, never pastel. Dark background (흑).
+Inspired by Korean dancheong (단청) — traditional temple decorative paintwork.
+Bold geometric shapes, strong outlines, flat areas of saturated colour. Dark
+near-black background. Colour palette follows obangsaek (오방색): deep blue-green,
+vermillion red, golden yellow, white, near-black. Saturated and intentional —
+never pastel or muted.
 
-**Tile/token style:**
-Inspired by Korean hwatu (화투) playing cards — small, thick, portrait-format cards with bold flat graphic illustration on a deep background. Strong silhouette, minimal detail, very graphic. Each token tile should feel like a collectible card: slightly rounded corners, a dancheong-patterned card back texture. The jamo character (Korean letter) is displayed large and centred on the tile face.
+**Layout — three zones stacked vertically:**
+1. A narrow navigation bar at the top with the game name 빙글빙글 on the left and
+   two icon buttons on the right.
+2. A large open content area in the middle — leave this empty for now.
+3. A narrow controls bar at the bottom with two buttons side by side.
 
-**Screen layout (top to bottom):**
-1. Navigation bar — game name 빙글빙글 on the left, instructions icon and settings icon on the right
-2. Guess history board — a grid of rows showing past guesses. Each row contains 3 tile-sized cells. Cells are coloured: vermillion red for correct position, golden yellow for present but wrong position, dark grey for absent. Empty rows show as faint outlined placeholders.
-3. Submission row — a fixed row of 3 empty slot placeholders where the player drags completed tiles to form their guess. Slots are outlined, same size as tiles.
-4. Pool area — a loose arrangement of draggable jamo token tiles. Show approximately 8 tiles of varying Korean consonants and vowels (e.g. ㄱ, ㄴ, ㅎ, ㅏ, ㅣ, ㅗ, ㅜ, ㅇ). Tiles sit on the dark background like cards on a table.
-5. Controls — a Submit button (disabled state, muted) and a Reset button, side by side at the bottom.
-
-**Typography:**
-Korean characters on tiles should use a bold, slightly calligraphic serif hangul typeface. UI labels in a clean geometric sans-serif.
-
-**Mood:** Ceremonial, tactile, bold. Like playing a traditional Korean game with beautifully crafted pieces.
+**Mood:** Ceremonial, graphic, bold. Like a traditional Korean aesthetic applied
+to a modern mobile screen.
 
 ---
 
-## Follow-up Prompts
+## Prompt 2 — Token Tile Style
 
-Use these one at a time after the initial generation. Do not combine.
+Design a single game tile (token). This is the core interactive element — a
+draggable card the player picks up and moves.
 
-**1. Token tile states**
-Show the jamo token tile in four states side by side: a single basic consonant (ㄱ), a combined vowel (ㅐ), a partial character without jongseong (가), and a complete character with jongseong (한). All four should share the same tile style established in the main screen.
+The tile should look like a Korean hwatu (화투) playing card: small, slightly
+portrait-proportioned, thick, bold flat graphic on a deep background. Slightly
+rounded corners. The Korean character ㄱ displayed large and centred on the face.
+Card face uses the obangsaek palette. Bold, slightly calligraphic hangul typeface
+for the character.
 
-**2. Correct/present/absent tile colours**
-Refine the guess history tile colours. Correct position: vermillion red (적) background with white character. Present but wrong position: golden yellow (황) background with near-black character. Absent: dark charcoal background with muted character. Empty placeholder: faint outlined tile, no fill.
-
-**3. Instructions screen**
-Design an instructions screen with the same visual language. Show three sections with example tiles: how rotation works (ㄱ rotating to ㄴ), how combination works (ㅏ + ㅣ combining into ㅐ), and how tile results are read (correct / present / absent). Include a large "Play" button at the bottom to dismiss the screen.
-
-**4. Win state**
-On the main game screen, replace the pool area with a win state panel. Show the target word in large completed tiles, the number of guesses taken, and a Share button (inactive placeholder). The guess history board above remains fully visible. Retain all dancheong and obangsaek styling.
+Show the tile at the size it would appear in the game — small enough that 6–8
+tiles fit comfortably in the lower half of a phone screen.
 
 ---
 
-## Fallback Prompt
+## Prompt 3 — Pool Area
 
-If Stitch generates tiles that look too generic, use this follow-up:
+Populate the middle content area with a loose arrangement of 8 token tiles showing
+different Korean jamo characters: ㄱ ㄴ ㅎ ㅏ ㅣ ㅗ ㅜ ㅇ
 
-Make the jamo token tiles feel more like hwatu (화투) playing cards — bold flat illustration, deep background, thick card-like appearance, slightly portrait proportioned, strong graphic character.
+Tiles sit on the dark background like cards spread on a table. No grid — organic
+but readable arrangement. These are the pieces the player picks up and uses.
+
+---
+
+## Prompt 4 — Submission Row
+
+Above the pool area, add a row of 3 evenly spaced empty slot placeholders. These
+are where the player places completed tiles to form their guess. Slots are the
+same size as the tiles, outlined with a muted border, empty inside. There should
+be clear visual separation between the submission row and the pool area below it.
+
+---
+
+## Prompt 5 — Guess History Board
+
+Above the submission row, add a guess history board. It shows previous guesses as
+rows of 3 filled tiles. Show 2 completed example rows and 3 empty placeholder rows
+below them.
+
+Completed tiles use three colours from the obangsaek palette:
+- Vermillion red background: character is in the correct position
+- Golden yellow background: character is in the word but wrong position
+- Dark charcoal background: character is not in the word
+
+Empty rows are faint outlined placeholders matching the submission slot style.
+
+---
+
+## Prompt 6 — Refine and Tighten
+
+Review the full layout. Make the following adjustments:
+- Ensure the three zones (board, submission row, pool) have clear visual hierarchy
+  and breathing room between them
+- The pool area should feel like the play space — slightly more visual weight than
+  the other zones
+- Controls bar at the bottom: left button is Reset (secondary style), right button
+  is Submit (primary style, using the vermillion red accent)
+- Submit button should appear in a disabled/muted state for now
+
+---
+
+## Fallback — If Tiles Look Too Generic
+
+If the token tiles look like standard app UI cards rather than hwatu-inspired game
+pieces, use this follow-up:
+
+The game tiles should feel more physical and playful — like traditional Korean
+hwatu (화투) playing cards. Bold flat character on a rich dark background, strong
+graphic presence, slightly portrait shape. Less like a UI component, more like a
+game piece you want to pick up.
