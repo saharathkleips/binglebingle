@@ -99,38 +99,38 @@ Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCAF-01 | — | Pending |
-| SCAF-02 | — | Pending |
-| JAMO-01 | — | Pending |
-| JAMO-02 | — | Pending |
-| JAMO-03 | — | Pending |
-| JAMO-04 | — | Pending |
-| CHAR-01 | — | Pending |
-| CHAR-02 | — | Pending |
-| WORD-01 | — | Pending |
-| WORD-02 | — | Pending |
-| WORD-03 | — | Pending |
-| ENGN-01 | — | Pending |
-| ENGN-02 | — | Pending |
-| ENGN-03 | — | Pending |
-| STAT-01 | — | Pending |
-| STAT-02 | — | Pending |
-| STAT-03 | — | Pending |
-| UI-01 | — | Pending |
-| UI-02 | — | Pending |
-| UI-03 | — | Pending |
-| UI-04 | — | Pending |
-| UI-05 | — | Pending |
-| UI-06 | — | Pending |
-| UI-07 | — | Pending |
-| UI-08 | — | Pending |
-| DATA-01 | — | Pending |
+| SCAF-01 | Phase 1 | Pending |
+| SCAF-02 | Phase 1 | Pending |
+| JAMO-01 | Phase 2 | Pending |
+| JAMO-02 | Phase 2 | Pending |
+| JAMO-03 | Phase 2 | Pending |
+| JAMO-04 | Phase 2 | Pending |
+| CHAR-01 | Phase 3 | Pending |
+| CHAR-02 | Phase 3 | Pending |
+| WORD-01 | Phase 4 | Pending |
+| WORD-02 | Phase 4 | Pending |
+| WORD-03 | Phase 4 | Pending |
+| ENGN-01 | Phase 5 | Pending |
+| ENGN-02 | Phase 5 | Pending |
+| ENGN-03 | Phase 5 | Pending |
+| STAT-01 | Phase 6 | Pending |
+| STAT-02 | Phase 6 | Pending |
+| STAT-03 | Phase 6 | Pending |
+| UI-01 | Phase 8 | Pending |
+| UI-02 | Phase 8 | Pending |
+| UI-03 | Phase 8 | Pending |
+| UI-04 | Phase 8 | Pending |
+| UI-05 | Phase 9 | Pending |
+| UI-06 | Phase 9 | Pending |
+| UI-07 | Phase 9 | Pending |
+| UI-08 | Phase 9 | Pending |
+| DATA-01 | Phase 7 | Pending |
 
 **Coverage:**
 - v1 requirements: 26 total
-- Mapped to phases: 0
-- Unmapped: 26 ⚠️
+- Mapped to phases: 26
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 after initial definition*
+*Last updated: 2026-04-05 after roadmap creation*
