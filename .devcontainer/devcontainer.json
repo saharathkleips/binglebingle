@@ -1,0 +1,33 @@
+{
+  "name": "claude-code-dev",
+  "build": {
+    "dockerfile": "Containerfile",
+    "args": {
+      "TZ": "${localEnv:TZ:Asia/Seoul}",
+    },
+  },
+  "appPort": [5173],
+  "runArgs": ["--userns=keep-id", "--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "waitFor": "postStartCommand",
+  "remoteUser": "dev",
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/dev/.claude",
+    "ANTHROPIC_BASE_URL": "http://host.containers.internal:8080",
+  },
+  "mounts": [
+    // pnpm mounts
+    "source=pnpm,target=/home/dev/.local/share/pnpm,type=volume",
+    "source=node-modules-${devcontainerId},target=/workspaces/${localWorkspaceFolderBasename}/node_modules,type=volume",
+
+    // claude mounts
+    "source=claude-config-${devcontainerId},target=/home/dev/.claude,type=volume",
+    "source=claude-commandhistory-${devcontainerId},target=/commandhistory,type=volume",
+
+    // git mounts
+    "source=${localEnv:HOME}/.devcontainer/signing_key,target=/home/dev/.ssh/signing_key,type=bind,readonly=true",
+    "source=${localEnv:HOME}/.devcontainer/signing_key.pub,target=/home/dev/.ssh/signing_key.pub,type=bind,readonly=true",
+    "source=${localEnv:HOME}/.devcontainer/gitconfig.container,target=/home/dev/.gitconfig,type=bind,readonly=true",
+    "source=${localEnv:HOME}/.devcontainer/allowed_signers,target=/home/dev/.ssh/allowed_signers,type=bind,readonly=true",
+  ],
+}

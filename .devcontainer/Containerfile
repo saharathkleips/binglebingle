@@ -1,0 +1,104 @@
+FROM node:24-bookworm-slim
+
+# ── system setup ──────────────────────────────────────────────────────────────────
+ARG TZ
+ENV TZ="$TZ"
+ENV DEVCONTAINER=true
+ENV EDITOR=nano
+ENV VISUAL=nano
+ENV SHELL=/bin/zsh
+
+# ── system dependencies ───────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    wget \
+    curl \
+    gnupg2 \
+    less \
+    git \
+    procps \
+    sudo \
+    zsh \
+    man-db \
+    unzip \
+    gh \
+    iptables \
+    ipset \
+    iproute2 \
+    dnsutils \
+    aggregate \
+    jq \
+    ripgrep \
+    openssh-client \
+    libatomic1 \
+    nano \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# ── user setup ─────────────────────────────────────────────────────────
+RUN usermod -l dev -d /home/dev -m node && \
+    groupmod -n dev node
+
+# ── volume mounts ───────────────────────────────────────────────────────
+# claude-config                  → ~/.claude/
+# pnpm                           → /home/dev/.local/share/pnpm
+# commandhistory                 → /commandhistory
+# node-modules-${devcontainerId} → /workspaces/node_modules
+RUN mkdir -p \
+        /commandhistory \
+        /home/dev/.claude \
+        /home/dev/.local/share/pnpm && \
+    touch \
+        /commandhistory/.zsh_history \
+        /commandhistory/.bash_history && \
+    chown -R dev:dev \
+        /commandhistory \
+        /home/dev/.claude \
+        /home/dev/.local
+
+# ── firewall script ───────────────────────────────────────────────────────────
+COPY init-firewall.sh /usr/local/bin/init-firewall.sh
+
+RUN chmod +x /usr/local/bin/init-firewall.sh && \
+    echo "dev ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" \
+    > /etc/sudoers.d/dev-firewall && \
+    chmod 0440 /etc/sudoers.d/dev-firewall
+
+# ── pnpm ──────────────────────────────────────────────────────────────────────
+ENV PNPM_HOME=/home/dev/.local/share/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
+
+ENV npm_config_store_dir=/home/dev/.local/share/pnpm/store
+ENV npm_config_minimum_release_age=10080
+ENV npm_config_block_exotic_subdeps=true
+ENV npm_config_trust_policy=no-downgrade
+
+RUN corepack enable pnpm
+
+RUN printf '#!/bin/sh\necho "ERROR: npm is disabled - use pnpm instead." >&2\nexit 1' \
+    > /usr/local/bin/npm && \
+    chmod +x /usr/local/bin/npm
+
+# ── git-delta ─────────────────────────────────────────────────────────────────
+ARG GIT_DELTA_VERSION=0.18.2
+RUN ARCH=$(dpkg --print-architecture) && \
+    wget -q "https://github.com/dandavison/delta/releases/download/${GIT_DELTA_VERSION}/git-delta_${GIT_DELTA_VERSION}_${ARCH}.deb" && \
+    dpkg -i "git-delta_${GIT_DELTA_VERSION}_${ARCH}.deb" && \
+    rm "git-delta_${GIT_DELTA_VERSION}_${ARCH}.deb"
+
+# ── non-root user context ─────────────────────────────────────────────────────
+USER dev
+
+# ── shell ─────────────────────────────────────────────────────────────────────
+ARG ZSH_IN_DOCKER_VERSION=1.2.0
+RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v${ZSH_IN_DOCKER_VERSION}/zsh-in-docker.sh)" -- \
+    -p git \
+    -a 'export HISTFILE=/commandhistory/.zsh_history' \
+    -a 'export SAVEHIST=10000' \
+    -x
+
+# ── claude code ───────────────────────────────────────────────────────────────
+ARG CLAUDE_CODE_VERSION=latest
+RUN pnpm add -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
+
+# ── runtime environment ───────────────────────────────────────────────────────
+WORKDIR /workspaces

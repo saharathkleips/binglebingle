@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mostlygeek/llama-swap/refs/heads/main/config-schema.json
+
+healthCheckTimeout: 120
+logLevel: info
+logToStdout: "both"
+sendLoadingState: true
+
+apiKeys:
+  - "${env.ANTHROPIC_OAUTH_TOKEN}"
+
+macros:
+  llama_server: "/opt/homebrew/bin/llama-server"
+
+models:
+  "CoPaw-Flash":
+    name: "CoPaw-Flash"
+    cmd: |
+      ${llama_server}
+      --port ${PORT}
+      -hf agentscope-ai/CoPaw-Flash-9B-Q8_0
+      --host 127.0.0.1
+      --ctx-size 49152
+      -ngl 99
+      --flash-attn on
+      --jinja
+    aliases:
+      - "claude-haiku-4-5-20251001"
+      - "claude-haiku-4-5"
+      - "claude-haiku"
+      - "agentscope-ai/CoPaw-Flash-9B-Q8_0"
+      - "CoPaw-Flash-9B"
+    ttl: 300
+
+peers:
+  anthropic:
+    proxy: https://api.anthropic.com
+    apiKey: "${env.ANTHROPIC_OAUTH_TOKEN}"
+    models:
+      - "claude-sonnet-4-6"
+      - "claude-sonnet"
+      - "claude-opus-4-6"
+      - "claude-opus"
