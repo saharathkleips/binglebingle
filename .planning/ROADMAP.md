@@ -37,7 +37,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. `pnpm build` produces a dist/ without type errors
   3. `pnpm lint` runs oxlint with zero violations on the scaffolded code
   4. `pnpm fmt` (or equivalent) runs oxfmt without formatting violations
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Create project scaffold (package.json, vite.config.ts, tsconfig, src/ entry files, Playwright config)
+- [ ] 01-02-PLAN.md — Configure and enforce oxlint + oxfmt quality gates
 
 ### Phase 2: Jamo Core
 **Goal**: All jamo data tables are defined and the three core operations — rotation, combination, and syllable composition/decomposition — are implemented as pure functions with full unit test coverage
