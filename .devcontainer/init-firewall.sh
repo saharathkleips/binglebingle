@@ -60,6 +60,7 @@ done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
 # Resolve and add other allowed domains
 # Using getent ahostsv4 to respect /etc/hosts and handle CNAMEs safely
 for domain in \
+    "cdn.playwright.dev" \
     "nodejs.org" \
     "registry.npmjs.org" \
     "api.anthropic.com" \
