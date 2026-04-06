@@ -11,9 +11,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
-    "lint": "oxlint src/",
-    "fmt": "oxfmt src/",
-    "fmt:check": "oxfmt --check src/"
+    "lint": "oxlint .",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt --check ."
   },
   "dependencies": {
     "react": "^19.2.4",
