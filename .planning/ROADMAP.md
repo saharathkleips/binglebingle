@@ -53,7 +53,12 @@ Plans:
   3. combineJamo('ㄱ','ㄱ') returns 'ㄲ'; combineJamo('ㅗ','ㅏ') returns 'ㅘ'; combineJamo('ㄱ','ㅎ') returns null
   4. composeSyllable('ㅎ','ㅏ','ㄴ') returns '한'; decomposeSyllable('한') returns {choseong:'ㅎ', jungseong:'ㅏ', jongseong:'ㄴ'}
   5. All exported functions in src/lib/jamo/ have colocated Vitest tests that pass
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Define all jamo Unicode tables and derived runtime maps (jamo-data.ts)
+- [ ] 02-02-PLAN.md — Implement rotation and composition functions (rotation.ts, composition.ts)
+- [ ] 02-03-PLAN.md — Implement Character type, resolveCharacter(), and isComplete() (character/)
 
 ### Phase 3: Character
 **Goal**: The Character type and its two core functions — resolveCharacter() and isComplete() — are implemented and fully tested
@@ -147,7 +152,7 @@ practice — but the default execution order is sequential.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Scaffold | 2/2 | Complete   | 2026-04-06 |
-| 2. Jamo Core | 0/? | Not started | - |
+| 2. Jamo Core | 0/3 | Not started | - |
 | 3. Character | 0/? | Not started | - |
 | 4. Word and Pool | 0/? | Not started | - |
 | 5. Engine | 0/? | Not started | - |
