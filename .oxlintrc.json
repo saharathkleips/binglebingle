@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/src/config_schema.json",
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "globals": {
+    "describe": "readonly",
+    "it": "readonly",
+    "test": "readonly",
+    "expect": "readonly",
+    "beforeEach": "readonly",
+    "afterEach": "readonly",
+    "beforeAll": "readonly",
+    "afterAll": "readonly"
+  },
+  "rules": {
+    "no-unused-vars": "error",
+    "no-console": "warn",
+    "no-debugger": "error"
+  },
+  "plugins": ["react", "typescript", "unicorn"],
+  "categories": {
+    "correctness": "error"
+  }
+}
