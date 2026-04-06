@@ -1,5 +1,6 @@
 {
-  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/src/config_schema.json",
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": [".claude/**", ".planning/**"],
   "env": {
     "browser": true,
     "es2022": true
