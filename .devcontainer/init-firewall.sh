@@ -61,6 +61,8 @@ done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
 # Using getent ahostsv4 to respect /etc/hosts and handle CNAMEs safely
 for domain in \
     "cdn.playwright.dev" \
+    "playwright.azureedge.net" \
+    "playwright.microsoft.com" \
     "nodejs.org" \
     "registry.npmjs.org" \
     "api.anthropic.com" \

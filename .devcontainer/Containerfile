@@ -78,6 +78,12 @@ RUN printf '#!/bin/sh\necho "ERROR: npm is disabled - use pnpm instead." >&2\nex
     > /usr/local/bin/npm && \
     chmod +x /usr/local/bin/npm
 
+# ── playwright ───────────────────────────────────────────────────
+ARG PLAYWRIGHT_VERSION=1.58.2
+RUN pnpm dlx playwright@${PLAYWRIGHT_VERSION} install-deps
+
+RUN chown -R dev:dev /home/dev/.local
+
 # ── git-delta ─────────────────────────────────────────────────────────────────
 ARG GIT_DELTA_VERSION=0.18.2
 RUN ARCH=$(dpkg --print-architecture) && \
