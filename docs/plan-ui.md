@@ -1,4 +1,5 @@
 # plan-ui.md
+
 > UI Domain — Implementation Plan
 > Depends on: plan-models.md, plan-game.md, plan-engine.md
 > Status: draft — awaiting review
@@ -78,14 +79,15 @@ Dev settings (`DevSettings`) live in `App` local state. A dev panel is accessibl
 **File**: `src/components/NavBar.tsx`
 
 Persistent across all states. Contains:
+
 - Game name (left)
 - Instructions button — re-shows `InstructionsScreen` (right)
 - Settings button — opens a settings panel (placeholder for MVP; panel is empty) (right)
 
 ```typescript
 type NavBarProps = {
-  onShowInstructions: () => void
-}
+  onShowInstructions: () => void;
+};
 ```
 
 ---
@@ -95,6 +97,7 @@ type NavBarProps = {
 **File**: `src/components/InstructionsScreen.tsx`
 
 Shown on first load and when the instructions button is tapped. Overlays or replaces the game area. Contains:
+
 - Brief explanation of the game
 - Examples of rotation (show ㄱ → ㄴ)
 - Examples of combination (show ㅏ + ㅣ → ㅐ)
@@ -103,8 +106,8 @@ Shown on first load and when the instructions button is tapped. Overlays or repl
 
 ```typescript
 type InstructionsScreenProps = {
-  onDismiss: () => void
-}
+  onDismiss: () => void;
+};
 ```
 
 No game state is read here — instructions are static content.
@@ -174,6 +177,7 @@ Fixed-length row of slots matching `[...state.word].length`. Each slot is either
 **Empty slot**: a drop target. Accepts tokens dragged from the pool. On drop, dispatches `PLACE_TOKEN`.
 
 **Filled slot**: renders the token's current character (via `resolveCharacter`). Two ways to remove:
+
 - **Tap** the filled slot → dispatches `REMOVE_FROM_SLOT`
 - **Drag** the token out of the slot back toward the pool → dispatches `REMOVE_FROM_SLOT`
 
@@ -190,7 +194,7 @@ Slots do not use the `Token` component — they are simpler display elements tha
 The player's primary working area. Renders all tokens in `state.pool` as interactive `Token` components.
 
 ```typescript
-type PoolProps = { won: boolean }
+type PoolProps = { won: boolean };
 
 // Reads: state.pool
 // Dispatches: (via Token) ROTATE_TOKEN, COMBINE_TOKENS, SPLIT_TOKEN, PLACE_TOKEN
@@ -208,9 +212,9 @@ The core interactive element. Only appears in the pool.
 
 ```typescript
 type TokenProps = {
-  tokenId: number
-  character: Character
-}
+  tokenId: number;
+  character: Character;
+};
 ```
 
 ### Display
@@ -233,6 +237,7 @@ Calls `resolveCharacter(character)` and displays the result. Every valid token s
 → `SPLIT_TOKEN` — decomposes the last jamo by one step
 
 This covers all token states cleanly:
+
 - Basic non-rotatable jamo (ㅎ, ㄷ, etc.): tap does nothing (no rotate, no split — single jamo cannot split). The token is inert to taps; drag-only.
 - Rotatable jamo (ㄱ, ㅏ, etc.): tap rotates.
 - Everything else: tap splits.
@@ -242,6 +247,7 @@ This covers all token states cleanly:
 Tokens are draggable via `@dnd-kit/core` with a pointer and touch sensor. A drag only activates after a small movement threshold, so short taps fire the tap handler without interference.
 
 **Drag onto another pool token**: attempt combine.
+
 1. Check validity before dispatching: call `combineJamo(a, b)` or `upgradeJongseong(existing, additional)` based on context (see plan-game.md `COMBINE_TOKENS` branching).
 2. If valid → dispatch `COMBINE_TOKENS`.
 3. If invalid → **do not dispatch**; trigger shake animation on the dragged token instead.
@@ -257,10 +263,10 @@ When a combine attempt is invalid (pre-dispatch check returns null), the token p
 Implementation: a local boolean state `shaking` on the `Token` component. Set to `true` on invalid combine, reset to `false` via `onAnimationEnd`. Drives a CSS class.
 
 ```typescript
-const [shaking, setShaking] = useState(false)
+const [shaking, setShaking] = useState(false);
 
 function handleInvalidCombine() {
-  setShaking(true)
+  setShaking(true);
 }
 
 // On the token element:
@@ -277,7 +283,7 @@ The CSS animation itself is a simple translateX keyframe — trivial to add even
 **File**: `src/components/Controls/Controls.tsx`
 
 ```typescript
-type ControlsProps = { won: boolean }
+type ControlsProps = { won: boolean };
 
 // Reads: state.submission, state.guesses, state.word (via useGame)
 // Dispatches: SUBMIT_GUESS, RESET_ROUND
@@ -286,11 +292,13 @@ type ControlsProps = { won: boolean }
 ### SubmitButton
 
 When `won` is false:
+
 - Calls `canSubmit(state.submission)` on each render
 - Disabled when `canSubmit` returns `{ valid: false }`
 - On click: call `evaluateGuess(state.submission, state.word)`, dispatch `SUBMIT_GUESS` with the result
 
 When `won` is true:
+
 - Renders as a "Share" placeholder button (no share functionality in MVP — button exists but is inert or shows a coming-soon message)
 
 ### ResetButton
@@ -363,14 +371,14 @@ src/
 
 ## Resolved UX Decisions
 
-| # | Decision |
-|---|---|
-| U1 | Tap a rotatable token → rotate (cycles via `getNextRotation`) |
-| U2 | Drag token onto another token → combine (validity checked pre-dispatch) |
-| U3 | Tap a non-rotatable / multi-jamo token → split (one step via `decomposeJamo`) |
-| U4 | Drag token onto empty submission slot → place |
-| U5 | Incomplete tokens may be placed in submission slots; `canSubmit` gates submission |
-| U6 | Invalid combine → shake animation on the dragged token; CSS only, required for MVP |
-| UI1 | Single basic non-rotatable, non-splittable tokens are inert to taps — drag only, no tap feedback |
-| UI2 | Dragging a filled submission slot token back toward the pool also dispatches `REMOVE_FROM_SLOT` — slots are both drop targets and drag sources |
+| #   | Decision                                                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| U1  | Tap a rotatable token → rotate (cycles via `getNextRotation`)                                                                                                                   |
+| U2  | Drag token onto another token → combine (validity checked pre-dispatch)                                                                                                         |
+| U3  | Tap a non-rotatable / multi-jamo token → split (one step via `decomposeJamo`)                                                                                                   |
+| U4  | Drag token onto empty submission slot → place                                                                                                                                   |
+| U5  | Incomplete tokens may be placed in submission slots; `canSubmit` gates submission                                                                                               |
+| U6  | Invalid combine → shake animation on the dragged token; CSS only, required for MVP                                                                                              |
+| UI1 | Single basic non-rotatable, non-splittable tokens are inert to taps — drag only, no tap feedback                                                                                |
+| UI2 | Dragging a filled submission slot token back toward the pool also dispatches `REMOVE_FROM_SLOT` — slots are both drop targets and drag sources                                  |
 | UI3 | On win, the pool area shows score and word overlaid or adjacent; the Board (guess history) remains fully visible and non-interactive since the final row shows the correct word |

@@ -3,8 +3,8 @@
   "build": {
     "dockerfile": "Containerfile",
     "args": {
-      "TZ": "${localEnv:TZ:Asia/Seoul}",
-    },
+      "TZ": "${localEnv:TZ:Asia/Seoul}"
+    }
   },
   "appPort": [5173],
   "runArgs": ["--userns=keep-id", "--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
@@ -13,7 +13,7 @@
   "remoteUser": "dev",
   "containerEnv": {
     "CLAUDE_CONFIG_DIR": "/home/dev/.claude",
-    "ANTHROPIC_BASE_URL": "http://host.containers.internal:8080",
+    "ANTHROPIC_BASE_URL": "http://host.containers.internal:8080"
   },
   "mounts": [
     // pnpm mounts
@@ -28,6 +28,6 @@
     "source=${localEnv:HOME}/.devcontainer/signing_key,target=/home/dev/.ssh/signing_key,type=bind,readonly=true",
     "source=${localEnv:HOME}/.devcontainer/signing_key.pub,target=/home/dev/.ssh/signing_key.pub,type=bind,readonly=true",
     "source=${localEnv:HOME}/.devcontainer/gitconfig.container,target=/home/dev/.gitconfig,type=bind,readonly=true",
-    "source=${localEnv:HOME}/.devcontainer/allowed_signers,target=/home/dev/.ssh/allowed_signers,type=bind,readonly=true",
-  ],
+    "source=${localEnv:HOME}/.devcontainer/allowed_signers,target=/home/dev/.ssh/allowed_signers,type=bind,readonly=true"
+  ]
 }

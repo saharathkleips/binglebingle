@@ -1,4 +1,5 @@
 # plan-engine.md
+
 > Engine Domain — Implementation Plan
 > Depends on: plan-models.md, plan-jamo.md, plan-word.md
 > Status: draft — awaiting review
@@ -10,6 +11,7 @@
 The game rules. Given a submission and a target word, the engine answers two questions: can this be submitted, and what does it score?
 
 **Boundaries:**
+
 - In: `SubmissionState`, `PoolState`, `Word`, `GuessRecord`
 - Out: `ValidationResult`, `GuessRecord`, `ScoringResult`
 - Calls into: `src/lib/jamo/`, `src/lib/character/`, `src/lib/word/`
@@ -36,6 +38,7 @@ src/lib/engine/
 ## What Validation Is (and Isn't)
 
 Because the reducer already enforces that:
+
 - Only pool tokens can be placed in submission slots
 - Only valid combinations are accepted (`combineJamo` and `upgradeJongseong` return null on invalid input)
 - Rotation only produces members of a rotation set
@@ -49,37 +52,34 @@ Because the reducer already enforces that:
 ### Step 1 — `validate.ts`: `canSubmit`
 
 ```typescript
-import { isComplete } from '../character/character'
-import type { SubmissionState } from '../../state/types'
+import { isComplete } from "../character/character";
+import type { SubmissionState } from "../../state/types";
 
-type ValidationResult =
-  | { valid: true }
-  | { valid: false; reason: ValidationFailureReason }
+type ValidationResult = { valid: true } | { valid: false; reason: ValidationFailureReason };
 
 type ValidationFailureReason =
-  | 'NO_CHARACTERS'           // no slots are filled at all
-  | 'INCOMPLETE_CHARACTER'    // at least one filled slot has an incomplete character
+  | "NO_CHARACTERS" // no slots are filled at all
+  | "INCOMPLETE_CHARACTER"; // at least one filled slot has an incomplete character
 
 // Returns whether the current submission state can be submitted as a guess.
 export function canSubmit(submission: SubmissionState): ValidationResult {
-  const filled = submission.filter(slot => slot.filled)
+  const filled = submission.filter((slot) => slot.filled);
 
   if (filled.length === 0) {
-    return { valid: false, reason: 'NO_CHARACTERS' }
+    return { valid: false, reason: "NO_CHARACTERS" };
   }
 
-  const hasIncomplete = filled.some(
-    slot => slot.filled && !isComplete(slot.character)
-  )
+  const hasIncomplete = filled.some((slot) => slot.filled && !isComplete(slot.character));
   if (hasIncomplete) {
-    return { valid: false, reason: 'INCOMPLETE_CHARACTER' }
+    return { valid: false, reason: "INCOMPLETE_CHARACTER" };
   }
 
-  return { valid: true }
+  return { valid: true };
 }
 ```
 
 **What this does not check:**
+
 - Whether characters are real Korean words — not required by the game rules
 - Whether all slots are filled — the player may submit a partial guess; empty slots evaluate as `'absent'`
 - Whether characters are derivable from the pool — guaranteed by the reducer
@@ -93,50 +93,45 @@ Produces a `GuessRecord` from a submission and the target word. Empty slots prod
 The evaluation algorithm follows the standard two-pass approach to handle duplicate characters correctly.
 
 ```typescript
-import type { SubmissionState } from '../../state/types'
-import type { Word } from '../word/types'
-import type { GuessRecord, EvaluatedCharacter } from '../engine/types'
-import { resolveCharacter } from '../character/character'
+import type { SubmissionState } from "../../state/types";
+import type { Word } from "../word/types";
+import type { GuessRecord, EvaluatedCharacter } from "../engine/types";
+import { resolveCharacter } from "../character/character";
 
-export function evaluateGuess(
-  submission: SubmissionState,
-  word: Word,
-): GuessRecord {
-  const target = [...word]                    // e.g. ['한','국','어']
-  const guessed = submission.map(slot =>
-    slot.filled ? resolveCharacter(slot.character) : null
-  )                                           // e.g. ['한', null, '어']
+export function evaluateGuess(submission: SubmissionState, word: Word): GuessRecord {
+  const target = [...word]; // e.g. ['한','국','어']
+  const guessed = submission.map((slot) => (slot.filled ? resolveCharacter(slot.character) : null)); // e.g. ['한', null, '어']
 
-  const results: CharacterResult[] = new Array(target.length).fill('absent')
-  const targetAvailable = target.map(() => true)   // tracks unmatched target positions
+  const results: CharacterResult[] = new Array(target.length).fill("absent");
+  const targetAvailable = target.map(() => true); // tracks unmatched target positions
 
   // Pass 1: mark exact matches (correct)
   for (let i = 0; i < target.length; i++) {
     if (guessed[i] !== null && guessed[i] === target[i]) {
-      results[i] = 'correct'
-      targetAvailable[i] = false
+      results[i] = "correct";
+      targetAvailable[i] = false;
     }
   }
 
   // Pass 2: mark present characters (in word, wrong position)
   for (let i = 0; i < target.length; i++) {
-    if (results[i] === 'correct') continue     // already matched
-    if (guessed[i] === null) continue          // empty slot — stays 'absent'
+    if (results[i] === "correct") continue; // already matched
+    if (guessed[i] === null) continue; // empty slot — stays 'absent'
 
-    const matchIndex = target.findIndex(
-      (ch, j) => targetAvailable[j] && ch === guessed[i]
-    )
+    const matchIndex = target.findIndex((ch, j) => targetAvailable[j] && ch === guessed[i]);
     if (matchIndex !== -1) {
-      results[i] = 'present'
-      targetAvailable[matchIndex] = false
+      results[i] = "present";
+      targetAvailable[matchIndex] = false;
     }
   }
 
   // Assemble GuessRecord — character and result always together
-  return submission.map((slot, i): EvaluatedCharacter => ({
-    character: guessed[i] ?? '',    // empty string for unfilled slots
-    result: results[i],
-  }))
+  return submission.map(
+    (slot, i): EvaluatedCharacter => ({
+      character: guessed[i] ?? "", // empty string for unfilled slots
+      result: results[i],
+    }),
+  );
 }
 ```
 
@@ -149,16 +144,16 @@ export function evaluateGuess(
 ### Step 3 — `scoring.ts`: `calculateScore`
 
 ```typescript
-import type { GuessRecord } from './types'
+import type { GuessRecord } from "./types";
 
 type ScoringResult = {
-  guessCount: number
-}
+  guessCount: number;
+};
 
 // Returns the score for a completed game.
 // guesses is the full history of all submitted GuessRecords.
 export function calculateScore(guesses: readonly GuessRecord[]): ScoringResult {
-  return { guessCount: guesses.length }
+  return { guessCount: guesses.length };
 }
 ```
 
@@ -171,26 +166,22 @@ Simple for MVP — score equals the number of guesses taken. `ScoringResult` is 
 Types that belong to the engine domain and are imported by other domains:
 
 ```typescript
-export type CharacterResult = 'correct' | 'present' | 'absent'
+export type CharacterResult = "correct" | "present" | "absent";
 
 export type EvaluatedCharacter = {
-  character: string       // resolved syllable string, or '' for an empty slot
-  result: CharacterResult
-}
+  character: string; // resolved syllable string, or '' for an empty slot
+  result: CharacterResult;
+};
 
-export type GuessRecord = readonly EvaluatedCharacter[]
+export type GuessRecord = readonly EvaluatedCharacter[];
 
-export type ValidationResult =
-  | { valid: true }
-  | { valid: false; reason: ValidationFailureReason }
+export type ValidationResult = { valid: true } | { valid: false; reason: ValidationFailureReason };
 
-export type ValidationFailureReason =
-  | 'NO_CHARACTERS'
-  | 'INCOMPLETE_CHARACTER'
+export type ValidationFailureReason = "NO_CHARACTERS" | "INCOMPLETE_CHARACTER";
 
 export type ScoringResult = {
-  guessCount: number
-}
+  guessCount: number;
+};
 ```
 
 > **Note for agent**: `GuessRecord`, `EvaluatedCharacter`, and `CharacterResult` were previously typed in `src/state/types.ts` in plan-models.md. Move them to `src/lib/engine/types.ts` — they are engine outputs, not state definitions. `src/state/types.ts` imports them from here.
@@ -222,14 +213,17 @@ For a 3-character word `'한국어'`:
 - All empty → all `'absent'`
 
 Duplicate handling — target `'아아아'`, guess `['아', empty, empty]`:
+
 - Position 0 is `'correct'`; positions 1 and 2 are `'absent'` (not `'present'` — the remaining two `'아'` in target are consumed by the empty slots which skip them)
 
 Wait — empty slots do not consume target characters. Re-stating: target `'아아아'`, guess `['아', empty, '나']`:
+
 - Pass 1: position 0 `'아'` === target[0] `'아'` → `'correct'`, targetAvailable[0] = false
 - Pass 2: position 1 is empty → skip. Position 2 `'나'` — not in remaining target → `'absent'`
 - Result: `['correct', 'absent', 'absent']`
 
 Additional duplicate test — target `'가가나'`, guess `['가', empty, '가']`:
+
 - Pass 1: position 0 `'correct'`, position 2 `'가'` !== `'나'` → not marked
 - Pass 2: position 2 `'가'` — finds target[1] `'가'` available → `'present'`
 - Result: `['correct', 'absent', 'present']`

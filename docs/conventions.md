@@ -1,4 +1,5 @@
 # conventions.md
+
 > Jamo Word Game — Coding Conventions
 > Status: locked
 
@@ -31,13 +32,13 @@ pnpm run <script>
 
 ## File & Folder Naming
 
-| Thing | Convention | Example |
-|---|---|---|
-| Folders | `kebab-case` | `src/components/rack/` |
-| React component files | `PascalCase.tsx` | `RackTile.tsx` |
-| Non-component TS files | `kebab-case.ts` | `jamo-data.ts`, `game-reducer.ts` |
-| Test files | mirror source name + `.test.ts(x)` | `composition.test.ts` |
-| Constant files | `kebab-case.ts` | `rotation-sets.ts` |
+| Thing                  | Convention                         | Example                           |
+| ---------------------- | ---------------------------------- | --------------------------------- |
+| Folders                | `kebab-case`                       | `src/components/rack/`            |
+| React component files  | `PascalCase.tsx`                   | `RackTile.tsx`                    |
+| Non-component TS files | `kebab-case.ts`                    | `jamo-data.ts`, `game-reducer.ts` |
+| Test files             | mirror source name + `.test.ts(x)` | `composition.test.ts`             |
+| Constant files         | `kebab-case.ts`                    | `rotation-sets.ts`                |
 
 Component folders group related files with no index barrel. Import directly from the file containing what you need:
 
@@ -50,7 +51,7 @@ src/components/Rack/
 
 ```typescript
 // ✓ direct import
-import { RackTile } from '../components/Rack/RackTile'
+import { RackTile } from "../components/Rack/RackTile";
 ```
 
 ---
@@ -65,12 +66,12 @@ import { RackTile } from '../components/Rack/RackTile'
 
 ```typescript
 // ✓
-const isValidGuess = isGuessValid(guess, pool)
-const hasJongseong = decomposed.jongseong !== undefined
+const isValidGuess = isGuessValid(guess, pool);
+const hasJongseong = decomposed.jongseong !== undefined;
 
 // ✗
-const valid = isGuessValid(guess, pool)
-const check = decomposed.jongseong !== undefined
+const valid = isGuessValid(guess, pool);
+const check = decomposed.jongseong !== undefined;
 ```
 
 ### Constants
@@ -91,12 +92,12 @@ export const MAX_WORD_LENGTH = 5
 - Discriminated unions: always include a `kind` or `type` literal field
 
 ```typescript
-type TileResult = 'green' | 'yellow' | 'gray'
+type TileResult = "green" | "yellow" | "gray";
 
 type GameAction =
-  | { type: 'ROTATE_JAMO'; payload: { jamoId: string; targetJamo: string } }
-  | { type: 'SUBMIT_GUESS'; payload: { characters: string[] } }
-  | { type: 'RESET_GAME' }
+  | { type: "ROTATE_JAMO"; payload: { jamoId: string; targetJamo: string } }
+  | { type: "SUBMIT_GUESS"; payload: { characters: string[] } }
+  | { type: "RESET_GAME" };
 ```
 
 ### React components
@@ -151,9 +152,9 @@ Within a component file, always in this order:
 ```typescript
 // src/state/GameContext.tsx
 export function useGame() {
-  const ctx = useContext(GameContext)
-  if (!ctx) throw new Error('useGame must be used within GameProvider')
-  return ctx
+  const ctx = useContext(GameContext);
+  if (!ctx) throw new Error("useGame must be used within GameProvider");
+  return ctx;
 }
 ```
 
@@ -170,6 +171,7 @@ export function useGame() {
 This project targets **React 19 with the React Compiler enabled**. The compiler handles memoization of components, callbacks, and derived values automatically — do not add manual `useMemo` or `useCallback` calls speculatively.
 
 Manual memoization is only appropriate in two cases:
+
 1. The React Compiler is explicitly disabled for a subtree (via `'use no memo'` directive) — document why
 2. A specific, measured performance problem exists that the compiler is not resolving
 
@@ -198,11 +200,9 @@ export function getRotationOptions(jamo: string) { ... }
 4. **No `throw` in validation/evaluation functions**. Return a typed result instead:
 
 ```typescript
-type ValidationResult =
-  | { valid: true }
-  | { valid: false; reason: string }
+type ValidationResult = { valid: true } | { valid: false; reason: string };
 
-export function isGuessValid(guess: string[], pool: JamoPool): ValidationResult
+export function isGuessValid(guess: string[], pool: JamoPool): ValidationResult;
 ```
 
 5. **Test coverage required** for every exported function in `src/lib/`. A function with no test does not exist as far as the agent is concerned.
@@ -283,16 +283,16 @@ describe('getRotationOptions', () => {
 - Every exported function in `src/lib/` must have a JSDoc comment with `@param` and `@returns`
 - No commented-out code committed to main
 - `// TODO:` comments are acceptable; they must include a description of what needs doing. `// FIXME:` for known bugs. Both are searchable and reviewable.
-- Do not explain *what* the code does in comments — explain *why* if the reason is non-obvious
+- Do not explain _what_ the code does in comments — explain _why_ if the reason is non-obvious
 
 ```typescript
 // ✓ explains why
 // jongseongIndex uses a different table than choseongIndex per Unicode standard (UAX #15)
-const jongseongIdx = JONGSEONG_INDEX_TABLE[jamo] ?? 0
+const jongseongIdx = JONGSEONG_INDEX_TABLE[jamo] ?? 0;
 
 // ✗ explains what (the code already says this)
 // get jongseong index
-const jongseongIdx = JONGSEONG_INDEX_TABLE[jamo] ?? 0
+const jongseongIdx = JONGSEONG_INDEX_TABLE[jamo] ?? 0;
 ```
 
 ---

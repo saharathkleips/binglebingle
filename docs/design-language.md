@@ -33,17 +33,17 @@ qualities to carry into the UI:
 
 Extracted from reference photography. Use these values precisely.
 
-| Role | Name | Hex | Usage |
-|---|---|---|---|
-| Background | Vermillion | `#C8391A` | Primary surface — warm red-orange |
-| Structure | Forest green | `#2A6B3A` | Frames, borders, tile backs |
-| Accent | Navy | `#1C2D7A` | Secondary frames, contrast elements |
-| Highlight | Golden yellow | `#D4920A` | Accent fills, active states |
-| Light | Cream | `#F0E2B4` | Text on dark, light fills |
-| Outline | Near-black | `#1A120A` | All outlines and dividers |
-| Correct | Deep red | `#A82010` | Correct position result tile |
-| Present | Amber | `#C87808` | Present but wrong position tile |
-| Absent | Slate | `#3A3A4A` | Absent tile |
+| Role       | Name          | Hex       | Usage                               |
+| ---------- | ------------- | --------- | ----------------------------------- |
+| Background | Vermillion    | `#C8391A` | Primary surface — warm red-orange   |
+| Structure  | Forest green  | `#2A6B3A` | Frames, borders, tile backs         |
+| Accent     | Navy          | `#1C2D7A` | Secondary frames, contrast elements |
+| Highlight  | Golden yellow | `#D4920A` | Accent fills, active states         |
+| Light      | Cream         | `#F0E2B4` | Text on dark, light fills           |
+| Outline    | Near-black    | `#1A120A` | All outlines and dividers           |
+| Correct    | Deep red      | `#A82010` | Correct position result tile        |
+| Present    | Amber         | `#C87808` | Present but wrong position tile     |
+| Absent     | Slate         | `#3A3A4A` | Absent tile                         |
 
 The **vermillion background** is the dominant surface — not dark, not neutral.
 The UI should feel warm and rich, like looking up at a temple ceiling.
@@ -79,6 +79,7 @@ card or a carved game piece, not a UI button.
 - **Drop shadow:** Subtle, warm-toned — suggests physical thickness
 
 Tile states:
+
 - **Default (pool):** Near-black face, cream character, coloured border frame
 - **Selected/active:** Golden yellow accent glow or border brightening
 - **Correct:** Deep red face fill, cream character

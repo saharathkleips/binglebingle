@@ -1,4 +1,5 @@
 # plan-models.md
+
 > Jamo Word Game — Data Types, Interfaces, and State Shape
 > Status: draft — awaiting review
 
@@ -17,25 +18,25 @@ A jamo is a plain `string` — one Unicode compatibility jamo character. No wrap
 
 // Source of truth for rotation rules — edit here only
 export const ROTATION_SETS: readonly (readonly string[])[] = [
-  ['ㄱ', 'ㄴ'],
-  ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ'],
-  ['ㅣ', 'ㅡ'],
-  ['ㅑ', 'ㅕ', 'ㅛ', 'ㅠ'],
-]
+  ["ㄱ", "ㄴ"],
+  ["ㅏ", "ㅓ", "ㅗ", "ㅜ"],
+  ["ㅣ", "ㅡ"],
+  ["ㅑ", "ㅕ", "ㅛ", "ㅠ"],
+];
 
 // Derived from ROTATION_SETS at module load — used for all runtime lookups
-export const ROTATION_MAP: ReadonlyMap<string, readonly string[]>
+export const ROTATION_MAP: ReadonlyMap<string, readonly string[]>;
 ```
 
 ```typescript
 // src/lib/jamo/rotation.ts
 
 // All jamo this one can become (excluding itself), or [] if not rotatable
-export function getRotationOptions(jamo: string): readonly string[]
+export function getRotationOptions(jamo: string): readonly string[];
 
 // The next jamo when cycling clockwise through the rotation set (wraps around)
 // Returns null if the jamo is not rotatable
-export function getNextRotation(jamo: string): string | null
+export function getNextRotation(jamo: string): string | null;
 ```
 
 ### Combination
@@ -46,12 +47,12 @@ Combination is **commutative** — argument order does not matter.
 // src/lib/jamo/jamo-data.ts
 
 type CombinationRule = {
-  inputs: readonly [string, string]
-  output: string
-  kind: 'doubleConsonant' | 'complexVowel'  // compound batchim handled by upgradeJongseong
-}
+  inputs: readonly [string, string];
+  output: string;
+  kind: "doubleConsonant" | "complexVowel"; // compound batchim handled by upgradeJongseong
+};
 
-export const COMBINATION_RULES: readonly CombinationRule[]
+export const COMBINATION_RULES: readonly CombinationRule[];
 ```
 
 ```typescript
@@ -59,7 +60,7 @@ export const COMBINATION_RULES: readonly CombinationRule[]
 
 // Returns the combined jamo if a rule exists for this pair, or null
 // Order of arguments does not matter: combineJamo('ㅗ','ㅏ') === combineJamo('ㅏ','ㅗ')
-export function combineJamo(a: string, b: string): string | null
+export function combineJamo(a: string, b: string): string | null;
 ```
 
 ### Syllable Block Composition
@@ -70,9 +71,9 @@ A Korean syllable block is built from choseong (initial consonant) + jungseong (
 // src/lib/jamo/jamo-data.ts
 
 // Each maps a compatibility jamo string to its Unicode position ordinal
-export const CHOSEONG_INDEX:  Readonly<Record<string, number>>
-export const JUNGSEONG_INDEX: Readonly<Record<string, number>>
-export const JONGSEONG_INDEX: Readonly<Record<string, number>>
+export const CHOSEONG_INDEX: Readonly<Record<string, number>>;
+export const JUNGSEONG_INDEX: Readonly<Record<string, number>>;
+export const JONGSEONG_INDEX: Readonly<Record<string, number>>;
 // JONGSEONG_INDEX[''] === 0  (no final consonant)
 ```
 
@@ -85,13 +86,13 @@ export function composeSyllable(
   choseong: string,
   jungseong: string,
   jongseong?: string,
-): string | null
+): string | null;
 
 // Decomposes a syllable block back into its parts
 // Returns null if the input is not in the syllable block range U+AC00–U+D7A3
 export function decomposeSyllable(
   syllable: string,
-): { choseong: string; jungseong: string; jongseong: string | null } | null
+): { choseong: string; jungseong: string; jongseong: string | null } | null;
 ```
 
 ---
@@ -104,8 +105,8 @@ export function decomposeSyllable(
 // src/lib/character/types.ts
 
 type Character = {
-  jamo: readonly string[]
-}
+  jamo: readonly string[];
+};
 ```
 
 ### `resolveCharacter`
@@ -117,32 +118,36 @@ This is the core function of the model. It takes the raw jamo list and reduces i
 
 // Reduces a character's jamo list to its resolved form.
 // Returns the resolved string, or null if the jamo cannot be meaningfully reduced.
-export function resolveCharacter(character: Character): string | null
+export function resolveCharacter(character: Character): string | null;
 ```
 
 **How resolution works, step by step:**
 
 If the jamo list has two entries and a combination rule exists for them, the result is the combined jamo:
+
 - `['ㅏ', 'ㅣ']` → `combineJamo('ㅏ','ㅣ')` → `'ㅐ'`
 - `['ㄱ', 'ㄱ']` → `combineJamo('ㄱ','ㄱ')` → `'ㄲ'`
 
 If the list contains a consonant followed by a vowel (with optional second consonant), syllable composition is attempted:
+
 - `['ㅎ', 'ㅐ']` → `composeSyllable('ㅎ','ㅐ')` → `'해'`
 - `['ㄱ', 'ㅏ', 'ㄱ']` → `composeSyllable('ㄱ','ㅏ','ㄱ')` → `'각'`
 - `['ㅎ', 'ㅏ', 'ㄴ']` → `composeSyllable('ㅎ','ㅏ','ㄴ')` → `'한'`
 
 If the list is a single jamo with no further reduction possible, it returns that jamo as-is:
+
 - `['ㄱ']` → `'ㄱ'`
-- `['ㅐ']` → `'ㅐ'`  (already a combined vowel — resolves to itself)
+- `['ㅐ']` → `'ㅐ'` (already a combined vowel — resolves to itself)
 
 If the jamo cannot be reduced (e.g. two consonants with no combination rule), returns `null`:
+
 - `['ㄱ', 'ㅎ']` → `null` (no combination rule, cannot compose a syllable)
 
 ### `isComplete`
 
 ```typescript
 // Returns true if resolveCharacter produces a valid Korean syllable block (U+AC00–U+D7A3)
-export function isComplete(character: Character): boolean
+export function isComplete(character: Character): boolean;
 ```
 
 A complete character is one that resolves to a syllable block — not a bare jamo, not an intermediate combined jamo, not null. `'해'` is complete; `'ㅐ'` is not.
@@ -156,29 +161,29 @@ A `Word` is a branded string — the target the player is guessing. Everything e
 ```typescript
 // src/lib/word/types.ts
 
-type Word = string & { readonly _brand: 'Word' }
+type Word = string & { readonly _brand: "Word" };
 
 function createWord(s: string): Word {
   // validate that s is a non-empty string of Korean syllable blocks
-  return s as Word
+  return s as Word;
 }
 
 // Strategies for selecting a word — used by game setup and dev settings
 type WordSelectionStrategy =
-  | { kind: 'daily' }
-  | { kind: 'random' }
-  | { kind: 'fixed'; word: string }
-  | { kind: 'byDate'; date: string }    // ISO date 'YYYY-MM-DD'
+  | { kind: "daily" }
+  | { kind: "random" }
+  | { kind: "fixed"; word: string }
+  | { kind: "byDate"; date: string }; // ISO date 'YYYY-MM-DD'
 ```
 
 Derived properties — computed, never stored:
 
 ```typescript
 // The individual syllable block characters, e.g. [...'한국어'] → ['한','국','어']
-const chars: string[] = [...word]
+const chars: string[] = [...word];
 
 // The number of characters (Unicode-safe)
-const length: number = [...word].length
+const length: number = [...word].length;
 ```
 
 The word string is its own natural identifier — no separate `id` field.
@@ -189,7 +194,7 @@ The jamo pool for a word is derived in two steps:
 // Step 1 — decompose every character of the word into its constituent jamo,
 // leaving them in their natural (possibly rotated) form.
 // e.g. '한국어' → ['ㅎ', 'ㄴ', 'ㄱ', 'ㅜ', 'ㄱ', 'ㅇ', 'ㅓ']
-export function derivePool(word: Word): readonly string[]
+export function derivePool(word: Word): readonly string[];
 
 // Step 2 — rotate each jamo to the 0-index member of its rotation set.
 // This normalizes the pool to a clean slate that does not reveal
@@ -197,7 +202,7 @@ export function derivePool(word: Word): readonly string[]
 // e.g. ['ㄴ'] → ['ㄱ'] (ㄴ is index 1 in ['ㄱ','ㄴ'], so it becomes ㄱ)
 //      ['ㅓ'] → ['ㅏ'] (ㅓ is index 1 in ['ㅏ','ㅓ','ㅗ','ㅜ'], so it becomes ㅏ)
 //      ['ㅎ'] → ['ㅎ'] (not rotatable — unchanged)
-export function normalizePool(jamo: readonly string[]): readonly string[]
+export function normalizePool(jamo: readonly string[]): readonly string[];
 ```
 
 Game initialization calls both in sequence: `normalizePool(derivePool(word))`. `derivePool` is also useful independently for decomposing arbitrary words or characters outside of game initialization.
@@ -212,11 +217,11 @@ The pool is the collection of jamo tokens available to the player each round. Ea
 // src/state/types.ts
 
 type PoolToken = {
-  id: number          // stable index into the original pool array — never changes
-  character: Character
-}
+  id: number; // stable index into the original pool array — never changes
+  character: Character;
+};
 
-type PoolState = readonly PoolToken[]
+type PoolState = readonly PoolToken[];
 ```
 
 `id` is the token's stable identity across state updates. It is used by the reducer to locate a specific token and by the UI to key rendered elements. It does not encode position or ordering — it is just a unique number.
@@ -225,7 +230,7 @@ The initial pool is constructed once per word and reconstructed on reset:
 
 ```typescript
 // Constructs a fresh pool from a word — one single-jamo token per pool entry
-export function createInitialPool(word: Word): PoolState
+export function createInitialPool(word: Word): PoolState;
 ```
 
 After submission, reset is **composable** — the application decides which tokens to restore and which to keep in place. A full reset calls `createInitialPool`. A partial reset (e.g. keeping correct characters in their submission slots) is built from that same function plus selective restoration logic determined later.
@@ -239,14 +244,13 @@ The submission area holds one slot per character in the target word.
 ```typescript
 // src/state/types.ts
 
-type SubmissionSlot =
-  | { filled: true;  tokenId: number; character: Character }
-  | { filled: false }
+type SubmissionSlot = { filled: true; tokenId: number; character: Character } | { filled: false };
 
-type SubmissionState = readonly SubmissionSlot[]  // length always equals [...word].length
+type SubmissionState = readonly SubmissionSlot[]; // length always equals [...word].length
 ```
 
 **Rules:**
+
 - A slot may be filled with a complete **or** incomplete character — whether incomplete characters may be placed in slots is a UX decision left open for now
 - A guess may only be submitted when every filled slot contains a **complete** character (`isComplete` returns true)
 - An empty slot is treated as `'absent'` in the evaluation
@@ -262,9 +266,9 @@ Semantic names — colours are a UI decision.
 
 ```typescript
 type CharacterResult =
-  | 'correct'   // character is at the right position
-  | 'present'   // character is in the word but at a different position
-  | 'absent'    // character is not in the word (or slot was empty)
+  | "correct" // character is at the right position
+  | "present" // character is in the word but at a different position
+  | "absent"; // character is not in the word (or slot was empty)
 ```
 
 ### `EvaluatedCharacter`
@@ -273,15 +277,15 @@ Character and result are always stored together — no parallel arrays.
 
 ```typescript
 type EvaluatedCharacter = {
-  character: string       // the resolved syllable string, or null for an empty slot
-  result: CharacterResult
-}
+  character: string; // the resolved syllable string, or null for an empty slot
+  result: CharacterResult;
+};
 ```
 
 ### `GuessRecord`
 
 ```typescript
-type GuessRecord = readonly EvaluatedCharacter[]  // length === [...word].length
+type GuessRecord = readonly EvaluatedCharacter[]; // length === [...word].length
 ```
 
 ---
@@ -292,11 +296,11 @@ type GuessRecord = readonly EvaluatedCharacter[]  // length === [...word].length
 // src/state/types.ts
 
 type GameState = {
-  word: Word
-  pool: PoolState
-  submission: SubmissionState
-  guesses: readonly GuessRecord[]
-}
+  word: Word;
+  pool: PoolState;
+  submission: SubmissionState;
+  guesses: readonly GuessRecord[];
+};
 ```
 
 **On `readonly` arrays:** `readonly GuessRecord[]` means the array cannot be mutated in place (no `.push()`). The reducer returns new state by spreading: `guesses: [...state.guesses, newRecord]`. This is standard reducer pattern and does not prevent the array from growing.
@@ -305,14 +309,15 @@ type GameState = {
 
 ```typescript
 function isWon(state: GameState): boolean {
-  const last = state.guesses.at(-1)
-  return last !== undefined && last.every(e => e.result === 'correct')
+  const last = state.guesses.at(-1);
+  return last !== undefined && last.every((e) => e.result === "correct");
 }
 ```
 
 There is no `status` field and no `'idle'` state. The application layer controls whether a game is active by deciding whether to render the game component at all. The game component always assumes it has a valid `word`.
 
 **Invariants:**
+
 - `submission.length === [...state.word].length` at all times
 - `pool` and `submission` are reset (fully or partially) after `SUBMIT_GUESS`
 - `guesses` grows by one record per `SUBMIT_GUESS`
@@ -326,7 +331,7 @@ export function createInitialGameState(word: Word): GameState {
     pool: createInitialPool(word),
     submission: Array.from({ length: [...word].length }, () => ({ filled: false })),
     guesses: [],
-  }
+  };
 }
 ```
 
@@ -340,13 +345,13 @@ export function createInitialGameState(word: Word): GameState {
 // src/state/types.ts
 
 type GameAction =
-  | { type: 'ROTATE_TOKEN';     payload: { tokenId: number; targetJamo: string } }
-  | { type: 'COMBINE_TOKENS';   payload: { tokenIdA: number; tokenIdB: number } }
-  | { type: 'SPLIT_TOKEN';      payload: { tokenId: number } }
-  | { type: 'PLACE_TOKEN';      payload: { tokenId: number; slotIndex: number } }
-  | { type: 'REMOVE_FROM_SLOT'; payload: { slotIndex: number } }
-  | { type: 'SUBMIT_GUESS';     payload: { evaluation: GuessRecord } }
-  | { type: 'RESET_ROUND' }
+  | { type: "ROTATE_TOKEN"; payload: { tokenId: number; targetJamo: string } }
+  | { type: "COMBINE_TOKENS"; payload: { tokenIdA: number; tokenIdB: number } }
+  | { type: "SPLIT_TOKEN"; payload: { tokenId: number } }
+  | { type: "PLACE_TOKEN"; payload: { tokenId: number; slotIndex: number } }
+  | { type: "REMOVE_FROM_SLOT"; payload: { slotIndex: number } }
+  | { type: "SUBMIT_GUESS"; payload: { evaluation: GuessRecord } }
+  | { type: "RESET_ROUND" };
 ```
 
 ### Action Semantics
@@ -367,7 +372,7 @@ If neither case applies (e.g. trying to add a consonant to a character with no j
 
 **`REMOVE_FROM_SLOT`** — returns a token from a submission slot back to the pool. Sets the slot to `{ filled: false }`.
 
-**`SUBMIT_GUESS`** — receives a pre-computed `GuessRecord` in its payload (computed by the engine *before* dispatch), appends it to `guesses`, then resets pool and submission. The reducer does not compute evaluation — it only records it.
+**`SUBMIT_GUESS`** — receives a pre-computed `GuessRecord` in its payload (computed by the engine _before_ dispatch), appends it to `guesses`, then resets pool and submission. The reducer does not compute evaluation — it only records it.
 
 **`RESET_ROUND`** — resets pool and submission without appending to guesses. Used for clear/restart within the same word.
 
@@ -382,14 +387,14 @@ Dev settings live in application state, not game state.
 // WordSelectionStrategy is imported from src/lib/word/types.ts
 
 type DevSettings = {
-  enabled: boolean
-  strategy: WordSelectionStrategy
-}
+  enabled: boolean;
+  strategy: WordSelectionStrategy;
+};
 
 const DEFAULT_DEV_SETTINGS: DevSettings = {
   enabled: false,
-  strategy: { kind: 'daily' },
-}
+  strategy: { kind: "daily" },
+};
 ```
 
 Dev settings are not persisted to `localStorage`.
@@ -402,12 +407,12 @@ Dev settings are not persisted to `localStorage`.
 // localStorage key: 'jamo-game-score-history'
 
 type ScoreRecord = {
-  word: string          // the word string is the identifier
-  guessCount: number
-  completedAt: string   // ISO 8601 datetime
-}
+  word: string; // the word string is the identifier
+  guessCount: number;
+  completedAt: string; // ISO 8601 datetime
+};
 
-type ScoreHistory = ScoreRecord[]
+type ScoreHistory = ScoreRecord[];
 ```
 
 A separate `UserSettings` key may be added later for preferences such as default difficulty. Not modelled yet.
@@ -416,9 +421,9 @@ A separate `UserSettings` key may be added later for preferences such as default
 
 ## Resolved Assumptions
 
-| # | Decision |
-|---|---|
-| M1 | `COMBINE_TOKENS` validates via `combineJamo` — invalid combinations are a no-op. Players cannot reach an unresolvable state. |
-| M2 | Absent-by-omission and absent-by-wrong-character are the same result — both are `'absent'`. No fourth variant needed. |
-| M3 | Pool derivation is two steps: `derivePool` decomposes the word into natural jamo; `normalizePool` rotates each to its 0-index rotation state. Run once at game init. `derivePool` remains useful standalone. |
-| M4 | On `SPLIT_TOKEN`, all pool token ids are reassigned from scratch. No counter in state. |
+| #   | Decision                                                                                                                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M1  | `COMBINE_TOKENS` validates via `combineJamo` — invalid combinations are a no-op. Players cannot reach an unresolvable state.                                                                                 |
+| M2  | Absent-by-omission and absent-by-wrong-character are the same result — both are `'absent'`. No fourth variant needed.                                                                                        |
+| M3  | Pool derivation is two steps: `derivePool` decomposes the word into natural jamo; `normalizePool` rotates each to its 0-index rotation state. Run once at game init. `derivePool` remains useful standalone. |
+| M4  | On `SPLIT_TOKEN`, all pool token ids are reassigned from scratch. No counter in state.                                                                                                                       |

@@ -1,4 +1,5 @@
 # architecture.md
+
 > Jamo Word Game — System Architecture
 > Last updated: revision 3 (locked)
 
@@ -100,7 +101,7 @@ The central creative loop of the game is:
 2. **Combine** two jamo tokens to form a more complex jamo
 3. **Compose** a set of jamo (choseong + jungseong + optional jongseong) into a syllable block
 
-These three operations are independent and can be applied in sequence. A player may rotate a jamo *then* combine the result — this is intentional and is one of the primary sources of puzzle depth. The engine must apply them in this order when validating a guess: first check whether all jamo used can be derived (via rotation and/or combination) from the pool, then check that syllable composition rules are satisfied.
+These three operations are independent and can be applied in sequence. A player may rotate a jamo _then_ combine the result — this is intentional and is one of the primary sources of puzzle depth. The engine must apply them in this order when validating a guess: first check whether all jamo used can be derived (via rotation and/or combination) from the pool, then check that syllable composition rules are satisfied.
 
 ---
 
@@ -122,7 +123,7 @@ A jamo not appearing in any set cannot be rotated. Lookup signature:
 
 ```typescript
 // Returns all jamo this one can become (excluding itself), or []
-export function getRotationOptions(jamo: string): string[]
+export function getRotationOptions(jamo: string): string[];
 ```
 
 ---
@@ -133,8 +134,8 @@ Jamo can be **combined** to form more complex jamo. Combination takes two jamo t
 
 #### 1. Double consonants (쌍자음)
 
-| Input    | Output |
-|----------|--------|
+| Input   | Output |
+| ------- | ------ |
 | ㄱ + ㄱ | ㄲ     |
 | ㄷ + ㄷ | ㄸ     |
 | ㅂ + ㅂ | ㅃ     |
@@ -143,23 +144,24 @@ Jamo can be **combined** to form more complex jamo. Combination takes two jamo t
 
 #### 2. Complex vowels (복합모음)
 
-| Input      | Output | Constituent atoms  |
-|------------|--------|--------------------|
-| ㅏ + ㅣ   | ㅐ     | ㅏ ㅣ              |
-| ㅑ + ㅣ   | ㅒ     | ㅑ ㅣ              |
-| ㅓ + ㅣ   | ㅔ     | ㅓ ㅣ              |
-| ㅕ + ㅣ   | ㅖ     | ㅕ ㅣ              |
-| ㅗ + ㅏ   | ㅘ     | ㅗ ㅏ              |
-| ㅗ + ㅏ + ㅣ | ㅙ  | ㅗ ㅏ ㅣ           |
-| ㅗ + ㅣ   | ㅚ     | ㅗ ㅣ              |
-| ㅜ + ㅓ   | ㅝ     | ㅜ ㅓ              |
-| ㅜ + ㅓ + ㅣ | ㅞ  | ㅜ ㅓ ㅣ           |
-| ㅜ + ㅣ   | ㅟ     | ㅜ ㅣ              |
-| ㅡ + ㅣ   | ㅢ     | ㅡ ㅣ              |
+| Input        | Output | Constituent atoms |
+| ------------ | ------ | ----------------- |
+| ㅏ + ㅣ      | ㅐ     | ㅏ ㅣ             |
+| ㅑ + ㅣ      | ㅒ     | ㅑ ㅣ             |
+| ㅓ + ㅣ      | ㅔ     | ㅓ ㅣ             |
+| ㅕ + ㅣ      | ㅖ     | ㅕ ㅣ             |
+| ㅗ + ㅏ      | ㅘ     | ㅗ ㅏ             |
+| ㅗ + ㅏ + ㅣ | ㅙ     | ㅗ ㅏ ㅣ          |
+| ㅗ + ㅣ      | ㅚ     | ㅗ ㅣ             |
+| ㅜ + ㅓ      | ㅝ     | ㅜ ㅓ             |
+| ㅜ + ㅓ + ㅣ | ㅞ     | ㅜ ㅓ ㅣ          |
+| ㅜ + ㅣ      | ㅟ     | ㅜ ㅣ             |
+| ㅡ + ㅣ      | ㅢ     | ㅡ ㅣ             |
 
 **Key rule**: A composed complex vowel is simply a valid vowel. The Composer does not distinguish between "basic" and "complex" vowels in the jungseong slot — it only cares that the token in that slot is a valid vowel jamo. A complex vowel may also be decomposed back into its constituents by the player.
 
 ㅙ and ㅞ are composed of **three atomic vowels** and combination is **associative** — both bracketing orders produce the same result:
+
 - ㅙ = ㅗ + ㅏ + ㅣ: player may form `(ㅗ + ㅏ) + ㅣ` = `ㅘ + ㅣ`, or `ㅗ + (ㅏ + ㅣ)` = `ㅗ + ㅐ`
 - ㅞ = ㅜ + ㅓ + ㅣ: player may form `(ㅜ + ㅓ) + ㅣ` = `ㅝ + ㅣ`, or `ㅜ + (ㅓ + ㅣ)` = `ㅜ + ㅔ`
 
@@ -169,30 +171,32 @@ Since UX forces binary operations (only two tokens can be combined at once), an 
 
 **Only valid in jongseong (final consonant) position.** Cannot appear as choseong.
 
-| Input      | Output |
-|------------|--------|
-| ㄱ + ㅅ   | ㄳ     |
-| ㄴ + ㅈ   | ㄵ     |
-| ㄴ + ㅎ   | ㄶ     |
-| ㄹ + ㄱ   | ㄺ     |
-| ㄹ + ㅁ   | ㄻ     |
-| ㄹ + ㅂ   | ㄼ     |
-| ㄹ + ㅅ   | ㄽ     |
-| ㄹ + ㅌ   | ㄾ     |
-| ㄹ + ㅍ   | ㄿ     |
-| ㄹ + ㅎ   | ㅀ     |
-| ㅂ + ㅅ   | ㅄ     |
+| Input   | Output |
+| ------- | ------ |
+| ㄱ + ㅅ | ㄳ     |
+| ㄴ + ㅈ | ㄵ     |
+| ㄴ + ㅎ | ㄶ     |
+| ㄹ + ㄱ | ㄺ     |
+| ㄹ + ㅁ | ㄻ     |
+| ㄹ + ㅂ | ㄼ     |
+| ㄹ + ㅅ | ㄽ     |
+| ㄹ + ㅌ | ㄾ     |
+| ㄹ + ㅍ | ㄿ     |
+| ㄹ + ㅎ | ㅀ     |
+| ㅂ + ㅅ | ㅄ     |
 
 ---
 
 ### Syllable Block Composition
 
 Korean syllable blocks are composed from:
+
 - **Choseong (초성)**: initial consonant — required
 - **Jungseong (중성)**: vowel — required
 - **Jongseong (종성)**: final consonant — optional
 
 Unicode composition formula:
+
 ```
 syllableCodepoint = 0xAC00
   + (choseongIndex × 21 + jungseongIndex) × 28
@@ -290,11 +294,11 @@ Package manager: **pnpm**. All install commands use `pnpm add`.
 ```jsonc
 // devDependencies (representative — pin exact versions at scaffold time)
 {
-  "oxlint": "...",       // linting
-  "oxfmt": "...",        // formatting (standard npm package — pnpm add -D oxfmt)
-  "vitest": "...",       // unit tests (domain logic)
-  "playwright": "...",   // e2e tests
-  "typescript": "..."
+  "oxlint": "...", // linting
+  "oxfmt": "...", // formatting (standard npm package — pnpm add -D oxfmt)
+  "vitest": "...", // unit tests (domain logic)
+  "playwright": "...", // e2e tests
+  "typescript": "...",
 }
 ```
 
@@ -326,42 +330,42 @@ deploy:
 
 Deployment uses the official `actions/deploy-pages` action. No separate `gh-pages` branch is maintained — the Pages source is set to **GitHub Actions** in the repo settings.
 
-| Decision | Rationale |
-|---|---|
-| Rotate → combine → compose as ordered operations | Core game mechanic; validation must check in this order |
-| Rotation as equivalence sets | Simple lookup, designer-controlled, UX-agnostic |
-| Composition separate from rotation | Mechanically distinct; conflating them breaks validation |
-| Pool resets each guess | Specified; simplifies validation and state |
-| Composed vowels are just vowels | Composer is position-aware, not type-aware; no special casing needed |
-| Pure domain logic (`src/lib/` has no React) | Fully unit-testable in isolation |
-| `useReducer` + Context | Small action set; explicit typing aids coding agent |
-| Jamo pool as frequency map | O(1) availability checks during validation |
-| `@dnd-kit/core` for drag-and-drop | Touch/pointer sensors; works on iOS Safari |
-| `vite-plugin-pwa` | Workbox SW from config; no manual SW authoring |
-| GitHub Actions + `actions/deploy-pages` | No separate gh-pages branch; cleaner deployment model |
-| oxlint + oxfmt | Fast Rust-based quality tools; enforced in CI before merge and deploy |
-| Difficulty derived from word length (UI only) | No difficulty field on `Puzzle`; UI maps wordLength → label |
-| pnpm as package manager | Specified; consistent with modern TS project conventions |
-| Vitest (unit) + Playwright (e2e) | Vitest for pure domain logic; Playwright for full browser interaction flows |
-| Date-seeded daily puzzle | Consistent Wordle-like daily experience; dev mode adds overrides |
-| No hard guess limit (MVP) | Designer decision; may be added post-MVP via config |
+| Decision                                         | Rationale                                                                   |
+| ------------------------------------------------ | --------------------------------------------------------------------------- |
+| Rotate → combine → compose as ordered operations | Core game mechanic; validation must check in this order                     |
+| Rotation as equivalence sets                     | Simple lookup, designer-controlled, UX-agnostic                             |
+| Composition separate from rotation               | Mechanically distinct; conflating them breaks validation                    |
+| Pool resets each guess                           | Specified; simplifies validation and state                                  |
+| Composed vowels are just vowels                  | Composer is position-aware, not type-aware; no special casing needed        |
+| Pure domain logic (`src/lib/` has no React)      | Fully unit-testable in isolation                                            |
+| `useReducer` + Context                           | Small action set; explicit typing aids coding agent                         |
+| Jamo pool as frequency map                       | O(1) availability checks during validation                                  |
+| `@dnd-kit/core` for drag-and-drop                | Touch/pointer sensors; works on iOS Safari                                  |
+| `vite-plugin-pwa`                                | Workbox SW from config; no manual SW authoring                              |
+| GitHub Actions + `actions/deploy-pages`          | No separate gh-pages branch; cleaner deployment model                       |
+| oxlint + oxfmt                                   | Fast Rust-based quality tools; enforced in CI before merge and deploy       |
+| Difficulty derived from word length (UI only)    | No difficulty field on `Puzzle`; UI maps wordLength → label                 |
+| pnpm as package manager                          | Specified; consistent with modern TS project conventions                    |
+| Vitest (unit) + Playwright (e2e)                 | Vitest for pure domain logic; Playwright for full browser interaction flows |
+| Date-seeded daily puzzle                         | Consistent Wordle-like daily experience; dev mode adds overrides            |
+| No hard guess limit (MVP)                        | Designer decision; may be added post-MVP via config                         |
 
 ---
 
 ## Non-Goals (explicit, for this MVP)
 
-| Out of scope | Reason |
-|---|---|
-| Multiplayer / shared sessions | No backend |
-| User accounts / leaderboards | No backend |
-| Animated jamo rotation (visual spin effect) | UX iteration deferred |
-| Server-side puzzle validation | Static only |
-| Accessibility / screen reader support | Post-MVP pass |
-| Internationalization | Post-MVP |
-| Archaic / historical jamo | Out of modern hangul scope |
-| Complex/compound jamo as *given* pool items | Always constructed from basic jamo; never in starting pool |
-| Hard guess limit | No maximum guesses in MVP; may add post-MVP |
-| NIKL corpus integration | Post-MVP; hand-curated word list used to start |
+| Out of scope                                | Reason                                                     |
+| ------------------------------------------- | ---------------------------------------------------------- |
+| Multiplayer / shared sessions               | No backend                                                 |
+| User accounts / leaderboards                | No backend                                                 |
+| Animated jamo rotation (visual spin effect) | UX iteration deferred                                      |
+| Server-side puzzle validation               | Static only                                                |
+| Accessibility / screen reader support       | Post-MVP pass                                              |
+| Internationalization                        | Post-MVP                                                   |
+| Archaic / historical jamo                   | Out of modern hangul scope                                 |
+| Complex/compound jamo as _given_ pool items | Always constructed from basic jamo; never in starting pool |
+| Hard guess limit                            | No maximum guesses in MVP; may add post-MVP                |
+| NIKL corpus integration                     | Post-MVP; hand-curated word list used to start             |
 
 ---
 
@@ -413,15 +417,14 @@ Deployment uses the official `actions/deploy-pages` action. No separate `gh-page
 
 ## Resolved Decisions (no further input needed)
 
-| # | Decision |
-|---|---|
-| A1 | Rotation = equivalence sets; UX cycles clockwise |
-| A2 | Pool resets fully between guesses |
-| A3 | Word length 3/4/5 by difficulty (easy/medium/hard); extensible |
-| A4 | Compound batchim valid in jongseong only |
-| A5 | Hand-curated word list for MVP; NIKL integration post-MVP |
-| A6 | Date-seeded daily puzzle; dev mode supports random/date-override |
-| A7 | No hard guess limit in MVP |
-| A8 | ㅙ/ㅞ are three-atom vowels; combination is associative — both bracketing paths valid; Composer stages intermediates |
-| A9 | Rotate-then-combine confirmed as core game mechanic |
-
+| #   | Decision                                                                                                             |
+| --- | -------------------------------------------------------------------------------------------------------------------- |
+| A1  | Rotation = equivalence sets; UX cycles clockwise                                                                     |
+| A2  | Pool resets fully between guesses                                                                                    |
+| A3  | Word length 3/4/5 by difficulty (easy/medium/hard); extensible                                                       |
+| A4  | Compound batchim valid in jongseong only                                                                             |
+| A5  | Hand-curated word list for MVP; NIKL integration post-MVP                                                            |
+| A6  | Date-seeded daily puzzle; dev mode supports random/date-override                                                     |
+| A7  | No hard guess limit in MVP                                                                                           |
+| A8  | ㅙ/ㅞ are three-atom vowels; combination is associative — both bracketing paths valid; Composer stages intermediates |
+| A9  | Rotate-then-combine confirmed as core game mechanic                                                                  |
