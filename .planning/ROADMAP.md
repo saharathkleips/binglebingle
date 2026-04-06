@@ -40,7 +40,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Create project scaffold (package.json, vite.config.ts, tsconfig, src/ entry files, Playwright config)
+- [x] 01-01-PLAN.md — Create project scaffold (package.json, vite.config.ts, tsconfig, src/ entry files, Playwright config)
 - [ ] 01-02-PLAN.md — Configure and enforce oxlint + oxfmt quality gates
 
 ### Phase 2: Jamo Core
@@ -146,7 +146,7 @@ practice — but the default execution order is sequential.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Scaffold | 0/? | Not started | - |
+| 1. Scaffold | 1/2 | In Progress|  |
 | 2. Jamo Core | 0/? | Not started | - |
 | 3. Character | 0/? | Not started | - |
 | 4. Word and Pool | 0/? | Not started | - |

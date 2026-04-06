@@ -7,7 +7,7 @@
 
 ### Scaffold
 
-- [ ] **SCAF-01**: Project scaffolded with Vite + React 19 + TypeScript (strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes), Tailwind CSS, and pnpm
+- [x] **SCAF-01**: Project scaffolded with Vite + React 19 + TypeScript (strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes), Tailwind CSS, and pnpm
 - [ ] **SCAF-02**: oxlint and oxfmt configured and enforced (config files present and passing)
 
 ### Jamo Core
@@ -99,7 +99,7 @@ Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCAF-01 | Phase 1 | Pending |
+| SCAF-01 | Phase 1 | Complete |
 | SCAF-02 | Phase 1 | Pending |
 | JAMO-01 | Phase 2 | Pending |
 | JAMO-02 | Phase 2 | Pending |

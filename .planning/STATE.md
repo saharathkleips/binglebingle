@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 1 context gathered (discuss mode)
-last_updated: "2026-04-06T03:25:43.607Z"
-last_activity: 2026-04-05 — Roadmap created; 9 phases derived from 26 v1 requirements
+status: executing
+stopped_at: Completed 01-scaffold-01-PLAN.md — checkpoint reached, all tasks executed, build green
+last_updated: "2026-04-06T03:56:50.447Z"
+last_activity: 2026-04-06
 progress:
   total_phases: 9
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** The jamo manipulation mechanic — rotate, combine, compose — must feel intuitive and satisfying.
-**Current focus:** Phase 1 — Scaffold
+**Current focus:** Phase 01 — scaffold
 
 ## Current Position
 
-Phase: 1 of 9 (Scaffold)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-04-05 — Roadmap created; 9 phases derived from 26 v1 requirements
+Phase: 01 (scaffold) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-06
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 01-scaffold P01 | 4 | 5 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -60,7 +61,10 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- None yet — greenfield start
+- — greenfield start
+- [Phase 01-scaffold]: Tailwind CSS v4 CSS-first: @import 'tailwindcss' in src/index.css, no tailwind.config.js
+- [Phase 01-scaffold]: Vitest inline in vite.config.ts with triple-slash reference — no separate vitest.config.ts
+- [Phase 01-scaffold]: @types/node added to tsconfig.node.json for process.env access in config files
 
 ### Pending Todos
 
@@ -72,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T03:25:43.605Z
-Stopped at: Phase 1 context gathered (discuss mode)
-Resume file: .planning/phases/01-scaffold/01-CONTEXT.md
+Last session: 2026-04-06T03:56:50.445Z
+Stopped at: Completed 01-scaffold-01-PLAN.md — checkpoint reached, all tasks executed, build green
+Resume file: None
