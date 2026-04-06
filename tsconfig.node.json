@@ -11,7 +11,8 @@
     "noEmit": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "types": ["node"]
   },
   "include": ["vite.config.ts", "playwright.config.ts"]
 }
