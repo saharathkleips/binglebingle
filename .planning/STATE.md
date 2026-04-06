@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 01-scaffold-01-PLAN.md
-last_updated: "2026-04-06T08:15:16.527Z"
+stopped_at: Completed 01-scaffold-02-PLAN.md
+last_updated: "2026-04-06T11:54:48.165Z"
 last_activity: 2026-04-06
 progress:
   total_phases: 9
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 01-scaffold P01 | 4 | 5 tasks | 15 files |
 | Phase 01-scaffold P01 | 4min | 5 tasks | 15 files |
+| Phase 01-scaffold P02 | 60 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 01-scaffold]: Tailwind CSS v4 CSS-first: @import 'tailwindcss' in src/index.css, no tailwind.config.js
 - [Phase 01-scaffold]: Vitest inline in vite.config.ts with triple-slash reference — no separate vitest.config.ts
 - [Phase 01-scaffold]: @types/node added to tsconfig.node.json for process.env access in config files
+- [Phase 01-scaffold]: $schema for .oxlintrc.json set to local node_modules path (not remote URL) for offline reliability
+- [Phase 01-scaffold]: lint/fmt scripts broadened to full repo (.) — config files and docs participate in quality gates
+- [Phase 01-scaffold]: ignorePatterns consolidated into .oxlintrc.json — .eslintignore deleted
 
 ### Pending Todos
 
@@ -80,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T08:15:16.524Z
-Stopped at: Completed 01-scaffold-01-PLAN.md
+Last session: 2026-04-06T11:54:48.162Z
+Stopped at: Completed 01-scaffold-02-PLAN.md
 Resume file: None

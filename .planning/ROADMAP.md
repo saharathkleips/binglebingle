@@ -16,7 +16,7 @@ v1 product.
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Scaffold** - Vite + React + TypeScript + Tailwind + pnpm project with oxlint/oxfmt enforced
+- [x] **Phase 1: Scaffold** - Vite + React + TypeScript + Tailwind + pnpm project with oxlint/oxfmt enforced (completed 2026-04-06)
 - [ ] **Phase 2: Jamo Core** - Unicode tables, rotation sets, combination rules, and syllable composition/decomposition
 - [ ] **Phase 3: Character** - Character type, resolveCharacter(), and isComplete() with full unit coverage
 - [ ] **Phase 4: Word and Pool** - Branded Word type, derivePool(), normalizePool(), loadWords(), and selectWord()
@@ -41,7 +41,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md — Create project scaffold (package.json, vite.config.ts, tsconfig, src/ entry files, Playwright config)
-- [ ] 01-02-PLAN.md — Configure and enforce oxlint + oxfmt quality gates
+- [x] 01-02-PLAN.md — Configure and enforce oxlint + oxfmt quality gates
 
 ### Phase 2: Jamo Core
 **Goal**: All jamo data tables are defined and the three core operations — rotation, combination, and syllable composition/decomposition — are implemented as pure functions with full unit test coverage
@@ -146,7 +146,7 @@ practice — but the default execution order is sequential.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Scaffold | 1/2 | In Progress|  |
+| 1. Scaffold | 2/2 | Complete   | 2026-04-06 |
 | 2. Jamo Core | 0/? | Not started | - |
 | 3. Character | 0/? | Not started | - |
 | 4. Word and Pool | 0/? | Not started | - |
