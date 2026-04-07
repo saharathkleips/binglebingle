@@ -14,7 +14,10 @@ The jamo manipulation mechanic — rotate, combine, compose — must feel intuit
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Rotation as equivalence sets — ROTATION_SETS + ROTATION_MAP lookup tables (Validated in Phase 02: jamo-core)
+- [x] Compound batchim valid in jongseong only — upgradeJongseong + JONGSEONG_UPGRADE_MAP enforce this (Validated in Phase 02: jamo-core)
+- [x] ㅙ/ㅞ combination is associative (two valid paths) — combineJamo handles both bracketing orders (Validated in Phase 02: jamo-core)
+- [x] Pure domain logic in `src/lib/` — rotation.ts, composition.ts, character.ts: zero React imports, all unit-testable (Validated in Phase 02: jamo-core)
 
 ### Active
 
@@ -94,4 +97,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after initialization*
+*Last updated: 2026-04-07 — Phase 02 complete (jamo-core: rotation, composition, character bridge)*
