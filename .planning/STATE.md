@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-04-07T01:12:11.476Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-04-07T01:17:21.193Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-scaffold P01 | 4min | 5 tasks | 15 files |
 | Phase 01-scaffold P02 | 60 | 2 tasks | 3 files |
 | Phase 02-jamo-core P02-01 | 25 | 2 tasks | 2 files |
+| Phase 02-jamo-core P02-02 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - [Phase 02-jamo-core]: JONGSEONG_INDEX has 28 entries including ㄷ at Unicode slot 7 — plan-jamo.md omitted ㄷ but UAX#15 requires it
 - [Phase 02-jamo-core]: JONGSEONG_UPGRADE_MAP key is unsorted 'existing|additional' — not commutative by design
 - [Phase 02-jamo-core]: COMBINATION_MAP keys are sorted for commutativity — argument order at lookup time does not matter
+- [Phase 02-jamo-core]: getNextRotation uses ROTATION_SETS.find() for wrap-around since ROTATION_MAP excludes self
+- [Phase 02-jamo-core]: decomposeSyllable builds Object.fromEntries reverse maps at module load for O(1) lookups
 
 ### Pending Todos
 
@@ -88,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T01:12:11.473Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-04-07T01:17:21.190Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
