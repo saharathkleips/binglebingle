@@ -56,7 +56,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Define all jamo Unicode tables and derived runtime maps (jamo-data.ts)
+- [x] 02-01-PLAN.md — Define all jamo Unicode tables and derived runtime maps (jamo-data.ts)
 - [ ] 02-02-PLAN.md — Implement rotation and composition functions (rotation.ts, composition.ts)
 - [ ] 02-03-PLAN.md — Implement Character type, resolveCharacter(), and isComplete() (character/)
 
