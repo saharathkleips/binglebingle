@@ -8,55 +8,183 @@
  * Unicode note: syllable blocks range U+AC00–U+D7A3.
  */
 
-import { combineJamo, composeSyllable } from "../jamo/composition";
-import type { Character } from "./types";
+import {
+  combineJamo,
+  composeSyllable,
+  decomposeSyllable,
+  upgradeJongseong,
+} from "../jamo/composition";
+import { JONGSEONG_UPGRADE_RULES } from "../jamo/jamo-data";
+import type { Character, Jamo } from "./types";
+
+// ---------------------------------------------------------------------------
+// Reverse-lookup map for compound batchim decomposition
+// Built once at module load.
+// Maps compound batchim output → [first constituent, second constituent]
+// ---------------------------------------------------------------------------
+
+const JONGSEONG_SPLIT_MAP: ReadonlyMap<string, readonly [string, string]> = (() => {
+  const map = new Map<string, [string, string]>();
+  for (const rule of JONGSEONG_UPGRADE_RULES) {
+    map.set(rule.output, [rule.existing, rule.additional]);
+  }
+  return map;
+})();
+
+// ---------------------------------------------------------------------------
+// Helper: determine what slot(s) a Character fills
+// ---------------------------------------------------------------------------
+
+function hasChoseong(c: Character): c is Character & { choseong: Jamo } {
+  return c.choseong !== undefined;
+}
+
+function hasJungseong(c: Character): c is Character & { jungseong: Jamo } {
+  return c.jungseong !== undefined;
+}
+
+function hasJongseong(c: Character): c is Character & { jongseong: Jamo } {
+  return c.jongseong !== undefined;
+}
+
+// ---------------------------------------------------------------------------
+// combine()
+// ---------------------------------------------------------------------------
 
 /**
- * Reduces a Character's jamo list to its resolved string form.
+ * Adds an incoming single-slot Character to a target Character following Korean
+ * syllable construction rules.
  *
- * Resolution rules (per docs/plan-jamo.md Step 7):
- * - length 0: null
- * - length 1: return jamo[0] as-is
- * - length 2: try combineJamo first; if null try composeSyllable; if null return null
- * - length 3: composeSyllable(jamo[0], jamo[1], jamo[2]) or null
+ * The incoming Character must have exactly one slot set (choseong or jungseong).
+ * Returns the new Character state, or null if the combination is invalid.
  *
- * @param character - The Character to resolve
- * @returns The resolved string, or null if the jamo cannot be reduced
+ * @param a - Target Character (the slot being filled)
+ * @param b - Incoming Character (always single-slot: one of choseong or jungseong)
+ * @returns Updated Character, or null if the combination is not permitted
  */
-export function resolveCharacter(character: Character): string | null {
-  const { jamo } = character;
+export function combine(a: Character, b: Character): Character | null {
+  const aCho = a.choseong;
+  const aJung = a.jungseong;
+  const aJong = a.jongseong;
 
-  if (jamo.length === 0) return null;
+  const bCho = b.choseong;
+  const bJung = b.jungseong;
 
-  if (jamo.length === 1) {
-    // noUncheckedIndexedAccess: jamo[0] is string | undefined
-    return jamo[0] ?? null;
+  // -------------------------------------------------------------------------
+  // Empty target
+  // -------------------------------------------------------------------------
+  if (aCho === undefined && aJung === undefined && aJong === undefined) {
+    if (bCho !== undefined) return { choseong: bCho };
+    if (bJung !== undefined) return { jungseong: bJung };
+    return null;
   }
 
-  if (jamo.length === 2) {
-    const a = jamo[0];
-    const b = jamo[1];
-    if (a === undefined || b === undefined) return null;
-    const combined = combineJamo(a, b);
-    if (combined !== null) return combined;
-    return composeSyllable(a, b) ?? null;
+  // -------------------------------------------------------------------------
+  // Full target (choseong + jungseong + jongseong)
+  // -------------------------------------------------------------------------
+  if (aCho !== undefined && aJung !== undefined && aJong !== undefined) {
+    if (bCho !== undefined) {
+      // Attempt compound batchim upgrade
+      const upgraded = upgradeJongseong(aJong, bCho);
+      if (upgraded === null) return null;
+      return { choseong: aCho, jungseong: aJung, jongseong: upgraded as Jamo };
+    }
+    // Full + jungseong or anything else → invalid
+    return null;
   }
 
-  if (jamo.length === 3) {
-    const a = jamo[0];
-    const b = jamo[1];
-    const c = jamo[2];
-    if (a === undefined || b === undefined || c === undefined) return null;
-    return composeSyllable(a, b, c) ?? null;
+  // -------------------------------------------------------------------------
+  // Choseong + jungseong target (no jongseong yet)
+  // -------------------------------------------------------------------------
+  if (aCho !== undefined && aJung !== undefined) {
+    if (bJung !== undefined) {
+      // Try to combine the two vowels
+      const combined = combineJamo(aJung, bJung);
+      if (combined === null) return null;
+      return { choseong: aCho, jungseong: combined as Jamo };
+    }
+    if (bCho !== undefined) {
+      // Incoming consonant becomes jongseong
+      return { choseong: aCho, jungseong: aJung, jongseong: bCho };
+    }
+    return null;
   }
 
-  // Should not be reachable — combinations always collapse pairwise to single jamo
+  // -------------------------------------------------------------------------
+  // Choseong-only target
+  // -------------------------------------------------------------------------
+  if (aCho !== undefined && aJung === undefined) {
+    if (bCho !== undefined) {
+      // Try to combine two consonants into a double consonant
+      const combined = combineJamo(aCho, bCho);
+      if (combined === null) return null;
+      return { choseong: combined as Jamo };
+    }
+    if (bJung !== undefined) {
+      // Consonant + vowel → open syllable
+      return { choseong: aCho, jungseong: bJung };
+    }
+    return null;
+  }
+
+  // -------------------------------------------------------------------------
+  // Jungseong-only target
+  // -------------------------------------------------------------------------
+  if (aJung !== undefined && aCho === undefined) {
+    if (bJung !== undefined) {
+      // Try to combine two vowels into a complex vowel
+      const combined = combineJamo(aJung, bJung);
+      if (combined === null) return null;
+      return { jungseong: combined as Jamo };
+    }
+    if (bCho !== undefined) {
+      // Incoming consonant becomes choseong (consonant-becomes-choseong rule)
+      return { choseong: bCho, jungseong: aJung };
+    }
+    return null;
+  }
+
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// resolveCharacter()
+// ---------------------------------------------------------------------------
+
 /**
- * Returns true iff resolveCharacter produces a valid Korean syllable block (U+AC00–U+D7A3).
- * A complete character is one that can be placed in a submission slot.
+ * Reduces a Character to its rendered Unicode string form.
+ *
+ * - No choseong AND no jungseong → null
+ * - Choseong only → return choseong string (bare consonant)
+ * - Jungseong only → return jungseong string (bare vowel)
+ * - Choseong + jungseong [+ optional jongseong] → composeSyllable(...)
+ *
+ * @param character - The Character to resolve
+ * @returns The resolved string, or null if the jamo cannot form a valid unit
+ */
+export function resolveCharacter(character: Character): string | null {
+  const { choseong, jungseong, jongseong } = character;
+
+  if (choseong === undefined && jungseong === undefined) return null;
+
+  if (choseong !== undefined && jungseong === undefined) return choseong;
+  if (jungseong !== undefined && choseong === undefined) return jungseong;
+
+  // Both choseong and jungseong are set
+  if (choseong !== undefined && jungseong !== undefined) {
+    return composeSyllable(choseong, jungseong, jongseong) ?? null;
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// isComplete()
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true iff resolveCharacter produces a valid Korean syllable block
+ * (U+AC00–U+D7A3). Requires at minimum choseong + jungseong.
  *
  * @param character - The Character to test
  * @returns Whether the character is a complete syllable block
@@ -67,3 +195,60 @@ export function isComplete(character: Character): boolean {
   const cp = resolved.codePointAt(0);
   return cp !== undefined && cp >= 0xac00 && cp <= 0xd7a3;
 }
+
+// ---------------------------------------------------------------------------
+// decompose()
+// ---------------------------------------------------------------------------
+
+/**
+ * Steps a Character back by one construction level, splitting compound batchim
+ * jongseong into its two constituent consonants when present.
+ *
+ * - Full syllable (choseong+jungseong+jongseong):
+ *   - If jongseong is compound batchim: returns [{ choseong, jungseong }, { choseong: first }, { choseong: second }]
+ *   - If jongseong is simple: returns [{ choseong, jungseong }]
+ * - Choseong + jungseong → [{ choseong }]
+ * - Choseong only → []
+ * - Empty → []
+ *
+ * @param char - The Character to decompose
+ * @returns Array of simpler Characters (may be empty)
+ */
+export function decompose(char: Character): Character[] {
+  const { choseong, jungseong, jongseong } = char;
+
+  // Nothing to decompose
+  if (choseong === undefined && jungseong === undefined) return [];
+  if (choseong !== undefined && jungseong === undefined) return [];
+
+  // Choseong + jungseong (+ optional jongseong)
+  if (choseong !== undefined && jungseong !== undefined) {
+    if (jongseong !== undefined) {
+      // Check if jongseong is a compound batchim
+      const split = JONGSEONG_SPLIT_MAP.get(jongseong);
+      if (split !== undefined) {
+        const [first, second] = split;
+        return [
+          { choseong, jungseong },
+          { choseong: first as Jamo },
+          { choseong: second as Jamo },
+        ];
+      }
+      // Simple jongseong — remove it
+      return [{ choseong, jungseong }];
+    }
+    // No jongseong — remove jungseong
+    return [{ choseong }];
+  }
+
+  // Jungseong-only (unusual but handle gracefully)
+  if (jungseong !== undefined && choseong === undefined) return [];
+
+  return [];
+}
+
+// ---------------------------------------------------------------------------
+// Re-export decomposeSyllable for callers that need the low-level utility
+// (not part of this module's primary API but available for reducer use)
+// ---------------------------------------------------------------------------
+export { decomposeSyllable };
