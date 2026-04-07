@@ -5,9 +5,6 @@ logLevel: info
 logToStdout: "both"
 sendLoadingState: true
 
-apiKeys:
-  - "${env.ANTHROPIC_OAUTH_TOKEN}"
-
 macros:
   llama_server: "/opt/homebrew/bin/llama-server"
 
