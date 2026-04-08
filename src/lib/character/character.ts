@@ -14,7 +14,7 @@ import {
   decomposeSyllable,
   upgradeJongseong,
 } from "../jamo/composition";
-import { JONGSEONG_UPGRADE_RULES } from "../jamo/jamo-data";
+import { COMBINATION_RULES } from "../jamo/jamo-data";
 import type { Character, Jamo } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -25,8 +25,10 @@ import type { Character, Jamo } from "./types";
 
 const JONGSEONG_SPLIT_MAP: ReadonlyMap<string, readonly [string, string]> = (() => {
   const map = new Map<string, [string, string]>();
-  for (const rule of JONGSEONG_UPGRADE_RULES) {
-    map.set(rule.output, [rule.existing, rule.additional]);
+  for (const rule of COMBINATION_RULES) {
+    if (rule.kind === "COMPOUND_BATCHIM") {
+      map.set(rule.output, [rule.inputs[0], rule.inputs[1]]);
+    }
   }
   return map;
 })();
