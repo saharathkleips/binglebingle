@@ -24,20 +24,28 @@ gh api graphql -f query='
 query($owner: String!, $repo: String!, $pr: Int!) {
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $pr) {
-      reviews(last: 100) {
+      reviewThreads(last: 100) {
         nodes {
+          isResolved
+          isOutdated
+          path
+          line
           comments(last: 20) {
             nodes {
-                    body
-                    path
-                    line
-                    diffHunk
-                    minimizedReason
-                }
+              body
+              diffHunk
             }
+          }
         }
       }
     }
   }
 }' -f owner="$OWNER" -f repo="$REPO" -F pr=$PR_NUM \
-| jq '.data.repository.pullRequest.reviews.nodes[].comments.nodes[] | select(.minimizedReason == null) | {path, line, diffHunk, body}'
+| jq '.data.repository.pullRequest.reviewThreads.nodes
+    | map(select(.isResolved == false and .isOutdated == false))
+    | map({
+        file: .path,
+        line: .line,
+        diffHunk: .comments.nodes[0].diffHunk,
+        comments: (.comments.nodes | map(.body) | join("\n---\n"))
+      })'
