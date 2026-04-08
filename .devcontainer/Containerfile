@@ -10,6 +10,7 @@ ENV SHELL=/bin/zsh
 
 # ── system dependencies ───────────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    locales \
     ca-certificates \
     wget \
     curl \
@@ -33,6 +34,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libatomic1 \
     nano \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
+    echo "ko_KR.UTF-8 UTF-8" >> /etc/locale.gen && \
+    locale-gen
 
 # ── user setup ─────────────────────────────────────────────────────────
 RUN usermod -l dev -d /home/dev -m node && \
