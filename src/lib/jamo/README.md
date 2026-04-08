@@ -1,6 +1,6 @@
 # jamo
 
-Low-level Unicode mechanics for Hangul Compatibility Jamo (U+3130–U+318F). Provides static data tables and the pure functions that operate on them. Has no concept of the game or a player — it is a toolkit consumed by `character/`.
+Low-level Unicode mechanics for Hangul Compatibility Jamo (U+3130–U+318F). Provides static data tables and the pure functions that operate on them.
 
 ## Contracts
 

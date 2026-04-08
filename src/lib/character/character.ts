@@ -34,22 +34,6 @@ const JONGSEONG_SPLIT_MAP: ReadonlyMap<string, readonly [string, string]> = (() 
 })();
 
 // ---------------------------------------------------------------------------
-// Helper: determine what slot(s) a Character fills
-// ---------------------------------------------------------------------------
-
-function hasChoseong(c: Character): c is Character & { choseong: Jamo } {
-  return c.choseong !== undefined;
-}
-
-function hasJungseong(c: Character): c is Character & { jungseong: Jamo } {
-  return c.jungseong !== undefined;
-}
-
-function hasJongseong(c: Character): c is Character & { jongseong: Jamo } {
-  return c.jongseong !== undefined;
-}
-
-// ---------------------------------------------------------------------------
 // combine()
 // ---------------------------------------------------------------------------
 
