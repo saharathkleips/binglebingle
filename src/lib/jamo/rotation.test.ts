@@ -7,8 +7,8 @@ describe("getRotationOptions", () => {
     expect(getRotationOptions("ㄱ")).toStrictEqual(["ㄴ"]);
   });
 
-  it("returns members in set order for a multi-member set", () => {
-    expect(getRotationOptions("ㅏ")).toStrictEqual(["ㅓ", "ㅗ", "ㅜ"]);
+  it("returns members in set order for a multi-member set (clockwise: ㅏ→ㅜ→ㅓ→ㅗ)", () => {
+    expect(getRotationOptions("ㅏ")).toStrictEqual(["ㅜ", "ㅓ", "ㅗ"]);
   });
 
   it("returns an empty array for a non-rotatable jamo", () => {
@@ -27,11 +27,17 @@ describe("getNextRotation", () => {
 
   it("wraps from last member back to first", () => {
     expect(getNextRotation("ㄴ")).toBe("ㄱ");
-    expect(getNextRotation("ㅜ")).toBe("ㅏ");
+    // ㅗ is last in ["ㅏ","ㅜ","ㅓ","ㅗ"] — wraps to ㅏ
+    expect(getNextRotation("ㅗ")).toBe("ㅏ");
   });
 
   it("returns the second member for the first member of a 4-set", () => {
-    expect(getNextRotation("ㅏ")).toBe("ㅓ");
+    // ㅏ is at index 0 in ["ㅏ","ㅜ","ㅓ","ㅗ"] — next is ㅜ
+    expect(getNextRotation("ㅏ")).toBe("ㅜ");
+  });
+
+  it("ㅜ rotates to ㅓ (index 1 → index 2 in clockwise set)", () => {
+    expect(getNextRotation("ㅜ")).toBe("ㅓ");
   });
 
   it("returns null for a non-rotatable jamo", () => {

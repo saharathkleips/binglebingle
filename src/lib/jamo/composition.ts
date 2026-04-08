@@ -9,27 +9,15 @@
  */
 
 import {
+  CHOSEONG_BY_INDEX,
   CHOSEONG_INDEX,
   COMBINATION_MAP,
+  JONGSEONG_BY_INDEX,
   JONGSEONG_INDEX,
   JONGSEONG_UPGRADE_MAP,
+  JUNGSEONG_BY_INDEX,
   JUNGSEONG_INDEX,
 } from "./jamo-data";
-
-// ---------------------------------------------------------------------------
-// Reverse-lookup maps — built once at module load
-// ---------------------------------------------------------------------------
-
-// Maps index ordinal → jamo string for O(1) decomposition lookups
-const CHOSEONG_BY_INDEX: Record<number, string> = Object.fromEntries(
-  Object.entries(CHOSEONG_INDEX).map(([k, v]) => [v, k]),
-);
-const JUNGSEONG_BY_INDEX: Record<number, string> = Object.fromEntries(
-  Object.entries(JUNGSEONG_INDEX).map(([k, v]) => [v, k]),
-);
-const JONGSEONG_BY_INDEX: Record<number, string> = Object.fromEntries(
-  Object.entries(JONGSEONG_INDEX).map(([k, v]) => [v, k]),
-);
 
 // ---------------------------------------------------------------------------
 // Syllable base codepoint (UAX #15)

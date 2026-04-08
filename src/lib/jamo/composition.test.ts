@@ -44,25 +44,23 @@ describe("upgradeJongseong", () => {
 });
 
 describe("composeSyllable", () => {
-  it("composes 가 from ㄱ+ㅏ (no jongseong)", () => {
-    expect(composeSyllable("ㄱ", "ㅏ")).toBe("가");
-  });
+  const COMPOSE_CASES: [string, string, string | undefined, string][] = [
+    ["ㄱ", "ㅏ", undefined, "가"],
+    ["ㅎ", "ㅏ", "ㄴ", "한"],
+    ["ㅎ", "ㅞ", "ㄳ", "훿"],
+    ["ㅇ", "ㅏ", undefined, "아"],
+    ["ㄸ", "ㅏ", undefined, "따"],
+    ["ㄴ", "ㅣ", undefined, "니"],
+    ["ㅅ", "ㅓ", "ㄹ", "설"],
+    ["ㅁ", "ㅜ", "ㄹ", "물"],
+  ];
 
-  it("composes 한 from ㅎ+ㅏ+ㄴ", () => {
-    expect(composeSyllable("ㅎ", "ㅏ", "ㄴ")).toBe("한");
-  });
-
-  it("composes 훿 from ㅎ+ㅞ+ㄳ (complex vowel + compound batchim)", () => {
-    expect(composeSyllable("ㅎ", "ㅞ", "ㄳ")).toBe("훿");
-  });
-
-  it("composes 아 with silent ieung ㅇ as choseong", () => {
-    expect(composeSyllable("ㅇ", "ㅏ")).toBe("아");
-  });
-
-  it("composes 따 with ㄸ as choseong (valid choseong, not valid jongseong)", () => {
-    expect(composeSyllable("ㄸ", "ㅏ")).toBe("따");
-  });
+  it.each(COMPOSE_CASES)(
+    "composeSyllable(%s, %s, %s) → %s",
+    (cho, jung, jong, expected) => {
+      expect(composeSyllable(cho, jung, jong)).toBe(expected);
+    },
+  );
 
   it("returns null when jongseong ㅃ is invalid", () => {
     expect(composeSyllable("ㅎ", "ㅏ", "ㅃ")).toBeNull();
@@ -104,6 +102,11 @@ describe("decomposeSyllable", () => {
 
   it("returns null for a non-Korean character", () => {
     expect(decomposeSyllable("A")).toBeNull();
+  });
+
+  it("reads only first char — multi-syllable inputs silently truncate", () => {
+    // decomposeSyllable uses codePointAt(0) which reads only the first char
+    expect(decomposeSyllable("한국")).toStrictEqual({ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" });
   });
 
   it("all decomposed jamo use Compatibility Jamo codepoints (0x3130–0x318F)", () => {
