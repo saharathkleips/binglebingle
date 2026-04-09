@@ -14,7 +14,7 @@ import {
   decomposeSyllable,
   upgradeJongseong,
 } from "../jamo/composition";
-import { COMBINATION_RULES } from "../jamo/jamo-data";
+import { COMBINATION_RULES } from "../jamo/composition";
 import type { Character, Jamo } from "./types";
 
 // ---------------------------------------------------------------------------

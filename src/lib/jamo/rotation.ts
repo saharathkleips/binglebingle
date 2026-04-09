@@ -1,23 +1,42 @@
 /**
  * @file rotation.ts
  *
- * Rotation functions for Hangul Compatibility Jamo.
+ * Rotation data and functions for Hangul Compatibility Jamo.
  * A jamo can rotate to other members of its rotation equivalence set.
- * These sets are defined in jamo-data.ts and are designer-controlled.
+ * These sets are designer-controlled.
  */
 
-import { ROTATION_MAP, ROTATION_SETS } from "./jamo-data";
+import type { Jamo } from "./types";
 
 /**
- * Returns all jamo this one can become (excluding itself), or [] if not rotatable.
- * Order matches the rotation set definition order.
- *
- * @param jamo - A Hangul Compatibility Jamo string (U+3130–U+318F)
- * @returns Readonly array of rotation options in set order
+ * Each set contains jamo that can rotate into one another.
+ * Jamo not in any set are not rotatable.
+ * Vowel sets use clockwise order: ㅏ→ㅜ→ㅓ→ㅗ, ㅑ→ㅠ→ㅕ→ㅛ.
  */
-export function getRotationOptions(jamo: string): readonly string[] {
-  return ROTATION_MAP.get(jamo) ?? [];
-}
+export const ROTATION_SETS: readonly (readonly string[])[] = [
+  ["ㄱ", "ㄴ"],
+  ["ㅏ", "ㅜ", "ㅓ", "ㅗ"],
+  ["ㅣ", "ㅡ"],
+  ["ㅑ", "ㅠ", "ㅕ", "ㅛ"],
+];
+
+/**
+ * Derived runtime lookup map from ROTATION_SETS.
+ * Maps each rotatable jamo to all other members of its set (excluding itself).
+ * Built once at module load via IIFE.
+ */
+export const ROTATION_MAP: ReadonlyMap<string, readonly string[]> = (() => {
+  const map = new Map<string, string[]>();
+  for (const set of ROTATION_SETS) {
+    for (const jamo of set) {
+      map.set(
+        jamo,
+        set.filter((j) => j !== jamo),
+      );
+    }
+  }
+  return map;
+})();
 
 /**
  * Returns the next jamo when cycling through the rotation set (wraps around).
@@ -26,7 +45,7 @@ export function getRotationOptions(jamo: string): readonly string[] {
  * @param jamo - A Hangul Compatibility Jamo string
  * @returns The next jamo in the set, or null if jamo is not rotatable
  */
-export function getNextRotation(jamo: string): string | null {
+export function getNextRotation(jamo: Jamo): string | null {
   const options = ROTATION_MAP.get(jamo);
   if (!options || options.length === 0) return null;
   const set = ROTATION_SETS.find((s) => s.includes(jamo));
