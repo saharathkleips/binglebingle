@@ -6,7 +6,7 @@
  * These sets are designer-controlled.
  */
 
-import type { Jamo } from "./types";
+import type { Jamo } from "./jamo";
 
 /**
  * Each set contains jamo that can rotate into one another.

@@ -5,14 +5,14 @@
  * reducer to track what a player is building.
  *
  * The `Jamo`, `ConsonantJamo`, and `VowelJamo` types are defined in
- * `../jamo/types` and re-exported here for convenience.
+ * `../jamo/jamo` and re-exported here for convenience.
  *
  * Unicode note: all jamo literals use Hangul Compatibility Jamo (U+3130–U+318F),
  * never Hangul Jamo (U+1100–U+11FF). The distinction matters for codepoint
  * arithmetic: do not mix the two blocks.
  */
 
-import type { ConsonantJamo, VowelJamo, Jamo } from "../jamo/types";
+import type { ConsonantJamo, VowelJamo, Jamo } from "../jamo/jamo";
 
 export type { ConsonantJamo, VowelJamo, Jamo };
 
