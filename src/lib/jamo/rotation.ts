@@ -31,5 +31,5 @@ export function getNextRotation(jamo: Jamo): Jamo | null {
   const set = ROTATION_SETS.find((s) => s.includes(jamo));
   if (!set || set.length === 0) return null;
   const idx = set.indexOf(jamo);
-  return set[(idx + 1) % set.length];
+  return set[(idx + 1) % set.length] ?? null;
 }

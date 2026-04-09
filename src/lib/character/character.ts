@@ -14,7 +14,8 @@ import {
   decomposeSyllable,
   COMBINATION_RULES,
 } from "../jamo/composition";
-import type { Character, Jamo } from "./types";
+import type { Character, ConsonantJamo, VowelJamo } from "./types";
+import type { ChoseongJamo, JongseongJamo } from "../jamo/jamo";
 
 // ---------------------------------------------------------------------------
 // Reverse-lookup map for compound batchim decomposition
@@ -22,11 +23,11 @@ import type { Character, Jamo } from "./types";
 // Maps compound batchim output → [first constituent, second constituent]
 // ---------------------------------------------------------------------------
 
-const JONGSEONG_SPLIT_MAP: ReadonlyMap<string, readonly [string, string]> = (() => {
-  const map = new Map<string, [string, string]>();
+const JONGSEONG_SPLIT_MAP: ReadonlyMap<string, readonly [ConsonantJamo, ConsonantJamo]> = (() => {
+  const map = new Map<string, [ConsonantJamo, ConsonantJamo]>();
   for (const rule of COMBINATION_RULES) {
     if (rule.kind === "COMPOUND_BATCHIM") {
-      map.set(rule.output, [rule.inputs[0], rule.inputs[1]]);
+      map.set(rule.output, [rule.inputs[0] as ConsonantJamo, rule.inputs[1] as ConsonantJamo]);
     }
   }
   return map;
@@ -75,7 +76,7 @@ export function combine(a: Character, b: Character): Character | null {
       );
       if (!rule) return null;
       // rule.output is a compound batchim (JongseongJamo), which is a subset of ConsonantJamo
-      return { choseong: aCho, jungseong: aJung, jongseong: rule.output };
+      return { choseong: aCho, jungseong: aJung, jongseong: rule.output as ConsonantJamo };
     }
     // Full + jungseong or anything else → invalid
     return null;
@@ -90,7 +91,7 @@ export function combine(a: Character, b: Character): Character | null {
       const combined = composeJamo(aJung, bJung);
       if (combined === null) return null;
       // combined is a complex vowel (VowelJamo)
-      return { choseong: aCho, jungseong: combined };
+      return { choseong: aCho, jungseong: combined as VowelJamo };
     }
     if (bCho !== undefined) {
       // Incoming consonant becomes jongseong
@@ -108,7 +109,7 @@ export function combine(a: Character, b: Character): Character | null {
       const combined = composeJamo(aCho, bCho);
       if (combined === null) return null;
       // combined is a double consonant (ConsonantJamo)
-      return { choseong: combined };
+      return { choseong: combined as ConsonantJamo };
     }
     if (bJung !== undefined) {
       // Consonant + vowel → open syllable
@@ -126,7 +127,7 @@ export function combine(a: Character, b: Character): Character | null {
       const combined = composeJamo(aJung, bJung);
       if (combined === null) return null;
       // combined is a complex vowel (VowelJamo)
-      return { jungseong: combined };
+      return { jungseong: combined as VowelJamo };
     }
     if (bCho !== undefined) {
       // Incoming consonant becomes choseong (consonant-becomes-choseong rule)
@@ -163,7 +164,7 @@ export function resolveCharacter(character: Character): string | null {
 
   // Both choseong and jungseong are set
   if (choseong !== undefined && jungseong !== undefined) {
-    return composeSyllable(choseong, jungseong, jongseong) ?? null;
+    return composeSyllable(choseong as ChoseongJamo, jungseong, jongseong as JongseongJamo | undefined) ?? null;
   }
 
   return null;

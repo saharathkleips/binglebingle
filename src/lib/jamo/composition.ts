@@ -152,7 +152,7 @@ export function composeJamo(a: Jamo, b: Jamo): Jamo | null {
  */
 export function decomposeJamo(jamo: Jamo): [Jamo, Jamo] | null {
   const parts = DECOMPOSE_MAP.get(jamo);
-  return parts ? parts : null;
+  return parts ? [...parts] as [Jamo, Jamo] : null;
 }
 
 /**
@@ -202,7 +202,7 @@ export function decomposeSyllable(
   const choseong = CHOSEONG_BY_INDEX[choIdx];
   const jungseong = JUNGSEONG_BY_INDEX[jungIdx];
   // jongIdx === 0 means no final consonant
-  const jongseong = jongIdx === 0 ? null : (JONGSEONG_BY_INDEX[jongIdx] ?? null);
+  const jongseong: JongseongJamo | null = jongIdx === 0 ? null : (JONGSEONG_BY_INDEX[jongIdx] || null);
 
   if (choseong === undefined || jungseong === undefined) return null;
 
