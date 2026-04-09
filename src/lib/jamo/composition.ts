@@ -15,6 +15,9 @@ import {
   JONGSEONG_INDEX,
   JUNGSEONG_BY_INDEX,
   JUNGSEONG_INDEX,
+  type ChoseongJamo,
+  type JongseongJamo,
+  type VowelJamo,
 } from "./jamo";
 import type { Jamo } from "./jamo";
 
@@ -31,9 +34,9 @@ const SYLLABLE_BASE = 0xac00;
 /** A rule that combines two jamo into a double consonant, complex vowel, or compound batchim. */
 export type CombinationRule = {
   /** The two input jamo that combine. Order in array matches display order. */
-  readonly inputs: readonly [string, string];
+  readonly inputs: readonly [Jamo, Jamo];
   /** The resulting combined jamo. */
-  readonly output: string;
+  readonly output: Jamo;
   /** Whether this produces a double consonant, a complex vowel, or a compound batchim. */
   readonly kind: "DOUBLE_CONSONANT" | "COMPLEX_VOWEL" | "COMPOUND_BATCHIM";
 };
@@ -88,17 +91,20 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
  *
  * Total: 5 + 22 + 11 = 38 entries.
  * Built once at module load via IIFE.
+ * @internal
  */
-export const COMBINATION_MAP: ReadonlyMap<string, string> = (() => {
-  const map = new Map<string, string>();
+const COMBINATION_MAP: ReadonlyMap<string, Jamo> = (() => {
+  const map = new Map<string, Jamo>();
   for (const rule of COMBINATION_RULES) {
     const [a, b] = rule.inputs;
+    const entries: [string, Jamo][] = [[`${a}|${b}`, rule.output]];
     if (rule.kind === "DOUBLE_CONSONANT" || rule.kind === "COMPLEX_VOWEL") {
-      map.set(`${a}|${b}`, rule.output);
-      map.set(`${b}|${a}`, rule.output);
-    } else {
-      // COMPOUND_BATCHIM: canonical order only
-      map.set(`${a}|${b}`, rule.output);
+      if (a !== b) {
+        entries.push([`${b}|${a}`, rule.output]);
+      }
+    }
+    for (const [key, value] of entries) {
+      map.set(key, value);
     }
   }
   return map;
@@ -106,13 +112,13 @@ export const COMBINATION_MAP: ReadonlyMap<string, string> = (() => {
 
 /**
  * Reverse lookup map: combination output → [input0, input1] using canonical order.
- * Not exported — used internally by decomposeJamo.
  * Built once at module load via IIFE.
+ * @internal
  */
-const DECOMPOSE_MAP: ReadonlyMap<string, readonly [string, string]> = (() => {
-  const map = new Map<string, [string, string]>();
+const DECOMPOSE_MAP: ReadonlyMap<Jamo, readonly [Jamo, Jamo]> = (() => {
+  const map = new Map<Jamo, [Jamo, Jamo]>()
   for (const rule of COMBINATION_RULES) {
-    map.set(rule.output, [rule.inputs[0], rule.inputs[1]]);
+    map.set(rule.output, rule.inputs);
   }
   return map;
 })();
@@ -133,7 +139,7 @@ const DECOMPOSE_MAP: ReadonlyMap<string, readonly [string, string]> = (() => {
  * @returns The combined jamo, or null if no combination rule exists
  */
 export function composeJamo(a: Jamo, b: Jamo): Jamo | null {
-  return (COMBINATION_MAP.get(`${a}|${b}`) as Jamo) ?? null;
+  return COMBINATION_MAP.get(`${a}|${b}`) ?? null;
 }
 
 /**
@@ -145,7 +151,7 @@ export function composeJamo(a: Jamo, b: Jamo): Jamo | null {
  */
 export function decomposeJamo(jamo: Jamo): [Jamo, Jamo] | null {
   const parts = DECOMPOSE_MAP.get(jamo);
-  return parts ? [parts[0] as Jamo, parts[1] as Jamo] : null;
+  return parts ? parts : null;
 }
 
 /**
@@ -158,13 +164,13 @@ export function decomposeJamo(jamo: Jamo): [Jamo, Jamo] | null {
  * @returns The composed syllable block character, or null if inputs are invalid
  */
 export function composeSyllable(
-  choseong: string,
-  jungseong: string,
-  jongseong?: string,
+  choseong: ChoseongJamo,
+  jungseong: VowelJamo,
+  jongseong?: JongseongJamo,
 ): string | null {
-  const cho = CHOSEONG_INDEX[choseong as keyof typeof CHOSEONG_INDEX];
-  const jung = JUNGSEONG_INDEX[jungseong as keyof typeof JUNGSEONG_INDEX];
-  const jong = JONGSEONG_INDEX[(jongseong ?? "") as keyof typeof JONGSEONG_INDEX];
+  const cho = CHOSEONG_INDEX[choseong];
+  const jung = JUNGSEONG_INDEX[jungseong];
+  const jong = JONGSEONG_INDEX[jongseong ?? ""];
 
   if (cho === undefined || jung === undefined || jong === undefined) return null;
 
@@ -183,7 +189,7 @@ export function composeSyllable(
  */
 export function decomposeSyllable(
   syllable: string,
-): { choseong: string; jungseong: string; jongseong: string | null } | null {
+): { choseong: ChoseongJamo; jungseong: VowelJamo; jongseong: JongseongJamo | null } | null {
   const cp = syllable.codePointAt(0);
   if (cp === undefined || cp < 0xac00 || cp > 0xd7a3) return null;
 
@@ -195,7 +201,7 @@ export function decomposeSyllable(
   const choseong = CHOSEONG_BY_INDEX[choIdx];
   const jungseong = JUNGSEONG_BY_INDEX[jungIdx];
   // jongIdx === 0 means no final consonant
-  const jongseong = jongIdx === 0 ? null : (JONGSEONG_BY_INDEX[jongIdx] ?? null);
+  const jongseong = jongIdx === 0 ? null : JONGSEONG_BY_INDEX[jongIdx];
 
   if (choseong === undefined || jungseong === undefined) return null;
 

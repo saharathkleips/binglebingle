@@ -76,12 +76,8 @@ export type ChoseongJamo = BasicConsonantJamo | DoubleConsonantJamo;
  */
 export type JongseongJamo = Exclude<ConsonantJamo, "ㄸ" | "ㅃ" | "ㅉ">;
 
-/**
- * Every valid vowel jamo the game can produce or place in the jungseong slot.
- * Includes basic vowels and complex vowels (outputs of COMBINATION_RULES).
- */
-export type VowelJamo =
-  // Basic vowels
+/** The 10 basic vowels that appear in the player's initial pool. */
+export type BasicVowelJamo =
   | "ㅏ"
   | "ㅑ"
   | "ㅓ"
@@ -91,8 +87,10 @@ export type VowelJamo =
   | "ㅜ"
   | "ㅠ"
   | "ㅡ"
-  | "ㅣ"
-  // Complex vowels
+  | "ㅣ";
+
+/** The 11 complex vowels produced by combining two basic vowels. */
+export type ComplexVowelJamo =
   | "ㅐ"
   | "ㅒ"
   | "ㅔ"
@@ -104,6 +102,12 @@ export type VowelJamo =
   | "ㅞ"
   | "ㅟ"
   | "ㅢ";
+
+/**
+ * Every valid vowel jamo the game can produce or place in the jungseong slot.
+ * Includes basic vowels and complex vowels (outputs of COMBINATION_RULES).
+ */
+export type VowelJamo = BasicVowelJamo | ComplexVowelJamo;
 
 /**
  * Every valid Hangul Compatibility Jamo (U+3130–U+318F) that the game can produce.
@@ -148,9 +152,9 @@ export const CHOSEONG_INDEX: Readonly<Record<ChoseongJamo, number>> = {
  * Reverse-lookup map from choseong ordinal index → compatibility jamo string.
  * Built once at module load. Used in decomposition arithmetic.
  */
-export const CHOSEONG_BY_INDEX: Readonly<Record<number, string>> = Object.fromEntries(
+export const CHOSEONG_BY_INDEX: Readonly<Record<number, ChoseongJamo>> = Object.fromEntries(
   Object.entries(CHOSEONG_INDEX).map(([k, v]) => [v, k]),
-);
+) as Readonly<Record<number, ChoseongJamo>>;
 
 /**
  * Maps each jungseong (vowel) compatibility jamo to its Unicode position ordinal
@@ -188,9 +192,9 @@ export const JUNGSEONG_INDEX: Readonly<Record<VowelJamo, number>> = {
  * Reverse-lookup map from jungseong ordinal index → compatibility jamo string.
  * Built once at module load. Used in decomposition arithmetic.
  */
-export const JUNGSEONG_BY_INDEX: Readonly<Record<number, string>> = Object.fromEntries(
+export const JUNGSEONG_BY_INDEX: Readonly<Record<number, VowelJamo>> = Object.fromEntries(
   Object.entries(JUNGSEONG_INDEX).map(([k, v]) => [v, k]),
-);
+) as Readonly<Record<number, VowelJamo>>;
 
 /**
  * Maps each jongseong (final consonant) compatibility jamo to its Unicode
@@ -237,6 +241,6 @@ export const JONGSEONG_INDEX: Readonly<Record<JongseongJamo | "", number>> = {
  * Reverse-lookup map from jongseong ordinal index → compatibility jamo string.
  * Built once at module load. Used in decomposition arithmetic.
  */
-export const JONGSEONG_BY_INDEX: Readonly<Record<number, string>> = Object.fromEntries(
+export const JONGSEONG_BY_INDEX: Readonly<Record<number, JongseongJamo | "">> = Object.fromEntries(
   Object.entries(JONGSEONG_INDEX).map(([k, v]) => [v, k]),
-);
+) as Readonly<Record<number, JongseongJamo | "">>;

@@ -1,57 +1,46 @@
 import { describe, expect, it } from "vitest";
 
 import { composeJamo, decomposeJamo, composeSyllable, decomposeSyllable } from "./composition";
+import { COMBINATION_RULES, type CombinationRule } from "./composition";
+import type { Jamo } from "./jamo";
+import type { ChoseongJamo, VowelJamo, JongseongJamo } from "./jamo";
 
-describe("composeJamo", () => {
-  it("combines ㅏ+ㅣ to ㅐ (COMPLEX_VOWEL)", () => {
-    expect(composeJamo("ㅏ", "ㅣ")).toBe("ㅐ");
-  });
+// Type guard to extract typed rules
+const getTypedRules = (): CombinationRule[] => COMBINATION_RULES as CombinationRule[];
 
-  it("is commutative for COMPLEX_VOWEL: ㅣ+ㅏ also returns ㅐ", () => {
-    expect(composeJamo("ㅣ", "ㅏ")).toBe("ㅐ");
-  });
-
-  it("combines ㄱ+ㄱ to ㄲ (DOUBLE_CONSONANT)", () => {
-    expect(composeJamo("ㄱ", "ㄱ")).toBe("ㄲ");
-  });
-
-  it("combines ㄱ+ㅅ to ㄳ (COMPOUND_BATCHIM, canonical order)", () => {
-    expect(composeJamo("ㄱ", "ㅅ")).toBe("ㄳ");
-  });
-
-  it("returns null for reversed COMPOUND_BATCHIM: ㅅ+ㄱ", () => {
-    expect(composeJamo("ㅅ", "ㄱ")).toBeNull();
-  });
-
-  it("returns null for inputs with no rule", () => {
-    expect(composeJamo("ㄱ", "ㅎ")).toBeNull();
-  });
+describe("composeJamo — all COMBINATION_RULES", () => {
+  it.each(getTypedRules())(
+    "$kind: $inputs → $output",
+    ({ inputs, output }) => {
+      expect(composeJamo(inputs[0], inputs[1])).toBe(output);
+    },
+  );
 });
 
-describe("decomposeJamo", () => {
-  it("returns ['ㄱ', 'ㄱ'] for ㄲ (DOUBLE_CONSONANT)", () => {
-    expect(decomposeJamo("ㄲ")).toEqual(["ㄱ", "ㄱ"]);
-  });
+describe("decomposeJamo — round-trip", () => {
+  it.each(getTypedRules())(
+    "round-trip $kind: decomposeJamo(composeJamo($inputs)) returns inputs",
+    ({ inputs, output }) => {
+      expect(decomposeJamo(output)).toEqual(inputs);
+    },
+  );
+});
 
-  it("returns ['ㅏ', 'ㅣ'] for ㅐ (COMPLEX_VOWEL)", () => {
-    expect(decomposeJamo("ㅐ")).toEqual(["ㅏ", "ㅣ"]);
-  });
+describe("decomposeJamo — non-combination jamo", () => {
+  const NON_COMBINATION: Jamo[] = [
+    // Basic consonants
+    "ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ",
+    // Vowels
+    "ㅏ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ",
+  ];
 
-  it("returns ['ㄱ', 'ㅅ'] for ㄳ (COMPOUND_BATCHIM)", () => {
-    expect(decomposeJamo("ㄳ")).toEqual(["ㄱ", "ㅅ"]);
-  });
-
-  it("returns null for basic consonant ㄱ", () => {
-    expect(decomposeJamo("ㄱ")).toBeNull();
-  });
-
-  it("returns null for basic vowel ㅏ", () => {
-    expect(decomposeJamo("ㅏ")).toBeNull();
+  it.each(NON_COMBINATION)("returns null for basic jamo %s", (jamo) => {
+    expect(decomposeJamo(jamo)).toBeNull();
   });
 });
 
 describe("composeSyllable", () => {
-  const COMPOSE_CASES: [string, string, string | undefined, string][] = [
+  const COMPOSE_CASES: [ChoseongJamo, VowelJamo, JongseongJamo | undefined, string][] = [
     ["ㄱ", "ㅏ", undefined, "가"],
     ["ㅎ", "ㅏ", "ㄴ", "한"],
     ["ㅎ", "ㅞ", "ㄳ", "훿"],
@@ -112,7 +101,6 @@ describe("decomposeSyllable", () => {
   });
 
   it("reads only first char — multi-syllable inputs silently truncate", () => {
-    // decomposeSyllable uses codePointAt(0) which reads only the first char
     expect(decomposeSyllable("한국")).toStrictEqual({ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" });
   });
 

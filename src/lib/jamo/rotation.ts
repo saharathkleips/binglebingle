@@ -13,7 +13,7 @@ import type { Jamo } from "./jamo";
  * Jamo not in any set are not rotatable.
  * Vowel sets use clockwise order: ㅏ→ㅜ→ㅓ→ㅗ, ㅑ→ㅠ→ㅕ→ㅛ.
  */
-export const ROTATION_SETS: readonly (readonly string[])[] = [
+export const ROTATION_SETS: readonly (readonly Jamo[])[] = [
   ["ㄱ", "ㄴ"],
   ["ㅏ", "ㅜ", "ㅓ", "ㅗ"],
   ["ㅣ", "ㅡ"],
@@ -24,9 +24,10 @@ export const ROTATION_SETS: readonly (readonly string[])[] = [
  * Derived runtime lookup map from ROTATION_SETS.
  * Maps each rotatable jamo to all other members of its set (excluding itself).
  * Built once at module load via IIFE.
+ * @internal
  */
-export const ROTATION_MAP: ReadonlyMap<string, readonly string[]> = (() => {
-  const map = new Map<string, string[]>();
+const ROTATION_MAP: ReadonlyMap<Jamo, readonly Jamo[]> = (() => {
+  const map = new Map<Jamo, Jamo[]>();
   for (const set of ROTATION_SETS) {
     for (const jamo of set) {
       map.set(
@@ -45,11 +46,12 @@ export const ROTATION_MAP: ReadonlyMap<string, readonly string[]> = (() => {
  * @param jamo - A Hangul Compatibility Jamo string
  * @returns The next jamo in the set, or null if jamo is not rotatable
  */
-export function getNextRotation(jamo: Jamo): string | null {
+export function getNextRotation(jamo: Jamo): Jamo | null {
   const options = ROTATION_MAP.get(jamo);
   if (!options || options.length === 0) return null;
   const set = ROTATION_SETS.find((s) => s.includes(jamo));
   if (!set) return null;
   const idx = set.indexOf(jamo);
-  return set[(idx + 1) % set.length] ?? null;
+  return set[(idx + 1) % set.length];
 }
+
