@@ -6,13 +6,16 @@ import {
   JUNGSEONG_BY_INDEX,
   JONGSEONG_INDEX,
   JONGSEONG_BY_INDEX,
-  ROTATION_SETS,
-  ROTATION_MAP,
+} from "./jamo-data";
+
+import { ROTATION_SETS, ROTATION_MAP } from "./rotation";
+
+import {
   COMBINATION_RULES,
   COMBINATION_MAP,
   JONGSEONG_UPGRADE_MAP,
   combinationOf,
-} from "./jamo-data";
+} from "./composition";
 
 describe("CHOSEONG_INDEX", () => {
   it("contains exactly 19 entries", () => {
@@ -60,17 +63,34 @@ describe("JUNGSEONG_INDEX", () => {
     expect(Object.keys(JUNGSEONG_INDEX).length).toBe(21);
   });
 
-  it("maps ㅏ to 0 and ㅣ to 20", () => {
-    expect(JUNGSEONG_INDEX["ㅏ"]).toBe(0);
-    expect(JUNGSEONG_INDEX["ㅣ"]).toBe(20);
-  });
+  const EXPECTED_JUNGSEONG: [string, number][] = [
+    ["ㅏ", 0],
+    ["ㅐ", 1],
+    ["ㅑ", 2],
+    ["ㅒ", 3],
+    ["ㅓ", 4],
+    ["ㅔ", 5],
+    ["ㅕ", 6],
+    ["ㅖ", 7],
+    ["ㅗ", 8],
+    ["ㅘ", 9],
+    ["ㅙ", 10],
+    ["ㅚ", 11],
+    ["ㅛ", 12],
+    ["ㅜ", 13],
+    ["ㅝ", 14],
+    ["ㅞ", 15],
+    ["ㅟ", 16],
+    ["ㅠ", 17],
+    ["ㅡ", 18],
+    ["ㅢ", 19],
+    ["ㅣ", 20],
+  ];
 
-  it("all keys use Hangul Compatibility Jamo codepoints (0x3130–0x318F)", () => {
-    for (const key of Object.keys(JUNGSEONG_INDEX)) {
-      const cp = key.codePointAt(0);
-      expect(cp).toBeGreaterThanOrEqual(0x3130);
-      expect(cp).toBeLessThanOrEqual(0x318f);
-    }
+  it.each(EXPECTED_JUNGSEONG)("maps %s to %i and uses Compatibility Jamo codepoint", (jamo, idx) => {
+    expect(JUNGSEONG_INDEX[jamo]).toBe(idx);
+    expect(jamo.codePointAt(0)).toBeGreaterThanOrEqual(0x3130);
+    expect(jamo.codePointAt(0)).toBeLessThanOrEqual(0x318f);
   });
 });
 
