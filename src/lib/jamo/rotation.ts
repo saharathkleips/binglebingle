@@ -13,7 +13,7 @@ import type { Jamo } from "./jamo";
  * Jamo not in any set are not rotatable.
  * Vowel sets use clockwise order: ㅏ→ㅜ→ㅓ→ㅗ, ㅑ→ㅠ→ㅕ→ㅛ.
  */
-export const ROTATION_SETS: readonly (readonly Jamo[])[] = [
+const ROTATION_SETS: readonly (readonly Jamo[])[] = [
   ["ㄱ", "ㄴ"],
   ["ㅏ", "ㅜ", "ㅓ", "ㅗ"],
   ["ㅣ", "ㅡ"],

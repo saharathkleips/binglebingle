@@ -38,16 +38,11 @@ describe("CHOSEONG_INDEX", () => {
     ["ㅎ", 18],
   ];
 
-  it.each(EXPECTED_CHOSEONG)("maps %s to %i and uses Compatibility Jamo codepoint", (jamo, idx) => {
+  it.each(EXPECTED_CHOSEONG)("maps %s↔%i and uses Compatibility Jamo codepoint", (jamo, idx) => {
     expect(CHOSEONG_INDEX[jamo]).toBe(idx);
+    expect(CHOSEONG_BY_INDEX[idx]).toBe(jamo);
     expect(jamo.codePointAt(0)).toBeGreaterThanOrEqual(0x3130);
     expect(jamo.codePointAt(0)).toBeLessThanOrEqual(0x318f);
-  });
-
-  it("reverse map is correct for all entries", () => {
-    for (const [jamo, idx] of EXPECTED_CHOSEONG) {
-      expect(CHOSEONG_BY_INDEX[idx]).toBe(jamo);
-    }
   });
 });
 
@@ -81,19 +76,14 @@ describe("JUNGSEONG_INDEX", () => {
   ];
 
   it.each(EXPECTED_JUNGSEONG)(
-    "maps %s to %i and uses Compatibility Jamo codepoint",
+    "maps %s↔%i and uses Compatibility Jamo codepoint",
     (jamo, idx) => {
       expect(JUNGSEONG_INDEX[jamo]).toBe(idx);
+      expect(JUNGSEONG_BY_INDEX[idx]).toBe(jamo);
       expect(jamo.codePointAt(0)).toBeGreaterThanOrEqual(0x3130);
       expect(jamo.codePointAt(0)).toBeLessThanOrEqual(0x318f);
     },
   );
-
-  it("reverse map is correct for all entries", () => {
-    for (const [jamo, idx] of EXPECTED_JUNGSEONG) {
-      expect(JUNGSEONG_BY_INDEX[idx]).toBe(jamo);
-    }
-  });
 });
 
 describe("JONGSEONG_INDEX", () => {
@@ -133,9 +123,10 @@ describe("JONGSEONG_INDEX", () => {
   ];
 
   it.each(EXPECTED_JONGSEONG)(
-    "maps %s to %i (and non-empty keys use Compatibility Jamo codepoint)",
+    "maps %s↔%i (and non-empty keys use Compatibility Jamo codepoint)",
     (jamo, idx) => {
       expect(JONGSEONG_INDEX[jamo]).toBe(idx);
+      expect(JONGSEONG_BY_INDEX[idx]).toBe(jamo);
       if (jamo !== "") {
         expect(jamo.codePointAt(0)).toBeGreaterThanOrEqual(0x3130);
         expect(jamo.codePointAt(0)).toBeLessThanOrEqual(0x318f);
@@ -148,11 +139,5 @@ describe("JONGSEONG_INDEX", () => {
     expect((JONGSEONG_INDEX as any)["ㄸ"]).toBeUndefined();
     expect((JONGSEONG_INDEX as any)["ㅃ"]).toBeUndefined();
     expect((JONGSEONG_INDEX as any)["ㅉ"]).toBeUndefined();
-  });
-
-  it("reverse map is correct for all entries", () => {
-    for (const [jamo, idx] of EXPECTED_JONGSEONG) {
-      expect(JONGSEONG_BY_INDEX[idx]).toBe(jamo);
-    }
   });
 });
