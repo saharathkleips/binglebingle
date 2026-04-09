@@ -110,7 +110,6 @@ export function decomposeSyllable(
   // jongIdx === 0 means no final consonant
   const jongseong = jongIdx === 0 ? null : (JONGSEONG_BY_INDEX[jongIdx] ?? null);
 
-  // choseong and jungseong must always resolve for a valid syllable block — guard for TypeScript
   if (choseong === undefined || jungseong === undefined) return null;
 
   return { choseong, jungseong, jongseong };

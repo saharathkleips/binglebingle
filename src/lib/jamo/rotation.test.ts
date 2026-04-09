@@ -27,12 +27,10 @@ describe("getNextRotation", () => {
 
   it("wraps from last member back to first", () => {
     expect(getNextRotation("ㄴ")).toBe("ㄱ");
-    // ㅗ is last in ["ㅏ","ㅜ","ㅓ","ㅗ"] — wraps to ㅏ
     expect(getNextRotation("ㅗ")).toBe("ㅏ");
   });
 
   it("returns the second member for the first member of a 4-set", () => {
-    // ㅏ is at index 0 in ["ㅏ","ㅜ","ㅓ","ㅗ"] — next is ㅜ
     expect(getNextRotation("ㅏ")).toBe("ㅜ");
   });
 

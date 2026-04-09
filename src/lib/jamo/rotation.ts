@@ -29,10 +29,8 @@ export function getRotationOptions(jamo: string): readonly string[] {
 export function getNextRotation(jamo: string): string | null {
   const options = ROTATION_MAP.get(jamo);
   if (!options || options.length === 0) return null;
-  // Find position of jamo in its full set, return next member (wrapping)
   const set = ROTATION_SETS.find((s) => s.includes(jamo));
   if (!set) return null;
   const idx = set.indexOf(jamo);
-  // noUncheckedIndexedAccess: set[(idx+1) % set.length] returns string | undefined
   return set[(idx + 1) % set.length] ?? null;
 }

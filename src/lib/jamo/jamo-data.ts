@@ -8,10 +8,6 @@
  * Verify: 'ㄱ'.codePointAt(0) === 0x3131 (not 0x1100).
  */
 
-// ---------------------------------------------------------------------------
-// Type definitions
-// ---------------------------------------------------------------------------
-
 /** A rule that combines two jamo into a double consonant, complex vowel, or compound batchim. */
 export type CombinationRule = {
   /** The two input jamo that combine. Order in array matches display order. */
@@ -21,10 +17,6 @@ export type CombinationRule = {
   /** Whether this produces a double consonant, a complex vowel, or a compound batchim. */
   readonly kind: "DOUBLE_CONSONANT" | "COMPLEX_VOWEL" | "COMPOUND_BATCHIM";
 };
-
-// ---------------------------------------------------------------------------
-// Choseong (초성) index table — 19 entries
-// ---------------------------------------------------------------------------
 
 /**
  * Maps each choseong (initial consonant) compatibility jamo to its Unicode
@@ -63,10 +55,6 @@ export const CHOSEONG_INDEX: Readonly<Record<string, number>> = {
 export const CHOSEONG_BY_INDEX: Readonly<Record<number, string>> = Object.fromEntries(
   Object.entries(CHOSEONG_INDEX).map(([k, v]) => [v, k]),
 );
-
-// ---------------------------------------------------------------------------
-// Jungseong (중성) index table — 21 entries
-// ---------------------------------------------------------------------------
 
 /**
  * Maps each jungseong (vowel) compatibility jamo to its Unicode position ordinal
@@ -107,10 +95,6 @@ export const JUNGSEONG_INDEX: Readonly<Record<string, number>> = {
 export const JUNGSEONG_BY_INDEX: Readonly<Record<number, string>> = Object.fromEntries(
   Object.entries(JUNGSEONG_INDEX).map(([k, v]) => [v, k]),
 );
-
-// ---------------------------------------------------------------------------
-// Jongseong (종성) index table — 28 entries (index 0 = no final consonant)
-// ---------------------------------------------------------------------------
 
 /**
  * Maps each jongseong (final consonant) compatibility jamo to its Unicode
@@ -161,12 +145,7 @@ export const JONGSEONG_BY_INDEX: Readonly<Record<number, string>> = Object.fromE
   Object.entries(JONGSEONG_INDEX).map(([k, v]) => [v, k]),
 );
 
-// ---------------------------------------------------------------------------
-// Rotation sets and map
-// ---------------------------------------------------------------------------
-
 /**
- * The designer-defined rotation equivalence sets.
  * Each set contains jamo that can rotate into one another.
  * Jamo not in any set are not rotatable.
  * Vowel sets use clockwise order: ㅏ→ㅜ→ㅓ→ㅗ, ㅑ→ㅠ→ㅕ→ㅛ.
@@ -196,10 +175,6 @@ export const ROTATION_MAP: ReadonlyMap<string, readonly string[]> = (() => {
   return map;
 })();
 
-// ---------------------------------------------------------------------------
-// Combination rules and map
-// ---------------------------------------------------------------------------
-
 /**
  * All combination rules: double consonants (5), complex vowels (11), and
  * compound batchim (11). 27 entries total.
@@ -228,7 +203,7 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
   { inputs: ["ㅜ", "ㅣ"], output: "ㅟ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅡ", "ㅣ"], output: "ㅢ", kind: "COMPLEX_VOWEL" },
 
-  // Compound batchim (11) — NOT commutative; inputs[0] = existing, inputs[1] = additional
+  // Compound batchim (11)
   { inputs: ["ㄱ", "ㅅ"], output: "ㄳ", kind: "COMPOUND_BATCHIM" },
   { inputs: ["ㄴ", "ㅈ"], output: "ㄵ", kind: "COMPOUND_BATCHIM" },
   { inputs: ["ㄴ", "ㅎ"], output: "ㄶ", kind: "COMPOUND_BATCHIM" },
@@ -271,10 +246,6 @@ export function combinationOf(a: string, b: string): CombinationRule | undefined
   const key = [a, b].sort().join("|");
   return COMBINATION_MAP.get(key);
 }
-
-// ---------------------------------------------------------------------------
-// Jongseong upgrade map (derived from COMPOUND_BATCHIM rules)
-// ---------------------------------------------------------------------------
 
 /**
  * Derived runtime lookup map from COMBINATION_RULES (COMPOUND_BATCHIM subset only).
