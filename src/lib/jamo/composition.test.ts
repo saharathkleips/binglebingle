@@ -1,45 +1,52 @@
 import { describe, expect, it } from "vitest";
 
-import { combineJamo, composeSyllable, decomposeSyllable, upgradeJongseong } from "./composition";
+import { composeJamo, decomposeJamo, composeSyllable, decomposeSyllable } from "./composition";
 
-describe("combineJamo", () => {
-  it("combines ㅏ+ㅣ to ㅐ", () => {
-    expect(combineJamo("ㅏ", "ㅣ")).toBe("ㅐ");
+describe("composeJamo", () => {
+  it("combines ㅏ+ㅣ to ㅐ (COMPLEX_VOWEL)", () => {
+    expect(composeJamo("ㅏ", "ㅣ")).toBe("ㅐ");
   });
 
-  it("is commutative: ㅣ+ㅏ also returns ㅐ", () => {
-    expect(combineJamo("ㅣ", "ㅏ")).toBe("ㅐ");
+  it("is commutative for COMPLEX_VOWEL: ㅣ+ㅏ also returns ㅐ", () => {
+    expect(composeJamo("ㅣ", "ㅏ")).toBe("ㅐ");
   });
 
-  it("combines ㄱ+ㄱ to ㄲ", () => {
-    expect(combineJamo("ㄱ", "ㄱ")).toBe("ㄲ");
+  it("combines ㄱ+ㄱ to ㄲ (DOUBLE_CONSONANT)", () => {
+    expect(composeJamo("ㄱ", "ㄱ")).toBe("ㄲ");
+  });
+
+  it("combines ㄱ+ㅅ to ㄳ (COMPOUND_BATCHIM, canonical order)", () => {
+    expect(composeJamo("ㄱ", "ㅅ")).toBe("ㄳ");
+  });
+
+  it("returns null for reversed COMPOUND_BATCHIM: ㅅ+ㄱ", () => {
+    expect(composeJamo("ㅅ", "ㄱ")).toBeNull();
   });
 
   it("returns null for inputs with no rule", () => {
-    expect(combineJamo("ㄱ", "ㅎ")).toBeNull();
-  });
-
-  it("returns null for compound batchim inputs", () => {
-    // compound batchim are handled by upgradeJongseong, not combineJamo
-    expect(combineJamo("ㄱ", "ㅅ")).toBeNull();
+    expect(composeJamo("ㄱ", "ㅎ")).toBeNull();
   });
 });
 
-describe("upgradeJongseong", () => {
-  it("returns ㄳ for ㄱ+ㅅ", () => {
-    expect(upgradeJongseong("ㄱ", "ㅅ")).toBe("ㄳ");
+describe("decomposeJamo", () => {
+  it("returns ['ㄱ', 'ㄱ'] for ㄲ (DOUBLE_CONSONANT)", () => {
+    expect(decomposeJamo("ㄲ")).toEqual(["ㄱ", "ㄱ"]);
   });
 
-  it("returns ㄺ for ㄹ+ㄱ", () => {
-    expect(upgradeJongseong("ㄹ", "ㄱ")).toBe("ㄺ");
+  it("returns ['ㅏ', 'ㅣ'] for ㅐ (COMPLEX_VOWEL)", () => {
+    expect(decomposeJamo("ㅐ")).toEqual(["ㅏ", "ㅣ"]);
   });
 
-  it("returns null for reversed arguments: ㅅ+ㄱ", () => {
-    expect(upgradeJongseong("ㅅ", "ㄱ")).toBeNull();
+  it("returns ['ㄱ', 'ㅅ'] for ㄳ (COMPOUND_BATCHIM)", () => {
+    expect(decomposeJamo("ㄳ")).toEqual(["ㄱ", "ㅅ"]);
   });
 
-  it("returns null for inputs with no upgrade rule: ㄱ+ㄱ", () => {
-    expect(upgradeJongseong("ㄱ", "ㄱ")).toBeNull();
+  it("returns null for basic consonant ㄱ", () => {
+    expect(decomposeJamo("ㄱ")).toBeNull();
+  });
+
+  it("returns null for basic vowel ㅏ", () => {
+    expect(decomposeJamo("ㅏ")).toBeNull();
   });
 });
 

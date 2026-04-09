@@ -9,12 +9,11 @@
  */
 
 import {
-  combineJamo,
+  composeJamo,
   composeSyllable,
   decomposeSyllable,
-  upgradeJongseong,
+  COMBINATION_RULES,
 } from "../jamo/composition";
-import { COMBINATION_RULES } from "../jamo/composition";
 import type { Character, Jamo } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -70,10 +69,12 @@ export function combine(a: Character, b: Character): Character | null {
   // -------------------------------------------------------------------------
   if (aCho !== undefined && aJung !== undefined && aJong !== undefined) {
     if (bCho !== undefined) {
-      // Attempt compound batchim upgrade
-      const upgraded = upgradeJongseong(aJong, bCho);
-      if (upgraded === null) return null;
-      return { choseong: aCho, jungseong: aJung, jongseong: upgraded as Jamo };
+      // Attempt compound batchim upgrade — only COMPOUND_BATCHIM rules apply here
+      const rule = COMBINATION_RULES.find(
+        (r) => r.kind === "COMPOUND_BATCHIM" && r.inputs[0] === aJong && r.inputs[1] === bCho,
+      );
+      if (!rule) return null;
+      return { choseong: aCho, jungseong: aJung, jongseong: rule.output as Jamo };
     }
     // Full + jungseong or anything else → invalid
     return null;
@@ -85,7 +86,7 @@ export function combine(a: Character, b: Character): Character | null {
   if (aCho !== undefined && aJung !== undefined) {
     if (bJung !== undefined) {
       // Try to combine the two vowels
-      const combined = combineJamo(aJung, bJung);
+      const combined = composeJamo(aJung, bJung);
       if (combined === null) return null;
       return { choseong: aCho, jungseong: combined as Jamo };
     }
@@ -102,7 +103,7 @@ export function combine(a: Character, b: Character): Character | null {
   if (aCho !== undefined && aJung === undefined) {
     if (bCho !== undefined) {
       // Try to combine two consonants into a double consonant
-      const combined = combineJamo(aCho, bCho);
+      const combined = composeJamo(aCho, bCho);
       if (combined === null) return null;
       return { choseong: combined as Jamo };
     }
@@ -119,7 +120,7 @@ export function combine(a: Character, b: Character): Character | null {
   if (aJung !== undefined && aCho === undefined) {
     if (bJung !== undefined) {
       // Try to combine two vowels into a complex vowel
-      const combined = combineJamo(aJung, bJung);
+      const combined = composeJamo(aJung, bJung);
       if (combined === null) return null;
       return { jungseong: combined as Jamo };
     }

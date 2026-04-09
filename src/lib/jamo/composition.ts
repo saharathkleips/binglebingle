@@ -15,7 +15,8 @@ import {
   JONGSEONG_INDEX,
   JUNGSEONG_BY_INDEX,
   JUNGSEONG_INDEX,
-} from "./jamo-data";
+} from "./jamo";
+import type { Jamo } from "./jamo";
 
 // ---------------------------------------------------------------------------
 // Syllable base codepoint (UAX #15)
@@ -41,8 +42,8 @@ export type CombinationRule = {
  * All combination rules: double consonants (5), complex vowels (11), and
  * compound batchim (11). 27 entries total.
  *
- * DOUBLE_CONSONANT and COMPLEX_VOWEL rules are commutative (COMBINATION_MAP uses sorted keys).
- * COMPOUND_BATCHIM rules are NOT commutative (JONGSEONG_UPGRADE_MAP uses ordered keys).
+ * DOUBLE_CONSONANT and COMPLEX_VOWEL rules are commutative (COMBINATION_MAP stores both a|b and b|a).
+ * COMPOUND_BATCHIM rules are NOT commutative (canonical order only in COMBINATION_MAP).
  */
 export const COMBINATION_RULES: readonly CombinationRule[] = [
   // Double consonants (5)
@@ -80,87 +81,71 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
 ];
 
 /**
- * Derived runtime lookup map from COMBINATION_RULES (DOUBLE_CONSONANT + COMPLEX_VOWEL only).
- * Key format: sorted input pair joined with '|' (e.g. 'ㅏ|ㅣ').
- * Sorting ensures commutativity — argument order does not matter at lookup time.
- * Built once at module load via IIFE. 16 entries total.
- */
-export const COMBINATION_MAP: ReadonlyMap<string, CombinationRule> = (() => {
-  const map = new Map<string, CombinationRule>();
-  for (const rule of COMBINATION_RULES) {
-    if (rule.kind === "DOUBLE_CONSONANT" || rule.kind === "COMPLEX_VOWEL") {
-      const key = [rule.inputs[0], rule.inputs[1]].sort().join("|");
-      map.set(key, rule);
-    }
-  }
-  return map;
-})();
-
-/**
- * Derived runtime lookup map from COMBINATION_RULES (COMPOUND_BATCHIM subset only).
- * Key format: 'existing|additional' (NOT sorted — order matters).
- * Built once at module load via IIFE. 11 entries total.
+ * Unified lookup map for all three kinds of jamo combination.
+ * - DOUBLE_CONSONANT (5 rules): stores both a|b and b|a keys (same key since a===b)
+ * - COMPLEX_VOWEL (11 rules): stores both a|b and b|a keys for commutativity
+ * - COMPOUND_BATCHIM (11 rules): stores only canonical a|b key (not commutative)
  *
- * These are NOT commutative — existing and additional are ordered.
- * 'ㄱ+ㅅ→ㄳ' is valid; 'ㅅ+ㄱ' has no rule.
+ * Total: 5 + 22 + 11 = 38 entries.
+ * Built once at module load via IIFE.
  */
-export const JONGSEONG_UPGRADE_MAP: ReadonlyMap<string, string> = (() => {
+export const COMBINATION_MAP: ReadonlyMap<string, string> = (() => {
   const map = new Map<string, string>();
   for (const rule of COMBINATION_RULES) {
-    if (rule.kind === "COMPOUND_BATCHIM") {
-      map.set(`${rule.inputs[0]}|${rule.inputs[1]}`, rule.output);
+    const [a, b] = rule.inputs;
+    if (rule.kind === "DOUBLE_CONSONANT" || rule.kind === "COMPLEX_VOWEL") {
+      map.set(`${a}|${b}`, rule.output);
+      map.set(`${b}|${a}`, rule.output);
+    } else {
+      // COMPOUND_BATCHIM: canonical order only
+      map.set(`${a}|${b}`, rule.output);
     }
   }
   return map;
 })();
 
 /**
- * Returns the CombinationRule for two jamo if one exists, or undefined.
- * Handles DOUBLE_CONSONANT and COMPLEX_VOWEL combinations (commutative).
- * Does NOT handle COMPOUND_BATCHIM — use JONGSEONG_UPGRADE_MAP for that.
- *
- * @param a - First Hangul Compatibility Jamo string
- * @param b - Second Hangul Compatibility Jamo string
+ * Reverse lookup map: combination output → [input0, input1] using canonical order.
+ * Not exported — used internally by decomposeJamo.
+ * Built once at module load via IIFE.
  */
-export function combinationOf(a: string, b: string): CombinationRule | undefined {
-  const key = [a, b].sort().join("|");
-  return COMBINATION_MAP.get(key);
-}
+const DECOMPOSE_MAP: ReadonlyMap<string, readonly [string, string]> = (() => {
+  const map = new Map<string, [string, string]>();
+  for (const rule of COMBINATION_RULES) {
+    map.set(rule.output, [rule.inputs[0], rule.inputs[1]]);
+  }
+  return map;
+})();
 
 // ---------------------------------------------------------------------------
 // Exported functions
 // ---------------------------------------------------------------------------
 
 /**
- * Combines two jamo into a double consonant or complex vowel, if a combination
- * rule exists. Commutative — argument order does not affect the result.
+ * Combines two jamo into the double consonant, complex vowel, or compound batchim
+ * produced by their combination. Returns null if no rule exists.
  *
- * Does NOT handle compound batchim (e.g. ㄱ+ㅅ → ㄳ). Use upgradeJongseong for that.
+ * Commutative for DOUBLE_CONSONANT and COMPLEX_VOWEL.
+ * Compound batchim require canonical argument order (e.g. ㄱ+ㅅ→ㄳ; ㅅ+ㄱ→null).
  *
- * @param a - First Hangul Compatibility Jamo string
- * @param b - Second Hangul Compatibility Jamo string
+ * @param a - First Hangul Compatibility Jamo
+ * @param b - Second Hangul Compatibility Jamo
  * @returns The combined jamo, or null if no combination rule exists
  */
-export function combineJamo(a: string, b: string): string | null {
-  const key = [a, b].sort().join("|");
-  const rule = COMBINATION_MAP.get(key);
-  return rule?.output ?? null;
+export function composeJamo(a: Jamo, b: Jamo): Jamo | null {
+  return (COMBINATION_MAP.get(`${a}|${b}`) as Jamo) ?? null;
 }
 
 /**
- * Upgrades a single jongseong consonant to a compound batchim by adding an
- * additional consonant. Not commutative — argument order matters.
+ * Decomposes a combined jamo into the two inputs that produce it.
+ * Returns null if the jamo is not a combination result.
  *
- * Use this when adding a consonant to a Character that already has choseong +
- * jungseong + single jongseong.
- *
- * @param existingJongseong - The consonant already in the jongseong position
- * @param additional - The consonant being added
- * @returns The compound batchim jongseong, or null if no upgrade rule exists
+ * @param jamo - A Hangul Compatibility Jamo that may be a combination result
+ * @returns [input0, input1] in canonical order, or null if not a combination result
  */
-export function upgradeJongseong(existingJongseong: string, additional: string): string | null {
-  const key = `${existingJongseong}|${additional}`;
-  return JONGSEONG_UPGRADE_MAP.get(key) ?? null;
+export function decomposeJamo(jamo: Jamo): [Jamo, Jamo] | null {
+  const parts = DECOMPOSE_MAP.get(jamo);
+  return parts ? [parts[0] as Jamo, parts[1] as Jamo] : null;
 }
 
 /**
@@ -177,9 +162,9 @@ export function composeSyllable(
   jungseong: string,
   jongseong?: string,
 ): string | null {
-  const cho = CHOSEONG_INDEX[choseong];
-  const jung = JUNGSEONG_INDEX[jungseong];
-  const jong = JONGSEONG_INDEX[jongseong ?? ""];
+  const cho = CHOSEONG_INDEX[choseong as keyof typeof CHOSEONG_INDEX];
+  const jung = JUNGSEONG_INDEX[jungseong as keyof typeof JUNGSEONG_INDEX];
+  const jong = JONGSEONG_INDEX[(jongseong ?? "") as keyof typeof JONGSEONG_INDEX];
 
   if (cho === undefined || jung === undefined || jong === undefined) return null;
 

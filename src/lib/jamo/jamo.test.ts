@@ -6,16 +6,11 @@ import {
   JUNGSEONG_BY_INDEX,
   JONGSEONG_INDEX,
   JONGSEONG_BY_INDEX,
-} from "./jamo-data";
+} from "./jamo";
 
 import { ROTATION_SETS, ROTATION_MAP } from "./rotation";
 
-import {
-  COMBINATION_RULES,
-  COMBINATION_MAP,
-  JONGSEONG_UPGRADE_MAP,
-  combinationOf,
-} from "./composition";
+import { COMBINATION_RULES, COMBINATION_MAP } from "./composition";
 
 describe("CHOSEONG_INDEX", () => {
   it("contains exactly 19 entries", () => {
@@ -45,7 +40,7 @@ describe("CHOSEONG_INDEX", () => {
   ];
 
   it.each(EXPECTED_CHOSEONG)("maps %s to %i and uses Compatibility Jamo codepoint", (jamo, idx) => {
-    expect(CHOSEONG_INDEX[jamo]).toBe(idx);
+    expect(CHOSEONG_INDEX[jamo as keyof typeof CHOSEONG_INDEX]).toBe(idx);
     expect(jamo.codePointAt(0)).toBeGreaterThanOrEqual(0x3130);
     expect(jamo.codePointAt(0)).toBeLessThanOrEqual(0x318f);
   });
@@ -88,7 +83,7 @@ describe("JUNGSEONG_INDEX", () => {
   ];
 
   it.each(EXPECTED_JUNGSEONG)("maps %s to %i and uses Compatibility Jamo codepoint", (jamo, idx) => {
-    expect(JUNGSEONG_INDEX[jamo]).toBe(idx);
+    expect(JUNGSEONG_INDEX[jamo as keyof typeof JUNGSEONG_INDEX]).toBe(idx);
     expect(jamo.codePointAt(0)).toBeGreaterThanOrEqual(0x3130);
     expect(jamo.codePointAt(0)).toBeLessThanOrEqual(0x318f);
   });
@@ -140,7 +135,7 @@ describe("JONGSEONG_INDEX", () => {
   it.each(EXPECTED_JONGSEONG)(
     "maps %s to %i (and non-empty keys use Compatibility Jamo codepoint)",
     (jamo, idx) => {
-      expect(JONGSEONG_INDEX[jamo]).toBe(idx);
+      expect(JONGSEONG_INDEX[jamo as keyof typeof JONGSEONG_INDEX]).toBe(idx);
       if (jamo !== "") {
         expect(jamo.codePointAt(0)).toBeGreaterThanOrEqual(0x3130);
         expect(jamo.codePointAt(0)).toBeLessThanOrEqual(0x318f);
@@ -149,9 +144,9 @@ describe("JONGSEONG_INDEX", () => {
   );
 
   it("does not include ㄸ, ㅃ, or ㅉ", () => {
-    expect(JONGSEONG_INDEX["ㄸ"]).toBeUndefined();
-    expect(JONGSEONG_INDEX["ㅃ"]).toBeUndefined();
-    expect(JONGSEONG_INDEX["ㅉ"]).toBeUndefined();
+    expect(JONGSEONG_INDEX["ㄸ" as keyof typeof JONGSEONG_INDEX]).toBeUndefined();
+    expect(JONGSEONG_INDEX["ㅃ" as keyof typeof JONGSEONG_INDEX]).toBeUndefined();
+    expect(JONGSEONG_INDEX["ㅉ" as keyof typeof JONGSEONG_INDEX]).toBeUndefined();
   });
 });
 
@@ -230,71 +225,28 @@ describe("COMBINATION_RULES", () => {
     expect(keys.size).toBe(rules.length);
   });
 
-  it.each(
-    COMBINATION_RULES.filter((r) => r.kind === "DOUBLE_CONSONANT" || r.kind === "COMPLEX_VOWEL"),
-  )("COMBINATION_MAP lookup finds $kind rule: $inputs → $output", (rule) => {
-    const key = [rule.inputs[0], rule.inputs[1]].sort().join("|");
-    expect(COMBINATION_MAP.get(key)?.output).toBe(rule.output);
+  it("COMBINATION_MAP has 38 entries (5 double + 22 complex + 11 compound)", () => {
+    expect(COMBINATION_MAP.size).toBe(38);
   });
 
-  it.each(COMBINATION_RULES.filter((r) => r.kind === "COMPOUND_BATCHIM"))(
-    "JONGSEONG_UPGRADE_MAP lookup finds COMPOUND_BATCHIM rule: $inputs → $output",
-    (rule) => {
-      const key = `${rule.inputs[0]}|${rule.inputs[1]}`;
-      expect(JONGSEONG_UPGRADE_MAP.get(key)).toBe(rule.output);
-    },
-  );
-
-  it("COMBINATION_MAP has 16 entries (DOUBLE_CONSONANT + COMPLEX_VOWEL only)", () => {
-    expect(COMBINATION_MAP.size).toBe(16);
+  it("DOUBLE_CONSONANT: COMBINATION_MAP has ㄱ|ㄱ → ㄲ", () => {
+    expect(COMBINATION_MAP.get("ㄱ|ㄱ")).toBe("ㄲ");
   });
 
-  it("COMBINATION_MAP lookup returns correct output for ㅏ+ㅣ → ㅐ", () => {
-    const key = ["ㅏ", "ㅣ"].sort().join("|");
-    expect(COMBINATION_MAP.get(key)?.output).toBe("ㅐ");
+  it("COMPLEX_VOWEL: COMBINATION_MAP has ㅏ|ㅣ → ㅐ", () => {
+    expect(COMBINATION_MAP.get("ㅏ|ㅣ")).toBe("ㅐ");
   });
 
-  it("COMBINATION_MAP lookup is commutative: ㅗ+ㅏ and ㅏ+ㅗ both resolve", () => {
-    const key1 = ["ㅗ", "ㅏ"].sort().join("|");
-    const key2 = ["ㅏ", "ㅗ"].sort().join("|");
-    expect(key1).toBe(key2);
-    expect(COMBINATION_MAP.get(key1)?.output).toBe("ㅘ");
-  });
-});
-
-describe("JONGSEONG_UPGRADE_MAP", () => {
-  it("contains exactly 11 entries", () => {
-    expect(JONGSEONG_UPGRADE_MAP.size).toBe(11);
+  it("COMPLEX_VOWEL: COMBINATION_MAP is commutative for ㅗ+ㅏ: both ㅗ|ㅏ and ㅏ|ㅗ resolve to ㅘ", () => {
+    expect(COMBINATION_MAP.get("ㅗ|ㅏ")).toBe("ㅘ");
+    expect(COMBINATION_MAP.get("ㅏ|ㅗ")).toBe("ㅘ");
   });
 
-  it("lookup returns ㄳ for ㄱ|ㅅ key", () => {
-    expect(JONGSEONG_UPGRADE_MAP.get("ㄱ|ㅅ")).toBe("ㄳ");
+  it("COMPOUND_BATCHIM: COMBINATION_MAP has canonical ㄱ|ㅅ → ㄳ", () => {
+    expect(COMBINATION_MAP.get("ㄱ|ㅅ")).toBe("ㄳ");
   });
 
-  it("does NOT contain reversed key ㅅ|ㄱ", () => {
-    expect(JONGSEONG_UPGRADE_MAP.get("ㅅ|ㄱ")).toBeUndefined();
-  });
-});
-
-describe("combinationOf", () => {
-  it("returns CombinationRule for ㅏ+ㅣ", () => {
-    const rule = combinationOf("ㅏ", "ㅣ");
-    expect(rule).toBeDefined();
-    expect(rule?.output).toBe("ㅐ");
-    expect(rule?.kind).toBe("COMPLEX_VOWEL");
-  });
-
-  it("is commutative: ㅣ+ㅏ also returns the same rule", () => {
-    const rule = combinationOf("ㅣ", "ㅏ");
-    expect(rule?.output).toBe("ㅐ");
-  });
-
-  it("returns undefined for inputs with no rule", () => {
-    expect(combinationOf("ㄱ", "ㅎ")).toBeUndefined();
-  });
-
-  it("returns undefined for COMPOUND_BATCHIM inputs (ㄱ+ㅅ)", () => {
-    // COMPOUND_BATCHIM are not in COMBINATION_MAP — use JONGSEONG_UPGRADE_MAP for those
-    expect(combinationOf("ㄱ", "ㅅ")).toBeUndefined();
+  it("COMPOUND_BATCHIM: COMBINATION_MAP does NOT have reversed ㅅ|ㄱ", () => {
+    expect(COMBINATION_MAP.get("ㅅ|ㄱ")).toBeUndefined();
   });
 });
