@@ -90,26 +90,19 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
  * - COMPOUND_BATCHIM (11 rules): stores only canonical a|b key (not commutative)
  *
  * Total: 5 + 22 + 11 = 38 entries.
- * Built once at module load via IIFE.
+ * Built once at module load.
  * @internal
  */
-const COMBINATION_MAP: ReadonlyMap<string, Jamo> = (() => {
-  const map = new Map<string, Jamo>();
-  for (const rule of COMBINATION_RULES) {
-    const a = rule.inputs[0];
-    const b = rule.inputs[1];
-    const entries: [string, Jamo][] = [[`${a}|${b}`, rule.output]];
-    if (rule.kind === "DOUBLE_CONSONANT" || rule.kind === "COMPLEX_VOWEL") {
-      if (a !== b) {
-        entries.push([`${b}|${a}`, rule.output]);
-      }
+const COMBINATION_MAP: ReadonlyMap<string, Jamo> = new Map(
+  COMBINATION_RULES.flatMap((rule) => {
+    const [a, b] = rule.inputs;
+    const fwd: [string, Jamo] = [`${a}|${b}`, rule.output];
+    if ((rule.kind === "DOUBLE_CONSONANT" || rule.kind === "COMPLEX_VOWEL") && a !== b) {
+      return [fwd, [`${b}|${a}`, rule.output]];
     }
-    for (const [key, value] of entries) {
-      map.set(key, value);
-    }
-  }
-  return map;
-})();
+    return [fwd];
+  }),
+);
 
 /**
  * Reverse lookup map: combination output → [input0, input1] using canonical order.
@@ -150,9 +143,8 @@ export function composeJamo(a: Jamo, b: Jamo): Jamo | null {
  * @param jamo - A Hangul Compatibility Jamo that may be a combination result
  * @returns [input0, input1] in canonical order, or null if not a combination result
  */
-export function decomposeJamo(jamo: Jamo): [Jamo, Jamo] | null {
-  const parts = DECOMPOSE_MAP.get(jamo);
-  return parts ? ([...parts] as [Jamo, Jamo]) : null;
+export function decomposeJamo(jamo: Jamo): readonly [Jamo, Jamo] | null {
+  return DECOMPOSE_MAP.get(jamo) ?? null;
 }
 
 /**

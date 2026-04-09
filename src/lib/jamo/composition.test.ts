@@ -5,8 +5,20 @@ import { COMBINATION_RULES, type CombinationRule } from "./composition";
 import type { Jamo } from "./jamo";
 import type { ChoseongJamo, VowelJamo, JongseongJamo } from "./jamo";
 
-// Type guard to extract typed rules
-const getTypedRules = (): CombinationRule[] => COMBINATION_RULES as CombinationRule[];
+// COMBINATION_RULES is already typed as readonly CombinationRule[] — no cast needed
+const getTypedRules = (): readonly CombinationRule[] => COMBINATION_RULES;
+
+// Shared table for composeSyllable and decomposeSyllable happy-path tests
+const COMPOSE_CASES: [ChoseongJamo, VowelJamo, JongseongJamo | undefined, string][] = [
+  ["ㄱ", "ㅏ", undefined, "가"],
+  ["ㅎ", "ㅏ", "ㄴ", "한"],
+  ["ㅎ", "ㅞ", "ㄳ", "훿"],
+  ["ㅇ", "ㅏ", undefined, "아"],
+  ["ㄸ", "ㅏ", undefined, "따"],
+  ["ㄴ", "ㅣ", undefined, "니"],
+  ["ㅅ", "ㅓ", "ㄹ", "설"],
+  ["ㅁ", "ㅜ", "ㄹ", "물"],
+];
 
 describe("composeJamo — all COMBINATION_RULES", () => {
   it.each(getTypedRules())("$kind: $inputs → $output", ({ inputs, output }) => {
@@ -59,17 +71,6 @@ describe("decomposeJamo — non-combination jamo", () => {
 });
 
 describe("composeSyllable", () => {
-  const COMPOSE_CASES: [ChoseongJamo, VowelJamo, JongseongJamo | undefined, string][] = [
-    ["ㄱ", "ㅏ", undefined, "가"],
-    ["ㅎ", "ㅏ", "ㄴ", "한"],
-    ["ㅎ", "ㅞ", "ㄳ", "훿"],
-    ["ㅇ", "ㅏ", undefined, "아"],
-    ["ㄸ", "ㅏ", undefined, "따"],
-    ["ㄴ", "ㅣ", undefined, "니"],
-    ["ㅅ", "ㅓ", "ㄹ", "설"],
-    ["ㅁ", "ㅜ", "ㄹ", "물"],
-  ];
-
   it.each(COMPOSE_CASES)("composeSyllable(%s, %s, %s) → %s", (cho, jung, jong, expected) => {
     expect(composeSyllable(cho, jung, jong)).toBe(expected);
   });
@@ -86,29 +87,18 @@ describe("composeSyllable", () => {
 });
 
 describe("decomposeSyllable", () => {
-  it("decomposes 한 to { choseong:ㅎ, jungseong:ㅏ, jongseong:ㄴ }", () => {
-    expect(decomposeSyllable("한")).toStrictEqual({
-      choseong: "ㅎ",
-      jungseong: "ㅏ",
-      jongseong: "ㄴ",
-    });
-  });
-
-  it("decomposes 가 to { choseong:ㄱ, jungseong:ㅏ, jongseong: null }", () => {
-    expect(decomposeSyllable("가")).toStrictEqual({
-      choseong: "ㄱ",
-      jungseong: "ㅏ",
-      jongseong: null,
-    });
-  });
-
-  it("decomposes 훿 to { choseong:ㅎ, jungseong:ㅞ, jongseong:ㄳ }", () => {
-    expect(decomposeSyllable("훿")).toStrictEqual({
-      choseong: "ㅎ",
-      jungseong: "ㅞ",
-      jongseong: "ㄳ",
-    });
-  });
+  it.each(COMPOSE_CASES)(
+    "round-trip: decomposeSyllable(composeSyllable(%s, %s, %s)) returns correct components",
+    (cho, jung, jong, _expected) => {
+      const syllable = composeSyllable(cho, jung, jong);
+      expect(syllable).not.toBeNull();
+      const result = decomposeSyllable(syllable!);
+      expect(result).not.toBeNull();
+      expect(result!.choseong).toBe(cho);
+      expect(result!.jungseong).toBe(jung);
+      expect(result!.jongseong).toBe(jong ?? null);
+    },
+  );
 
   it("returns null for a bare jamo (not a syllable block)", () => {
     expect(decomposeSyllable("ㄱ")).toBeNull();
