@@ -164,7 +164,13 @@ export function resolveCharacter(character: Character): string | null {
 
   // Both choseong and jungseong are set
   if (choseong !== undefined && jungseong !== undefined) {
-    return composeSyllable(choseong as ChoseongJamo, jungseong, jongseong as JongseongJamo | undefined) ?? null;
+    return (
+      composeSyllable(
+        choseong as ChoseongJamo,
+        jungseong,
+        jongseong as JongseongJamo | undefined,
+      ) ?? null
+    );
   }
 
   return null;
@@ -221,11 +227,7 @@ export function decompose(char: Character): Character[] {
       if (split !== undefined) {
         const [first, second] = split;
         // first and second are consonants (ConsonantJamo)
-        return [
-          { choseong, jungseong },
-          { choseong: first },
-          { choseong: second },
-        ];
+        return [{ choseong, jungseong }, { choseong: first }, { choseong: second }];
       }
       // Simple jongseong — remove it
       return [{ choseong, jungseong }];

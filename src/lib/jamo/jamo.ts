@@ -77,17 +77,7 @@ export type ChoseongJamo = BasicConsonantJamo | DoubleConsonantJamo;
 export type JongseongJamo = Exclude<ConsonantJamo, "ㄸ" | "ㅃ" | "ㅉ">;
 
 /** The 10 basic vowels that appear in the player's initial pool. */
-export type BasicVowelJamo =
-  | "ㅏ"
-  | "ㅑ"
-  | "ㅓ"
-  | "ㅕ"
-  | "ㅗ"
-  | "ㅛ"
-  | "ㅜ"
-  | "ㅠ"
-  | "ㅡ"
-  | "ㅣ";
+export type BasicVowelJamo = "ㅏ" | "ㅑ" | "ㅓ" | "ㅕ" | "ㅗ" | "ㅛ" | "ㅜ" | "ㅠ" | "ㅡ" | "ㅣ";
 
 /** The 11 complex vowels produced by combining two basic vowels. */
 export type ComplexVowelJamo =

@@ -9,12 +9,9 @@ import type { ChoseongJamo, VowelJamo, JongseongJamo } from "./jamo";
 const getTypedRules = (): CombinationRule[] => COMBINATION_RULES as CombinationRule[];
 
 describe("composeJamo — all COMBINATION_RULES", () => {
-  it.each(getTypedRules())(
-    "$kind: $inputs → $output",
-    ({ inputs, output }) => {
-      expect(composeJamo(inputs[0], inputs[1])).toBe(output);
-    },
-  );
+  it.each(getTypedRules())("$kind: $inputs → $output", ({ inputs, output }) => {
+    expect(composeJamo(inputs[0], inputs[1])).toBe(output);
+  });
 });
 
 describe("decomposeJamo — round-trip", () => {
@@ -29,9 +26,31 @@ describe("decomposeJamo — round-trip", () => {
 describe("decomposeJamo — non-combination jamo", () => {
   const NON_COMBINATION: Jamo[] = [
     // Basic consonants
-    "ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ",
+    "ㄱ",
+    "ㄴ",
+    "ㄷ",
+    "ㄹ",
+    "ㅁ",
+    "ㅂ",
+    "ㅅ",
+    "ㅇ",
+    "ㅈ",
+    "ㅊ",
+    "ㅋ",
+    "ㅌ",
+    "ㅍ",
+    "ㅎ",
     // Vowels
-    "ㅏ", "ㅑ", "ㅓ", "ㅕ", "ㅗ", "ㅛ", "ㅜ", "ㅠ", "ㅡ", "ㅣ",
+    "ㅏ",
+    "ㅑ",
+    "ㅓ",
+    "ㅕ",
+    "ㅗ",
+    "ㅛ",
+    "ㅜ",
+    "ㅠ",
+    "ㅡ",
+    "ㅣ",
   ];
 
   it.each(NON_COMBINATION)("returns null for basic jamo %s", (jamo) => {
@@ -51,12 +70,9 @@ describe("composeSyllable", () => {
     ["ㅁ", "ㅜ", "ㄹ", "물"],
   ];
 
-  it.each(COMPOSE_CASES)(
-    "composeSyllable(%s, %s, %s) → %s",
-    (cho, jung, jong, expected) => {
-      expect(composeSyllable(cho, jung, jong)).toBe(expected);
-    },
-  );
+  it.each(COMPOSE_CASES)("composeSyllable(%s, %s, %s) → %s", (cho, jung, jong, expected) => {
+    expect(composeSyllable(cho, jung, jong)).toBe(expected);
+  });
 
   it("returns null when jongseong is invalid (double consonant ㅃ)", () => {
     // Use 'as any' to pass invalid type for testing boundary conditions
@@ -103,7 +119,11 @@ describe("decomposeSyllable", () => {
   });
 
   it("reads only first char — multi-syllable inputs silently truncate", () => {
-    expect(decomposeSyllable("한국")).toStrictEqual({ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" });
+    expect(decomposeSyllable("한국")).toStrictEqual({
+      choseong: "ㅎ",
+      jungseong: "ㅏ",
+      jongseong: "ㄴ",
+    });
   });
 
   it("all decomposed jamo use Compatibility Jamo codepoints (0x3130–0x318F)", () => {

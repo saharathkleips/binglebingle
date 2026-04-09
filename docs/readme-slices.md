@@ -26,4 +26,3 @@ where not to look.
 
 List by directory path, followed by a high-level description of what this module relies on it for. Omit the section entirely if there are none. Do not list specific imports — those diverge as code changes.
 ```
-
