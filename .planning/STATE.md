@@ -98,9 +98,10 @@ None yet.
 |---|-------------|------|--------|--------|-----------|
 | 260408-0k9 | Refactor Character type from flat jamo array to keyed choseong/jungseong/jongseong shape with Jamo type and combine function | 2026-04-08 | 0b500ab | Verified | [260408-0k9-refactor-character-type-from-flat-jamo-a](./quick/260408-0k9-refactor-character-type-from-flat-jamo-a/) |
 | 260408-kty | Resolve PR review design decisions — unified CombinationRule type, SCREAMING_SNAKE_CASE kind literals, clockwise rotation, ConsonantJamo/VowelJamo split, combinationOf API | 2026-04-08 | d5d6e30 | Verified | [260408-kty-resolve-pr-review-design-decisions-befor](./quick/260408-kty-resolve-pr-review-design-decisions-befor/) |
+| 260409-ktw | PR review batch 1: colocate rotation/combination data with owning modules, remove getRotationOptions, tighten getNextRotation type, table-drive test suites | 2026-04-09 | 30c8d95 | Complete | [260409-ktw-pr-review-structural-colocation-refactor](./quick/260409-ktw-pr-review-structural-colocation-refactor/) |
 
 ## Session Continuity
 
-Last session: 2026-04-08T07:58:00Z
-Stopped at: Completed quick task 260408-kty: Resolve PR review design decisions before merge
+Last session: 2026-04-09T06:05:00Z
+Stopped at: Completed quick task 260409-ktw: PR review batch 1 — structural colocation refactor
 Resume file: None
