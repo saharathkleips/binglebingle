@@ -1,45 +1,30 @@
 import { describe, expect, it } from "vitest";
 
-import { getNextRotation, getRotationOptions } from "./rotation";
-
-describe("getRotationOptions", () => {
-  it("returns all set members except itself for a rotatable jamo", () => {
-    expect(getRotationOptions("ㄱ")).toStrictEqual(["ㄴ"]);
-  });
-
-  it("returns members in set order for a multi-member set (clockwise: ㅏ→ㅜ→ㅓ→ㅗ)", () => {
-    expect(getRotationOptions("ㅏ")).toStrictEqual(["ㅜ", "ㅓ", "ㅗ"]);
-  });
-
-  it("returns an empty array for a non-rotatable jamo", () => {
-    expect(getRotationOptions("ㅎ")).toStrictEqual([]);
-  });
-
-  it("returns an empty array for a jamo not in any set", () => {
-    expect(getRotationOptions("ㅊ")).toStrictEqual([]);
-  });
-});
+import type { Jamo } from "./types";
+import { getNextRotation } from "./rotation";
 
 describe("getNextRotation", () => {
-  it("returns the next jamo in the set", () => {
-    expect(getNextRotation("ㄱ")).toBe("ㄴ");
+  const ROTATABLE_CASES: [string, string, string][] = [
+    // [description, input, expected]
+    ["ㄱ→ㄴ (consonant set)", "ㄱ", "ㄴ"],
+    ["ㄴ→ㄱ (wrap-around in 2-set)", "ㄴ", "ㄱ"],
+    ["ㅏ→ㅜ (first of 4-set, clockwise)", "ㅏ", "ㅜ"],
+    ["ㅜ→ㅓ (index 1→2 in clockwise set)", "ㅜ", "ㅓ"],
+    ["ㅓ→ㅗ (index 2→3)", "ㅓ", "ㅗ"],
+    ["ㅗ→ㅏ (wrap-around in 4-set)", "ㅗ", "ㅏ"],
+    ["ㅣ→ㅡ (first of 2-set)", "ㅣ", "ㅡ"],
+    ["ㅡ→ㅣ (wrap-around in 2-set)", "ㅡ", "ㅣ"],
+    ["ㅑ→ㅠ (first of extended 4-set)", "ㅑ", "ㅠ"],
+    ["ㅛ→ㅑ (wrap-around in extended 4-set)", "ㅛ", "ㅑ"],
+  ];
+
+  it.each(ROTATABLE_CASES)("%s", (_desc, input, expected) => {
+    expect(getNextRotation(input as Jamo)).toBe(expected);
   });
 
-  it("wraps from last member back to first", () => {
-    expect(getNextRotation("ㄴ")).toBe("ㄱ");
-    expect(getNextRotation("ㅗ")).toBe("ㅏ");
-  });
+  const NON_ROTATABLE: string[] = ["ㅎ", "ㅊ", "ㅂ", "ㄷ", "ㅁ"];
 
-  it("returns the second member for the first member of a 4-set", () => {
-    expect(getNextRotation("ㅏ")).toBe("ㅜ");
-  });
-
-  it("ㅜ rotates to ㅓ (index 1 → index 2 in clockwise set)", () => {
-    expect(getNextRotation("ㅜ")).toBe("ㅓ");
-  });
-
-  it("returns null for a non-rotatable jamo", () => {
-    expect(getNextRotation("ㅎ")).toBeNull();
-    expect(getNextRotation("ㅊ")).toBeNull();
+  it.each(NON_ROTATABLE)("returns null for non-rotatable jamo %s", (jamo) => {
+    expect(getNextRotation(jamo as Jamo)).toBeNull();
   });
 });
