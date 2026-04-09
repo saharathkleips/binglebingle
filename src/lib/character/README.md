@@ -9,7 +9,7 @@ Game model for a Korean syllable character under construction. A `Character` is 
 - `combine(a, b)` — merges an incoming single-slot `Character` into a target `Character` following Korean syllable construction rules. Returns the updated `Character`, or `null` if the combination is not permitted. Never throws. Consonant always routes to choseong/jongseong; vowel always routes to jungseong — drag direction does not change the outcome.
 - `resolveCharacter(char)` — renders a `Character` as its Unicode string: bare consonant, bare vowel, or a composed syllable block. Returns `null` only when both `choseong` and `jungseong` are absent.
 - `isComplete(char)` — returns `true` iff `resolveCharacter` produces a syllable block in U+AC00–U+D7A3. Requires at minimum `choseong` + `jungseong`. ㅇ is treated as a regular consonant with no special handling.
-- `decompose(char)` — steps a `Character` back by one construction level, splitting compound batchim jongseong into its two constituent consonant `Character` objects. Returns an array of simpler `Character` objects (may be empty).
+- `decompose(char)` — steps a `Character` back by one construction level, splitting compound batchim jongseong into its two constituent consonant `Character` objects. Returns an array of simpler `Character` objects (may be empty). Note: `decompose` is the inverse of `combine` — not of `composeSyllable`. Each call steps back one construction level (e.g. removes jongseong, or splits compound batchim), while `composeSyllable` is a low-level Unicode arithmetic utility.
 
 ## Out of scope
 

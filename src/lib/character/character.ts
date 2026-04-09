@@ -11,16 +11,44 @@
 import {
   composeJamo,
   composeSyllable,
-  decomposeSyllable,
   COMBINATION_RULES,
 } from "../jamo/composition";
-import type { Character, ConsonantJamo, VowelJamo } from "./types";
-import type { ChoseongJamo, JongseongJamo } from "../jamo/jamo";
+import type {
+  ConsonantJamo,
+  VowelJamo,
+  Jamo,
+  ChoseongJamo,
+  JongseongJamo,
+} from "../jamo/jamo";
+
+export type { ConsonantJamo, VowelJamo, Jamo };
+
+/**
+ * A Korean syllable character under construction.
+ *
+ * Each slot holds a single jamo token. Combinations collapse immediately —
+ * e.g. two consonants become one double consonant before being stored.
+ *
+ * - `{}` — empty slot (nothing placed yet)
+ * - `{ choseong }` — single consonant (may be a double consonant like ㄲ)
+ * - `{ jungseong }` — single vowel (may be a complex vowel like ㅘ)
+ * - `{ choseong, jungseong }` — open syllable or partial block
+ * - `{ choseong, jungseong, jongseong }` — closed syllable block
+ *
+ * Use `combine(a, b)` to add jamo to a Character in a state-machine fashion.
+ * Use `resolveCharacter(char)` to render the Character as a Unicode string.
+ */
+export type Character = {
+  choseong?: ChoseongJamo;
+  jungseong?: VowelJamo;
+  jongseong?: JongseongJamo;
+};
 
 // ---------------------------------------------------------------------------
 // Reverse-lookup map for compound batchim decomposition
 // Built once at module load.
 // Maps compound batchim output → [first constituent, second constituent]
+// Filtered subset of COMBINATION_RULES — COMPOUND_BATCHIM only, typed as ConsonantJamo pairs for decompose().
 // ---------------------------------------------------------------------------
 
 const JONGSEONG_SPLIT_MAP: ReadonlyMap<string, readonly [ConsonantJamo, ConsonantJamo]> = (() => {
@@ -75,8 +103,8 @@ export function combine(a: Character, b: Character): Character | null {
         (r) => r.kind === "COMPOUND_BATCHIM" && r.inputs[0] === aJong && r.inputs[1] === bCho,
       );
       if (!rule) return null;
-      // rule.output is a compound batchim (JongseongJamo), which is a subset of ConsonantJamo
-      return { choseong: aCho, jungseong: aJung, jongseong: rule.output as ConsonantJamo };
+      // rule.output is a compound batchim (JongseongJamo)
+      return { choseong: aCho, jungseong: aJung, jongseong: rule.output as JongseongJamo };
     }
     // Full + jungseong or anything else → invalid
     return null;
@@ -94,8 +122,11 @@ export function combine(a: Character, b: Character): Character | null {
       return { choseong: aCho, jungseong: combined as VowelJamo };
     }
     if (bCho !== undefined) {
-      // Incoming consonant becomes jongseong
-      return { choseong: aCho, jungseong: aJung, jongseong: bCho };
+      // Incoming consonant becomes jongseong — ChoseongJamo is a subset of JongseongJamo
+      // (all basic consonants and ㄲ, ㄶ are valid jongseong, but ㄸ/ㅃ/ㅉ are not)
+      // bCho is ChoseongJamo; cast to JongseongJamo is valid for basic consonants,
+      // but ㄸ/ㅃ/ㅉ cannot be jongseong. The game's combination rules prevent this.
+      return { choseong: aCho, jungseong: aJung, jongseong: bCho as JongseongJamo };
     }
     return null;
   }
@@ -108,8 +139,8 @@ export function combine(a: Character, b: Character): Character | null {
       // Try to combine two consonants into a double consonant
       const combined = composeJamo(aCho, bCho);
       if (combined === null) return null;
-      // combined is a double consonant (ConsonantJamo)
-      return { choseong: combined as ConsonantJamo };
+      // combined is a double consonant (ChoseongJamo)
+      return { choseong: combined as ChoseongJamo };
     }
     if (bJung !== undefined) {
       // Consonant + vowel → open syllable
@@ -146,9 +177,12 @@ export function combine(a: Character, b: Character): Character | null {
 /**
  * Reduces a Character to its rendered Unicode string form.
  *
- * - No choseong AND no jungseong → null
+ * - No choseong AND no jungseong → null (empty)
+ * - Jungseong without choseong renders as bare vowel.
+ * - Jongseong without choseong and jungseong is an invalid state that returns null
+ *   (jongseong is only valid when choseong+jungseong are present).
+ * - Strictly unrenderable: { jungseong, jongseong } with no choseong → null.
  * - Choseong only → return choseong string (bare consonant)
- * - Jungseong only → return jungseong string (bare vowel)
  * - Choseong + jungseong [+ optional jongseong] → composeSyllable(...)
  *
  * @param character - The Character to resolve
@@ -159,18 +193,15 @@ export function resolveCharacter(character: Character): string | null {
 
   if (choseong === undefined && jungseong === undefined) return null;
 
+  // { jungseong, jongseong } with no choseong is unrenderable — jongseong requires a full syllable
+  if (jungseong !== undefined && choseong === undefined && jongseong !== undefined) return null;
+
   if (choseong !== undefined && jungseong === undefined) return choseong;
   if (jungseong !== undefined && choseong === undefined) return jungseong;
 
   // Both choseong and jungseong are set
   if (choseong !== undefined && jungseong !== undefined) {
-    return (
-      composeSyllable(
-        choseong as ChoseongJamo,
-        jungseong,
-        jongseong as JongseongJamo | undefined,
-      ) ?? null
-    );
+    return composeSyllable(choseong, jungseong, jongseong);
   }
 
   return null;
@@ -226,10 +257,14 @@ export function decompose(char: Character): Character[] {
       const split = JONGSEONG_SPLIT_MAP.get(jongseong);
       if (split !== undefined) {
         const [first, second] = split;
-        // first and second are consonants (ConsonantJamo)
-        return [{ choseong, jungseong }, { choseong: first }, { choseong: second }];
+        // first and second are consonants (ConsonantJamo) — cast to ChoseongJamo for Character
+        return [
+          { choseong, jungseong },
+          { choseong: first as ChoseongJamo },
+          { choseong: second as ChoseongJamo },
+        ];
       }
-      // Simple jongseong — remove it
+      // Simple jongseong — remove it; jongseong basic consonants are also valid ChoseongJamo
       return [{ choseong, jungseong }];
     }
     // No jongseong — remove jungseong
@@ -242,8 +277,3 @@ export function decompose(char: Character): Character[] {
   return [];
 }
 
-// ---------------------------------------------------------------------------
-// Re-export decomposeSyllable for callers that need the low-level utility
-// (not part of this module's primary API but available for reducer use)
-// ---------------------------------------------------------------------------
-export { decomposeSyllable };
