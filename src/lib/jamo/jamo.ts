@@ -60,7 +60,6 @@ export type CompoundBatchimJamo =
 /**
  * Every valid consonant jamo the game can produce or place in choseong/jongseong slots.
  * Includes basic consonants (14), double consonants (5), and compound batchim (11).
- * Backward compatible with the previous ConsonantJamo — same 30 members.
  */
 export type ConsonantJamo = BasicConsonantJamo | DoubleConsonantJamo | CompoundBatchimJamo;
 
