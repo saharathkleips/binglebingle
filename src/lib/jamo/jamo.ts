@@ -15,7 +15,7 @@
 // ---------------------------------------------------------------------------
 
 /**
- * The 14 basic (unmodified) Korean consonants.
+ * The 14 basic Korean consonants.
  * Can appear in both choseong and jongseong positions.
  */
 export type BasicConsonantJamo =
@@ -76,10 +76,10 @@ export type ChoseongJamo = BasicConsonantJamo | DoubleConsonantJamo;
  */
 export type JongseongJamo = Exclude<ConsonantJamo, "ㄸ" | "ㅃ" | "ㅉ">;
 
-/** The 10 basic vowels that appear in the player's initial pool. */
+/** The 10 basic Korean vowels. */
 export type BasicVowelJamo = "ㅏ" | "ㅑ" | "ㅓ" | "ㅕ" | "ㅗ" | "ㅛ" | "ㅜ" | "ㅠ" | "ㅡ" | "ㅣ";
 
-/** The 11 complex vowels produced by combining two basic vowels. */
+/** The 11 complex vowels produced by combining vowels. */
 export type ComplexVowelJamo =
   | "ㅐ"
   | "ㅒ"
@@ -95,7 +95,7 @@ export type ComplexVowelJamo =
 
 /**
  * Every valid vowel jamo the game can produce or place in the jungseong slot.
- * Includes basic vowels and complex vowels (outputs of COMBINATION_RULES).
+ * Includes basic vowels and complex vowels.
  */
 export type VowelJamo = BasicVowelJamo | ComplexVowelJamo;
 
