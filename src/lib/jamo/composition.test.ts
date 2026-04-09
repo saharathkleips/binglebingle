@@ -58,12 +58,14 @@ describe("composeSyllable", () => {
     },
   );
 
-  it("returns null when jongseong ㅃ is invalid", () => {
-    expect(composeSyllable("ㅎ", "ㅏ", "ㅃ")).toBeNull();
+  it("returns null when jongseong is invalid (double consonant ㅃ)", () => {
+    // Use 'as any' to pass invalid type for testing boundary conditions
+    expect(composeSyllable("ㅎ", "ㅏ", "ㅃ" as any)).toBeNull();
   });
 
   it("returns null when jungseong position receives a consonant", () => {
-    expect(composeSyllable("ㅎ", "ㄱ")).toBeNull();
+    // Use 'as any' to pass invalid type for testing boundary conditions
+    expect(composeSyllable("ㅎ", "ㄱ" as any)).toBeNull();
   });
 });
 

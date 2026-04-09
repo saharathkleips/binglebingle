@@ -74,7 +74,8 @@ export function combine(a: Character, b: Character): Character | null {
         (r) => r.kind === "COMPOUND_BATCHIM" && r.inputs[0] === aJong && r.inputs[1] === bCho,
       );
       if (!rule) return null;
-      return { choseong: aCho, jungseong: aJung, jongseong: rule.output as Jamo };
+      // rule.output is a compound batchim (JongseongJamo), which is a subset of ConsonantJamo
+      return { choseong: aCho, jungseong: aJung, jongseong: rule.output };
     }
     // Full + jungseong or anything else → invalid
     return null;
@@ -88,7 +89,8 @@ export function combine(a: Character, b: Character): Character | null {
       // Try to combine the two vowels
       const combined = composeJamo(aJung, bJung);
       if (combined === null) return null;
-      return { choseong: aCho, jungseong: combined as Jamo };
+      // combined is a complex vowel (VowelJamo)
+      return { choseong: aCho, jungseong: combined };
     }
     if (bCho !== undefined) {
       // Incoming consonant becomes jongseong
@@ -105,7 +107,8 @@ export function combine(a: Character, b: Character): Character | null {
       // Try to combine two consonants into a double consonant
       const combined = composeJamo(aCho, bCho);
       if (combined === null) return null;
-      return { choseong: combined as Jamo };
+      // combined is a double consonant (ConsonantJamo)
+      return { choseong: combined };
     }
     if (bJung !== undefined) {
       // Consonant + vowel → open syllable
@@ -122,7 +125,8 @@ export function combine(a: Character, b: Character): Character | null {
       // Try to combine two vowels into a complex vowel
       const combined = composeJamo(aJung, bJung);
       if (combined === null) return null;
-      return { jungseong: combined as Jamo };
+      // combined is a complex vowel (VowelJamo)
+      return { jungseong: combined };
     }
     if (bCho !== undefined) {
       // Incoming consonant becomes choseong (consonant-becomes-choseong rule)
@@ -215,10 +219,11 @@ export function decompose(char: Character): Character[] {
       const split = JONGSEONG_SPLIT_MAP.get(jongseong);
       if (split !== undefined) {
         const [first, second] = split;
+        // first and second are consonants (ConsonantJamo)
         return [
           { choseong, jungseong },
-          { choseong: first as Jamo },
-          { choseong: second as Jamo },
+          { choseong: first },
+          { choseong: second },
         ];
       }
       // Simple jongseong — remove it

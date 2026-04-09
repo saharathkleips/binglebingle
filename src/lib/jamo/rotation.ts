@@ -21,25 +21,6 @@ export const ROTATION_SETS: readonly (readonly Jamo[])[] = [
 ];
 
 /**
- * Derived runtime lookup map from ROTATION_SETS.
- * Maps each rotatable jamo to all other members of its set (excluding itself).
- * Built once at module load via IIFE.
- * @internal
- */
-const ROTATION_MAP: ReadonlyMap<Jamo, readonly Jamo[]> = (() => {
-  const map = new Map<Jamo, Jamo[]>();
-  for (const set of ROTATION_SETS) {
-    for (const jamo of set) {
-      map.set(
-        jamo,
-        set.filter((j) => j !== jamo),
-      );
-    }
-  }
-  return map;
-})();
-
-/**
  * Returns the next jamo when cycling through the rotation set (wraps around).
  * Returns null if the jamo is not rotatable.
  *
@@ -47,11 +28,8 @@ const ROTATION_MAP: ReadonlyMap<Jamo, readonly Jamo[]> = (() => {
  * @returns The next jamo in the set, or null if jamo is not rotatable
  */
 export function getNextRotation(jamo: Jamo): Jamo | null {
-  const options = ROTATION_MAP.get(jamo);
-  if (!options || options.length === 0) return null;
   const set = ROTATION_SETS.find((s) => s.includes(jamo));
-  if (!set) return null;
+  if (!set || set.length === 0) return null;
   const idx = set.indexOf(jamo);
   return set[(idx + 1) % set.length];
 }
-

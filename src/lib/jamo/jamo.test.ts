@@ -141,9 +141,10 @@ describe("JONGSEONG_INDEX", () => {
   );
 
   it("does not include ㄸ, ㅃ, or ㅉ", () => {
-    expect(JONGSEONG_INDEX["ㄸ"]).toBeUndefined();
-    expect(JONGSEONG_INDEX["ㅃ"]).toBeUndefined();
-    expect(JONGSEONG_INDEX["ㅉ"]).toBeUndefined();
+    // Use 'as any' to check for invalid keys — these are intentionally excluded
+    expect((JONGSEONG_INDEX as any)["ㄸ"]).toBeUndefined();
+    expect((JONGSEONG_INDEX as any)["ㅃ"]).toBeUndefined();
+    expect((JONGSEONG_INDEX as any)["ㅉ"]).toBeUndefined();
   });
 
   it("reverse map is correct for all entries", () => {

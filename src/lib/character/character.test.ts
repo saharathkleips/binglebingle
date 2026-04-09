@@ -157,7 +157,8 @@ describe("resolveCharacter", () => {
 
   it("invalid combo (choseong 'ㄱ' + jungseong 'ㄱ') → null", () => {
     // 'ㄱ' is not a valid jungseong — composeSyllable returns null
-    expect(resolveCharacter({ choseong: "ㄱ", jungseong: "ㄱ" })).toBeNull();
+    // Use 'as any' to pass invalid type for testing boundary conditions
+    expect(resolveCharacter({ choseong: "ㄱ", jungseong: "ㄱ" as any })).toBeNull();
   });
 });
 

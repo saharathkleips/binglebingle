@@ -96,7 +96,8 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
 const COMBINATION_MAP: ReadonlyMap<string, Jamo> = (() => {
   const map = new Map<string, Jamo>();
   for (const rule of COMBINATION_RULES) {
-    const [a, b] = rule.inputs;
+    const a = rule.inputs[0];
+    const b = rule.inputs[1];
     const entries: [string, Jamo][] = [[`${a}|${b}`, rule.output]];
     if (rule.kind === "DOUBLE_CONSONANT" || rule.kind === "COMPLEX_VOWEL") {
       if (a !== b) {
@@ -118,7 +119,7 @@ const COMBINATION_MAP: ReadonlyMap<string, Jamo> = (() => {
 const DECOMPOSE_MAP: ReadonlyMap<Jamo, readonly [Jamo, Jamo]> = (() => {
   const map = new Map<Jamo, [Jamo, Jamo]>()
   for (const rule of COMBINATION_RULES) {
-    map.set(rule.output, rule.inputs);
+    map.set(rule.output, [...rule.inputs] as [Jamo, Jamo]);
   }
   return map;
 })();
@@ -201,7 +202,7 @@ export function decomposeSyllable(
   const choseong = CHOSEONG_BY_INDEX[choIdx];
   const jungseong = JUNGSEONG_BY_INDEX[jungIdx];
   // jongIdx === 0 means no final consonant
-  const jongseong = jongIdx === 0 ? null : JONGSEONG_BY_INDEX[jongIdx];
+  const jongseong = jongIdx === 0 ? null : (JONGSEONG_BY_INDEX[jongIdx] ?? null);
 
   if (choseong === undefined || jungseong === undefined) return null;
 
