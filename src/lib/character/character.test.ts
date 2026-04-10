@@ -3,206 +3,249 @@
  *
  * Tests for compose(), resolveCharacter(), isComplete(), decompose() —
  * the character assembly bridge.
- *
- * Tests written before implementation (TDD red phase).
  */
 
 import { describe, expect, it } from "vitest";
-import type { ChoseongJamo, VowelJamo } from "../jamo/jamo";
-import type { JongseongJamo } from "../jamo/jamo";
-import { compose, decompose, isComplete, resolveCharacter } from "./character";
 import type { Character } from "./character";
+import { compose, decompose, isComplete, resolveCharacter } from "./character";
 
 // ---------------------------------------------------------------------------
 // compose()
 // ---------------------------------------------------------------------------
 
 describe("compose", () => {
-  // Empty target
-  it("empty + choseong → { choseong }", () => {
-    expect(compose({}, { choseong: "ㄱ" })).toEqual({ choseong: "ㄱ" });
-  });
-
-  it("empty + jungseong → { jungseong }", () => {
-    expect(compose({}, { jungseong: "ㅏ" })).toEqual({ jungseong: "ㅏ" });
-  });
-
-  // Choseong-only target: double consonant upgrades
   it.each([
-    ["ㄱ", "ㄲ"],
-    ["ㄷ", "ㄸ"],
-    ["ㅂ", "ㅃ"],
-    ["ㅅ", "ㅆ"],
-    ["ㅈ", "ㅉ"],
-  ] as [ChoseongJamo, ChoseongJamo][])("choseong+choseong (%s+%s → double consonant)", (input, expected) => {
-    expect(compose({ choseong: input }, { choseong: input })).toEqual({ choseong: expected });
-  });
+    // --- Empty target ---
+    ["empty + choseong", {}, { choseong: "ㄱ" }, { choseong: "ㄱ" }],
+    ["empty + jungseong", {}, { jungseong: "ㅏ" }, { jungseong: "ㅏ" }],
+    ["empty + simple jongseong", {}, { jongseong: "ㄱ" }, { jongseong: "ㄱ" }],
+    ["empty + compound jongseong", {}, { jongseong: "ㄳ" }, { jongseong: "ㄳ" }],
 
-  it("choseong + choseong (not combinable: ㄱ+ㄴ) → null", () => {
-    expect(compose({ choseong: "ㄱ" }, { choseong: "ㄴ" })).toBeNull();
-  });
+    // --- Choseong-only: double consonant → choseong ---
+    ["cho(ㄱ)+cho(ㄱ) → ㄲ", { choseong: "ㄱ" }, { choseong: "ㄱ" }, { choseong: "ㄲ" }],
+    ["cho(ㄷ)+cho(ㄷ) → ㄸ", { choseong: "ㄷ" }, { choseong: "ㄷ" }, { choseong: "ㄸ" }],
+    ["cho(ㅂ)+cho(ㅂ) → ㅃ", { choseong: "ㅂ" }, { choseong: "ㅂ" }, { choseong: "ㅃ" }],
+    ["cho(ㅅ)+cho(ㅅ) → ㅆ", { choseong: "ㅅ" }, { choseong: "ㅅ" }, { choseong: "ㅆ" }],
+    ["cho(ㅈ)+cho(ㅈ) → ㅉ", { choseong: "ㅈ" }, { choseong: "ㅈ" }, { choseong: "ㅉ" }],
 
-  it("choseong + jungseong → { choseong, jungseong }", () => {
-    expect(compose({ choseong: "ㄱ" }, { jungseong: "ㅏ" })).toEqual({
-      choseong: "ㄱ",
-      jungseong: "ㅏ",
-    });
-  });
+    // --- Choseong-only: compound batchim → jongseong-only ---
+    ["cho(ㄱ)+cho(ㅅ) → jong(ㄳ)", { choseong: "ㄱ" }, { choseong: "ㅅ" }, { jongseong: "ㄳ" }],
+    ["cho(ㄴ)+cho(ㅈ) → jong(ㄵ)", { choseong: "ㄴ" }, { choseong: "ㅈ" }, { jongseong: "ㄵ" }],
+    ["cho(ㄴ)+cho(ㅎ) → jong(ㄶ)", { choseong: "ㄴ" }, { choseong: "ㅎ" }, { jongseong: "ㄶ" }],
+    ["cho(ㄹ)+cho(ㄱ) → jong(ㄺ)", { choseong: "ㄹ" }, { choseong: "ㄱ" }, { jongseong: "ㄺ" }],
+    ["cho(ㄹ)+cho(ㅁ) → jong(ㄻ)", { choseong: "ㄹ" }, { choseong: "ㅁ" }, { jongseong: "ㄻ" }],
+    ["cho(ㄹ)+cho(ㅂ) → jong(ㄼ)", { choseong: "ㄹ" }, { choseong: "ㅂ" }, { jongseong: "ㄼ" }],
+    ["cho(ㄹ)+cho(ㅅ) → jong(ㄽ)", { choseong: "ㄹ" }, { choseong: "ㅅ" }, { jongseong: "ㄽ" }],
+    ["cho(ㄹ)+cho(ㅌ) → jong(ㄾ)", { choseong: "ㄹ" }, { choseong: "ㅌ" }, { jongseong: "ㄾ" }],
+    ["cho(ㄹ)+cho(ㅍ) → jong(ㄿ)", { choseong: "ㄹ" }, { choseong: "ㅍ" }, { jongseong: "ㄿ" }],
+    ["cho(ㄹ)+cho(ㅎ) → jong(ㅀ)", { choseong: "ㄹ" }, { choseong: "ㅎ" }, { jongseong: "ㅀ" }],
+    ["cho(ㅂ)+cho(ㅅ) → jong(ㅄ)", { choseong: "ㅂ" }, { choseong: "ㅅ" }, { jongseong: "ㅄ" }],
 
-  // Jungseong-only target: complex vowel combinations
-  it.each([
-    ["ㅏ", "ㅣ", "ㅐ"],
-    ["ㅑ", "ㅣ", "ㅒ"],
-    ["ㅓ", "ㅣ", "ㅔ"],
-    ["ㅕ", "ㅣ", "ㅖ"],
-    ["ㅗ", "ㅏ", "ㅘ"],
-    ["ㅗ", "ㅐ", "ㅙ"], // canonical path
-    ["ㅘ", "ㅣ", "ㅙ"], // alternate path: ㅘ+ㅣ (standard: ㅗ+ㅐ)
-    ["ㅗ", "ㅣ", "ㅚ"],
-    ["ㅜ", "ㅓ", "ㅝ"],
-    ["ㅜ", "ㅔ", "ㅞ"], // canonical path
-    ["ㅝ", "ㅣ", "ㅞ"], // alternate path: ㅝ+ㅣ (standard: ㅜ+ㅔ)
-    ["ㅜ", "ㅣ", "ㅟ"],
-    ["ㅡ", "ㅣ", "ㅢ"],
-  ] as [VowelJamo, VowelJamo, VowelJamo][])("jungseong+jungseong (%s+%s → %s)", (a, b, expected) => {
-    expect(compose({ jungseong: a }, { jungseong: b })).toEqual({ jungseong: expected });
-  });
+    // --- Choseong-only: other ---
+    [
+      "cho(ㄱ)+jung(ㅏ) → open syllable",
+      { choseong: "ㄱ" },
+      { jungseong: "ㅏ" },
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+    ],
+    ["cho(ㄱ)+cho(ㄴ) → null (no rule)", { choseong: "ㄱ" }, { choseong: "ㄴ" }, null],
 
-  it.each([
-    ["ㅏ", "ㅏ"],
-    ["ㅏ", "ㅓ"],
-    ["ㅗ", "ㅓ"],
-  ] as [VowelJamo, VowelJamo][])("jungseong + jungseong (not combinable: %s+%s) → null", (a, b) => {
-    expect(compose({ jungseong: a }, { jungseong: b })).toBeNull();
-  });
+    // --- Jungseong-only: complex vowel combinations ---
+    ["jung(ㅏ)+jung(ㅣ) → ㅐ", { jungseong: "ㅏ" }, { jungseong: "ㅣ" }, { jungseong: "ㅐ" }],
+    ["jung(ㅑ)+jung(ㅣ) → ㅒ", { jungseong: "ㅑ" }, { jungseong: "ㅣ" }, { jungseong: "ㅒ" }],
+    ["jung(ㅓ)+jung(ㅣ) → ㅔ", { jungseong: "ㅓ" }, { jungseong: "ㅣ" }, { jungseong: "ㅔ" }],
+    ["jung(ㅕ)+jung(ㅣ) → ㅖ", { jungseong: "ㅕ" }, { jungseong: "ㅣ" }, { jungseong: "ㅖ" }],
+    ["jung(ㅗ)+jung(ㅏ) → ㅘ", { jungseong: "ㅗ" }, { jungseong: "ㅏ" }, { jungseong: "ㅘ" }],
+    [
+      "jung(ㅗ)+jung(ㅐ) → ㅙ (canonical)",
+      { jungseong: "ㅗ" },
+      { jungseong: "ㅐ" },
+      { jungseong: "ㅙ" },
+    ],
+    [
+      "jung(ㅘ)+jung(ㅣ) → ㅙ (alternate path)",
+      { jungseong: "ㅘ" },
+      { jungseong: "ㅣ" },
+      { jungseong: "ㅙ" },
+    ],
+    ["jung(ㅗ)+jung(ㅣ) → ㅚ", { jungseong: "ㅗ" }, { jungseong: "ㅣ" }, { jungseong: "ㅚ" }],
+    ["jung(ㅜ)+jung(ㅓ) → ㅝ", { jungseong: "ㅜ" }, { jungseong: "ㅓ" }, { jungseong: "ㅝ" }],
+    [
+      "jung(ㅜ)+jung(ㅔ) → ㅞ (canonical)",
+      { jungseong: "ㅜ" },
+      { jungseong: "ㅔ" },
+      { jungseong: "ㅞ" },
+    ],
+    [
+      "jung(ㅝ)+jung(ㅣ) → ㅞ (alternate path)",
+      { jungseong: "ㅝ" },
+      { jungseong: "ㅣ" },
+      { jungseong: "ㅞ" },
+    ],
+    ["jung(ㅜ)+jung(ㅣ) → ㅟ", { jungseong: "ㅜ" }, { jungseong: "ㅣ" }, { jungseong: "ㅟ" }],
+    ["jung(ㅡ)+jung(ㅣ) → ㅢ", { jungseong: "ㅡ" }, { jungseong: "ㅣ" }, { jungseong: "ㅢ" }],
 
-  it("jungseong + choseong → { choseong: incoming, jungseong }", () => {
-    expect(compose({ jungseong: "ㅏ" }, { choseong: "ㄱ" })).toEqual({
-      choseong: "ㄱ",
-      jungseong: "ㅏ",
-    });
-  });
+    // --- Jungseong-only: other ---
+    ["jung(ㅏ)+jung(ㅏ) → null (not combinable)", { jungseong: "ㅏ" }, { jungseong: "ㅏ" }, null],
+    ["jung(ㅏ)+jung(ㅓ) → null (not combinable)", { jungseong: "ㅏ" }, { jungseong: "ㅓ" }, null],
+    ["jung(ㅗ)+jung(ㅓ) → null (not combinable)", { jungseong: "ㅗ" }, { jungseong: "ㅓ" }, null],
+    [
+      "jung(ㅏ)+cho(ㄱ) → rearranged: cho leads",
+      { jungseong: "ㅏ" },
+      { choseong: "ㄱ" },
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+    ],
 
-  // Choseong + jungseong target
-  it("choseong+jungseong + jungseong (combinable vowel: ㅗ+ㅏ→ㅘ) → updated jungseong", () => {
-    expect(compose({ choseong: "ㅎ", jungseong: "ㅗ" }, { jungseong: "ㅏ" })).toEqual({
-      choseong: "ㅎ",
-      jungseong: "ㅘ",
-    });
-  });
+    // --- Choseong+jungseong: vowel combination ---
+    [
+      "cho+jung(ㅗ) + jung(ㅏ) → ㅘ",
+      { choseong: "ㅎ", jungseong: "ㅗ" },
+      { jungseong: "ㅏ" },
+      { choseong: "ㅎ", jungseong: "ㅘ" },
+    ],
+    [
+      "cho+jung(ㅘ) + jung(ㅣ) → ㅙ (alternate)",
+      { choseong: "ㅎ", jungseong: "ㅘ" },
+      { jungseong: "ㅣ" },
+      { choseong: "ㅎ", jungseong: "ㅙ" },
+    ],
+    [
+      "cho+jung(ㅏ) + jung(ㅏ) → null",
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+      { jungseong: "ㅏ" },
+      null,
+    ],
 
-  it("choseong+jungseong + jungseong (alternate path: ㅘ+ㅣ→ㅙ) → updated jungseong", () => {
-    expect(compose({ choseong: "ㅎ", jungseong: "ㅘ" }, { jungseong: "ㅣ" })).toEqual({
-      choseong: "ㅎ",
-      jungseong: "ㅙ",
-    });
-  });
+    // --- Choseong+jungseong: incoming consonant or jongseong → jongseong slot ---
+    [
+      "cho+jung + cho(ㄴ) → full syllable",
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+      { choseong: "ㄴ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" },
+    ],
+    [
+      "cho+jung + jong(ㄳ) → full syllable (direct)",
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+      { jongseong: "ㄳ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄳ" },
+    ],
 
-  it("choseong+jungseong + jungseong (not combinable: ㅏ+ㅏ) → null", () => {
-    expect(compose({ choseong: "ㄱ", jungseong: "ㅏ" }, { jungseong: "ㅏ" })).toBeNull();
-  });
+    // --- Full (choseong+jungseong+jongseong): compound batchim upgrade ---
+    [
+      "full(jong ㄱ)+cho(ㅅ) → jong ㄳ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄱ" },
+      { choseong: "ㅅ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄳ" },
+    ],
+    [
+      "full(jong ㄴ)+cho(ㅈ) → jong ㄵ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" },
+      { choseong: "ㅈ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄵ" },
+    ],
+    [
+      "full(jong ㄴ)+cho(ㅎ) → jong ㄶ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" },
+      { choseong: "ㅎ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄶ" },
+    ],
+    [
+      "full(jong ㄹ)+cho(ㄱ) → jong ㄺ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄹ" },
+      { choseong: "ㄱ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄺ" },
+    ],
+    [
+      "full(jong ㄹ)+cho(ㅁ) → jong ㄻ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄹ" },
+      { choseong: "ㅁ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄻ" },
+    ],
+    [
+      "full(jong ㄹ)+cho(ㅂ) → jong ㄼ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄹ" },
+      { choseong: "ㅂ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄼ" },
+    ],
+    [
+      "full(jong ㄹ)+cho(ㅅ) → jong ㄽ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄹ" },
+      { choseong: "ㅅ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄽ" },
+    ],
+    [
+      "full(jong ㄹ)+cho(ㅌ) → jong ㄾ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄹ" },
+      { choseong: "ㅌ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄾ" },
+    ],
+    [
+      "full(jong ㄹ)+cho(ㅍ) → jong ㄿ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄹ" },
+      { choseong: "ㅍ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄿ" },
+    ],
+    [
+      "full(jong ㄹ)+cho(ㅎ) → jong ㅀ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄹ" },
+      { choseong: "ㅎ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㅀ" },
+    ],
+    [
+      "full(jong ㅂ)+cho(ㅅ) → jong ㅄ",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㅂ" },
+      { choseong: "ㅅ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㅄ" },
+    ],
 
-  it("choseong+jungseong + choseong → full syllable Character", () => {
-    expect(compose({ choseong: "ㄱ", jungseong: "ㅏ" }, { choseong: "ㄴ" })).toEqual({
-      choseong: "ㄱ",
-      jungseong: "ㅏ",
-      jongseong: "ㄴ",
-    });
-  });
+    // --- Full: double consonant jongseong ---
+    [
+      "full(jong ㄱ)+cho(ㄱ) → jong ㄲ (valid jongseong)",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄱ" },
+      { choseong: "ㄱ" },
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄲ" },
+    ],
 
-  // Full (choseong+jungseong+jongseong) target: compound batchim upgrades
-  it.each([
-    ["ㄱ", "ㅅ", "ㄳ"],
-    ["ㄴ", "ㅈ", "ㄵ"],
-    ["ㄴ", "ㅎ", "ㄶ"],
-    ["ㄹ", "ㄱ", "ㄺ"],
-    ["ㄹ", "ㅁ", "ㄻ"],
-    ["ㄹ", "ㅂ", "ㄼ"],
-    ["ㄹ", "ㅅ", "ㄽ"],
-    ["ㄹ", "ㅌ", "ㄾ"],
-    ["ㄹ", "ㅍ", "ㄿ"],
-    ["ㄹ", "ㅎ", "ㅀ"],
-    ["ㅂ", "ㅅ", "ㅄ"],
-  ] as [JongseongJamo, ChoseongJamo, JongseongJamo][])("full + choseong (jongseong %s+%s → %s)", (jong, incoming, expected) => {
-    expect(
-      compose({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: jong }, { choseong: incoming }),
-    ).toEqual({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: expected });
-  });
+    // --- Full: null cases ---
+    [
+      "full(jong ㄱ)+cho(ㄴ) → null (no rule)",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄱ" },
+      { choseong: "ㄴ" },
+      null,
+    ],
+    [
+      "full(jong ㄷ)+cho(ㄷ) → null (ㄸ not valid jongseong)",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄷ" },
+      { choseong: "ㄷ" },
+      null,
+    ],
+    [
+      "full + jung → null (no 4-part syllables)",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" },
+      { jungseong: "ㅏ" },
+      null,
+    ],
 
-  it("full + choseong (jongseong ㄱ+ㄱ → ㄲ, valid jongseong) → 갂", () => {
-    expect(
-      compose({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄱ" }, { choseong: "ㄱ" }),
-    ).toEqual({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄲ" });
-  });
-
-  it("full + choseong (no combination rule: ㄱ+ㄴ) → null", () => {
-    expect(
-      compose({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄱ" }, { choseong: "ㄴ" }),
-    ).toBeNull();
-  });
-
-  it("full + choseong (rule exists but result not valid jongseong: ㄷ+ㄷ → ㄸ) → null", () => {
-    expect(
-      compose({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄷ" }, { choseong: "ㄷ" }),
-    ).toBeNull();
-  });
-
-  it("full + jungseong → null (no 4-part syllables)", () => {
-    expect(
-      compose({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" }, { jungseong: "ㅏ" }),
-    ).toBeNull();
-  });
-
-  // Choseong-only → jongseong-only (compound batchim)
-  it.each([
-    ["ㄱ", "ㅅ", "ㄳ"],
-    ["ㄴ", "ㅈ", "ㄵ"],
-    ["ㄴ", "ㅎ", "ㄶ"],
-    ["ㄹ", "ㄱ", "ㄺ"],
-    ["ㄹ", "ㅁ", "ㄻ"],
-    ["ㄹ", "ㅂ", "ㄼ"],
-    ["ㄹ", "ㅅ", "ㄽ"],
-    ["ㄹ", "ㅌ", "ㄾ"],
-    ["ㄹ", "ㅍ", "ㄿ"],
-    ["ㄹ", "ㅎ", "ㅀ"],
-    ["ㅂ", "ㅅ", "ㅄ"],
-  ] as [ChoseongJamo, ChoseongJamo, JongseongJamo][])(
-    "choseong+choseong compound batchim (%s+%s → jongseong-only %s)",
-    (a, b, expected) => {
-      expect(compose({ choseong: a }, { choseong: b })).toEqual({ jongseong: expected });
+    // --- Jongseong-only ---
+    [
+      "jong(ㄱ)+cho(ㄱ) → cho ㄲ (double consonant)",
+      { jongseong: "ㄱ" },
+      { choseong: "ㄱ" },
+      { choseong: "ㄲ" },
+    ],
+    [
+      "jong(ㄱ)+cho(ㄴ) → null (no double consonant)",
+      { jongseong: "ㄱ" },
+      { choseong: "ㄴ" },
+      null,
+    ],
+    ["jong(ㄱ)+jung(ㅏ) → null", { jongseong: "ㄱ" }, { jungseong: "ㅏ" }, null],
+  ] as [string, Character, Character, Character | null][])(
+    "%s",
+    (_, target, incoming, expected) => {
+      expect(compose(target, incoming)).toEqual(expected);
     },
   );
-
-  // Empty target accepts jongseong
-  it("empty + jongseong → { jongseong }", () => {
-    expect(compose({}, { jongseong: "ㄳ" })).toEqual({ jongseong: "ㄳ" });
-  });
-
-  it("empty + simple jongseong → { jongseong }", () => {
-    expect(compose({}, { jongseong: "ㄱ" })).toEqual({ jongseong: "ㄱ" });
-  });
-
-  // Choseong + jungseong target accepts incoming jongseong
-  it("choseong+jungseong + jongseong → full syllable", () => {
-    expect(compose({ choseong: "ㄱ", jungseong: "ㅏ" }, { jongseong: "ㄳ" })).toEqual({
-      choseong: "ㄱ",
-      jungseong: "ㅏ",
-      jongseong: "ㄳ",
-    });
-  });
-
-  // Jongseong-only target
-  it("jongseong-only + choseong (ㄱ+ㄱ → ㄲ choseong) → { choseong }", () => {
-    expect(compose({ jongseong: "ㄱ" }, { choseong: "ㄱ" })).toEqual({ choseong: "ㄲ" });
-  });
-
-  it("jongseong-only + choseong (no double consonant: ㄱ+ㄴ) → null", () => {
-    expect(compose({ jongseong: "ㄱ" }, { choseong: "ㄴ" })).toBeNull();
-  });
-
-  it("jongseong-only + jungseong → null", () => {
-    expect(compose({ jongseong: "ㄱ" }, { jungseong: "ㅏ" })).toBeNull();
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -239,7 +282,7 @@ describe("isComplete", () => {
     [{ choseong: "ㄱ", jungseong: "ㅏ" }, true],
     [{ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" }, true],
     [{ choseong: "ㄱ" }, false],
-    [{ jungseong: "ㅏ" }, false],  // jungseong-only is not a syllable block
+    [{ jungseong: "ㅏ" }, false], // jungseong-only is not a syllable block
     [{}, false],
   ] as [Character, boolean][])("isComplete(%j) → %s", (char, expected) => {
     expect(isComplete(char)).toBe(expected);

@@ -40,21 +40,27 @@ export type Character = {
 // ---------------------------------------------------------------------------
 
 /**
- * Adds an incoming single-slot Character to a target Character following Korean
- * syllable construction rules.
+ * Adds an incoming Character to a target Character following Korean syllable
+ * construction rules.
  *
- * The incoming Character must have exactly one slot set (choseong or jungseong).
+ * At least one of target/incoming must be single-slot; two multi-slot Characters
+ * cannot be combined and will return null. An empty (0-slot) Character on either
+ * side is a no-op — the other side is returned as-is (via the empty-target branch).
  * Returns the new Character state, or null if the combination is invalid.
  *
  * @param target - Target Character (the slot being filled)
- * @param incoming - Incoming Character (always single-slot: one of choseong or jungseong)
+ * @param incoming - Incoming Character
  * @returns Updated Character, or null if the combination is not permitted
  */
 export function compose(target: Character, incoming: Character): Character | null {
   // -------------------------------------------------------------------------
   // Empty target
   // -------------------------------------------------------------------------
-  if (target.choseong === undefined && target.jungseong === undefined && target.jongseong === undefined) {
+  if (
+    target.choseong === undefined &&
+    target.jungseong === undefined &&
+    target.jongseong === undefined
+  ) {
     if (incoming.choseong !== undefined) return { choseong: incoming.choseong };
     if (incoming.jungseong !== undefined) return { jungseong: incoming.jungseong };
     if (incoming.jongseong !== undefined) return { jongseong: incoming.jongseong };
@@ -64,13 +70,21 @@ export function compose(target: Character, incoming: Character): Character | nul
   // -------------------------------------------------------------------------
   // Full target (choseong + jungseong + jongseong)
   // -------------------------------------------------------------------------
-  if (target.choseong !== undefined && target.jungseong !== undefined && target.jongseong !== undefined) {
+  if (
+    target.choseong !== undefined &&
+    target.jungseong !== undefined &&
+    target.jongseong !== undefined
+  ) {
     if (incoming.choseong !== undefined) {
       // Attempt jongseong upgrade via any combination rule (compound batchim or double consonant).
       // Only accept the result if it is a valid jongseong (ㄸ/ㅃ/ㅉ are not).
       const combined = composeJamo(target.jongseong, incoming.choseong);
       if (combined === null || !(combined in JONGSEONG_INDEX)) return null;
-      return { choseong: target.choseong, jungseong: target.jungseong, jongseong: combined as JongseongJamo };
+      return {
+        choseong: target.choseong,
+        jungseong: target.jungseong,
+        jongseong: combined as JongseongJamo,
+      };
     }
     // Full + jungseong or anything else → invalid
     return null;
@@ -88,14 +102,22 @@ export function compose(target: Character, incoming: Character): Character | nul
     }
     if (incoming.jongseong !== undefined) {
       // Incoming jongseong fills the final consonant slot directly
-      return { choseong: target.choseong, jungseong: target.jungseong, jongseong: incoming.jongseong };
+      return {
+        choseong: target.choseong,
+        jungseong: target.jungseong,
+        jongseong: incoming.jongseong,
+      };
     }
     if (incoming.choseong !== undefined) {
       // Incoming consonant becomes jongseong — ChoseongJamo is a subset of JongseongJamo
       // (all basic consonants and ㄲ, ㄶ are valid jongseong, but ㄸ/ㅃ/ㅉ are not)
       // incoming.choseong is ChoseongJamo; cast to JongseongJamo is valid for basic consonants,
       // but ㄸ/ㅃ/ㅉ cannot be jongseong. The game's combination rules prevent this.
-      return { choseong: target.choseong, jungseong: target.jungseong, jongseong: incoming.choseong as JongseongJamo };
+      return {
+        choseong: target.choseong,
+        jungseong: target.jungseong,
+        jongseong: incoming.choseong as JongseongJamo,
+      };
     }
     return null;
   }
@@ -124,7 +146,11 @@ export function compose(target: Character, incoming: Character): Character | nul
   // -------------------------------------------------------------------------
   // Jongseong-only target
   // -------------------------------------------------------------------------
-  if (target.jongseong !== undefined && target.choseong === undefined && target.jungseong === undefined) {
+  if (
+    target.jongseong !== undefined &&
+    target.choseong === undefined &&
+    target.jungseong === undefined
+  ) {
     if (incoming.choseong !== undefined) {
       // Try to combine jongseong + incoming consonant into a valid choseong (double consonant).
       const combined = composeJamo(target.jongseong, incoming.choseong);
@@ -235,12 +261,11 @@ export function isComplete(character: Character): boolean {
 export function decompose(char: Character): Character[] {
   const { choseong, jungseong, jongseong } = char;
 
-  // Nothing to decompose
-  if (choseong === undefined && jungseong === undefined) return [];
-  if (choseong !== undefined && jungseong === undefined) return [];
+  // Nothing to decompose — no jungseong means either empty or bare consonant
+  if (jungseong === undefined) return [];
 
   // Choseong + jungseong (+ optional jongseong)
-  if (choseong !== undefined && jungseong !== undefined) {
+  if (choseong !== undefined) {
     if (jongseong !== undefined) {
       // Check if jongseong is a compound batchim (not DOUBLE_CONSONANT — ㄲ/ㅆ stay intact)
       const rule = COMBINATION_RULES.find(
@@ -263,8 +288,6 @@ export function decompose(char: Character): Character[] {
     return [{ choseong }];
   }
 
-  // Jungseong-only (unusual but handle gracefully)
-  if (jungseong !== undefined && choseong === undefined) return [];
-
+  // Jungseong-only — nothing to decompose
   return [];
 }
