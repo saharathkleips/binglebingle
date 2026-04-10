@@ -21,11 +21,6 @@ import {
 } from "./jamo";
 import type { Jamo } from "./jamo";
 
-/** Typed map key for COMBINATION_MAP. Both slots must be valid Jamo. */
-type CombinationKey = `${Jamo}|${Jamo}`;
-
-const combKey = (a: Jamo, b: Jamo): CombinationKey => `${a}|${b}`;
-
 // ---------------------------------------------------------------------------
 // Syllable base codepoint (UAX #15)
 // ---------------------------------------------------------------------------
@@ -95,15 +90,15 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
  * - COMPOUND_BATCHIM (11 rules): stores only canonical a|b key (not commutative)
  *
  * Total: 5 + 22 + 11 = 38 entries.
- * Built once at module load.
+ * Keys are `"${a}|${b}"` strings. Built once at module load.
  * @internal
  */
-const COMBINATION_MAP: ReadonlyMap<CombinationKey, Jamo> = new Map(
+const COMBINATION_MAP: ReadonlyMap<string, Jamo> = new Map(
   COMBINATION_RULES.flatMap((rule) => {
     const [a, b] = rule.inputs;
-    const fwd: [CombinationKey, Jamo] = [combKey(a, b), rule.output];
+    const fwd: [string, Jamo] = [`${a}|${b}`, rule.output];
     if ((rule.kind === "DOUBLE_CONSONANT" || rule.kind === "COMPLEX_VOWEL") && a !== b) {
-      return [fwd, [combKey(b, a), rule.output]];
+      return [fwd, [`${b}|${a}`, rule.output]];
     }
     return [fwd];
   }),
@@ -114,13 +109,9 @@ const COMBINATION_MAP: ReadonlyMap<CombinationKey, Jamo> = new Map(
  * Built once at module load via IIFE.
  * @internal
  */
-const DECOMPOSE_MAP: ReadonlyMap<Jamo, readonly [Jamo, Jamo]> = (() => {
-  const map = new Map<Jamo, [Jamo, Jamo]>();
-  for (const rule of COMBINATION_RULES) {
-    map.set(rule.output, [...rule.inputs] as [Jamo, Jamo]);
-  }
-  return map;
-})();
+const DECOMPOSE_MAP: ReadonlyMap<Jamo, readonly [Jamo, Jamo]> = new Map(
+  COMBINATION_RULES.map((rule) => [rule.output, rule.inputs]),
+);
 
 // ---------------------------------------------------------------------------
 // Exported functions
@@ -138,7 +129,7 @@ const DECOMPOSE_MAP: ReadonlyMap<Jamo, readonly [Jamo, Jamo]> = (() => {
  * @returns The combined jamo, or null if no combination rule exists
  */
 export function composeJamo(a: Jamo, b: Jamo): Jamo | null {
-  return COMBINATION_MAP.get(combKey(a, b)) ?? null;
+  return COMBINATION_MAP.get(`${a}|${b}`) ?? null;
 }
 
 /**
