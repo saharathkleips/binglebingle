@@ -10,6 +10,7 @@
 
 import { composeJamo, composeSyllable, COMBINATION_RULES } from "../jamo/composition";
 import type { ConsonantJamo, VowelJamo, Jamo, ChoseongJamo, JongseongJamo } from "../jamo/jamo";
+import { JONGSEONG_INDEX } from "../jamo/jamo";
 
 export type { ConsonantJamo, VowelJamo, Jamo };
 
@@ -71,13 +72,11 @@ export function compose(a: Character, b: Character): Character | null {
   // -------------------------------------------------------------------------
   if (aCho !== undefined && aJung !== undefined && aJong !== undefined) {
     if (bCho !== undefined) {
-      // Attempt compound batchim upgrade — only COMPOUND_BATCHIM rules apply here
-      const rule = COMBINATION_RULES.find(
-        (r) => r.kind === "COMPOUND_BATCHIM" && r.inputs[0] === aJong && r.inputs[1] === bCho,
-      );
-      if (!rule) return null;
-      // rule.output is a compound batchim (JongseongJamo)
-      return { choseong: aCho, jungseong: aJung, jongseong: rule.output as JongseongJamo };
+      // Attempt jongseong upgrade via any combination rule (compound batchim or double consonant).
+      // Only accept the result if it is a valid jongseong (ㄸ/ㅃ/ㅉ are not).
+      const combined = composeJamo(aJong, bCho);
+      if (combined === null || !(combined in JONGSEONG_INDEX)) return null;
+      return { choseong: aCho, jungseong: aJung, jongseong: combined as JongseongJamo };
     }
     // Full + jungseong or anything else → invalid
     return null;
@@ -239,8 +238,9 @@ export function decompose(char: Character): Character[] {
           { choseong: second as ChoseongJamo },
         ];
       }
-      // Simple jongseong — remove it; jongseong basic consonants are also valid ChoseongJamo
-      return [{ choseong, jungseong }];
+      // Simple jongseong — return it as a standalone choseong so no tile is lost.
+      // Basic consonants and ㄲ/ㅆ (the only non-compound JongseongJamo) are all valid ChoseongJamo.
+      return [{ choseong, jungseong }, { choseong: jongseong as ChoseongJamo }];
     }
     // No jongseong — remove jungseong
     return [{ choseong }];

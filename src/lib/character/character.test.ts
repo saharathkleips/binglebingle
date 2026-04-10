@@ -51,17 +51,29 @@ describe("compose", () => {
 
   // Jungseong-only target: complex vowel combinations
   it.each([
+    ["ㅏ", "ㅣ", "ㅐ"],
+    ["ㅑ", "ㅣ", "ㅒ"],
+    ["ㅓ", "ㅣ", "ㅔ"],
+    ["ㅕ", "ㅣ", "ㅖ"],
     ["ㅗ", "ㅏ", "ㅘ"],
-    ["ㅜ", "ㅓ", "ㅝ"],
-    ["ㅡ", "ㅣ", "ㅢ"],
+    ["ㅗ", "ㅐ", "ㅙ"], // canonical path
     ["ㅘ", "ㅣ", "ㅙ"], // alternate path: ㅘ+ㅣ (standard: ㅗ+ㅐ)
+    ["ㅗ", "ㅣ", "ㅚ"],
+    ["ㅜ", "ㅓ", "ㅝ"],
+    ["ㅜ", "ㅔ", "ㅞ"], // canonical path
     ["ㅝ", "ㅣ", "ㅞ"], // alternate path: ㅝ+ㅣ (standard: ㅜ+ㅔ)
+    ["ㅜ", "ㅣ", "ㅟ"],
+    ["ㅡ", "ㅣ", "ㅢ"],
   ] as [VowelJamo, VowelJamo, VowelJamo][])("jungseong+jungseong (%s+%s → %s)", (a, b, expected) => {
     expect(compose({ jungseong: a }, { jungseong: b })).toEqual({ jungseong: expected });
   });
 
-  it("jungseong + jungseong (not combinable: ㅏ+ㅏ) → null", () => {
-    expect(compose({ jungseong: "ㅏ" }, { jungseong: "ㅏ" })).toBeNull();
+  it.each([
+    ["ㅏ", "ㅏ"],
+    ["ㅏ", "ㅓ"],
+    ["ㅗ", "ㅓ"],
+  ] as [VowelJamo, VowelJamo][])("jungseong + jungseong (not combinable: %s+%s) → null", (a, b) => {
+    expect(compose({ jungseong: a }, { jungseong: b })).toBeNull();
   });
 
   it("jungseong + choseong → { choseong: incoming, jungseong }", () => {
@@ -101,16 +113,37 @@ describe("compose", () => {
   // Full (choseong+jungseong+jongseong) target: compound batchim upgrades
   it.each([
     ["ㄱ", "ㅅ", "ㄳ"],
+    ["ㄴ", "ㅈ", "ㄵ"],
+    ["ㄴ", "ㅎ", "ㄶ"],
     ["ㄹ", "ㄱ", "ㄺ"],
+    ["ㄹ", "ㅁ", "ㄻ"],
+    ["ㄹ", "ㅂ", "ㄼ"],
+    ["ㄹ", "ㅅ", "ㄽ"],
+    ["ㄹ", "ㅌ", "ㄾ"],
+    ["ㄹ", "ㅍ", "ㄿ"],
+    ["ㄹ", "ㅎ", "ㅀ"],
+    ["ㅂ", "ㅅ", "ㅄ"],
   ] as [JongseongJamo, ChoseongJamo, JongseongJamo][])("full + choseong (jongseong %s+%s → %s)", (jong, incoming, expected) => {
     expect(
       compose({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: jong }, { choseong: incoming }),
     ).toEqual({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: expected });
   });
 
-  it("full + choseong (no upgrade rule: ㄱ+ㄱ) → null", () => {
+  it("full + choseong (jongseong ㄱ+ㄱ → ㄲ, valid jongseong) → 갂", () => {
     expect(
       compose({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄱ" }, { choseong: "ㄱ" }),
+    ).toEqual({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄲ" });
+  });
+
+  it("full + choseong (no combination rule: ㄱ+ㄴ) → null", () => {
+    expect(
+      compose({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄱ" }, { choseong: "ㄴ" }),
+    ).toBeNull();
+  });
+
+  it("full + choseong (rule exists but result not valid jongseong: ㄷ+ㄷ → ㄸ) → null", () => {
+    expect(
+      compose({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄷ" }, { choseong: "ㄷ" }),
     ).toBeNull();
   });
 
@@ -133,6 +166,7 @@ describe("resolveCharacter", () => {
     [{ choseong: "ㄱ", jungseong: "ㅏ" }, "가"],
     [{ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" }, "한"],
     [{ choseong: "ㅎ", jungseong: "ㅞ", jongseong: "ㄳ" }, "훿"],
+    [{ choseong: "ㄲ", jungseong: "ㅐ", jongseong: "ㄳ" }, "깫"], // double consonant + complex vowel + compound batchim
   ] as [Character, string | null][])("resolveCharacter(%j) → %s", (char, expected) => {
     expect(resolveCharacter(char)).toBe(expected);
   });
@@ -167,7 +201,7 @@ describe("decompose", () => {
   it.each([
     [
       { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" },
-      [{ choseong: "ㄱ", jungseong: "ㅏ" }],
+      [{ choseong: "ㄱ", jungseong: "ㅏ" }, { choseong: "ㄴ" }],
     ],
     [
       { choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄳ" },
