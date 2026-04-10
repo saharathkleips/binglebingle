@@ -54,6 +54,8 @@ describe("compose", () => {
     ["ㅗ", "ㅏ", "ㅘ"],
     ["ㅜ", "ㅓ", "ㅝ"],
     ["ㅡ", "ㅣ", "ㅢ"],
+    ["ㅘ", "ㅣ", "ㅙ"], // alternate path: ㅘ+ㅣ (standard: ㅗ+ㅐ)
+    ["ㅝ", "ㅣ", "ㅞ"], // alternate path: ㅝ+ㅣ (standard: ㅜ+ㅔ)
   ] as [VowelJamo, VowelJamo, VowelJamo][])("jungseong+jungseong (%s+%s → %s)", (a, b, expected) => {
     expect(compose({ jungseong: a }, { jungseong: b })).toEqual({ jungseong: expected });
   });
@@ -74,6 +76,13 @@ describe("compose", () => {
     expect(compose({ choseong: "ㅎ", jungseong: "ㅗ" }, { jungseong: "ㅏ" })).toEqual({
       choseong: "ㅎ",
       jungseong: "ㅘ",
+    });
+  });
+
+  it("choseong+jungseong + jungseong (alternate path: ㅘ+ㅣ→ㅙ) → updated jungseong", () => {
+    expect(compose({ choseong: "ㅎ", jungseong: "ㅘ" }, { jungseong: "ㅣ" })).toEqual({
+      choseong: "ㅎ",
+      jungseong: "ㅙ",
     });
   });
 

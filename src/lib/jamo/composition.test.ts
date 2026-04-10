@@ -11,13 +11,47 @@ describe("composeJamo — all COMBINATION_RULES", () => {
   });
 });
 
+// Only canonical rules round-trip: for outputs with multiple input paths (ㅙ, ㅞ),
+// DECOMPOSE_MAP keeps the last entry, so alternate-input rules are excluded here.
+const CANONICAL_RULES = COMBINATION_RULES.filter(
+  (rule, idx, arr) => arr.findLastIndex((r) => r.output === rule.output) === idx,
+);
+
 describe("decomposeJamo — round-trip", () => {
-  it.each(COMBINATION_RULES)(
+  it.each(CANONICAL_RULES)(
     "round-trip $kind: decomposeJamo(composeJamo($inputs)) returns inputs",
     ({ inputs, output }) => {
       expect(decomposeJamo(output)).toEqual(inputs);
     },
   );
+});
+
+describe("decomposeJamo — canonical paths for alternate-input vowels", () => {
+  it("decomposeJamo('ㅙ') returns canonical ['ㅗ', 'ㅐ'], not alternate ['ㅘ', 'ㅣ']", () => {
+    expect(decomposeJamo("ㅙ")).toEqual(["ㅗ", "ㅐ"]);
+  });
+
+  it("decomposeJamo('ㅞ') returns canonical ['ㅜ', 'ㅔ'], not alternate ['ㅝ', 'ㅣ']", () => {
+    expect(decomposeJamo("ㅞ")).toEqual(["ㅜ", "ㅔ"]);
+  });
+});
+
+describe("composeJamo — alternate input paths", () => {
+  it("composeJamo('ㅘ', 'ㅣ') → 'ㅙ'", () => {
+    expect(composeJamo("ㅘ", "ㅣ")).toBe("ㅙ");
+  });
+
+  it("composeJamo('ㅣ', 'ㅘ') → 'ㅙ' (commutative)", () => {
+    expect(composeJamo("ㅣ", "ㅘ")).toBe("ㅙ");
+  });
+
+  it("composeJamo('ㅝ', 'ㅣ') → 'ㅞ'", () => {
+    expect(composeJamo("ㅝ", "ㅣ")).toBe("ㅞ");
+  });
+
+  it("composeJamo('ㅣ', 'ㅝ') → 'ㅞ' (commutative)", () => {
+    expect(composeJamo("ㅣ", "ㅝ")).toBe("ㅞ");
+  });
 });
 
 describe("decomposeJamo — non-combination jamo", () => {

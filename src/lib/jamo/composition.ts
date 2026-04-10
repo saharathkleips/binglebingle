@@ -42,11 +42,15 @@ export type CombinationRule = {
 };
 
 /**
- * All combination rules: double consonants (5), complex vowels (11), and
- * compound batchim (11). 27 entries total.
+ * All combination rules: double consonants (5), complex vowels (13), and
+ * compound batchim (11). 29 entries total.
  *
  * DOUBLE_CONSONANT and COMPLEX_VOWEL rules are commutative (COMBINATION_MAP stores both a|b and b|a).
  * COMPOUND_BATCHIM rules are NOT commutative (canonical order only in COMBINATION_MAP).
+ *
+ * For ㅙ and ㅞ, two input paths exist. The alternate-input rules (ㅘ+ㅣ→ㅙ, ㅝ+ㅣ→ㅞ) are
+ * listed BEFORE the canonical rules so that DECOMPOSE_MAP (built via new Map() which keeps the
+ * last entry for duplicate keys) retains the canonical paths (ㅗ+ㅐ→ㅙ, ㅜ+ㅔ→ㅞ).
  */
 export const COMBINATION_RULES: readonly CombinationRule[] = [
   // Double consonants (5)
@@ -56,16 +60,18 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
   { inputs: ["ㅅ", "ㅅ"], output: "ㅆ", kind: "DOUBLE_CONSONANT" },
   { inputs: ["ㅈ", "ㅈ"], output: "ㅉ", kind: "DOUBLE_CONSONANT" },
 
-  // Complex vowels (11)
+  // Complex vowels (13)
   { inputs: ["ㅏ", "ㅣ"], output: "ㅐ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅑ", "ㅣ"], output: "ㅒ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅓ", "ㅣ"], output: "ㅔ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅕ", "ㅣ"], output: "ㅖ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅗ", "ㅏ"], output: "ㅘ", kind: "COMPLEX_VOWEL" },
-  { inputs: ["ㅗ", "ㅐ"], output: "ㅙ", kind: "COMPLEX_VOWEL" },
+  { inputs: ["ㅘ", "ㅣ"], output: "ㅙ", kind: "COMPLEX_VOWEL" }, // alternate path (ㅘ+ㅣ); canonical ㅗ+ㅐ is last
+  { inputs: ["ㅗ", "ㅐ"], output: "ㅙ", kind: "COMPLEX_VOWEL" }, // canonical decompose path
   { inputs: ["ㅗ", "ㅣ"], output: "ㅚ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅜ", "ㅓ"], output: "ㅝ", kind: "COMPLEX_VOWEL" },
-  { inputs: ["ㅜ", "ㅔ"], output: "ㅞ", kind: "COMPLEX_VOWEL" },
+  { inputs: ["ㅝ", "ㅣ"], output: "ㅞ", kind: "COMPLEX_VOWEL" }, // alternate path (ㅝ+ㅣ); canonical ㅜ+ㅔ is last
+  { inputs: ["ㅜ", "ㅔ"], output: "ㅞ", kind: "COMPLEX_VOWEL" }, // canonical decompose path
   { inputs: ["ㅜ", "ㅣ"], output: "ㅟ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅡ", "ㅣ"], output: "ㅢ", kind: "COMPLEX_VOWEL" },
 
@@ -86,10 +92,10 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
 /**
  * Unified lookup map for all three kinds of jamo combination.
  * - DOUBLE_CONSONANT (5 rules): stores both a|b and b|a keys (same key since a===b)
- * - COMPLEX_VOWEL (11 rules): stores both a|b and b|a keys for commutativity
+ * - COMPLEX_VOWEL (13 rules): stores both a|b and b|a keys for commutativity
  * - COMPOUND_BATCHIM (11 rules): stores only canonical a|b key (not commutative)
  *
- * Total: 5 + 22 + 11 = 38 entries.
+ * Total: 5 + 26 + 11 = 42 entries (13 rules × 2 = 26; ㅙ and ㅞ each have 2 input rules).
  * Keys are `"${a}|${b}"` strings. Built once at module load.
  * @internal
  */
