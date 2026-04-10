@@ -39,18 +39,24 @@ export type CombinationRule = {
   readonly output: Jamo;
   /** Whether this produces a double consonant, a complex vowel, or a compound batchim. */
   readonly kind: "DOUBLE_CONSONANT" | "COMPLEX_VOWEL" | "COMPOUND_BATCHIM";
+  /**
+   * True for alternate input paths that produce the same output as another rule.
+   * Alternate rules are included in COMBINATION_MAP (compose) but excluded from
+   * DECOMPOSE_MAP, so decomposition always returns the canonical path.
+   */
+  readonly alternate?: true;
 };
 
 /**
  * All combination rules: double consonants (5), complex vowels (13), and
- * compound batchim (11). 29 entries total.
+ * compound batchim (11). 31 entries total (including 2 alternate-input rules).
  *
  * DOUBLE_CONSONANT and COMPLEX_VOWEL rules are commutative (COMBINATION_MAP stores both a|b and b|a).
  * COMPOUND_BATCHIM rules are NOT commutative (canonical order only in COMBINATION_MAP).
  *
- * For ㅙ and ㅞ, two input paths exist. The alternate-input rules (ㅘ+ㅣ→ㅙ, ㅝ+ㅣ→ㅞ) are
- * listed BEFORE the canonical rules so that DECOMPOSE_MAP (built via new Map() which keeps the
- * last entry for duplicate keys) retains the canonical paths (ㅗ+ㅐ→ㅙ, ㅜ+ㅔ→ㅞ).
+ * For ㅙ and ㅞ, two input paths exist. The alternate-input rules are marked with
+ * `alternate: true` and are included in COMBINATION_MAP (compose) but excluded from
+ * DECOMPOSE_MAP (decompose always returns the canonical path).
  */
 export const COMBINATION_RULES: readonly CombinationRule[] = [
   // Double consonants (5)
@@ -60,18 +66,18 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
   { inputs: ["ㅅ", "ㅅ"], output: "ㅆ", kind: "DOUBLE_CONSONANT" },
   { inputs: ["ㅈ", "ㅈ"], output: "ㅉ", kind: "DOUBLE_CONSONANT" },
 
-  // Complex vowels (13)
+  // Complex vowels (11 canonical + 2 alternate = 13 total)
   { inputs: ["ㅏ", "ㅣ"], output: "ㅐ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅑ", "ㅣ"], output: "ㅒ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅓ", "ㅣ"], output: "ㅔ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅕ", "ㅣ"], output: "ㅖ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅗ", "ㅏ"], output: "ㅘ", kind: "COMPLEX_VOWEL" },
-  { inputs: ["ㅘ", "ㅣ"], output: "ㅙ", kind: "COMPLEX_VOWEL" }, // alternate path (ㅘ+ㅣ); canonical ㅗ+ㅐ is last
   { inputs: ["ㅗ", "ㅐ"], output: "ㅙ", kind: "COMPLEX_VOWEL" }, // canonical decompose path
+  { inputs: ["ㅘ", "ㅣ"], output: "ㅙ", kind: "COMPLEX_VOWEL", alternate: true }, // alternate compose path
   { inputs: ["ㅗ", "ㅣ"], output: "ㅚ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅜ", "ㅓ"], output: "ㅝ", kind: "COMPLEX_VOWEL" },
-  { inputs: ["ㅝ", "ㅣ"], output: "ㅞ", kind: "COMPLEX_VOWEL" }, // alternate path (ㅝ+ㅣ); canonical ㅜ+ㅔ is last
   { inputs: ["ㅜ", "ㅔ"], output: "ㅞ", kind: "COMPLEX_VOWEL" }, // canonical decompose path
+  { inputs: ["ㅝ", "ㅣ"], output: "ㅞ", kind: "COMPLEX_VOWEL", alternate: true }, // alternate compose path
   { inputs: ["ㅜ", "ㅣ"], output: "ㅟ", kind: "COMPLEX_VOWEL" },
   { inputs: ["ㅡ", "ㅣ"], output: "ㅢ", kind: "COMPLEX_VOWEL" },
 
@@ -95,7 +101,8 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
  * - COMPLEX_VOWEL (13 rules): stores both a|b and b|a keys for commutativity
  * - COMPOUND_BATCHIM (11 rules): stores only canonical a|b key (not commutative)
  *
- * Total: 5 + 26 + 11 = 42 entries (13 rules × 2 = 26; ㅙ and ㅞ each have 2 input rules).
+ * Total: 5 + 26 + 11 = 42 entries (13 rules × 2 = 26; all 13 complex vowel rules, including
+ * the 2 alternate-input rules, are commutative).
  * Keys are `"${a}|${b}"` strings. Built once at module load.
  * @internal
  */
@@ -112,11 +119,13 @@ const COMBINATION_MAP: ReadonlyMap<string, Jamo> = new Map(
 
 /**
  * Reverse lookup map: combination output → [input0, input1] using canonical order.
- * Built once at module load via IIFE.
+ * Alternate-input rules (alternate: true) are excluded so that outputs with multiple
+ * input paths (ㅙ, ㅞ) always decompose via their canonical path.
+ * Built once at module load.
  * @internal
  */
 const DECOMPOSE_MAP: ReadonlyMap<Jamo, readonly [Jamo, Jamo]> = new Map(
-  COMBINATION_RULES.map((rule) => [rule.output, rule.inputs]),
+  COMBINATION_RULES.filter((rule) => !rule.alternate).map((rule) => [rule.output, rule.inputs]),
 );
 
 // ---------------------------------------------------------------------------

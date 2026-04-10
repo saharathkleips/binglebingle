@@ -11,11 +11,9 @@ describe("composeJamo — all COMBINATION_RULES", () => {
   });
 });
 
-// Only canonical rules round-trip: for outputs with multiple input paths (ㅙ, ㅞ),
-// DECOMPOSE_MAP keeps the last entry, so alternate-input rules are excluded here.
-const CANONICAL_RULES = COMBINATION_RULES.filter(
-  (rule, idx, arr) => arr.findLastIndex((r) => r.output === rule.output) === idx,
-);
+// Only canonical rules round-trip: alternate-input rules (alternate: true) are excluded
+// from DECOMPOSE_MAP, so decomposeJamo returns the canonical path, not the alternate path.
+const CANONICAL_RULES = COMBINATION_RULES.filter((rule) => !rule.alternate);
 
 describe("decomposeJamo — round-trip", () => {
   it.each(CANONICAL_RULES)(
