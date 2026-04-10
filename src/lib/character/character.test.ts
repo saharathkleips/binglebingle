@@ -1,12 +1,3 @@
-/**
- * @file character.test.ts
- *
- * Tests for compose(), resolveCharacter(), isComplete(), decompose() —
- * the character assembly bridge.
- *
- * Tests written before implementation (TDD red phase).
- */
-
 import { describe, expect, it } from "vitest";
 import type { ChoseongJamo, VowelJamo } from "../jamo/jamo";
 import type { JongseongJamo } from "../jamo/jamo";
