@@ -25,7 +25,7 @@ export type { ConsonantJamo, VowelJamo, Jamo };
  * - `{ choseong, jungseong }` — open syllable or partial block
  * - `{ choseong, jungseong, jongseong }` — closed syllable block
  *
- * Use `combine(a, b)` to add jamo to a Character in a state-machine fashion.
+ * Use `compose(a, b)` to add jamo to a Character in a state-machine fashion.
  * Use `resolveCharacter(char)` to render the Character as a Unicode string.
  */
 export type Character = {
@@ -35,24 +35,7 @@ export type Character = {
 };
 
 // ---------------------------------------------------------------------------
-// Reverse-lookup map for compound batchim decomposition
-// Built once at module load.
-// Maps compound batchim output → [first constituent, second constituent]
-// Filtered subset of COMBINATION_RULES — COMPOUND_BATCHIM only, typed as ConsonantJamo pairs for decompose().
-// ---------------------------------------------------------------------------
-
-const JONGSEONG_SPLIT_MAP: ReadonlyMap<string, readonly [ConsonantJamo, ConsonantJamo]> = (() => {
-  const map = new Map<string, [ConsonantJamo, ConsonantJamo]>();
-  for (const rule of COMBINATION_RULES) {
-    if (rule.kind === "COMPOUND_BATCHIM") {
-      map.set(rule.output, [rule.inputs[0] as ConsonantJamo, rule.inputs[1] as ConsonantJamo]);
-    }
-  }
-  return map;
-})();
-
-// ---------------------------------------------------------------------------
-// combine()
+// compose()
 // ---------------------------------------------------------------------------
 
 /**
@@ -66,7 +49,7 @@ const JONGSEONG_SPLIT_MAP: ReadonlyMap<string, readonly [ConsonantJamo, Consonan
  * @param b - Incoming Character (always single-slot: one of choseong or jungseong)
  * @returns Updated Character, or null if the combination is not permitted
  */
-export function combine(a: Character, b: Character): Character | null {
+export function compose(a: Character, b: Character): Character | null {
   const aCho = a.choseong;
   const aJung = a.jungseong;
   const aJong = a.jongseong;
@@ -243,10 +226,12 @@ export function decompose(char: Character): Character[] {
   // Choseong + jungseong (+ optional jongseong)
   if (choseong !== undefined && jungseong !== undefined) {
     if (jongseong !== undefined) {
-      // Check if jongseong is a compound batchim
-      const split = JONGSEONG_SPLIT_MAP.get(jongseong);
-      if (split !== undefined) {
-        const [first, second] = split;
+      // Check if jongseong is a compound batchim (not DOUBLE_CONSONANT — ㄲ/ㅆ stay intact)
+      const rule = COMBINATION_RULES.find(
+        (r) => r.kind === "COMPOUND_BATCHIM" && r.output === jongseong,
+      );
+      if (rule !== undefined) {
+        const [first, second] = rule.inputs;
         // first and second are consonants (ConsonantJamo) — cast to ChoseongJamo for Character
         return [
           { choseong, jungseong },

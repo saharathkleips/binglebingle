@@ -1,33 +1,18 @@
 import { describe, expect, it } from "vitest";
 
 import { composeJamo, decomposeJamo, composeSyllable, decomposeSyllable } from "./composition";
-import { COMBINATION_RULES, type CombinationRule } from "./composition";
+import { COMBINATION_RULES } from "./composition";
 import type { Jamo } from "./jamo";
 import type { ChoseongJamo, VowelJamo, JongseongJamo } from "./jamo";
 
-// COMBINATION_RULES is already typed as readonly CombinationRule[] — no cast needed
-const getTypedRules = (): readonly CombinationRule[] => COMBINATION_RULES;
-
-// Shared table for composeSyllable and decomposeSyllable happy-path tests
-const COMPOSE_CASES: [ChoseongJamo, VowelJamo, JongseongJamo | undefined, string][] = [
-  ["ㄱ", "ㅏ", undefined, "가"],
-  ["ㅎ", "ㅏ", "ㄴ", "한"],
-  ["ㅎ", "ㅞ", "ㄳ", "훿"],
-  ["ㅇ", "ㅏ", undefined, "아"],
-  ["ㄸ", "ㅏ", undefined, "따"],
-  ["ㄴ", "ㅣ", undefined, "니"],
-  ["ㅅ", "ㅓ", "ㄹ", "설"],
-  ["ㅁ", "ㅜ", "ㄹ", "물"],
-];
-
 describe("composeJamo — all COMBINATION_RULES", () => {
-  it.each(getTypedRules())("$kind: $inputs → $output", ({ inputs, output }) => {
+  it.each(COMBINATION_RULES)("$kind: $inputs → $output", ({ inputs, output }) => {
     expect(composeJamo(inputs[0], inputs[1])).toBe(output);
   });
 });
 
 describe("decomposeJamo — round-trip", () => {
-  it.each(getTypedRules())(
+  it.each(COMBINATION_RULES)(
     "round-trip $kind: decomposeJamo(composeJamo($inputs)) returns inputs",
     ({ inputs, output }) => {
       expect(decomposeJamo(output)).toEqual(inputs);
@@ -70,8 +55,20 @@ describe("decomposeJamo — non-combination jamo", () => {
   });
 });
 
+// Shared table for composeSyllable and decomposeSyllable happy-path tests
+const SYLLABLE_CASES: [ChoseongJamo, VowelJamo, JongseongJamo | undefined, string][] = [
+  ["ㄱ", "ㅏ", undefined, "가"],
+  ["ㅎ", "ㅏ", "ㄴ", "한"],
+  ["ㅎ", "ㅞ", "ㄳ", "훿"],
+  ["ㅇ", "ㅏ", undefined, "아"],
+  ["ㄸ", "ㅏ", undefined, "따"],
+  ["ㄴ", "ㅣ", undefined, "니"],
+  ["ㅅ", "ㅓ", "ㄹ", "설"],
+  ["ㅁ", "ㅜ", "ㄹ", "물"],
+];
+
 describe("composeSyllable", () => {
-  it.each(COMPOSE_CASES)("composeSyllable(%s, %s, %s) → %s", (cho, jung, jong, expected) => {
+  it.each(SYLLABLE_CASES)("composeSyllable(%s, %s, %s) → %s", (cho, jung, jong, expected) => {
     expect(composeSyllable(cho, jung, jong)).toBe(expected);
   });
 
@@ -87,7 +84,7 @@ describe("composeSyllable", () => {
 });
 
 describe("decomposeSyllable", () => {
-  it.each(COMPOSE_CASES)(
+  it.each(SYLLABLE_CASES)(
     "round-trip: decomposeSyllable(composeSyllable(%s, %s, %s)) returns correct components",
     (cho, jung, jong, _expected) => {
       const syllable = composeSyllable(cho, jung, jong);
@@ -132,16 +129,5 @@ describe("decomposeSyllable", () => {
       expect(jongCode).toBeGreaterThanOrEqual(0x3130);
       expect(jongCode).toBeLessThanOrEqual(0x318f);
     }
-  });
-
-  it("round-trips: decompose(compose(ㅎ,ㅏ,ㄴ)) returns correct parts", () => {
-    const syllable = composeSyllable("ㅎ", "ㅏ", "ㄴ");
-    expect(syllable).not.toBeNull();
-    const result = decomposeSyllable(syllable!);
-    expect(result).toStrictEqual({
-      choseong: "ㅎ",
-      jungseong: "ㅏ",
-      jongseong: "ㄴ",
-    });
   });
 });
