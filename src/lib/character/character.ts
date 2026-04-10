@@ -8,18 +8,8 @@
  * Unicode note: syllable blocks range U+AC00–U+D7A3.
  */
 
-import {
-  composeJamo,
-  composeSyllable,
-  COMBINATION_RULES,
-} from "../jamo/composition";
-import type {
-  ConsonantJamo,
-  VowelJamo,
-  Jamo,
-  ChoseongJamo,
-  JongseongJamo,
-} from "../jamo/jamo";
+import { composeJamo, composeSyllable, COMBINATION_RULES } from "../jamo/composition";
+import type { ConsonantJamo, VowelJamo, Jamo, ChoseongJamo, JongseongJamo } from "../jamo/jamo";
 
 export type { ConsonantJamo, VowelJamo, Jamo };
 
@@ -276,4 +266,3 @@ export function decompose(char: Character): Character[] {
 
   return [];
 }
-

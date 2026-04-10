@@ -75,15 +75,12 @@ describe("JUNGSEONG_INDEX", () => {
     ["ㅣ", 20],
   ];
 
-  it.each(EXPECTED_JUNGSEONG)(
-    "maps %s↔%i and uses Compatibility Jamo codepoint",
-    (jamo, idx) => {
-      expect(JUNGSEONG_INDEX[jamo]).toBe(idx);
-      expect(JUNGSEONG_BY_INDEX[idx]).toBe(jamo);
-      expect(jamo.codePointAt(0)).toBeGreaterThanOrEqual(0x3130);
-      expect(jamo.codePointAt(0)).toBeLessThanOrEqual(0x318f);
-    },
-  );
+  it.each(EXPECTED_JUNGSEONG)("maps %s↔%i and uses Compatibility Jamo codepoint", (jamo, idx) => {
+    expect(JUNGSEONG_INDEX[jamo]).toBe(idx);
+    expect(JUNGSEONG_BY_INDEX[idx]).toBe(jamo);
+    expect(jamo.codePointAt(0)).toBeGreaterThanOrEqual(0x3130);
+    expect(jamo.codePointAt(0)).toBeLessThanOrEqual(0x318f);
+  });
 });
 
 describe("JONGSEONG_INDEX", () => {
