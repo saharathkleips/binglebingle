@@ -21,6 +21,11 @@ import {
 } from "./jamo";
 import type { Jamo } from "./jamo";
 
+/** Typed map key for COMBINATION_MAP. Both slots must be valid Jamo. */
+type CombinationKey = `${Jamo}|${Jamo}`;
+
+const combKey = (a: Jamo, b: Jamo): CombinationKey => `${a}|${b}`;
+
 // ---------------------------------------------------------------------------
 // Syllable base codepoint (UAX #15)
 // ---------------------------------------------------------------------------
@@ -93,12 +98,12 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
  * Built once at module load.
  * @internal
  */
-const COMBINATION_MAP: ReadonlyMap<string, Jamo> = new Map(
+const COMBINATION_MAP: ReadonlyMap<CombinationKey, Jamo> = new Map(
   COMBINATION_RULES.flatMap((rule) => {
     const [a, b] = rule.inputs;
-    const fwd: [string, Jamo] = [`${a}|${b}`, rule.output];
+    const fwd: [CombinationKey, Jamo] = [combKey(a, b), rule.output];
     if ((rule.kind === "DOUBLE_CONSONANT" || rule.kind === "COMPLEX_VOWEL") && a !== b) {
-      return [fwd, [`${b}|${a}`, rule.output]];
+      return [fwd, [combKey(b, a), rule.output]];
     }
     return [fwd];
   }),
@@ -133,7 +138,7 @@ const DECOMPOSE_MAP: ReadonlyMap<Jamo, readonly [Jamo, Jamo]> = (() => {
  * @returns The combined jamo, or null if no combination rule exists
  */
 export function composeJamo(a: Jamo, b: Jamo): Jamo | null {
-  return COMBINATION_MAP.get(`${a}|${b}`) ?? null;
+  return COMBINATION_MAP.get(combKey(a, b)) ?? null;
 }
 
 /**
