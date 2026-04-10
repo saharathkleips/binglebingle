@@ -295,22 +295,73 @@ describe("isComplete", () => {
 
 describe("decompose", () => {
   it.each([
+    // --- Empty ---
+    ["empty → []", {}, []],
+
+    // --- Single jamo: no loss ---
+    ["choseong-only → [choseong]", { choseong: "ㄱ" }, [{ choseong: "ㄱ" }]],
+    ["jungseong-only → [jungseong]", { jungseong: "ㅏ" }, [{ jungseong: "ㅏ" }]],
+    ["simple jongseong-only → [jongseong]", { jongseong: "ㄱ" }, [{ jongseong: "ㄱ" }]],
+
+    // --- Jongseong-only compound batchim splits into two choseong ---
     [
+      "compound jongseong ㄳ → [cho ㄱ, cho ㅅ]",
+      { jongseong: "ㄳ" },
+      [{ choseong: "ㄱ" }, { choseong: "ㅅ" }],
+    ],
+    [
+      "compound jongseong ㄺ → [cho ㄹ, cho ㄱ]",
+      { jongseong: "ㄺ" },
+      [{ choseong: "ㄹ" }, { choseong: "ㄱ" }],
+    ],
+    [
+      "compound jongseong ㄻ → [cho ㄹ, cho ㅁ]",
+      { jongseong: "ㄻ" },
+      [{ choseong: "ㄹ" }, { choseong: "ㅁ" }],
+    ],
+    [
+      "compound jongseong ㄼ → [cho ㄹ, cho ㅂ]",
+      { jongseong: "ㄼ" },
+      [{ choseong: "ㄹ" }, { choseong: "ㅂ" }],
+    ],
+    [
+      "compound jongseong ㅄ → [cho ㅂ, cho ㅅ]",
+      { jongseong: "ㅄ" },
+      [{ choseong: "ㅂ" }, { choseong: "ㅅ" }],
+    ],
+
+    // --- Choseong + jungseong: remove jungseong ---
+    ["cho+jung → [cho]", { choseong: "ㄱ", jungseong: "ㅏ" }, [{ choseong: "ㄱ" }]],
+
+    // --- Full syllable, simple jongseong: peel off as choseong ---
+    [
+      "full, simple jong ㄴ → [cho+jung, cho ㄴ]",
       { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" },
       [{ choseong: "ㄱ", jungseong: "ㅏ" }, { choseong: "ㄴ" }],
     ],
     [
+      "full, double consonant jong ㄲ → [cho+jung, cho ㄲ]",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄲ" },
+      [{ choseong: "ㄱ", jungseong: "ㅏ" }, { choseong: "ㄲ" }],
+    ],
+
+    // --- Full syllable, compound batchim: stays intact (at most 2 results) ---
+    [
+      "full, compound jong ㄳ → [cho+jung, jong ㄳ]",
       { choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄳ" },
-      [{ choseong: "ㅎ", jungseong: "ㅏ" }, { choseong: "ㄱ" }, { choseong: "ㅅ" }],
+      [{ choseong: "ㅎ", jungseong: "ㅏ" }, { jongseong: "ㄳ" }],
     ],
     [
+      "full, compound jong ㄺ → [cho+jung, jong ㄺ]",
       { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄺ" },
-      [{ choseong: "ㄱ", jungseong: "ㅏ" }, { choseong: "ㄹ" }, { choseong: "ㄱ" }],
+      [{ choseong: "ㄱ", jungseong: "ㅏ" }, { jongseong: "ㄺ" }],
     ],
-    [{ choseong: "ㄱ", jungseong: "ㅏ" }, [{ choseong: "ㄱ" }]],
-    [{ choseong: "ㄱ" }, []],
-    [{}, []],
-  ] as [Character, Character[]][])("decompose(%j)", (char, expected) => {
+    [
+      "full, compound jong ㅄ → [cho+jung, jong ㅄ]",
+      { choseong: "ㅂ", jungseong: "ㅓ", jongseong: "ㅄ" },
+      [{ choseong: "ㅂ", jungseong: "ㅓ" }, { jongseong: "ㅄ" }],
+    ],
+  ] as [string, Character, Character[]][])("%s", (_, char, expected) => {
     expect(decompose(char)).toEqual(expected);
   });
 });

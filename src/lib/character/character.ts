@@ -245,49 +245,66 @@ export function isComplete(character: Character): boolean {
 // ---------------------------------------------------------------------------
 
 /**
- * Steps a Character back by one construction level, splitting compound batchim
- * jongseong into its two constituent consonants when present.
+ * Steps a Character back by one construction level. Never loses a jamo —
+ * a single-jamo Character always returns a single-element array.
+ * At most two Characters are returned per call.
  *
- * - Full syllable (choseong+jungseong+jongseong):
- *   - If jongseong is compound batchim: returns [{ choseong, jungseong }, { choseong: first }, { choseong: second }]
- *   - If jongseong is simple: returns [{ choseong, jungseong }]
- * - Choseong + jungseong → [{ choseong }]
- * - Choseong only → []
- * - Empty → []
+ * - Empty `{}` → `[]`
+ * - Single jamo (choseong-only, jungseong-only, simple jongseong-only) → `[itself]`
+ * - Compound jongseong-only (e.g. `{ jongseong: "ㄳ" }`) → `[{ choseong: first }, { choseong: second }]`
+ * - Choseong + jungseong → `[{ choseong }]`
+ * - Full syllable, simple jongseong → `[{ choseong, jungseong }, { choseong: jongseong }]`
+ * - Full syllable, compound jongseong → `[{ choseong, jungseong }, { jongseong }]`
+ *   (compound batchim stays intact; caller can decompose it further in a second step)
  *
  * @param char - The Character to decompose
- * @returns Array of simpler Characters (may be empty)
+ * @returns Array of simpler Characters (empty only for the empty Character)
  */
 export function decompose(char: Character): Character[] {
   const { choseong, jungseong, jongseong } = char;
 
-  // Nothing to decompose — no jungseong means either empty or bare consonant
-  if (jungseong === undefined) return [];
+  // Empty — nothing to decompose
+  if (choseong === undefined && jungseong === undefined && jongseong === undefined) {
+    return [];
+  }
 
-  // Choseong + jungseong (+ optional jongseong)
-  if (choseong !== undefined) {
-    if (jongseong !== undefined) {
-      // Check if jongseong is a compound batchim (not DOUBLE_CONSONANT — ㄲ/ㅆ stay intact)
-      const rule = COMBINATION_RULES.find(
-        (r) => r.kind === "COMPOUND_BATCHIM" && r.output === jongseong,
-      );
-      if (rule !== undefined) {
-        const [first, second] = rule.inputs;
-        // first and second are consonants (ConsonantJamo) — cast to ChoseongJamo for Character
-        return [
-          { choseong, jungseong },
-          { choseong: first as ChoseongJamo },
-          { choseong: second as ChoseongJamo },
-        ];
-      }
-      // Simple jongseong — return it as a standalone choseong so no tile is lost.
-      // Basic consonants and ㄲ/ㅆ (the only non-compound JongseongJamo) are all valid ChoseongJamo.
-      return [{ choseong, jungseong }, { choseong: jongseong as ChoseongJamo }];
+  // Jongseong-only: compound batchim splits into its two consonants; simple returns as-is
+  if (jongseong !== undefined && choseong === undefined && jungseong === undefined) {
+    const rule = COMBINATION_RULES.find(
+      (r) => r.kind === "COMPOUND_BATCHIM" && r.output === jongseong,
+    );
+    if (rule !== undefined) {
+      const [first, second] = rule.inputs;
+      return [{ choseong: first as ChoseongJamo }, { choseong: second as ChoseongJamo }];
     }
-    // No jongseong — remove jungseong
+    return [{ jongseong }];
+  }
+
+  // Choseong-only — return as-is (no loss)
+  if (choseong !== undefined && jungseong === undefined) {
     return [{ choseong }];
   }
 
-  // Jungseong-only — nothing to decompose
-  return [];
+  // Jungseong-only — return as-is (no loss)
+  if (jungseong !== undefined && choseong === undefined) {
+    return [{ jungseong }];
+  }
+
+  // Choseong + jungseong (no jongseong) — remove jungseong
+  // (choseong is defined here: all choseong-undefined paths returned above)
+  if (jongseong === undefined) {
+    return [{ choseong: choseong! }];
+  }
+
+  // Full syllable (choseong + jungseong + jongseong) — peel off jongseong
+  // (choseong and jungseong are both defined here: all other paths returned above)
+  const isCompound = COMBINATION_RULES.some(
+    (r) => r.kind === "COMPOUND_BATCHIM" && r.output === jongseong,
+  );
+  if (isCompound) {
+    // Return compound batchim intact — caller can decompose it further
+    return [{ choseong: choseong!, jungseong: jungseong! }, { jongseong }];
+  }
+  // Simple jongseong becomes a standalone choseong (all simple JongseongJamo are valid ChoseongJamo)
+  return [{ choseong: choseong!, jungseong: jungseong! }, { choseong: jongseong as ChoseongJamo }];
 }
