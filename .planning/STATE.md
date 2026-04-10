@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 Phase: 3
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-04-10 - Completed quick task 260410-qqb: Fix COMBINATION_MAP key type from string to [Jamo, Jamo] in composition.ts
+Last activity: 2026-04-10 - Completed quick task 260410-vin: Add missing combination rules for ㅙ (ㅘ+ㅣ) and ㅞ (ㅝ+ㅣ), choose canonical decompose form, add test cases in character.ts
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -101,6 +101,7 @@ None yet.
 | 260409-ktw | PR review batch 1: colocate rotation/combination data with owning modules, remove getRotationOptions, tighten getNextRotation type, table-drive test suites | 2026-04-09 | 30c8d95 | Complete | [260409-ktw-pr-review-structural-colocation-refactor](./quick/260409-ktw-pr-review-structural-colocation-refactor/) |
 | 260409-vca | Address PR review comments on phase-02 jamo-core | 2026-04-09 | 2078567 |  | [260409-vca-address-pr-review-comments-on-phase-02-j](./quick/260409-vca-address-pr-review-comments-on-phase-02-j/) |
 | 260410-qqb | Fix COMBINATION_MAP key type from string to [Jamo, Jamo] in composition.ts | 2026-04-10 | b07f03a |  | [260410-qqb-fix-combination-map-key-type-from-string](./quick/260410-qqb-fix-combination-map-key-type-from-string/) |
+| 260410-vin | Add missing combination rules for ㅙ (ㅘ+ㅣ) and ㅞ (ㅝ+ㅣ), choose canonical decompose form, add test cases in character.ts | 2026-04-10 | e77bb8d | Verified | [260410-vin-add-missing-combination-rules-for-and-ch](./quick/260410-vin-add-missing-combination-rules-for-and-ch/) |
 
 ## Session Continuity
 
