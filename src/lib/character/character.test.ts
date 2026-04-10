@@ -152,6 +152,57 @@ describe("compose", () => {
       compose({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" }, { jungseong: "ㅏ" }),
     ).toBeNull();
   });
+
+  // Choseong-only → jongseong-only (compound batchim)
+  it.each([
+    ["ㄱ", "ㅅ", "ㄳ"],
+    ["ㄴ", "ㅈ", "ㄵ"],
+    ["ㄴ", "ㅎ", "ㄶ"],
+    ["ㄹ", "ㄱ", "ㄺ"],
+    ["ㄹ", "ㅁ", "ㄻ"],
+    ["ㄹ", "ㅂ", "ㄼ"],
+    ["ㄹ", "ㅅ", "ㄽ"],
+    ["ㄹ", "ㅌ", "ㄾ"],
+    ["ㄹ", "ㅍ", "ㄿ"],
+    ["ㄹ", "ㅎ", "ㅀ"],
+    ["ㅂ", "ㅅ", "ㅄ"],
+  ] as [ChoseongJamo, ChoseongJamo, JongseongJamo][])(
+    "choseong+choseong compound batchim (%s+%s → jongseong-only %s)",
+    (a, b, expected) => {
+      expect(compose({ choseong: a }, { choseong: b })).toEqual({ jongseong: expected });
+    },
+  );
+
+  // Empty target accepts jongseong
+  it("empty + jongseong → { jongseong }", () => {
+    expect(compose({}, { jongseong: "ㄳ" })).toEqual({ jongseong: "ㄳ" });
+  });
+
+  it("empty + simple jongseong → { jongseong }", () => {
+    expect(compose({}, { jongseong: "ㄱ" })).toEqual({ jongseong: "ㄱ" });
+  });
+
+  // Choseong + jungseong target accepts incoming jongseong
+  it("choseong+jungseong + jongseong → full syllable", () => {
+    expect(compose({ choseong: "ㄱ", jungseong: "ㅏ" }, { jongseong: "ㄳ" })).toEqual({
+      choseong: "ㄱ",
+      jungseong: "ㅏ",
+      jongseong: "ㄳ",
+    });
+  });
+
+  // Jongseong-only target
+  it("jongseong-only + choseong (ㄱ+ㄱ → ㄲ choseong) → { choseong }", () => {
+    expect(compose({ jongseong: "ㄱ" }, { choseong: "ㄱ" })).toEqual({ choseong: "ㄲ" });
+  });
+
+  it("jongseong-only + choseong (no double consonant: ㄱ+ㄴ) → null", () => {
+    expect(compose({ jongseong: "ㄱ" }, { choseong: "ㄴ" })).toBeNull();
+  });
+
+  it("jongseong-only + jungseong → null", () => {
+    expect(compose({ jongseong: "ㄱ" }, { jungseong: "ㅏ" })).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -167,6 +218,8 @@ describe("resolveCharacter", () => {
     [{ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" }, "한"],
     [{ choseong: "ㅎ", jungseong: "ㅞ", jongseong: "ㄳ" }, "훿"],
     [{ choseong: "ㄲ", jungseong: "ㅐ", jongseong: "ㄳ" }, "깫"], // double consonant + complex vowel + compound batchim
+    [{ jongseong: "ㄳ" }, "ㄳ"], // jongseong-only renders as bare consonant
+    [{ jongseong: "ㄱ" }, "ㄱ"], // simple jongseong-only renders as bare consonant
   ] as [Character, string | null][])("resolveCharacter(%j) → %s", (char, expected) => {
     expect(resolveCharacter(char)).toBe(expected);
   });

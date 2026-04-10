@@ -10,7 +10,7 @@
 
 import { composeJamo, composeSyllable, COMBINATION_RULES } from "../jamo/composition";
 import type { ConsonantJamo, VowelJamo, Jamo, ChoseongJamo, JongseongJamo } from "../jamo/jamo";
-import { JONGSEONG_INDEX } from "../jamo/jamo";
+import { CHOSEONG_INDEX, JONGSEONG_INDEX } from "../jamo/jamo";
 
 export type { ConsonantJamo, VowelJamo, Jamo };
 
@@ -46,37 +46,31 @@ export type Character = {
  * The incoming Character must have exactly one slot set (choseong or jungseong).
  * Returns the new Character state, or null if the combination is invalid.
  *
- * @param a - Target Character (the slot being filled)
- * @param b - Incoming Character (always single-slot: one of choseong or jungseong)
+ * @param target - Target Character (the slot being filled)
+ * @param incoming - Incoming Character (always single-slot: one of choseong or jungseong)
  * @returns Updated Character, or null if the combination is not permitted
  */
-export function compose(a: Character, b: Character): Character | null {
-  const aCho = a.choseong;
-  const aJung = a.jungseong;
-  const aJong = a.jongseong;
-
-  const bCho = b.choseong;
-  const bJung = b.jungseong;
-
+export function compose(target: Character, incoming: Character): Character | null {
   // -------------------------------------------------------------------------
   // Empty target
   // -------------------------------------------------------------------------
-  if (aCho === undefined && aJung === undefined && aJong === undefined) {
-    if (bCho !== undefined) return { choseong: bCho };
-    if (bJung !== undefined) return { jungseong: bJung };
+  if (target.choseong === undefined && target.jungseong === undefined && target.jongseong === undefined) {
+    if (incoming.choseong !== undefined) return { choseong: incoming.choseong };
+    if (incoming.jungseong !== undefined) return { jungseong: incoming.jungseong };
+    if (incoming.jongseong !== undefined) return { jongseong: incoming.jongseong };
     return null;
   }
 
   // -------------------------------------------------------------------------
   // Full target (choseong + jungseong + jongseong)
   // -------------------------------------------------------------------------
-  if (aCho !== undefined && aJung !== undefined && aJong !== undefined) {
-    if (bCho !== undefined) {
+  if (target.choseong !== undefined && target.jungseong !== undefined && target.jongseong !== undefined) {
+    if (incoming.choseong !== undefined) {
       // Attempt jongseong upgrade via any combination rule (compound batchim or double consonant).
       // Only accept the result if it is a valid jongseong (ㄸ/ㅃ/ㅉ are not).
-      const combined = composeJamo(aJong, bCho);
+      const combined = composeJamo(target.jongseong, incoming.choseong);
       if (combined === null || !(combined in JONGSEONG_INDEX)) return null;
-      return { choseong: aCho, jungseong: aJung, jongseong: combined as JongseongJamo };
+      return { choseong: target.choseong, jungseong: target.jungseong, jongseong: combined as JongseongJamo };
     }
     // Full + jungseong or anything else → invalid
     return null;
@@ -85,20 +79,23 @@ export function compose(a: Character, b: Character): Character | null {
   // -------------------------------------------------------------------------
   // Choseong + jungseong target (no jongseong yet)
   // -------------------------------------------------------------------------
-  if (aCho !== undefined && aJung !== undefined) {
-    if (bJung !== undefined) {
+  if (target.choseong !== undefined && target.jungseong !== undefined) {
+    if (incoming.jungseong !== undefined) {
       // Try to combine the two vowels
-      const combined = composeJamo(aJung, bJung);
+      const combined = composeJamo(target.jungseong, incoming.jungseong);
       if (combined === null) return null;
-      // combined is a complex vowel (VowelJamo)
-      return { choseong: aCho, jungseong: combined as VowelJamo };
+      return { choseong: target.choseong, jungseong: combined as VowelJamo };
     }
-    if (bCho !== undefined) {
+    if (incoming.jongseong !== undefined) {
+      // Incoming jongseong fills the final consonant slot directly
+      return { choseong: target.choseong, jungseong: target.jungseong, jongseong: incoming.jongseong };
+    }
+    if (incoming.choseong !== undefined) {
       // Incoming consonant becomes jongseong — ChoseongJamo is a subset of JongseongJamo
       // (all basic consonants and ㄲ, ㄶ are valid jongseong, but ㄸ/ㅃ/ㅉ are not)
-      // bCho is ChoseongJamo; cast to JongseongJamo is valid for basic consonants,
+      // incoming.choseong is ChoseongJamo; cast to JongseongJamo is valid for basic consonants,
       // but ㄸ/ㅃ/ㅉ cannot be jongseong. The game's combination rules prevent this.
-      return { choseong: aCho, jungseong: aJung, jongseong: bCho as JongseongJamo };
+      return { choseong: target.choseong, jungseong: target.jungseong, jongseong: incoming.choseong as JongseongJamo };
     }
     return null;
   }
@@ -106,17 +103,34 @@ export function compose(a: Character, b: Character): Character | null {
   // -------------------------------------------------------------------------
   // Choseong-only target
   // -------------------------------------------------------------------------
-  if (aCho !== undefined && aJung === undefined) {
-    if (bCho !== undefined) {
-      // Try to combine two consonants into a double consonant
-      const combined = composeJamo(aCho, bCho);
+  if (target.choseong !== undefined && target.jungseong === undefined) {
+    if (incoming.choseong !== undefined) {
+      // Try to combine two consonants. If the result is a valid choseong (double consonant),
+      // keep it as choseong. If it is only valid as jongseong (compound batchim), return
+      // jongseong-only state.
+      const combined = composeJamo(target.choseong, incoming.choseong);
       if (combined === null) return null;
-      // combined is a double consonant (ChoseongJamo)
-      return { choseong: combined as ChoseongJamo };
+      if (combined in CHOSEONG_INDEX) return { choseong: combined as ChoseongJamo };
+      if (combined in JONGSEONG_INDEX) return { jongseong: combined as JongseongJamo };
+      return null;
     }
-    if (bJung !== undefined) {
+    if (incoming.jungseong !== undefined) {
       // Consonant + vowel → open syllable
-      return { choseong: aCho, jungseong: bJung };
+      return { choseong: target.choseong, jungseong: incoming.jungseong };
+    }
+    return null;
+  }
+
+  // -------------------------------------------------------------------------
+  // Jongseong-only target
+  // -------------------------------------------------------------------------
+  if (target.jongseong !== undefined && target.choseong === undefined && target.jungseong === undefined) {
+    if (incoming.choseong !== undefined) {
+      // Try to combine jongseong + incoming consonant into a valid choseong (double consonant).
+      const combined = composeJamo(target.jongseong, incoming.choseong);
+      if (combined !== null && combined in CHOSEONG_INDEX) {
+        return { choseong: combined as ChoseongJamo };
+      }
     }
     return null;
   }
@@ -124,17 +138,16 @@ export function compose(a: Character, b: Character): Character | null {
   // -------------------------------------------------------------------------
   // Jungseong-only target
   // -------------------------------------------------------------------------
-  if (aJung !== undefined && aCho === undefined) {
-    if (bJung !== undefined) {
+  if (target.jungseong !== undefined && target.choseong === undefined) {
+    if (incoming.jungseong !== undefined) {
       // Try to combine two vowels into a complex vowel
-      const combined = composeJamo(aJung, bJung);
+      const combined = composeJamo(target.jungseong, incoming.jungseong);
       if (combined === null) return null;
-      // combined is a complex vowel (VowelJamo)
       return { jungseong: combined as VowelJamo };
     }
-    if (bCho !== undefined) {
+    if (incoming.choseong !== undefined) {
       // Incoming consonant becomes choseong (consonant-becomes-choseong rule)
-      return { choseong: bCho, jungseong: aJung };
+      return { choseong: incoming.choseong, jungseong: target.jungseong };
     }
     return null;
   }
@@ -163,7 +176,11 @@ export function compose(a: Character, b: Character): Character | null {
 export function resolveCharacter(character: Character): string | null {
   const { choseong, jungseong, jongseong } = character;
 
-  if (choseong === undefined && jungseong === undefined) return null;
+  if (choseong === undefined && jungseong === undefined) {
+    // Jongseong-only state renders as the bare consonant character (e.g. compound batchim under construction)
+    if (jongseong !== undefined) return jongseong;
+    return null;
+  }
 
   // { jungseong, jongseong } with no choseong is unrenderable — jongseong requires a full syllable
   if (jungseong !== undefined && choseong === undefined && jongseong !== undefined) return null;
