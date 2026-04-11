@@ -1,10 +1,3 @@
-/**
- * @file character.test.ts
- *
- * Tests for compose(), resolveCharacter(), isComplete(), decompose() —
- * the character assembly bridge.
- */
-
 import { describe, expect, it } from "vitest";
 import type { Character } from "./character";
 import { compose, decompose, isComplete, resolveCharacter } from "./character";
