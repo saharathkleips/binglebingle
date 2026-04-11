@@ -8,11 +8,61 @@ import { compose, decompose, isComplete, resolveCharacter } from "./character";
 
 describe("compose", () => {
   it.each([
-    // --- Empty target ---
+    // --- Empty target: absorbs incoming as-is, including multi-slot ---
     ["empty + choseong", {}, { choseong: "ㄱ" }, { choseong: "ㄱ" }],
     ["empty + jungseong", {}, { jungseong: "ㅏ" }, { jungseong: "ㅏ" }],
     ["empty + simple jongseong", {}, { jongseong: "ㄱ" }, { jongseong: "ㄱ" }],
     ["empty + compound jongseong", {}, { jongseong: "ㄳ" }, { jongseong: "ㄳ" }],
+    [
+      "empty + open syllable 가 (cho+jung)",
+      {},
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+    ],
+    [
+      "empty + full syllable 한 (cho+jung+jong)",
+      {},
+      { choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" },
+      { choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" },
+    ],
+
+    // --- Multi-slot incoming + non-empty target → always null (no jamo dropping) ---
+    [
+      "cho(ㄱ) + open syllable 가 (cho+jung) → null",
+      { choseong: "ㄱ" },
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+      null,
+    ],
+    [
+      "open syllable 가 + open syllable 해 (cho+jung) → null",
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+      { choseong: "ㅎ", jungseong: "ㅐ" },
+      null,
+    ],
+    [
+      "open syllable 고 + open syllable 와 — would yield valid vowel combo but incoming is multi-slot → null",
+      { choseong: "ㄱ", jungseong: "ㅗ" },
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+      null,
+    ],
+    [
+      "open syllable 가 + full syllable 한 (cho+jung+jong) → null",
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+      { choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" },
+      null,
+    ],
+    [
+      "full syllable 간 + open syllable 가 (cho+jung) → null",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" },
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+      null,
+    ],
+    [
+      "full syllable 간 + full syllable 한 (cho+jung+jong) → null",
+      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" },
+      { choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" },
+      null,
+    ],
 
     // --- Choseong-only: double consonant → choseong ---
     ["cho(ㄱ)+cho(ㄱ) → ㄲ", { choseong: "ㄱ" }, { choseong: "ㄱ" }, { choseong: "ㄲ" }],

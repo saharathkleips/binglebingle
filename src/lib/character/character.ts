@@ -48,9 +48,10 @@ export type Character = {
  * Adds an incoming Character to a target Character following Korean syllable
  * construction rules.
  *
- * At least one of target/incoming must be single-slot; two multi-slot Characters
- * cannot be combined and will return null. An empty (0-slot) Character on either
- * side is a no-op — the other side is returned as-is (via the empty-target branch).
+ * When target is empty, incoming is returned as-is (no-op absorb).
+ * When target is non-empty, incoming must be single-slot — a multi-slot incoming
+ * would require silently dropping jamo, which is never permitted; null is returned
+ * instead. Two multi-slot Characters therefore always return null.
  * Returns the new Character state, or null if the combination is invalid.
  *
  * @param target - Target Character (the slot being filled)
@@ -68,6 +69,18 @@ export function compose(target: Character, incoming: Character): Character | nul
   ) {
     return { ...incoming };
   }
+
+  // -------------------------------------------------------------------------
+  // Multi-slot incoming guard (non-empty target only)
+  //
+  // If incoming has more than one slot filled, merging would require dropping
+  // jamo. That is never valid — return null unconditionally.
+  // -------------------------------------------------------------------------
+  const incomingSlots =
+    (incoming.choseong !== undefined ? 1 : 0) +
+    (incoming.jungseong !== undefined ? 1 : 0) +
+    (incoming.jongseong !== undefined ? 1 : 0);
+  if (incomingSlots > 1) return null;
 
   // -------------------------------------------------------------------------
   // Full target (choseong + jungseong + jongseong)
