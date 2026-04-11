@@ -323,8 +323,46 @@ describe("decompose", () => {
       [{ choseong: "ㅂ" }, { choseong: "ㅅ" }],
     ],
 
-    // --- Choseong + jungseong: remove jungseong ---
-    ["cho+jung → [cho]", { choseong: "ㄱ", jungseong: "ㅏ" }, [{ choseong: "ㄱ" }]],
+    // --- Choseong-only double consonants: split into two consonants ---
+    [
+      "double consonant ㄲ → [cho ㄱ, cho ㄱ]",
+      { choseong: "ㄲ" },
+      [{ choseong: "ㄱ" }, { choseong: "ㄱ" }],
+    ],
+    [
+      "double consonant ㅆ → [cho ㅅ, cho ㅅ]",
+      { choseong: "ㅆ" },
+      [{ choseong: "ㅅ" }, { choseong: "ㅅ" }],
+    ],
+
+    // --- Jungseong-only complex vowels: split (canonical decompose path) ---
+    [
+      "complex vowel ㅐ (2-jamo) → [jung ㅏ, jung ㅣ]",
+      { jungseong: "ㅐ" },
+      [{ jungseong: "ㅏ" }, { jungseong: "ㅣ" }],
+    ],
+    [
+      "complex vowel ㅘ (2-jamo) → [jung ㅗ, jung ㅏ]",
+      { jungseong: "ㅘ" },
+      [{ jungseong: "ㅗ" }, { jungseong: "ㅏ" }],
+    ],
+    [
+      "complex vowel ㅙ (3-jamo, canonical ㅗ+ㅐ) → [jung ㅗ, jung ㅐ]",
+      { jungseong: "ㅙ" },
+      [{ jungseong: "ㅗ" }, { jungseong: "ㅐ" }],
+    ],
+
+    // --- Choseong + jungseong: peel off jungseong ---
+    [
+      "cho+jung → [cho, jung]",
+      { choseong: "ㄱ", jungseong: "ㅏ" },
+      [{ choseong: "ㄱ" }, { jungseong: "ㅏ" }],
+    ],
+    [
+      "cho+jung(ㅘ) → [cho, jung ㅘ] (complex vowel preserved)",
+      { choseong: "ㄱ", jungseong: "ㅘ" },
+      [{ choseong: "ㄱ" }, { jungseong: "ㅘ" }],
+    ],
 
     // --- Full syllable, simple jongseong: peel off as choseong ---
     [
@@ -356,5 +394,106 @@ describe("decompose", () => {
     ],
   ] as [string, Character, Character[]][])("%s", (_, char, expected) => {
     expect(decompose(char)).toEqual(expected);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Full jamo workflow: step-by-step decompose → recompose
+// ---------------------------------------------------------------------------
+
+describe("full jamo workflow: 호 (2 jamo: ㅎ ㅗ)", () => {
+  it("decomposes cho+jung → [cho, jung]", () => {
+    expect(decompose({ choseong: "ㅎ", jungseong: "ㅗ" })).toEqual([
+      { choseong: "ㅎ" },
+      { jungseong: "ㅗ" },
+    ]);
+  });
+  it("recomposes ㅎ → ㅎ+ㅗ → 호", () => {
+    expect(compose({}, { choseong: "ㅎ" })).toEqual({ choseong: "ㅎ" });
+    expect(compose({ choseong: "ㅎ" }, { jungseong: "ㅗ" })).toEqual({
+      choseong: "ㅎ",
+      jungseong: "ㅗ",
+    });
+    expect(resolveCharacter({ choseong: "ㅎ", jungseong: "ㅗ" })).toBe("호");
+  });
+});
+
+describe("full jamo workflow: 화 (3 jamo: ㅎ ㅗ ㅏ)", () => {
+  it("decomposes cho+jung(ㅘ) → [cho, jung(ㅘ)], then jung(ㅘ) → [ㅗ, ㅏ]", () => {
+    expect(decompose({ choseong: "ㅎ", jungseong: "ㅘ" })).toEqual([
+      { choseong: "ㅎ" },
+      { jungseong: "ㅘ" },
+    ]);
+    expect(decompose({ jungseong: "ㅘ" })).toEqual([{ jungseong: "ㅗ" }, { jungseong: "ㅏ" }]);
+  });
+  it("recomposes ㅎ → ㅎ+ㅗ → ㅎ+ㅘ → 화", () => {
+    expect(compose({ choseong: "ㅎ" }, { jungseong: "ㅗ" })).toEqual({
+      choseong: "ㅎ",
+      jungseong: "ㅗ",
+    });
+    expect(compose({ choseong: "ㅎ", jungseong: "ㅗ" }, { jungseong: "ㅏ" })).toEqual({
+      choseong: "ㅎ",
+      jungseong: "ㅘ",
+    });
+    expect(resolveCharacter({ choseong: "ㅎ", jungseong: "ㅘ" })).toBe("화");
+  });
+});
+
+describe("full jamo workflow: 홰 (4 jamo: ㅎ ㅗ ㅏ ㅣ)", () => {
+  it("decomposes cho+jung(ㅙ) → [cho, jung(ㅙ)], then ㅙ → [ㅗ, ㅐ] (canonical), then ㅐ → [ㅏ, ㅣ]", () => {
+    expect(decompose({ choseong: "ㅎ", jungseong: "ㅙ" })).toEqual([
+      { choseong: "ㅎ" },
+      { jungseong: "ㅙ" },
+    ]);
+    expect(decompose({ jungseong: "ㅙ" })).toEqual([{ jungseong: "ㅗ" }, { jungseong: "ㅐ" }]);
+    expect(decompose({ jungseong: "ㅐ" })).toEqual([{ jungseong: "ㅏ" }, { jungseong: "ㅣ" }]);
+  });
+  it("recomposes ㅎ → ㅎ+ㅗ → ㅎ+ㅘ → ㅎ+ㅙ → 홰", () => {
+    expect(compose({ choseong: "ㅎ" }, { jungseong: "ㅗ" })).toEqual({
+      choseong: "ㅎ",
+      jungseong: "ㅗ",
+    });
+    expect(compose({ choseong: "ㅎ", jungseong: "ㅗ" }, { jungseong: "ㅏ" })).toEqual({
+      choseong: "ㅎ",
+      jungseong: "ㅘ",
+    });
+    expect(compose({ choseong: "ㅎ", jungseong: "ㅘ" }, { jungseong: "ㅣ" })).toEqual({
+      choseong: "ㅎ",
+      jungseong: "ㅙ",
+    });
+    expect(resolveCharacter({ choseong: "ㅎ", jungseong: "ㅙ" })).toBe("홰");
+  });
+});
+
+describe("full jamo workflow: 홱 (5 jamo: ㅎ ㅗ ㅏ ㅣ ㄱ)", () => {
+  it("decomposes full(ㅙ,ㄱ) → [cho+jung(ㅙ), cho(ㄱ)], vowel steps same as 홰", () => {
+    expect(decompose({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" })).toEqual([
+      { choseong: "ㅎ", jungseong: "ㅙ" },
+      { choseong: "ㄱ" },
+    ]);
+  });
+  it("recomposes ㅎ+ㅗ+ㅏ+ㅣ → ㅎ+ㅙ, then +ㄱ → 홱", () => {
+    expect(compose({ choseong: "ㅎ", jungseong: "ㅙ" }, { choseong: "ㄱ" })).toEqual({
+      choseong: "ㅎ",
+      jungseong: "ㅙ",
+      jongseong: "ㄱ",
+    });
+    expect(resolveCharacter({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" })).toBe("홱");
+  });
+});
+
+describe("full jamo workflow: 홳 (6 jamo: ㅎ ㅗ ㅏ ㅣ ㄱ ㅅ)", () => {
+  it("decomposes full(ㅙ,ㄳ) → [cho+jung(ㅙ), jong(ㄳ)], then ㄳ → [cho ㄱ, cho ㅅ]", () => {
+    expect(decompose({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄳ" })).toEqual([
+      { choseong: "ㅎ", jungseong: "ㅙ" },
+      { jongseong: "ㄳ" },
+    ]);
+    expect(decompose({ jongseong: "ㄳ" })).toEqual([{ choseong: "ㄱ" }, { choseong: "ㅅ" }]);
+  });
+  it("recomposes ㅎ+ㅙ+ㄱ → 홱, then +ㅅ → jong ㄳ → 홳", () => {
+    expect(
+      compose({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" }, { choseong: "ㅅ" }),
+    ).toEqual({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄳ" });
+    expect(resolveCharacter({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄳ" })).toBe("홳");
   });
 });

@@ -8,7 +8,12 @@
  * Unicode note: syllable blocks range U+AC00–U+D7A3.
  */
 
-import { composeJamo, composeSyllable, COMBINATION_RULES } from "../jamo/composition";
+import {
+  composeJamo,
+  composeSyllable,
+  decomposeJamo,
+  COMBINATION_RULES,
+} from "../jamo/composition";
 import type { ConsonantJamo, VowelJamo, Jamo, ChoseongJamo, JongseongJamo } from "../jamo/jamo";
 import { CHOSEONG_INDEX, JONGSEONG_INDEX } from "../jamo/jamo";
 
@@ -250,9 +255,11 @@ export function isComplete(character: Character): boolean {
  * At most two Characters are returned per call.
  *
  * - Empty `{}` → `[]`
- * - Single jamo (choseong-only, jungseong-only, simple jongseong-only) → `[itself]`
+ * - Simple single jamo (simple consonant or simple vowel) → `[itself]`
+ * - Double consonant choseong-only (e.g. `{ choseong: "ㄲ" }`) → `[{ choseong: first }, { choseong: second }]`
+ * - Complex vowel jungseong-only (e.g. `{ jungseong: "ㅘ" }`) → `[{ jungseong: first }, { jungseong: second }]` (canonical decompose path)
  * - Compound jongseong-only (e.g. `{ jongseong: "ㄳ" }`) → `[{ choseong: first }, { choseong: second }]`
- * - Choseong + jungseong → `[{ choseong }]`
+ * - Choseong + jungseong → `[{ choseong }, { jungseong }]`
  * - Full syllable, simple jongseong → `[{ choseong, jungseong }, { choseong: jongseong }]`
  * - Full syllable, compound jongseong → `[{ choseong, jungseong }, { jongseong }]`
  *   (compound batchim stays intact; caller can decompose it further in a second step)
@@ -280,20 +287,28 @@ export function decompose(char: Character): Character[] {
     return [{ jongseong }];
   }
 
-  // Choseong-only — return as-is (no loss)
+  // Choseong-only — split double consonants; return simple as-is
   if (choseong !== undefined && jungseong === undefined) {
+    const parts = decomposeJamo(choseong);
+    if (parts !== null) {
+      return [{ choseong: parts[0] as ChoseongJamo }, { choseong: parts[1] as ChoseongJamo }];
+    }
     return [{ choseong }];
   }
 
-  // Jungseong-only — return as-is (no loss)
+  // Jungseong-only — split complex vowels; return simple as-is
   if (jungseong !== undefined && choseong === undefined) {
+    const parts = decomposeJamo(jungseong);
+    if (parts !== null) {
+      return [{ jungseong: parts[0] as VowelJamo }, { jungseong: parts[1] as VowelJamo }];
+    }
     return [{ jungseong }];
   }
 
-  // Choseong + jungseong (no jongseong) — remove jungseong
+  // Choseong + jungseong (no jongseong) — peel off jungseong, keep both jamo
   // (choseong is defined here: all choseong-undefined paths returned above)
   if (jongseong === undefined) {
-    return [{ choseong: choseong! }];
+    return [{ choseong: choseong! }, { jungseong: jungseong! }];
   }
 
   // Full syllable (choseong + jungseong + jongseong) — peel off jongseong
