@@ -66,10 +66,7 @@ export function compose(target: Character, incoming: Character): Character | nul
     target.jungseong === undefined &&
     target.jongseong === undefined
   ) {
-    if (incoming.choseong !== undefined) return { choseong: incoming.choseong };
-    if (incoming.jungseong !== undefined) return { jungseong: incoming.jungseong };
-    if (incoming.jongseong !== undefined) return { jongseong: incoming.jongseong };
-    return null;
+    return { ...incoming };
   }
 
   // -------------------------------------------------------------------------
