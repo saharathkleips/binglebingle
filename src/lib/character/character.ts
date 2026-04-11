@@ -259,10 +259,12 @@ export function isComplete(character: Character): boolean {
  * - Double consonant choseong-only (e.g. `{ choseong: "ㄲ" }`) → `[{ choseong: first }, { choseong: second }]`
  * - Complex vowel jungseong-only (e.g. `{ jungseong: "ㅘ" }`) → `[{ jungseong: first }, { jungseong: second }]` (canonical decompose path)
  * - Compound jongseong-only (e.g. `{ jongseong: "ㄳ" }`) → `[{ choseong: first }, { choseong: second }]`
- * - Choseong + jungseong → `[{ choseong }, { jungseong }]`
+ * - Choseong + complex jungseong → `[{ choseong, jungseong: base }, { jungseong: last }]`
+ *   (choseong stays bound to the base vowel; last-added vowel part peeled off)
+ * - Choseong + simple jungseong → `[{ choseong }, { jungseong }]`
  * - Full syllable, simple jongseong → `[{ choseong, jungseong }, { choseong: jongseong }]`
- * - Full syllable, compound jongseong → `[{ choseong, jungseong }, { jongseong }]`
- *   (compound batchim stays intact; caller can decompose it further in a second step)
+ * - Full syllable, compound jongseong → `[{ choseong, jungseong, jongseong: first }, { choseong: second }]`
+ *   (compound batchim splits: first consonant stays as jongseong, second becomes standalone choseong)
  *
  * @param char - The Character to decompose
  * @returns Array of simpler Characters (empty only for the empty Character)
@@ -305,20 +307,32 @@ export function decompose(char: Character): Character[] {
     return [{ jungseong }];
   }
 
-  // Choseong + jungseong (no jongseong) — peel off jungseong, keep both jamo
+  // Choseong + jungseong (no jongseong) — peel off the last-added vowel part.
+  // If jungseong is a complex vowel, keep choseong bound to the base vowel.
   // (choseong is defined here: all choseong-undefined paths returned above)
   if (jongseong === undefined) {
+    const parts = decomposeJamo(jungseong!);
+    if (parts !== null) {
+      return [
+        { choseong: choseong!, jungseong: parts[0] as VowelJamo },
+        { jungseong: parts[1] as VowelJamo },
+      ];
+    }
     return [{ choseong: choseong! }, { jungseong: jungseong! }];
   }
 
-  // Full syllable (choseong + jungseong + jongseong) — peel off jongseong
+  // Full syllable (choseong + jungseong + jongseong) — peel off the last-added consonant.
   // (choseong and jungseong are both defined here: all other paths returned above)
-  const isCompound = COMBINATION_RULES.some(
+  const compoundRule = COMBINATION_RULES.find(
     (r) => r.kind === "COMPOUND_BATCHIM" && r.output === jongseong,
   );
-  if (isCompound) {
-    // Return compound batchim intact — caller can decompose it further
-    return [{ choseong: choseong!, jungseong: jungseong! }, { jongseong }];
+  if (compoundRule !== undefined) {
+    // Split compound batchim: first consonant stays as jongseong, second becomes standalone choseong
+    const [first, second] = compoundRule.inputs;
+    return [
+      { choseong: choseong!, jungseong: jungseong!, jongseong: first as JongseongJamo },
+      { choseong: second as ChoseongJamo },
+    ];
   }
   // Simple jongseong becomes a standalone choseong (all simple JongseongJamo are valid ChoseongJamo)
   return [{ choseong: choseong!, jungseong: jungseong! }, { choseong: jongseong as ChoseongJamo }];
