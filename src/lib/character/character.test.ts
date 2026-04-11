@@ -50,13 +50,13 @@ describe("compose", () => {
     ["jung(ㅕ)+jung(ㅣ) → ㅖ", { jungseong: "ㅕ" }, { jungseong: "ㅣ" }, { jungseong: "ㅖ" }],
     ["jung(ㅗ)+jung(ㅏ) → ㅘ", { jungseong: "ㅗ" }, { jungseong: "ㅏ" }, { jungseong: "ㅘ" }],
     [
-      "jung(ㅗ)+jung(ㅐ) → ㅙ (canonical)",
+      "jung(ㅗ)+jung(ㅐ) → ㅙ (alternate)",
       { jungseong: "ㅗ" },
       { jungseong: "ㅐ" },
       { jungseong: "ㅙ" },
     ],
     [
-      "jung(ㅘ)+jung(ㅣ) → ㅙ (alternate path)",
+      "jung(ㅘ)+jung(ㅣ) → ㅙ (canonical)",
       { jungseong: "ㅘ" },
       { jungseong: "ㅣ" },
       { jungseong: "ㅙ" },
@@ -64,13 +64,13 @@ describe("compose", () => {
     ["jung(ㅗ)+jung(ㅣ) → ㅚ", { jungseong: "ㅗ" }, { jungseong: "ㅣ" }, { jungseong: "ㅚ" }],
     ["jung(ㅜ)+jung(ㅓ) → ㅝ", { jungseong: "ㅜ" }, { jungseong: "ㅓ" }, { jungseong: "ㅝ" }],
     [
-      "jung(ㅜ)+jung(ㅔ) → ㅞ (canonical)",
+      "jung(ㅜ)+jung(ㅔ) → ㅞ (alternate)",
       { jungseong: "ㅜ" },
       { jungseong: "ㅔ" },
       { jungseong: "ㅞ" },
     ],
     [
-      "jung(ㅝ)+jung(ㅣ) → ㅞ (alternate path)",
+      "jung(ㅝ)+jung(ㅣ) → ㅞ (canonical)",
       { jungseong: "ㅝ" },
       { jungseong: "ㅣ" },
       { jungseong: "ㅞ" },

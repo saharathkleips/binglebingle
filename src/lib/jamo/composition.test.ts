@@ -25,12 +25,12 @@ describe("decomposeJamo — round-trip", () => {
 });
 
 describe("decomposeJamo — canonical paths for alternate-input vowels", () => {
-  it("decomposeJamo('ㅙ') returns canonical ['ㅗ', 'ㅐ'], not alternate ['ㅘ', 'ㅣ']", () => {
-    expect(decomposeJamo("ㅙ")).toEqual(["ㅗ", "ㅐ"]);
+  it("decomposeJamo('ㅙ') returns canonical ['ㅘ', 'ㅣ'], not alternate ['ㅗ', 'ㅐ']", () => {
+    expect(decomposeJamo("ㅙ")).toEqual(["ㅘ", "ㅣ"]);
   });
 
-  it("decomposeJamo('ㅞ') returns canonical ['ㅜ', 'ㅔ'], not alternate ['ㅝ', 'ㅣ']", () => {
-    expect(decomposeJamo("ㅞ")).toEqual(["ㅜ", "ㅔ"]);
+  it("decomposeJamo('ㅞ') returns canonical ['ㅝ', 'ㅣ'], not alternate ['ㅜ', 'ㅔ']", () => {
+    expect(decomposeJamo("ㅞ")).toEqual(["ㅝ", "ㅣ"]);
   });
 });
 
