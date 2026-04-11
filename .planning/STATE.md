@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-05)
 Phase: 3
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-04-10 - Completed quick task 260410-vin: Add missing combination rules for ㅙ (ㅘ+ㅣ) and ㅞ (ㅝ+ㅣ), choose canonical decompose form, add test cases in character.ts
+Last activity: 2026-04-11 - Completed quick task 260411-kat: Update decompose() for right-to-left (last-added-first) semantics
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -102,9 +102,10 @@ None yet.
 | 260409-vca | Address PR review comments on phase-02 jamo-core | 2026-04-09 | 2078567 |  | [260409-vca-address-pr-review-comments-on-phase-02-j](./quick/260409-vca-address-pr-review-comments-on-phase-02-j/) |
 | 260410-qqb | Fix COMBINATION_MAP key type from string to [Jamo, Jamo] in composition.ts | 2026-04-10 | b07f03a |  | [260410-qqb-fix-combination-map-key-type-from-string](./quick/260410-qqb-fix-combination-map-key-type-from-string/) |
 | 260410-vin | Add missing combination rules for ㅙ (ㅘ+ㅣ) and ㅞ (ㅝ+ㅣ), choose canonical decompose form, add test cases in character.ts | 2026-04-10 | e77bb8d | Verified | [260410-vin-add-missing-combination-rules-for-and-ch](./quick/260410-vin-add-missing-combination-rules-for-and-ch/) |
+| 260411-kat | Update decompose() for right-to-left semantics — swap ㅙ/ㅞ canonical rules, drill into complex vowels on cho+jung path, split compound batchim on full syllable path | 2026-04-11 | d3ca375 | Complete | [260411-kat-decompose-right-to-left-semantics](./quick/260411-kat-decompose-right-to-left-semantics/) |
 
 ## Session Continuity
 
-Last session: 2026-04-09T20:20:00.000Z
-Stopped at: Completed 260409-obh (build fix), committed db4a006 — Phase 3 next
+Last session: 2026-04-11T14:43:00.000Z
+Stopped at: Completed quick task 260411-kat (decompose right-to-left semantics), committed d3ca375
 Resume file: None
