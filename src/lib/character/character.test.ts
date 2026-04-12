@@ -463,15 +463,35 @@ describe("compose", () => {
       null,
     ],
 
-    // --- Jongseong-only ---
+    // --- Jongseong-only + open syllable: jongseong slots into the syllable ---
     [
-      "jong(ㄱ)+cho(ㄱ) → cho ㄲ (double consonant)",
+      "jong(ㄻ) + open syllable 사 → 삶 (compound batchim becomes jongseong)",
+      character({ jongseong: "ㄻ" }),
+      character({ choseong: "ㅅ", jungseong: "ㅏ" }),
+      character({ choseong: "ㅅ", jungseong: "ㅏ", jongseong: "ㄻ" }),
+    ],
+    [
+      "jong(ㄱ) + open syllable 사 → 삭 (simple jongseong slots in)",
+      character({ jongseong: "ㄱ" }),
+      character({ choseong: "ㅅ", jungseong: "ㅏ" }),
+      character({ choseong: "ㅅ", jungseong: "ㅏ", jongseong: "ㄱ" }),
+    ],
+
+    // --- Jongseong-only + choseong: meaningful only for single-jamo JONGSEONG_ONLY ---
+    [
+      "jong(ㄱ)+cho(ㄱ) → cho ㄲ (double consonant, CHOSEONG_INDEX result)",
       character({ jongseong: "ㄱ" }),
       character({ choseong: "ㄱ" }),
       character({ choseong: "ㄲ" }),
     ],
     [
-      "jong(ㄱ)+cho(ㄴ) → null (no double consonant)",
+      "jong(ㄱ)+cho(ㅅ) → jong ㄳ (compound batchim, JONGSEONG_INDEX result)",
+      character({ jongseong: "ㄱ" }),
+      character({ choseong: "ㅅ" }),
+      character({ jongseong: "ㄳ" }),
+    ],
+    [
+      "jong(ㄱ)+cho(ㄴ) → null (no rule)",
       character({ jongseong: "ㄱ" }),
       character({ choseong: "ㄴ" }),
       null,
@@ -519,6 +539,19 @@ describe("resolveCharacter", () => {
 
 // ---------------------------------------------------------------------------
 // isComplete()
+// ---------------------------------------------------------------------------
+// character() factory
+// ---------------------------------------------------------------------------
+
+describe("character() factory", () => {
+  it("returns null for invalid jongseong (ㄸ not a valid final consonant)", () => {
+    expect(character({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄸ" as any })).toBeNull();
+  });
+  it("returns null for invalid jongseong (ㅃ not a valid final consonant)", () => {
+    expect(character({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㅃ" as any })).toBeNull();
+  });
+});
+
 // ---------------------------------------------------------------------------
 
 describe("isComplete", () => {

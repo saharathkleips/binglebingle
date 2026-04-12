@@ -57,25 +57,30 @@ export type Character =
 
 /**
  * Constructs a Character from slot values, deriving the kind automatically.
- * Throws for slot combinations that are structurally invalid (e.g. jungseong +
- * jongseong with no choseong).
+ * Returns null for structurally invalid combinations — jongseong must be a
+ * valid final consonant (ㄸ/ㅃ/ㅉ are not), and jungseong + jongseong without
+ * choseong is unrepresentable.
+ *
+ * The jongseong parameter accepts any ConsonantJamo so callers never need to
+ * cast — invalid consonants simply produce null.
  *
  * @param slots - Optional slot values; omit or pass nothing for EMPTY.
  */
 export function character(slots?: {
   choseong?: ChoseongJamo;
   jungseong?: VowelJamo;
-  jongseong?: JongseongJamo;
-}): Character {
+  jongseong?: ConsonantJamo;
+}): Character | null {
   const { choseong, jungseong, jongseong } = slots ?? {};
   if (!choseong && !jungseong && !jongseong) return { kind: "EMPTY" };
-  if (choseong && jungseong && jongseong)
-    return { kind: "FULL_SYLLABLE", choseong, jungseong, jongseong };
-  if (choseong && jungseong) return { kind: "OPEN_SYLLABLE", choseong, jungseong };
-  if (choseong) return { kind: "CHOSEONG_ONLY", choseong };
-  if (jungseong) return { kind: "JUNGSEONG_ONLY", jungseong };
-  if (jongseong) return { kind: "JONGSEONG_ONLY", jongseong };
-  throw new Error(`Invalid character slots: ${JSON.stringify(slots)}`);
+  if (jongseong !== undefined && !(jongseong in JONGSEONG_INDEX)) return null;
+  const jong = jongseong as JongseongJamo | undefined;
+  if (choseong && jungseong && jong)    return { kind: "FULL_SYLLABLE",  choseong, jungseong, jongseong: jong };
+  if (choseong && jungseong)            return { kind: "OPEN_SYLLABLE",  choseong, jungseong };
+  if (choseong)                         return { kind: "CHOSEONG_ONLY",  choseong };
+  if (jungseong)                        return { kind: "JUNGSEONG_ONLY", jungseong };
+  if (jong)                             return { kind: "JONGSEONG_ONLY", jongseong: jong };
+  return null; // e.g. jungseong + jongseong with no choseong
 }
 
 // ---------------------------------------------------------------------------
@@ -129,13 +134,8 @@ export function compose(target: Character, incoming: Character): Character | nul
         });
       }
       if (incoming.kind === "CHOSEONG_ONLY") {
-        // Incoming consonant fills the jongseong slot
-        // (ㄸ/ㅃ/ㅉ cannot be jongseong; the game's combination rules prevent this)
-        return character({
-          choseong: target.choseong,
-          jungseong: target.jungseong,
-          jongseong: incoming.choseong as JongseongJamo,
-        });
+        // Incoming consonant fills the jongseong slot; factory rejects ㄸ/ㅃ/ㅉ
+        return character({ choseong: target.choseong, jungseong: target.jungseong, jongseong: incoming.choseong });
       }
       return null; // both multi-slot
     }
@@ -152,13 +152,8 @@ export function compose(target: Character, incoming: Character): Character | nul
         return character({ choseong: target.choseong, jungseong: incoming.jungseong });
       }
       if (incoming.kind === "OPEN_SYLLABLE") {
-        // Target consonant slots in as jongseong of the incoming syllable
-        if (!(target.choseong in JONGSEONG_INDEX)) return null;
-        return character({
-          choseong: incoming.choseong,
-          jungseong: incoming.jungseong,
-          jongseong: target.choseong as JongseongJamo,
-        });
+        // Target consonant slots in as jongseong of the incoming syllable; factory rejects invalid jongseong
+        return character({ choseong: incoming.choseong, jungseong: incoming.jungseong, jongseong: target.choseong });
       }
       if (incoming.kind === "FULL_SYLLABLE") {
         // Target consonant extends the incoming syllable's jongseong (compound/double batchim)
@@ -174,11 +169,16 @@ export function compose(target: Character, incoming: Character): Character | nul
     }
 
     case "JONGSEONG_ONLY": {
-      // Only a consonant that combines into a valid double choseong is accepted
-      if (incoming.kind !== "CHOSEONG_ONLY") return null;
-      const combined = composeJamo(target.jongseong, incoming.choseong);
-      if (combined !== null && combined in CHOSEONG_INDEX) {
-        return character({ choseong: combined as ChoseongJamo });
+      if (incoming.kind === "OPEN_SYLLABLE") {
+        // Jongseong slots directly into the incoming syllable (e.g. ㄻ + 사 → 삶)
+        return character({ choseong: incoming.choseong, jungseong: incoming.jungseong, jongseong: target.jongseong });
+      }
+      if (incoming.kind === "CHOSEONG_ONLY") {
+        // Only meaningful for single-jamo JONGSEONG_ONLY; compound batchim has no composition rules
+        const combined = composeJamo(target.jongseong, incoming.choseong);
+        if (combined === null) return null;
+        if (combined in CHOSEONG_INDEX)  return character({ choseong: combined as ChoseongJamo });
+        if (combined in JONGSEONG_INDEX) return character({ jongseong: combined as ConsonantJamo });
       }
       return null;
     }
@@ -283,8 +283,8 @@ export function decompose(char: Character): Character[] {
       const parts = decomposeJamo(char.choseong);
       if (parts !== null) {
         return [
-          character({ choseong: parts[0] as ChoseongJamo }),
-          character({ choseong: parts[1] as ChoseongJamo }),
+          character({ choseong: parts[0] as ChoseongJamo })!,
+          character({ choseong: parts[1] as ChoseongJamo })!,
         ];
       }
       return [char];
@@ -294,8 +294,8 @@ export function decompose(char: Character): Character[] {
       const parts = decomposeJamo(char.jungseong);
       if (parts !== null) {
         return [
-          character({ jungseong: parts[0] as VowelJamo }),
-          character({ jungseong: parts[1] as VowelJamo }),
+          character({ jungseong: parts[0] as VowelJamo })!,
+          character({ jungseong: parts[1] as VowelJamo })!,
         ];
       }
       return [char];
@@ -308,8 +308,8 @@ export function decompose(char: Character): Character[] {
       if (rule !== undefined) {
         const [first, second] = rule.inputs;
         return [
-          character({ choseong: first as ChoseongJamo }),
-          character({ choseong: second as ChoseongJamo }),
+          character({ choseong: first as ChoseongJamo })!,
+          character({ choseong: second as ChoseongJamo })!,
         ];
       }
       return [char];
@@ -320,11 +320,11 @@ export function decompose(char: Character): Character[] {
       if (parts !== null) {
         // Complex vowel: choseong stays bound to the base vowel; last-added part peeled off
         return [
-          character({ choseong: char.choseong, jungseong: parts[0] as VowelJamo }),
-          character({ jungseong: parts[1] as VowelJamo }),
+          character({ choseong: char.choseong, jungseong: parts[0] as VowelJamo })!,
+          character({ jungseong: parts[1] as VowelJamo })!,
         ];
       }
-      return [character({ choseong: char.choseong }), character({ jungseong: char.jungseong })];
+      return [character({ choseong: char.choseong })!, character({ jungseong: char.jungseong })!];
     }
 
     case "FULL_SYLLABLE": {
@@ -335,18 +335,14 @@ export function decompose(char: Character): Character[] {
         // Compound batchim: first consonant stays as jongseong, second becomes standalone choseong
         const [first, second] = compoundRule.inputs;
         return [
-          character({
-            choseong: char.choseong,
-            jungseong: char.jungseong,
-            jongseong: first as JongseongJamo,
-          }),
-          character({ choseong: second as ChoseongJamo }),
+          character({ choseong: char.choseong, jungseong: char.jungseong, jongseong: first as JongseongJamo })!,
+          character({ choseong: second as ChoseongJamo })!,
         ];
       }
       // Simple jongseong: becomes a standalone choseong (all simple JongseongJamo are valid ChoseongJamo)
       return [
-        character({ choseong: char.choseong, jungseong: char.jungseong }),
-        character({ choseong: char.jongseong as ChoseongJamo }),
+        character({ choseong: char.choseong, jungseong: char.jungseong })!,
+        character({ choseong: char.jongseong as ChoseongJamo })!,
       ];
     }
   }
