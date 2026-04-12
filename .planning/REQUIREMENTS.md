@@ -13,9 +13,9 @@
 ### Jamo Core
 
 - [ ] **JAMO-01**: Unicode data tables defined — CHOSEONG_INDEX, JUNGSEONG_INDEX, JONGSEONG_INDEX, ROTATION_SETS, COMBINATION_RULES — all using Hangul Compatibility Jamo (U+3130–U+318F)
-- [ ] **JAMO-02**: Player can rotate a jamo to the next member of its equivalence set (getNextRotation, getRotationOptions)
-- [ ] **JAMO-03**: Player can combine two jamo into a double consonant or complex vowel (combineJamo, decomposeJamo); compound batchim handled via upgradeJongseong
-- [ ] **JAMO-04**: Jamo can be composed into a Korean syllable block and decomposed back (composeSyllable, decomposeSyllable) using Unicode formula: 0xAC00 + (cho×21+jung)×28 + jong
+- [x] **JAMO-02**: Player can rotate a jamo to the next member of its equivalence set (getNextRotation, getRotationOptions)
+- [x] **JAMO-03**: Player can combine two jamo into a double consonant or complex vowel (combineJamo, decomposeJamo); compound batchim handled via upgradeJongseong
+- [x] **JAMO-04**: Jamo can be composed into a Korean syllable block and decomposed back (composeSyllable, decomposeSyllable) using Unicode formula: 0xAC00 + (cho×21+jung)×28 + jong
 
 ### Character
 
@@ -102,9 +102,9 @@ Updated during roadmap creation.
 | SCAF-01 | Phase 1 | Complete |
 | SCAF-02 | Phase 1 | Complete |
 | JAMO-01 | Phase 2 | Pending |
-| JAMO-02 | Phase 2 | Pending |
-| JAMO-03 | Phase 2 | Pending |
-| JAMO-04 | Phase 2 | Pending |
+| JAMO-02 | Phase 2 | Complete |
+| JAMO-03 | Phase 2 | Complete |
+| JAMO-04 | Phase 2 | Complete |
 | CHAR-01 | Phase 3 | Pending |
 | CHAR-02 | Phase 3 | Pending |
 | WORD-01 | Phase 4 | Pending |
