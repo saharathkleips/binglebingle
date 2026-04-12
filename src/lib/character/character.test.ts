@@ -538,19 +538,43 @@ describe("resolveCharacter", () => {
 });
 
 // ---------------------------------------------------------------------------
-// isComplete()
-// ---------------------------------------------------------------------------
 // character() factory
 // ---------------------------------------------------------------------------
 
 describe("character() factory", () => {
-  it("returns null for invalid jongseong (ㄸ not a valid final consonant)", () => {
-    expect(character({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄸ" as any })).toBeNull();
-  });
-  it("returns null for invalid jongseong (ㅃ not a valid final consonant)", () => {
-    expect(character({ choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㅃ" as any })).toBeNull();
-  });
+  it.each([
+    // Valid constructions — every kind
+    ["no args → EMPTY",               undefined,                                              { kind: "EMPTY" }],
+    ["empty slots → EMPTY",           {},                                                     { kind: "EMPTY" }],
+    ["choseong only",                 { choseong: "ㄱ" },                                    { kind: "CHOSEONG_ONLY",  choseong: "ㄱ" }],
+    ["double consonant choseong",     { choseong: "ㄲ" },                                    { kind: "CHOSEONG_ONLY",  choseong: "ㄲ" }],
+    ["jungseong only",                { jungseong: "ㅏ" },                                   { kind: "JUNGSEONG_ONLY", jungseong: "ㅏ" }],
+    ["complex vowel jungseong",       { jungseong: "ㅘ" },                                   { kind: "JUNGSEONG_ONLY", jungseong: "ㅘ" }],
+    ["jongseong only (simple)",       { jongseong: "ㄱ" },                                   { kind: "JONGSEONG_ONLY", jongseong: "ㄱ" }],
+    ["jongseong only (compound ㄳ)",  { jongseong: "ㄳ" },                                   { kind: "JONGSEONG_ONLY", jongseong: "ㄳ" }],
+    ["cho+jung → OPEN_SYLLABLE",      { choseong: "ㄱ", jungseong: "ㅏ" },                  { kind: "OPEN_SYLLABLE",  choseong: "ㄱ",  jungseong: "ㅏ" }],
+    ["cho+jung+jong → FULL_SYLLABLE", { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" }, { kind: "FULL_SYLLABLE",  choseong: "ㄱ",  jungseong: "ㅏ", jongseong: "ㄴ" }],
+
+    // Invalid slot values → null (no cast needed: slots accept Jamo, factory validates)
+    ["vowel ㅏ as choseong → null",              { choseong: "ㅏ" },                          null],
+    ["consonant ㄱ as jungseong → null",         { jungseong: "ㄱ" },                         null],
+    ["ㄸ as jongseong → null (no valid final)",  { jongseong: "ㄸ" },                         null],
+    ["ㅃ as jongseong → null (no valid final)",  { jongseong: "ㅃ" },                         null],
+    ["ㅉ as jongseong → null (no valid final)",  { jongseong: "ㅉ" },                         null],
+
+    // Structural invalidity → null
+    ["jung+jong without cho → null", { jungseong: "ㅏ", jongseong: "ㄱ" }, null],
+  ] as [string, Parameters<typeof character>[0], Character | null][])(
+    "%s",
+    (_, slots, expected) => {
+      expect(character(slots)).toEqual(expected);
+    },
+  );
 });
+
+// ---------------------------------------------------------------------------
+// isComplete()
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 
