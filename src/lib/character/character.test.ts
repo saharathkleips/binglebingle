@@ -709,64 +709,64 @@ describe("decompose", () => {
 
 describe("full jamo workflow: 호 (2 jamo: ㅎ ㅗ)", () => {
   it("decomposes cho+jung → [cho, jung]", () => {
-    expect(decompose(character({ choseong: "ㅎ", jungseong: "ㅗ" }))).toEqual([
+    expect(decompose(character({ choseong: "ㅎ", jungseong: "ㅗ" })!)).toEqual([
       character({ choseong: "ㅎ" }),
       character({ jungseong: "ㅗ" }),
     ]);
   });
   it("recomposes ㅎ → ㅎ+ㅗ → 호", () => {
-    expect(compose(character(), character({ choseong: "ㅎ" }))).toEqual(
+    expect(compose(character()!, character({ choseong: "ㅎ" })!)).toEqual(
       character({ choseong: "ㅎ" }),
     );
-    expect(compose(character({ choseong: "ㅎ" }), character({ jungseong: "ㅗ" }))).toEqual(
+    expect(compose(character({ choseong: "ㅎ" })!, character({ jungseong: "ㅗ" })!)).toEqual(
       character({ choseong: "ㅎ", jungseong: "ㅗ" }),
     );
-    expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅗ" }))).toBe("호");
+    expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅗ" })!)).toBe("호");
   });
 });
 
 describe("full jamo workflow: 화 (3 jamo: ㅎ ㅗ ㅏ)", () => {
   it("decomposes cho+jung(ㅘ) → [cho+ㅗ, ㅏ] directly (complex vowel drills in)", () => {
-    expect(decompose(character({ choseong: "ㅎ", jungseong: "ㅘ" }))).toEqual([
+    expect(decompose(character({ choseong: "ㅎ", jungseong: "ㅘ" })!)).toEqual([
       character({ choseong: "ㅎ", jungseong: "ㅗ" }),
       character({ jungseong: "ㅏ" }),
     ]);
   });
   it("recomposes 호 + ㅏ → ㅘ → 화", () => {
     expect(
-      compose(character({ choseong: "ㅎ", jungseong: "ㅗ" }), character({ jungseong: "ㅏ" })),
+      compose(character({ choseong: "ㅎ", jungseong: "ㅗ" })!, character({ jungseong: "ㅏ" })!),
     ).toEqual(character({ choseong: "ㅎ", jungseong: "ㅘ" }));
-    expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅘ" }))).toBe("화");
+    expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅘ" })!)).toBe("화");
   });
 });
 
 describe("full jamo workflow: 홰 (4 jamo: ㅎ ㅗ ㅏ ㅣ)", () => {
   it("decomposes cho+jung(ㅙ) → [cho+ㅘ, ㅣ], vowel steps same as 화", () => {
-    expect(decompose(character({ choseong: "ㅎ", jungseong: "ㅙ" }))).toEqual([
+    expect(decompose(character({ choseong: "ㅎ", jungseong: "ㅙ" })!)).toEqual([
       character({ choseong: "ㅎ", jungseong: "ㅘ" }),
       character({ jungseong: "ㅣ" }),
     ]);
   });
   it("recomposes 화 + ㅣ → ㅙ → 홰", () => {
     expect(
-      compose(character({ choseong: "ㅎ", jungseong: "ㅘ" }), character({ jungseong: "ㅣ" })),
+      compose(character({ choseong: "ㅎ", jungseong: "ㅘ" })!, character({ jungseong: "ㅣ" })!),
     ).toEqual(character({ choseong: "ㅎ", jungseong: "ㅙ" }));
-    expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅙ" }))).toBe("홰");
+    expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅙ" })!)).toBe("홰");
   });
 });
 
 describe("full jamo workflow: 홱 (5 jamo: ㅎ ㅗ ㅏ ㅣ ㄱ)", () => {
   it("decomposes full(ㅙ,ㄱ) → [cho+jung(ㅙ), cho(ㄱ)], vowel steps same as 홰", () => {
-    expect(decompose(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" }))).toEqual([
+    expect(decompose(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" })!)).toEqual([
       character({ choseong: "ㅎ", jungseong: "ㅙ" }),
       character({ choseong: "ㄱ" }),
     ]);
   });
   it("recomposes ㅎ+ㅗ+ㅏ+ㅣ → ㅎ+ㅙ, then +ㄱ → 홱", () => {
     expect(
-      compose(character({ choseong: "ㅎ", jungseong: "ㅙ" }), character({ choseong: "ㄱ" })),
+      compose(character({ choseong: "ㅎ", jungseong: "ㅙ" })!, character({ choseong: "ㄱ" })!),
     ).toEqual(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" }));
-    expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" }))).toBe(
+    expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" })!)).toBe(
       "홱",
     );
   });
@@ -774,7 +774,7 @@ describe("full jamo workflow: 홱 (5 jamo: ㅎ ㅗ ㅏ ㅣ ㄱ)", () => {
 
 describe("full jamo workflow: 홳 (6 jamo: ㅎ ㅗ ㅏ ㅣ ㄱ ㅅ)", () => {
   it("decomposes full(ㅙ,ㄳ) → [cho+jung(ㅙ)+ㄱ, cho ㅅ] (compound batchim splits)", () => {
-    expect(decompose(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄳ" }))).toEqual([
+    expect(decompose(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄳ" })!)).toEqual([
       character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" }),
       character({ choseong: "ㅅ" }),
     ]);
@@ -782,11 +782,11 @@ describe("full jamo workflow: 홳 (6 jamo: ㅎ ㅗ ㅏ ㅣ ㄱ ㅅ)", () => {
   it("recomposes ㅎ+ㅙ+ㄱ → 홱, then +ㅅ → jong ㄳ → 홳", () => {
     expect(
       compose(
-        character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" }),
-        character({ choseong: "ㅅ" }),
+        character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" })!,
+        character({ choseong: "ㅅ" })!,
       ),
     ).toEqual(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄳ" }));
-    expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄳ" }))).toBe(
+    expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄳ" })!)).toBe(
       "홳",
     );
   });
