@@ -59,9 +59,6 @@ export type Character =
  * valid final consonant (ㄸ/ㅃ/ㅉ are not), and jungseong + jongseong without
  * choseong is unrepresentable.
  *
- * The jongseong parameter accepts any ConsonantJamo so callers never need to
- * cast — invalid consonants simply produce null.
- *
  * @param slots - Optional slot values; omit or pass nothing for EMPTY.
  */
 export function character(slots?: {

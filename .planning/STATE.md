@@ -109,3 +109,4 @@ None yet.
 Last session: 2026-04-11T14:43:00.000Z
 Stopped at: Completed quick task 260411-kat (decompose right-to-left semantics), committed d3ca375
 Resume file: None
+| 2026-04-11 | fast | fix empty-target branch in compose() to return incoming as-is | ✅ |
