@@ -76,6 +76,22 @@ else
     fi
 
     cat > "${DEVCONTAINER_GITCONFIG}" << EOF
+[core]
+    pager = delta
+quotePath = false
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true
+    dark = true
+side-by-side = true
+line-numbers = true
+
+[merge]
+    conflictstyle = zdiff3
+
 [user]
     name = ${GIT_NAME}
     email = ${GIT_EMAIL}

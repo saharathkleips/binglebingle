@@ -74,6 +74,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 
 ENV npm_config_store_dir=/home/dev/.local/share/pnpm/store
 ENV npm_config_minimum_release_age=10080
+ENV npm_config_trust_policy_ignore_after=10080
 ENV npm_config_block_exotic_subdeps=true
 ENV npm_config_trust_policy=no-downgrade
 
