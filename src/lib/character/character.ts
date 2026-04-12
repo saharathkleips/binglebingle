@@ -112,12 +112,8 @@ export function compose(target: Character, incoming: Character): Character | nul
       // Only a consonant can extend the jongseong slot (compound/double batchim)
       if (incoming.kind !== "CHOSEONG_ONLY") return null;
       const combined = composeJamo(target.jongseong, incoming.choseong);
-      if (combined === null || !(combined in JONGSEONG_INDEX)) return null;
-      return character({
-        choseong: target.choseong,
-        jungseong: target.jungseong,
-        jongseong: combined as JongseongJamo,
-      });
+      if (combined === null) return null;
+      return character({ choseong: target.choseong, jungseong: target.jungseong, jongseong: combined as ConsonantJamo });
     }
 
     case "OPEN_SYLLABLE": {
@@ -158,12 +154,8 @@ export function compose(target: Character, incoming: Character): Character | nul
       if (incoming.kind === "FULL_SYLLABLE") {
         // Target consonant extends the incoming syllable's jongseong (compound/double batchim)
         const combined = composeJamo(incoming.jongseong, target.choseong);
-        if (combined === null || !(combined in JONGSEONG_INDEX)) return null;
-        return character({
-          choseong: incoming.choseong,
-          jungseong: incoming.jungseong,
-          jongseong: combined as JongseongJamo,
-        });
+        if (combined === null) return null;
+        return character({ choseong: incoming.choseong, jungseong: incoming.jungseong, jongseong: combined as ConsonantJamo });
       }
       return null; // JONGSEONG_ONLY not valid here
     }
