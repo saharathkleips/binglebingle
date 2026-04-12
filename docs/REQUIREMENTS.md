@@ -80,15 +80,15 @@
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Multiplayer / shared sessions | No backend |
-| User accounts / leaderboards | No backend |
-| Hard guess limit | Designer decision — may add post-MVP |
-| Animated jamo rotation effects | UX iteration deferred |
-| Accessibility / screen reader support | Post-MVP pass |
-| Archaic / historical jamo | Out of modern Hangul scope |
-| Complex jamo as given pool items | Always constructed from basic jamo |
-| Mobile-native app | Web-first |
-| Real-time word validation | Static only |
-| Internationalization | Post-MVP |
+| Feature                               | Reason                               |
+| ------------------------------------- | ------------------------------------ |
+| Multiplayer / shared sessions         | No backend                           |
+| User accounts / leaderboards          | No backend                           |
+| Hard guess limit                      | Designer decision — may add post-MVP |
+| Animated jamo rotation effects        | UX iteration deferred                |
+| Accessibility / screen reader support | Post-MVP pass                        |
+| Archaic / historical jamo             | Out of modern Hangul scope           |
+| Complex jamo as given pool items      | Always constructed from basic jamo   |
+| Mobile-native app                     | Web-first                            |
+| Real-time word validation             | Static only                          |
+| Internationalization                  | Post-MVP                             |
