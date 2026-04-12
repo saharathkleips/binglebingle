@@ -12,7 +12,7 @@
 
 ### Jamo Core
 
-- [ ] **JAMO-01**: Unicode data tables defined — CHOSEONG_INDEX, JUNGSEONG_INDEX, JONGSEONG_INDEX, ROTATION_SETS, COMBINATION_RULES — all using Hangul Compatibility Jamo (U+3130–U+318F)
+- [x] **JAMO-01**: Unicode data tables defined — CHOSEONG_INDEX, JUNGSEONG_INDEX, JONGSEONG_INDEX, ROTATION_SETS, COMBINATION_RULES — all using Hangul Compatibility Jamo (U+3130–U+318F)
 - [x] **JAMO-02**: Player can rotate a jamo to the next member of its equivalence set (getNextRotation, getRotationOptions)
 - [x] **JAMO-03**: Player can combine two jamo into a double consonant or complex vowel (combineJamo, decomposeJamo); compound batchim handled via upgradeJongseong
 - [x] **JAMO-04**: Jamo can be composed into a Korean syllable block and decomposed back (composeSyllable, decomposeSyllable) using Unicode formula: 0xAC00 + (cho×21+jung)×28 + jong
@@ -92,45 +92,3 @@
 | Mobile-native app | Web-first |
 | Real-time word validation | Static only |
 | Internationalization | Post-MVP |
-
-## Traceability
-
-Updated during roadmap creation.
-
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| SCAF-01 | Phase 1 | Complete |
-| SCAF-02 | Phase 1 | Complete |
-| JAMO-01 | Phase 2 | Pending |
-| JAMO-02 | Phase 2 | Complete |
-| JAMO-03 | Phase 2 | Complete |
-| JAMO-04 | Phase 2 | Complete |
-| CHAR-01 | Phase 3 | Pending |
-| CHAR-02 | Phase 3 | Pending |
-| WORD-01 | Phase 4 | Pending |
-| WORD-02 | Phase 4 | Pending |
-| WORD-03 | Phase 4 | Pending |
-| ENGN-01 | Phase 5 | Pending |
-| ENGN-02 | Phase 5 | Pending |
-| ENGN-03 | Phase 5 | Pending |
-| STAT-01 | Phase 6 | Pending |
-| STAT-02 | Phase 6 | Pending |
-| STAT-03 | Phase 6 | Pending |
-| UI-01 | Phase 8 | Pending |
-| UI-02 | Phase 8 | Pending |
-| UI-03 | Phase 8 | Pending |
-| UI-04 | Phase 8 | Pending |
-| UI-05 | Phase 9 | Pending |
-| UI-06 | Phase 9 | Pending |
-| UI-07 | Phase 9 | Pending |
-| UI-08 | Phase 9 | Pending |
-| DATA-01 | Phase 7 | Pending |
-
-**Coverage:**
-- v1 requirements: 26 total
-- Mapped to phases: 26
-- Unmapped: 0 ✓
-
----
-*Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 after roadmap creation*
