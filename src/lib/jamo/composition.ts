@@ -49,7 +49,7 @@ export type CombinationRule = {
 
 /**
  * All combination rules: double consonants (5), complex vowels (13), and
- * compound batchim (11). 31 entries total (including 2 alternate-input rules).
+ * compound batchim (11). 29 entries total (including 2 alternate-input rules).
  *
  * DOUBLE_CONSONANT and COMPLEX_VOWEL rules are commutative (COMBINATION_MAP stores both a|b and b|a).
  * COMPOUND_BATCHIM rules are NOT commutative (canonical order only in COMBINATION_MAP).
