@@ -23,33 +23,6 @@
 - Props type named `<ComponentName>Props` in the same file; no default exports from component files
 - Event handler props: `on<Event>`; internal handlers: `handle<Event>`
 
-## React Patterns
-
-Component file order: imports → types → file-local constants → component → sub-components → helpers.
-
-Never call `useContext` directly — always use the typed wrapper hook exported from the context file (e.g. `useGame()` from `GameContext.tsx`).
-
-React 19 with the React Compiler handles memoization automatically — no speculative `useMemo` or `useCallback`.
-
-## Domain Logic (`src/lib/`)
-
-1. No React imports — nothing from react
-2. Pure functions only — no mutation, no I/O
-3. All exported functions explicitly typed — no inferred return types
-4. No `throw` in validation/evaluation — return a typed result instead
-
-## State (`src/state/`)
-
-1. Reducer must be pure — no async, no side effects
-2. Every action type in the `GameAction` discriminated union
-3. No fall-through between reducer cases — extract a shared helper instead
-
-## Styling
-
-- Tailwind only — no custom CSS except `src/index.css` for base resets and design tokens
-- No inline `style` props except for values that can't be expressed as Tailwind classes
-- Use `cn` (`clsx` + `tailwind-merge`) for conditional classes; `cn` lives at `src/lib/utils/cn.ts`
-
 ## Tests
 
 Unit tests colocated with source. Naming: `describe('<fn>')` → `it('<does what> when <condition>')`. Use `it.each` for functions with many input/output cases. Run `pnpm test:coverage` to find gaps.

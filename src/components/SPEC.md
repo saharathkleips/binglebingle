@@ -16,6 +16,16 @@ Component structure, interaction model, and data flow for the game UI.
 
 Visual design and styling are deferred — components render functionally correct with minimal styling for MVP. Exception: token shake animation (U6) is required for MVP to confirm invalid combine attempts.
 
+## Conventions
+
+**File structure order:** imports → types → file-local constants → component → sub-components → helpers.
+
+**Context:** never call `useContext` directly — always use `useGame()` from `GameContext.tsx`.
+
+**Memoization:** React 19 + React Compiler handles this automatically — no speculative `useMemo` or `useCallback`.
+
+**Styling:** Tailwind only — no custom CSS except `src/index.css` for base resets and design tokens. No inline `style` props except for values that cannot be expressed as Tailwind classes. Use `cn` (`clsx` + `tailwind-merge`) for conditional classes — lives at `src/lib/utils/cn.ts`.
+
 ## Component Tree
 
 ```

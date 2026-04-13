@@ -105,6 +105,8 @@ If neither case applies, no-op.
 
 ## Key Decisions
 
+**S0 — No fall-through between reducer cases.** Each case must be self-contained. Extract a shared helper function instead of falling through.
+
 **S1 — Reducer does not evaluate guesses.** `SUBMIT_GUESS` receives a pre-computed `GuessRecord`. Evaluation is the engine's job.
 
 **S2 — `SPLIT_TOKEN` reassigns all pool ids from scratch.** No id counter in state. IDs are position-stable during a round but reset after split.

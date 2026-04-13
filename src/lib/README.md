@@ -1,6 +1,11 @@
 # src/lib
 
-Pure domain logic for Binglebingle. No React imports anywhere in this tree — everything here is unit-testable in isolation and framework-agnostic.
+Pure domain logic for Binglebingle. Rules for everything in this tree:
+
+- No React imports — nothing from `react`
+- Pure functions only — no mutation, no I/O
+- All exported functions explicitly typed — no inferred return types
+- No `throw` in validation or evaluation — return a typed result instead
 
 Two sub-modules, ordered by abstraction level:
 
