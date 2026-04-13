@@ -1,7 +1,5 @@
 # Roadmap
 
-**빙글빙글 (Binglebingle)** — single-player Korean word-guessing game. MVP is a fully playable client-side PWA on GitHub Pages.
-
 ## Current Status
 
 **Active version:** 1.1.x — Domain Logic

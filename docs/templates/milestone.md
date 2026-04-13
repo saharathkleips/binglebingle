@@ -1,17 +1,23 @@
-# Milestone: Persistence
+# Milestone: <Name>
 
-**Status:** Backlog
-**Affected Slices:** `src/state/`
+**Status:** Pending
+**Affected Slices:** `src/...`
 
 ## Goal
 
-Score history persisted across sessions via localStorage.
+<One sentence describing what this milestone delivers.>
 
 ## Execution Ledger
 
 *(Agent: update these checkboxes as tests pass and local commits are made)*
 
-- [ ] **PERS-01** (`src/state/`): Score history persisted to localStorage (ScoreRecord[] keyed by 'jamo-game-score-history')
+- [ ] **REQ-01** (`src/...`): <Requirement description.>
+- [ ] **REQ-02** (`src/...`): <Requirement description.>
+
+## Success Criteria
+
+1. <Concrete, verifiable outcome.>
+2. <Concrete, verifiable outcome.>
 
 ## Agent Handoff
 
