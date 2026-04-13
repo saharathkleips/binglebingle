@@ -12,7 +12,7 @@
 
 - Folders: `kebab-case`; React components: `PascalCase.tsx`; everything else: `kebab-case.ts`
 - Tests: mirror source name + `.test.ts(x)`
-- Each module folder has a `README.md` — see `docs/templates/slices-readme.md` for the format
+- Each module folder has a `README.md` (public contract) and `SPEC.md` (internals/decisions) — see `docs/templates/` for formats
 - No index barrels — import directly from the file that owns the export
 
 ## Naming
@@ -64,6 +64,5 @@ E2E tests in `tests/**/*.spec.ts`. Test observable UI behavior only; use `data-t
 ## Reference Docs
 
 - `docs/architecture.md` — system design, layer boundaries, key decisions
-- `docs/plan-*.md` — per-domain implementation specs (jamo, models, engine, UI, etc.)
 - `docs/roadmap/` — versioned milestones; README.md has current status and next milestone
-- `src/*/README.md` — read before working in a slice
+- `src/*/README.md` and `src/*/SPEC.md` — read before working in a slice
