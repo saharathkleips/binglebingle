@@ -35,19 +35,6 @@ flowchart TD
 
 **`src/components/`** — Renders state, dispatches actions. No business logic. See `src/components/README.md`.
 
-## Architectural Decisions
-
-| Decision                                   | Rationale                                                                                                                                |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/` has zero React imports          | Domain logic is fully unit-testable without a component harness                                                                          |
-| Reducer does not evaluate guesses          | `SUBMIT_GUESS` receives a pre-computed `GuessRecord`. Separates "what states are reachable" (reducer) from "what a state means" (engine) |
-| `won` is derived, not stored               | Computed from the last `GuessRecord` at read time — no stale derived state                                                               |
-| No `status` field on `GameState`           | Application layer controls whether a game is active by deciding what to render                                                           |
-| Pool is tokens, not raw jamo               | `PoolToken = { id, character }` — stable ids let UI track identity across state updates                                                  |
-| Submissions hold token ids, not characters | Character in a slot is always derived from its pool token — no duplicate state                                                           |
-| UI accesses state only via `useGame()`     | Typed wrapper hook; `useContext` never called directly in components                                                                     |
-| Difficulty is a UI concern only            | Derived from word length at render time; never stored on the word or in game state                                                       |
-
 ## Stack
 
 | Concern            | Choice                    | Rationale                                                                                |
