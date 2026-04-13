@@ -7,7 +7,7 @@
  * No React. No game-state knowledge.
  */
 
-import { createWord } from "./word";
+import { createWord, wordToString } from "./word";
 import type { Word, WordSelectionStrategy } from "./word";
 
 // ---------------------------------------------------------------------------
@@ -38,7 +38,7 @@ export async function loadWords(): Promise<readonly Word[]> {
  *
  * - `daily`: date-seeded deterministic selection using today's date
  * - `random`: uniform random selection
- * - `fixed`: returns the specified word (must be in the list)
+ * - `fixed`: returns the word matching the given string (falls back to first)
  * - `byDate`: selects as if today were the given ISO date ('YYYY-MM-DD')
  *
  * @param words - Non-empty validated word list
@@ -54,7 +54,7 @@ export function selectWord(words: readonly Word[], strategy: WordSelectionStrate
     case "random":
       return words[Math.floor(Math.random() * words.length)]!;
     case "fixed": {
-      const found = words.find((w) => w === strategy.word);
+      const found = words.find((w) => wordToString(w) === strategy.word);
       return found ?? words[0]!;
     }
   }

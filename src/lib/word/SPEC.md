@@ -1,24 +1,24 @@
 # SPEC: Word
 
-**Status:** draft
+**Status:** stable
 **Slice:** `src/lib/word/`
 
 ## Purpose
 
-Defines the `Word` branded type and the functions for validating words, decomposing them into constituent basic jamo (the starting pool), and loading/selecting words for play.
+Defines the `Word` type and the functions for constructing words from strings, decomposing them into their constituent jamo Characters (the starting pool), and loading/selecting words for play.
 
 **Boundaries:**
 
 - In: raw Korean word strings, `WordSelectionStrategy`
-- Out: validated `Word` values, ordered jamo arrays, loaded word lists
-- Calls into: `src/lib/jamo/` for decomposition and rotation lookups
+- Out: validated `Word` values, ordered jamo Character arrays, loaded word lists
+- Calls into: `src/lib/character/` for construction, decomposition, and resolution; `src/lib/jamo/rotation` for pool normalization
 - No knowledge of: game state, pool tokens, UI, React
 
 ## File Map
 
 ```
 src/lib/word/
-├── word.ts         # createWord(), derivePool(), normalizePool(), decomposeJamo()
+├── word.ts         # Word type, createWord(), derivePool(), normalizePool(), wordToString()
 ├── loader.ts       # loadWords(), selectWord()
 ├── word.test.ts
 ├── loader.test.ts
@@ -28,9 +28,10 @@ src/lib/word/
 ## Types
 
 ```typescript
-// A Word is a non-empty string of Korean syllable blocks (U+AC00–U+D7A3).
-// The brand prevents plain strings from being passed where a validated Word is expected.
-export type Word = string & { readonly _brand: "Word" };
+// A Word is a non-empty array of CompleteCharacter (OPEN_SYLLABLE | FULL_SYLLABLE).
+// Each element resolves to a codepoint in U+AC00–U+D7A3.
+// Use createWord() to construct from a raw string.
+export type Word = readonly CompleteCharacter[];
 
 // Strategies for selecting a word
 export type WordSelectionStrategy =
@@ -43,39 +44,37 @@ export type WordSelectionStrategy =
 Derived properties — computed, never stored:
 
 ```typescript
-const chars: string[] = [...word]; // individual syllable blocks
-const length: number = [...word].length; // Unicode-safe length
+const length: number = word.length; // number of syllable characters
+const str: string = wordToString(word); // resolved Unicode string
 ```
 
 ## Functions
 
 ### `createWord(s: string): Word | null`
 
-Validates and brands a raw string. Returns `null` if empty or if any character is outside U+AC00–U+D7A3.
+Parses and validates a raw string. Uses `decomposeSyllable` + `character()` + `isComplete()` to
+convert each codepoint to a `CompleteCharacter`. Returns `null` if the string is empty or any
+character is outside U+AC00–U+D7A3.
 
-### `decomposeJamo(jamo: string): string[]`
+### `derivePool(word: Word): readonly Character[]`
 
-Decomposes a jamo by **one step** into its immediate constituents — mirrors the player's split action.
+Fully decomposes every syllable to basic single-jamo Characters by iterating `decompose()` from
+`character/` until stable. Each output element has `decompose(char).length === 1`.
 
-- `'ㅐ'` → `['ㅏ','ㅣ']`
-- `'ㅙ'` → `['ㅗ','ㅐ']` (not `['ㅗ','ㅏ','ㅣ']` — one step only)
-- `'ㄳ'` → `['ㄱ','ㅅ']`
-- `'ㄱ'` → `['ㄱ']` (basic — no rule)
+### `normalizePool(pool: readonly Character[]): readonly Character[]`
 
-### `derivePool(word: Word): readonly string[]`
-
-Fully decomposes every syllable to basic jamo by iterating `decomposeJamo` until stable.
-`'훿'` → `['ㅎ','ㅜ','ㅓ','ㅣ','ㄱ','ㅅ']`
-
-### `normalizePool(jamo: readonly string[]): readonly string[]`
-
-Rotates each jamo to the 0-index member of its rotation set. Non-rotatable jamo unchanged. Called once after `derivePool` at game init to prevent the pool from revealing which target jamo are rotated.
+Rotates each single-jamo Character to the 0-index member of its rotation set via `getRotationBase`.
+Non-rotatable jamo are returned unchanged.
 
 **Full pipeline at game init:**
 
 ```typescript
-const poolJamo = normalizePool(derivePool(word));
+const pool = normalizePool(derivePool(word));
 ```
+
+### `wordToString(word: Word): string`
+
+Converts a Word back to its Unicode string by resolving each CompleteCharacter.
 
 ### `loadWords(): Promise<readonly Word[]>`
 
@@ -83,10 +82,20 @@ Fetches `public/data/words.json` and validates each entry via `createWord`.
 
 ### `selectWord(words: readonly Word[], strategy: WordSelectionStrategy): Word`
 
-Selects a word by strategy. `daily` uses a date-seeded index; `random` picks uniformly; `fixed` returns the specified word; `byDate` selects as if it were the given date.
+Selects a word by strategy. `daily` uses a date-seeded index; `random` picks uniformly; `fixed`
+matches by string (via `wordToString`); `byDate` selects as if it were the given date.
 
 ## Key Decisions
 
-**W1 — `decomposeJamo` is one step only.** `toBasicJamo` iterates until stable internally. `derivePool` always produces only basic jamo — the `훿` test case verifies this for the most complex input.
+**W1 — `Word = readonly CompleteCharacter[]`, no brand.** The type itself enforces the invariant —
+only `OPEN_SYLLABLE` and `FULL_SYLLABLE` Characters are valid elements, and `isComplete()` from
+`character/` is the gate. A brand on an array type adds no structural safety.
 
-**W2 — `derivePool` is also useful standalone.** Game init calls `normalizePool(derivePool(word))`, but `derivePool` alone is useful for decomposing arbitrary words outside of game init.
+**W2 — `derivePool` delegates to `character/decompose`.** Pool derivation is iterative
+decomposition, which `decompose()` already implements correctly (including compound batchim,
+double consonants, and multi-step complex vowels). No reimplementation in this slice.
+
+**W3 — Pool elements are typed as `Character`, not `CompleteCharacter`.** After full decomposition
+all elements are single-jamo (`CHOSEONG_ONLY`, `JUNGSEONG_ONLY`, or `CHOSEONG_ONLY` for former
+jongseong), none of which satisfy `isComplete`. Narrowing to a `SingleJamoCharacter` subtype is
+possible but adds no value at the current call sites.

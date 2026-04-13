@@ -7,14 +7,14 @@
 
 ### `word.ts`
 
-| Export                  | Description                                                                        |
-| ----------------------- | ---------------------------------------------------------------------------------- |
-| `Word`                  | Branded string type — non-empty sequence of Korean syllable blocks (U+AC00–U+D7A3) |
-| `WordSelectionStrategy` | Discriminated union: `daily`, `random`, `fixed`, `byDate`                          |
-| `createWord(s)`         | Validates and brands a raw string; returns `null` on failure                       |
-| `decomposeJamo(jamo)`   | One-step decomposition of a jamo into its immediate constituents                   |
-| `derivePool(word)`      | Fully decomposes every syllable to basic jamo                                      |
-| `normalizePool(jamo)`   | Rotates each jamo to the 0-index of its rotation set                               |
+| Export                  | Description                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| `Word`                  | `readonly CompleteCharacter[]` — ordered array of complete Korean syllable characters      |
+| `WordSelectionStrategy` | Discriminated union: `daily`, `random`, `fixed`, `byDate`                                  |
+| `createWord(s)`         | Parses and validates a raw string; returns `Word` or `null`                                |
+| `derivePool(word)`      | Fully decomposes every syllable to basic single-jamo `Character` objects via `decompose()` |
+| `normalizePool(pool)`   | Rotates each jamo `Character` to the 0-index of its rotation set                           |
+| `wordToString(word)`    | Converts a `Word` back to its Unicode string                                               |
 
 ### `loader.ts`
 
@@ -31,10 +31,11 @@ import { loadWords, selectWord } from "src/lib/word/loader";
 
 const words = await loadWords();
 const word = selectWord(words, { kind: "daily" });
-const pool = normalizePool(derivePool(word));
+const pool = normalizePool(derivePool(word)); // readonly Character[]
 ```
 
 ## Boundaries
 
-- Calls into: `src/lib/jamo/` for decomposition and rotation lookups
+- Calls into: `src/lib/character/` for construction, decomposition, and resolution
+- Calls into: `src/lib/jamo/rotation` for `getRotationBase` in pool normalization
 - No knowledge of: game state, pool tokens, UI, React

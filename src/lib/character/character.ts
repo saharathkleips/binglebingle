@@ -49,6 +49,13 @@ export type Character =
       jongseong: JongseongJamo;
     };
 
+/**
+ * A Character that resolves to a complete Korean syllable block (U+AC00–U+D7A3).
+ * Either OPEN_SYLLABLE (choseong + jungseong) or FULL_SYLLABLE (choseong + jungseong + jongseong).
+ * Use `isComplete(char)` as a type guard to narrow a Character to this type.
+ */
+export type CompleteCharacter = Extract<Character, { kind: "OPEN_SYLLABLE" | "FULL_SYLLABLE" }>;
+
 // ---------------------------------------------------------------------------
 // character() — factory
 // ---------------------------------------------------------------------------
@@ -246,13 +253,14 @@ export function resolveCharacter(char: Character): string | null {
 // ---------------------------------------------------------------------------
 
 /**
- * Returns true iff resolveCharacter produces a valid Korean syllable block
- * (U+AC00–U+D7A3). Requires at minimum choseong + jungseong.
+ * Type guard that returns true iff resolveCharacter produces a valid Korean
+ * syllable block (U+AC00–U+D7A3), narrowing the type to CompleteCharacter.
+ * Requires at minimum choseong + jungseong.
  *
  * @param char - The Character to test
  * @returns Whether the character is a complete syllable block
  */
-export function isComplete(char: Character): boolean {
+export function isComplete(char: Character): char is CompleteCharacter {
   const resolved = resolveCharacter(char);
   if (resolved === null) return false;
   const cp = resolved.codePointAt(0);

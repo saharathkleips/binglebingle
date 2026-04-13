@@ -38,6 +38,10 @@ export type Character =
       jungseong: VowelJamo;
       jongseong: JongseongJamo;
     };
+
+// A Character that is a complete syllable block — OPEN_SYLLABLE or FULL_SYLLABLE.
+// Obtained by narrowing via isComplete().
+export type CompleteCharacter = Extract<Character, { kind: "OPEN_SYLLABLE" | "FULL_SYLLABLE" }>;
 ```
 
 Use `character(slots?)` to construct — the `kind` is derived from which slots are present. The factory returns `null` for invalid combinations (e.g. ㄸ/ㅃ/ㅉ as jongseong; jungseong + jongseong without choseong).
@@ -52,7 +56,7 @@ function character(slots?: {
 }): Character | null;
 function compose(target: Character, incoming: Character): Character | null;
 function resolveCharacter(char: Character): string | null;
-function isComplete(char: Character): boolean;
+function isComplete(char: Character): char is CompleteCharacter;
 function decompose(char: Character): Character[];
 ```
 

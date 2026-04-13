@@ -1,15 +1,15 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { loadWords, selectWord } from "./loader";
-import { createWord } from "./word";
+import { createWord, wordToString } from "./word";
 
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const FIXTURE_WORDS = ["한국어", "사랑", "행복", "하늘", "바람"];
+const FIXTURE_STRINGS = ["한국어", "고양이", "강아지", "도서관", "바나나"];
 
 function makeWords() {
-  return FIXTURE_WORDS.map((w) => createWord(w)!);
+  return FIXTURE_STRINGS.map((w) => createWord(w)!);
 }
 
 // ---------------------------------------------------------------------------
@@ -21,7 +21,7 @@ describe("loadWords", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => ({
-        json: async () => FIXTURE_WORDS,
+        json: async () => FIXTURE_STRINGS,
       })),
     );
   });
@@ -33,20 +33,20 @@ describe("loadWords", () => {
   it("fetches /data/words.json and returns validated Words", async () => {
     const words = await loadWords();
     expect(words).toHaveLength(5);
-    expect(words[0]).toBe("한국어");
+    expect(wordToString(words[0]!)).toBe("한국어");
   });
 
   it("drops invalid entries silently", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => ({
-        json: async () => ["한국어", "invalid_ascii", "사랑"],
+        json: async () => ["한국어", "invalid_ascii", "고양이"],
       })),
     );
     const words = await loadWords();
     expect(words).toHaveLength(2);
-    expect(words).toContain("한국어");
-    expect(words).toContain("사랑");
+    expect(wordToString(words[0]!)).toBe("한국어");
+    expect(wordToString(words[1]!)).toBe("고양이");
   });
 
   it("returns empty array when json is not an array", async () => {
@@ -69,9 +69,7 @@ describe("selectWord", () => {
   const words = makeWords();
 
   it("returns the same word for the same date with strategy 'daily'", () => {
-    const date = "2026-01-15";
-    // Spy on Date to return a fixed date
-    vi.setSystemTime(new Date(date));
+    vi.setSystemTime(new Date("2026-01-15"));
     const result1 = selectWord(words, { kind: "daily" });
     const result2 = selectWord(words, { kind: "daily" });
     expect(result1).toBe(result2);
@@ -83,9 +81,9 @@ describe("selectWord", () => {
     expect(words).toContain(result);
   });
 
-  it("returns the specified word with strategy 'fixed'", () => {
-    const result = selectWord(words, { kind: "fixed", word: "사랑" });
-    expect(result).toBe("사랑");
+  it("returns the matching word with strategy 'fixed'", () => {
+    const result = selectWord(words, { kind: "fixed", word: "고양이" });
+    expect(wordToString(result)).toBe("고양이");
   });
 
   it("falls back to the first word when 'fixed' word is not in the list", () => {
@@ -100,8 +98,7 @@ describe("selectWord", () => {
     expect(words).toContain(result1);
   });
 
-  it("returns different words for different dates with strategy 'byDate'", () => {
-    // With 5 words, consecutive days will cycle; 5 days apart will differ
+  it("covers all 5 words across 5 consecutive dates with strategy 'byDate'", () => {
     const results = new Set(
       Array.from({ length: 5 }, (_, i) => {
         const d = new Date("2026-01-01");
@@ -110,7 +107,6 @@ describe("selectWord", () => {
         return selectWord(words, { kind: "byDate", date: iso });
       }),
     );
-    // Should cover all 5 words over 5 consecutive days (each day maps to a different word)
     expect(results.size).toBe(5);
   });
 });
