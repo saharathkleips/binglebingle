@@ -11,15 +11,31 @@
 import {
   composeJamo,
   composeSyllable,
+  decomposeSyllable,
   decomposeJamo,
   COMBINATION_RULES,
 } from "../jamo/composition";
 import type { VowelJamo, Jamo, ChoseongJamo, JongseongJamo } from "../jamo/jamo";
 import { CHOSEONG_INDEX, JUNGSEONG_INDEX, JONGSEONG_INDEX } from "../jamo/jamo";
+import { getRotationBase } from "../jamo/rotation";
 
 // ---------------------------------------------------------------------------
 // Character — discriminated union
 // ---------------------------------------------------------------------------
+
+/**
+ * A Character that resolves to a complete Korean syllable block (U+AC00–U+D7A3).
+ * Either OPEN_SYLLABLE (choseong + jungseong) or FULL_SYLLABLE (choseong + jungseong + jongseong).
+ * Use `isComplete(char)` as a type guard to narrow a Character to this type.
+ */
+export type CompleteCharacter =
+  | { kind: "OPEN_SYLLABLE"; choseong: ChoseongJamo; jungseong: VowelJamo }
+  | {
+      kind: "FULL_SYLLABLE";
+      choseong: ChoseongJamo;
+      jungseong: VowelJamo;
+      jongseong: JongseongJamo;
+    };
 
 /**
  * A Korean syllable character under construction, represented as a discriminated
@@ -29,8 +45,8 @@ import { CHOSEONG_INDEX, JUNGSEONG_INDEX, JONGSEONG_INDEX } from "../jamo/jamo";
  * - `CHOSEONG_ONLY`  — single consonant (may be a double consonant like ㄲ)
  * - `JUNGSEONG_ONLY` — single vowel (may be a complex vowel like ㅘ)
  * - `JONGSEONG_ONLY` — standalone final consonant (compound batchim under construction)
- * - `OPEN_SYLLABLE`  — consonant + vowel (e.g. 가); no final consonant yet
- * - `FULL_SYLLABLE`  — consonant + vowel + final consonant (e.g. 한)
+ * - `OPEN_SYLLABLE`  — consonant + vowel (e.g. 가); no final consonant yet  ┐
+ * - `FULL_SYLLABLE`  — consonant + vowel + final consonant (e.g. 한)         ┘ CompleteCharacter
  *
  * Use `character({...})` to construct a Character from slot values.
  * Use `compose(a, b)` to advance a Character in a state-machine fashion.
@@ -41,39 +57,43 @@ export type Character =
   | { kind: "CHOSEONG_ONLY"; choseong: ChoseongJamo }
   | { kind: "JUNGSEONG_ONLY"; jungseong: VowelJamo }
   | { kind: "JONGSEONG_ONLY"; jongseong: JongseongJamo }
-  | { kind: "OPEN_SYLLABLE"; choseong: ChoseongJamo; jungseong: VowelJamo }
-  | {
-      kind: "FULL_SYLLABLE";
-      choseong: ChoseongJamo;
-      jungseong: VowelJamo;
-      jongseong: JongseongJamo;
-    };
-
-/**
- * A Character that resolves to a complete Korean syllable block (U+AC00–U+D7A3).
- * Either OPEN_SYLLABLE (choseong + jungseong) or FULL_SYLLABLE (choseong + jungseong + jongseong).
- * Use `isComplete(char)` as a type guard to narrow a Character to this type.
- */
-export type CompleteCharacter = Extract<Character, { kind: "OPEN_SYLLABLE" | "FULL_SYLLABLE" }>;
+  | CompleteCharacter;
 
 // ---------------------------------------------------------------------------
 // character() — factory
 // ---------------------------------------------------------------------------
 
 /**
- * Constructs a Character from slot values, deriving the kind automatically.
- * Returns null for structurally invalid combinations — jongseong must be a
+ * Constructs a Character from a Unicode syllable string or from slot values.
+ *
+ * When called with a string, parses a single Korean syllable block (U+AC00–U+D7A3)
+ * and returns a `CompleteCharacter`, or null if the string is not a valid syllable.
+ *
+ * When called with slots, derives the kind automatically from the provided slot
+ * values. Returns null for structurally invalid combinations — jongseong must be a
  * valid final consonant (ㄸ/ㅃ/ㅉ are not), and jungseong + jongseong without
  * choseong is unrepresentable.
  *
- * @param slots - Optional slot values; omit or pass nothing for EMPTY.
+ * @param input - A single syllable string, optional slot values, or nothing for EMPTY.
  */
+export function character(syllable: string): CompleteCharacter | null;
 export function character(slots?: {
   choseong?: Jamo;
   jungseong?: Jamo;
   jongseong?: Jamo;
-}): Character | null {
-  const { choseong, jungseong, jongseong } = slots ?? {};
+}): Character | null;
+export function character(
+  input?: string | { choseong?: Jamo; jungseong?: Jamo; jongseong?: Jamo },
+): Character | null {
+  if (typeof input === "string") {
+    const decomposed = decomposeSyllable(input);
+    if (decomposed === null) return null;
+    const { choseong, jungseong, jongseong } = decomposed;
+    const char = character({ choseong, jungseong, ...(jongseong !== null ? { jongseong } : {}) });
+    if (char === null || !isComplete(char)) return null;
+    return char;
+  }
+  const { choseong, jungseong, jongseong } = input ?? {};
   if (!choseong && !jungseong && !jongseong) return { kind: "EMPTY" };
   if (choseong !== undefined && !(choseong in CHOSEONG_INDEX)) return null;
   if (jungseong !== undefined && !(jungseong in JUNGSEONG_INDEX)) return null;
@@ -353,5 +373,37 @@ export function decompose(char: Character): Character[] {
         character({ choseong: char.jongseong })!,
       ];
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// normalizeCharacter()
+// ---------------------------------------------------------------------------
+
+/**
+ * Rotates a single-jamo Character to the canonical (0-index) member of its
+ * rotation set. Non-rotatable or multi-jamo Characters are returned unchanged.
+ * Call this on each element of a derived pool to prevent the pool from
+ * revealing which target jamo are rotated.
+ *
+ * @param char - A single-jamo Character (output of `decompose` until irreducible)
+ * @returns The Character with its jamo rotated to its rotation base, or unchanged
+ */
+export function normalizeCharacter(char: Character): Character {
+  switch (char.kind) {
+    case "CHOSEONG_ONLY": {
+      const base = getRotationBase(char.choseong);
+      return character({ choseong: base }) ?? char;
+    }
+    case "JUNGSEONG_ONLY": {
+      const base = getRotationBase(char.jungseong as Jamo);
+      return character({ jungseong: base }) ?? char;
+    }
+    case "JONGSEONG_ONLY": {
+      const base = getRotationBase(char.jongseong as Jamo);
+      return character({ jongseong: base }) ?? char;
+    }
+    default:
+      return char;
   }
 }

@@ -7,11 +7,8 @@
  * Unicode note: syllable blocks range U+AC00–U+D7A3.
  */
 
-import { character, decompose, isComplete, resolveCharacter } from "../character/character";
+import { character, decompose, normalizeCharacter, resolveCharacter } from "../character/character";
 import type { Character, CompleteCharacter } from "../character/character";
-import { decomposeSyllable } from "../jamo/composition";
-import { getRotationBase } from "../jamo/rotation";
-import type { Jamo } from "../jamo/jamo";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -33,25 +30,14 @@ export type Word = readonly CompleteCharacter[];
  * Returns null if the string is empty or if any character is not a valid
  * Korean syllable block (U+AC00–U+D7A3).
  *
- * @param s - The raw string to validate
+ * @param word - The raw string to validate
  * @returns A Word (array of CompleteCharacter), or null if validation fails
  */
-export function createWord(s: string): Word | null {
-  const chars: CompleteCharacter[] = [];
-  for (const syllable of s) {
-    const decomposed = decomposeSyllable(syllable);
-    if (decomposed === null) return null;
-    const { choseong, jungseong, jongseong } = decomposed;
-    const char = character({
-      choseong,
-      jungseong,
-      ...(jongseong !== null ? { jongseong } : {}),
-    });
-    if (char === null || !isComplete(char)) return null;
-    chars.push(char);
-  }
-  if (chars.length === 0) return null;
-  return chars;
+export function createWord(word: string): Word | null {
+  const characters = [...word].map((syllable) => character(syllable));
+  return characters.length > 0 && characters.every((c): c is CompleteCharacter => c !== null)
+    ? characters
+    : null;
 }
 
 /**
@@ -62,18 +48,13 @@ export function createWord(s: string): Word | null {
  * @returns Flat ordered array of basic single-jamo Characters
  */
 export function derivePool(word: Word): readonly Character[] {
-  const queue: Character[] = [...word];
-  const result: Character[] = [];
-  while (queue.length > 0) {
-    const char = queue.shift()!;
-    const parts = decompose(char);
-    if (parts.length === 1) {
-      result.push(char);
-    } else {
-      queue.unshift(...parts);
-    }
+  let pool: readonly Character[] = word;
+  let expanded = pool.flatMap(decompose);
+  while (expanded.length !== pool.length) {
+    pool = expanded;
+    expanded = pool.flatMap(decompose);
   }
-  return result;
+  return pool;
 }
 
 /**
@@ -96,32 +77,4 @@ export function normalizePool(pool: readonly Character[]): readonly Character[] 
  */
 export function wordToString(word: Word): string {
   return word.map((char) => resolveCharacter(char) ?? "").join("");
-}
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Rotates a single-jamo Character to the canonical (0-index) member of its
- * rotation set. Non-rotatable or multi-jamo Characters are returned unchanged.
- * @internal
- */
-function normalizeCharacter(char: Character): Character {
-  switch (char.kind) {
-    case "CHOSEONG_ONLY": {
-      const base = getRotationBase(char.choseong);
-      return character({ choseong: base }) ?? char;
-    }
-    case "JUNGSEONG_ONLY": {
-      const base = getRotationBase(char.jungseong as Jamo);
-      return character({ jungseong: base }) ?? char;
-    }
-    case "JONGSEONG_ONLY": {
-      const base = getRotationBase(char.jongseong as Jamo);
-      return character({ jongseong: base }) ?? char;
-    }
-    default:
-      return char;
-  }
 }

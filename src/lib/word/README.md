@@ -20,13 +20,12 @@
 ```typescript
 import { createWord, derivePool, normalizePool } from "src/lib/word/word";
 
-const word = createWord("한국어")!;
-const pool = normalizePool(derivePool(word)); // readonly Character[]
+const word: Word = createWord("한국어")!;
+const pool: readonly Character[] = normalizePool(derivePool(word));
 ```
 
 ## Boundaries
 
-- Calls into: `src/lib/character/` for construction, decomposition, and resolution
-- Calls into: `src/lib/jamo/rotation` for `getRotationBase` in pool normalization
+- Calls into: `src/lib/character/` for construction, decomposition, resolution, and pool normalization
 - No knowledge of: word selection, I/O, game state, UI, React
 - Word loading and selection live in `src/lib/puzzle/`

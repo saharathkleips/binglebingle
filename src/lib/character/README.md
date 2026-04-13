@@ -11,11 +11,12 @@ Game model for a Korean syllable character under construction. A `Character` is 
 - `CompleteCharacter` — subtype of `Character` narrowed to `OPEN_SYLLABLE | FULL_SYLLABLE`; represents a fully-formed syllable block. Use `isComplete` to obtain one.
 - `isComplete(char)` — type guard; returns `true` and narrows to `CompleteCharacter` iff `resolveCharacter` produces a syllable block in U+AC00–U+D7A3. Requires at minimum `choseong` + `jungseong`. ㅇ is treated as a regular consonant with no special handling.
 - `decompose(char)` — steps a `Character` back by one construction level following right-to-left (last-added-first) semantics. Never loses a jamo. Returns at most two `Character` objects per call. Simple single-jamo characters return a one-element array; double consonant choseong and complex vowel jungseong split into their two component jamo. Choseong + complex jungseong peels off the last-added vowel part, keeping choseong bound to the base vowel (e.g. 화 → {ㅎ,ㅗ} + {ㅏ}). Choseong + simple jungseong peels off the jungseong entirely (e.g. 호 → {ㅎ} + {ㅗ}). Full syllables with a compound jongseong split the batchim in two: the first consonant stays as jongseong; the second becomes a standalone choseong (e.g. 홳 → {ㅎ,ㅙ,ㄱ} + {ㅅ}). Full syllables with a simple jongseong return the jongseong as a standalone choseong (unchanged). Returns `[]` only for the empty `Character` `{}`.
+- `normalizeCharacter(char)` — rotates a single-jamo `Character` to the canonical (0-index) member of its rotation set. Non-rotatable or multi-jamo `Character`s are returned unchanged. Use on each pool element after `decompose` to prevent the pool from revealing which target jamo are rotated.
 
 ## Out of scope
 
 - Unicode arithmetic (syllable block formula, codepoint tables) — that is `jamo/`.
-- Jamo rotation — that is `jamo/rotation`.
+- Raw jamo rotation data and cycling — that is `jamo/rotation`. (Character-level normalization that _uses_ rotation lives here as `normalizeCharacter`.)
 - Whether a character is the correct answer for a given guess position — that is the game state reducer.
 
 ## Dependencies

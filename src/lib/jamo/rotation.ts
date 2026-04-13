@@ -43,6 +43,5 @@ export function getNextRotation(jamo: Jamo): Jamo | null {
  */
 export function getRotationBase(jamo: Jamo): Jamo {
   const set = ROTATION_SETS.find((s) => s.includes(jamo));
-  if (!set || set.length === 0) return jamo;
-  return set[0]!;
+  return set?.[0] ?? jamo;
 }
