@@ -84,6 +84,10 @@ RUN printf '#!/bin/sh\necho "ERROR: npm is disabled - use pnpm instead." >&2\nex
     > /usr/local/bin/npm && \
     chmod +x /usr/local/bin/npm
 
+RUN printf '#!/bin/sh\necho "ERROR: npx is disabled - use pnpm dlx or pnpm exec instead." >&2\nexit 1' \
+    > /usr/local/bin/npx && \
+    chmod +x /usr/local/bin/npx
+
 # ── playwright ───────────────────────────────────────────────────
 ARG PLAYWRIGHT_VERSION=1.58.2
 RUN pnpm dlx playwright@${PLAYWRIGHT_VERSION} install-deps
