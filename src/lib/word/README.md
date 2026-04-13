@@ -20,7 +20,7 @@
 ```typescript
 import { createWord, derivePool, normalizePool } from "src/lib/word/word";
 
-const word: Word = createWord("한국어")!;
+const word: Word | null = createWord("한국어");
 const pool: readonly Character[] = normalizePool(derivePool(word));
 ```
 
