@@ -6,21 +6,20 @@ Fully client-side, statically-hosted single-page PWA. No backend. No authenticat
 
 ```mermaid
 flowchart TD
-    UI["**UI Layer**
-    src/components/
-    Token pool · Submission slots · Guess board · Modals"]
+    subgraph UI["UI — src/components/"]
+        ui["Token pool · Submission slots · Guess board · Modals"]
+    end
 
-    State["**State Layer**
-    src/state/
-    useReducer + GameContext"]
+    subgraph State["State — src/state/"]
+        state["useReducer + GameContext"]
+    end
 
-    Domain["**Domain Logic Layer**
-    src/lib/jamo/ · src/lib/character/
-    src/lib/word/ · src/lib/engine/
-    No React · No I/O · Pure functions"]
+    subgraph Domain["Domain Logic — src/lib/"]
+        domain["jamo · character · word · engine\nNo React · No I/O · Pure functions"]
+    end
 
-    UI -- "reads via useGame() / dispatches actions" --> State
-    State -- "pure function calls" --> Domain
+    UI -->|"reads via useGame() / dispatches actions"| State
+    State -->|"pure function calls"| Domain
 ```
 
 **`src/lib/jamo/`** — Unicode mechanics: rotation, jamo combination, syllable composition/decomposition. See `src/lib/jamo/README.md`.
