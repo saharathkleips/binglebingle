@@ -24,13 +24,6 @@ import type { Jamo } from "../jamo/jamo";
  */
 export type Word = readonly CompleteCharacter[];
 
-/** Strategies for selecting a word from the word list. */
-export type WordSelectionStrategy =
-  | { kind: "daily" }
-  | { kind: "random" }
-  | { kind: "fixed"; word: string }
-  | { kind: "byDate"; date: string }; // ISO date 'YYYY-MM-DD'
-
 // ---------------------------------------------------------------------------
 // Exported functions
 // ---------------------------------------------------------------------------

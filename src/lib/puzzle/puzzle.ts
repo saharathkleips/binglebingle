@@ -1,14 +1,27 @@
 /**
- * @file loader.ts
+ * @file puzzle.ts
  *
- * Word list loading and selection for the word slice.
+ * Word list loading and daily/random/fixed word selection.
+ * This slice owns the game-initialization concern of *which word to play* —
+ * distinct from what a word structurally is (src/lib/word/).
  *
- * All functions are pure (except loadWords, which performs a fetch).
- * No React. No game-state knowledge.
+ * loadWords performs I/O; all other exports are pure.
+ * No React. No game-state knowledge beyond the initial word choice.
  */
 
-import { createWord, wordToString } from "./word";
-import type { Word, WordSelectionStrategy } from "./word";
+import { createWord, wordToString } from "../word/word";
+import type { Word } from "../word/word";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+/** Strategy for selecting a word from the loaded word list. */
+export type WordSelectionStrategy =
+  | { kind: "daily" }
+  | { kind: "random" }
+  | { kind: "fixed"; word: string }
+  | { kind: "byDate"; date: string }; // ISO date 'YYYY-MM-DD'
 
 // ---------------------------------------------------------------------------
 // Exported functions

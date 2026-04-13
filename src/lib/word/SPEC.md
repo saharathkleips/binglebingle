@@ -5,23 +5,22 @@
 
 ## Purpose
 
-Defines the `Word` type and the functions for constructing words from strings, decomposing them into their constituent jamo Characters (the starting pool), and loading/selecting words for play.
+Defines the `Word` type and the functions for constructing words from strings, decomposing them
+into their constituent jamo Characters (the starting pool), and converting words back to strings.
 
 **Boundaries:**
 
-- In: raw Korean word strings, `WordSelectionStrategy`
-- Out: validated `Word` values, ordered jamo Character arrays, loaded word lists
+- In: raw Korean word strings
+- Out: validated `Word` values, ordered jamo Character arrays
 - Calls into: `src/lib/character/` for construction, decomposition, and resolution; `src/lib/jamo/rotation` for pool normalization
-- No knowledge of: game state, pool tokens, UI, React
+- No knowledge of: game state, word selection, I/O, UI, React
 
 ## File Map
 
 ```
 src/lib/word/
 ├── word.ts         # Word type, createWord(), derivePool(), normalizePool(), wordToString()
-├── loader.ts       # loadWords(), selectWord()
 ├── word.test.ts
-├── loader.test.ts
 └── README.md
 ```
 
@@ -32,13 +31,6 @@ src/lib/word/
 // Each element resolves to a codepoint in U+AC00–U+D7A3.
 // Use createWord() to construct from a raw string.
 export type Word = readonly CompleteCharacter[];
-
-// Strategies for selecting a word
-export type WordSelectionStrategy =
-  | { kind: "daily" }
-  | { kind: "random" }
-  | { kind: "fixed"; word: string }
-  | { kind: "byDate"; date: string }; // ISO date 'YYYY-MM-DD'
 ```
 
 Derived properties — computed, never stored:
@@ -76,15 +68,6 @@ const pool = normalizePool(derivePool(word));
 
 Converts a Word back to its Unicode string by resolving each CompleteCharacter.
 
-### `loadWords(): Promise<readonly Word[]>`
-
-Fetches `public/data/words.json` and validates each entry via `createWord`.
-
-### `selectWord(words: readonly Word[], strategy: WordSelectionStrategy): Word`
-
-Selects a word by strategy. `daily` uses a date-seeded index; `random` picks uniformly; `fixed`
-matches by string (via `wordToString`); `byDate` selects as if it were the given date.
-
 ## Key Decisions
 
 **W1 — `Word = readonly CompleteCharacter[]`, no brand.** The type itself enforces the invariant —
@@ -99,3 +82,7 @@ double consonants, and multi-step complex vowels). No reimplementation in this s
 all elements are single-jamo (`CHOSEONG_ONLY`, `JUNGSEONG_ONLY`, or `CHOSEONG_ONLY` for former
 jongseong), none of which satisfy `isComplete`. Narrowing to a `SingleJamoCharacter` subtype is
 possible but adds no value at the current call sites.
+
+**W4 — Word selection and loading live in `src/lib/puzzle/`.** Which word to play is a
+game-initialization concern, not a word-domain concern. `word/` has no knowledge of I/O or
+selection strategy.
