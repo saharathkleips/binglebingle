@@ -9,7 +9,7 @@
 
 ## Execution Ledger
 
-*(Agent: update these checkboxes as tests pass and local commits are made)*
+_(Agent: update these checkboxes as tests pass and local commits are made)_
 
 - [ ] **REQ-01** (`src/...`): <Requirement description.>
 - [ ] **REQ-02** (`src/...`): <Requirement description.>
