@@ -32,7 +32,12 @@ export type Character =
   | { kind: "JUNGSEONG_ONLY"; jungseong: VowelJamo }
   | { kind: "JONGSEONG_ONLY"; jongseong: JongseongJamo }
   | { kind: "OPEN_SYLLABLE"; choseong: ChoseongJamo; jungseong: VowelJamo }
-  | { kind: "FULL_SYLLABLE"; choseong: ChoseongJamo; jungseong: VowelJamo; jongseong: JongseongJamo };
+  | {
+      kind: "FULL_SYLLABLE";
+      choseong: ChoseongJamo;
+      jungseong: VowelJamo;
+      jongseong: JongseongJamo;
+    };
 ```
 
 Use `character(slots?)` to construct — the `kind` is derived from which slots are present. The factory returns `null` for invalid combinations (e.g. ㄸ/ㅃ/ㅉ as jongseong; jungseong + jongseong without choseong).
@@ -40,11 +45,15 @@ Use `character(slots?)` to construct — the `kind` is derived from which slots 
 ## Function Signatures
 
 ```typescript
-function character(slots?: { choseong?: Jamo; jungseong?: Jamo; jongseong?: Jamo }): Character | null
-function compose(target: Character, incoming: Character): Character | null
-function resolveCharacter(char: Character): string | null
-function isComplete(char: Character): boolean
-function decompose(char: Character): Character[]
+function character(slots?: {
+  choseong?: Jamo;
+  jungseong?: Jamo;
+  jongseong?: Jamo;
+}): Character | null;
+function compose(target: Character, incoming: Character): Character | null;
+function resolveCharacter(char: Character): string | null;
+function isComplete(char: Character): boolean;
+function decompose(char: Character): Character[];
 ```
 
 ## compose() Rules
@@ -64,13 +73,13 @@ Commutativity is also supported when the incoming is a larger unit: e.g. `CHOSEO
 
 ## resolveCharacter() Output
 
-| kind           | output                                      |
-| -------------- | ------------------------------------------- |
-| EMPTY          | `null`                                      |
-| CHOSEONG_ONLY  | bare consonant string                       |
-| JUNGSEONG_ONLY | bare vowel string                           |
-| JONGSEONG_ONLY | bare consonant string (compound batchim)    |
-| OPEN_SYLLABLE  | `composeSyllable(choseong, jungseong)`      |
+| kind           | output                                            |
+| -------------- | ------------------------------------------------- |
+| EMPTY          | `null`                                            |
+| CHOSEONG_ONLY  | bare consonant string                             |
+| JUNGSEONG_ONLY | bare vowel string                                 |
+| JONGSEONG_ONLY | bare consonant string (compound batchim)          |
+| OPEN_SYLLABLE  | `composeSyllable(choseong, jungseong)`            |
 | FULL_SYLLABLE  | `composeSyllable(choseong, jungseong, jongseong)` |
 
 ## decompose() Rules
