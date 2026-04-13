@@ -65,6 +65,5 @@ E2E tests in `tests/**/*.spec.ts`. Test observable UI behavior only; use `data-t
 
 - `docs/architecture.md` — system design, layer boundaries, key decisions
 - `docs/plan-*.md` — per-domain implementation specs (jamo, models, engine, UI, etc.)
-- `docs/ROADMAP.md` — phase plan and progress
-- `docs/REQUIREMENTS.md` — requirements and completion status
+- `docs/roadmap/` — versioned milestones; README.md has current status and next milestone
 - `src/*/README.md` — read before working in a slice
