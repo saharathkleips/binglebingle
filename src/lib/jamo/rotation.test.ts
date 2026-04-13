@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Jamo } from "./jamo";
-import { getNextRotation } from "./rotation";
+import { getNextRotation, getRotationBase } from "./rotation";
 
 describe("getNextRotation", () => {
   const ROTATABLE_CASES: [string, Jamo, Jamo][] = [
@@ -28,5 +28,32 @@ describe("getNextRotation", () => {
 
   it.each(NON_ROTATABLE)("returns null for non-rotatable jamo %s", (jamo) => {
     expect(getNextRotation(jamo)).toBeNull();
+  });
+});
+
+describe("getRotationBase", () => {
+  const BASE_CASES: [string, Jamo, Jamo][] = [
+    ["ㄱ is already the base of [ㄱ,ㄴ]", "ㄱ", "ㄱ"],
+    ["ㄴ normalizes to ㄱ", "ㄴ", "ㄱ"],
+    ["ㅏ is already the base of [ㅏ,ㅜ,ㅓ,ㅗ]", "ㅏ", "ㅏ"],
+    ["ㅜ normalizes to ㅏ", "ㅜ", "ㅏ"],
+    ["ㅓ normalizes to ㅏ", "ㅓ", "ㅏ"],
+    ["ㅗ normalizes to ㅏ", "ㅗ", "ㅏ"],
+    ["ㅣ is already the base of [ㅣ,ㅡ]", "ㅣ", "ㅣ"],
+    ["ㅡ normalizes to ㅣ", "ㅡ", "ㅣ"],
+    ["ㅑ is already the base of [ㅑ,ㅠ,ㅕ,ㅛ]", "ㅑ", "ㅑ"],
+    ["ㅠ normalizes to ㅑ", "ㅠ", "ㅑ"],
+    ["ㅕ normalizes to ㅑ", "ㅕ", "ㅑ"],
+    ["ㅛ normalizes to ㅑ", "ㅛ", "ㅑ"],
+  ];
+
+  it.each(BASE_CASES)("%s", (_desc, input, expected) => {
+    expect(getRotationBase(input)).toBe(expected);
+  });
+
+  const NON_ROTATABLE_BASE: Jamo[] = ["ㅎ", "ㅊ", "ㅂ", "ㄷ", "ㅁ"];
+
+  it.each(NON_ROTATABLE_BASE)("returns %s unchanged when not rotatable", (jamo) => {
+    expect(getRotationBase(jamo)).toBe(jamo);
   });
 });
