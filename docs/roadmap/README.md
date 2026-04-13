@@ -5,7 +5,7 @@
 ## Current Status
 
 **Active version:** 1.1.x — Domain Logic
-**Next milestone:** `1.x.x/1.1.x/1.1.1-character.md`
+**Next milestone:** `1.x.x/1.1.x/1.1.2-word-pool.md`
 
 ## Versions
 
