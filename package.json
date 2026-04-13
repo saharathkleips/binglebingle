@@ -41,6 +41,6 @@
     "vitest": "^4.1.2"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm format && pnpm lint && pnpm typecheck"
+    "pre-commit": "pnpm format && git add -u && pnpm lint && pnpm typecheck"
   }
 }

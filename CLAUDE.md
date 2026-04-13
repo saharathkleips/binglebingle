@@ -1,72 +1,50 @@
 # CLAUDE.md
 
-<!-- GSD:project-start source:PROJECT.md -->
+**빙글빙글 (Binglebingle)** — single-player Korean word-guessing game. Player is given a pool of jamo and constructs Korean syllable characters by rotating jamo into related forms, combining them into double consonants or complex vowels, and composing them into syllable blocks. Guesses are evaluated character-by-character as correct / present / absent.
 
-## Project
+## Environment
 
-**빙글빙글 (Binglebingle)**
+Running in a locked-down devcontainer (Debian bookworm-slim). If a failure looks like an environment constraint rather than a code problem, **stop and ask** — do not attempt to work around it automatically.
 
-A single-player Korean word-guessing game for anyone who knows Hangul — primarily native speakers, but playable by learners with solid jamo knowledge. The player is given a pool of basic Korean jamo (자모) and must construct Korean syllable characters (글자) by rotating jamo into related forms, combining them into double consonants or complex vowels, and composing them into complete syllable blocks. Each submitted guess is evaluated character-by-character as correct (right position), present (wrong position), or absent.
+- **Network**: outbound firewall — package fetches and registry calls may be blocked
+- **pnpm**: supply-chain hardened — new installs or registry changes may be restricted
+- **Tools**: minimal image — some CLI tools may not be present
+- **Git**: config is read-only — do not attempt to modify it
 
-Fully client-side PWA deployed to GitHub Pages. No backend, no auth, no accounts.
+## Non-Negotiable Constraints
 
-**Core Value:** The jamo manipulation mechanic — rotate, combine, compose — must feel intuitive and satisfying. If that loop breaks or confuses, the game fails.
+- **Package manager**: pnpm only — never npm or yarn
+- **Unicode**: Hangul Compatibility Jamo (U+3130–U+318F) in all application code
+- **Stack**: TypeScript strict + React 19 + Tailwind CSS v4 + Vite, deployed as a PWA on GitHub Pages — do not introduce alternatives
 
-### Constraints
+## File & Folder Naming
 
-- **Tech stack**: TypeScript (strict) + React 19 + Tailwind CSS + Vite + dnd-kit — fixed by architecture docs
-- **Package manager**: pnpm — never npm or yarn
-- **Hosting**: GitHub Pages (static, no backend possible)
-- **Unicode**: Hangul Compatibility Jamo only in application code; Hangul Jamo block used only internally in compose/decompose
-- **Purity**: `src/lib/` has no React imports; domain logic is fully unit-testable in isolation
-- **Reducer**: pure — no async, no side effects; `SUBMIT_GUESS` receives pre-computed `GuessRecord`
-<!-- GSD:project-end -->
+- Folders: `kebab-case`; React components: `PascalCase.tsx`; everything else: `kebab-case.ts`
+- Tests: mirror source name + `.test.ts(x)`
+- Each module folder has a `README.md` (public contract) and `SPEC.md` (internals/decisions) — see `docs/templates/` for formats
+- No index barrels — import directly from the file that owns the export
 
-<!-- GSD:stack-start source:STACK.md -->
+## Naming
 
-## Technology Stack
+- `camelCase` variables/params, `SCREAMING_SNAKE_CASE` module-level constants, `PascalCase` types/components
+- Booleans: prefix with `is`, `has`, `can`, `should`
+- Prefer `type` over `interface`; no `I` prefix; discriminated unions always have a `kind` or `type` literal field
+- Props type named `<ComponentName>Props` in the same file; no default exports from component files
+- Event handler props: `on<Event>`; internal handlers: `handle<Event>`
 
-Technology stack not yet documented. Will populate after codebase mapping or first phase.
+## Tests
 
-<!-- GSD:stack-end -->
+Unit tests colocated with source. Naming: `describe('<fn>')` → `it('<does what> when <condition>')`. Use `it.each` for functions with many input/output cases. Run `pnpm test:coverage` to find gaps.
 
-<!-- GSD:conventions-start source:CONVENTIONS.md -->
+E2E tests in `tests/**/*.spec.ts`. Test observable UI behavior only; use `data-testid` for selectors.
 
-## Conventions
+## Comments
 
-Conventions not yet established. Will populate as patterns emerge during development.
+- JSDoc `@param`/`@returns` on every exported function in `src/lib/`
+- Explain _why_, not _what_; no commented-out code
 
-<!-- GSD:conventions-end -->
+## Reference Docs
 
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
-
-## Architecture
-
-Architecture not yet mapped. Follow existing patterns found in the codebase.
-
-<!-- GSD:architecture-end -->
-
-<!-- GSD:workflow-start source:GSD defaults -->
-
-## GSD Workflow Enforcement
-
-Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
-
-Use these entry points:
-
-- `/gsd:quick` for small fixes, doc updates, and ad-hoc tasks
-- `/gsd:debug` for investigation and bug fixing
-- `/gsd:execute-phase` for planned phase work
-
-Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
-
-<!-- GSD:workflow-end -->
-
-<!-- GSD:profile-start -->
-
-## Developer Profile
-
-> Profile not yet configured. Run `/gsd:profile-user` to generate your developer profile.
-> This section is managed by `generate-claude-profile` -- do not edit manually.
-
-<!-- GSD:profile-end -->
+- `docs/architecture.md` — system design, layer boundaries, key decisions
+- `docs/roadmap/` — versioned milestones; README.md has current status and next milestone
+- `src/*/README.md` and `src/*/SPEC.md` — read before working in a slice
