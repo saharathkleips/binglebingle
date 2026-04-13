@@ -7,11 +7,12 @@
 
 Two responsibilities: the game state machine (reducer + context) and game setup (word loading and initialization).
 
-**State machine** — manages `GameState` via `useReducer`. The reducer is the structural rule enforcer: it ensures only valid state transitions occur. Complementary to the engine — the reducer enforces what states are *reachable*, the engine evaluates what a state *means*.
+**State machine** — manages `GameState` via `useReducer`. The reducer is the structural rule enforcer: it ensures only valid state transitions occur. Complementary to the engine — the reducer enforces what states are _reachable_, the engine evaluates what a state _means_.
 
 **Game setup** — loads words, selects a word, constructs initial state. The only part of the codebase that performs I/O (`fetch`).
 
 **Boundaries:**
+
 - State machine: in → `GameAction`, out → `GameState`. Calls into `src/lib/jamo/` and `src/lib/character/`. No I/O.
 - Game setup: in → `WordSelectionStrategy`, out → `GameState`. Calls `fetch`. Calls into `src/lib/word/`.
 
@@ -34,7 +35,7 @@ import type { Word } from "../lib/word/word";
 import type { Character } from "../lib/character/character";
 
 export type PoolToken = {
-  id: number;       // stable index into original pool array — never changes
+  id: number; // stable index into original pool array — never changes
   character: Character;
 };
 
@@ -54,16 +55,17 @@ export type GameState = {
 };
 
 export type GameAction =
-  | { type: "ROTATE_TOKEN";    payload: { tokenId: number; targetJamo: string } }
-  | { type: "COMBINE_TOKENS";  payload: { tokenIdA: number; tokenIdB: number } }
-  | { type: "SPLIT_TOKEN";     payload: { tokenId: number } }
-  | { type: "PLACE_TOKEN";     payload: { tokenId: number; slotIndex: number } }
+  | { type: "ROTATE_TOKEN"; payload: { tokenId: number; targetJamo: string } }
+  | { type: "COMBINE_TOKENS"; payload: { tokenIdA: number; tokenIdB: number } }
+  | { type: "SPLIT_TOKEN"; payload: { tokenId: number } }
+  | { type: "PLACE_TOKEN"; payload: { tokenId: number; slotIndex: number } }
   | { type: "REMOVE_FROM_SLOT"; payload: { slotIndex: number } }
-  | { type: "SUBMIT_GUESS";    payload: { evaluation: GuessRecord } }
+  | { type: "SUBMIT_GUESS"; payload: { evaluation: GuessRecord } }
   | { type: "RESET_ROUND" };
 ```
 
 `won` is derived, never stored:
+
 ```typescript
 function isWon(state: GameState): boolean {
   const last = state.guesses.at(-1);
@@ -78,8 +80,9 @@ No `status` field, no `'idle'` state. The application layer controls whether a g
 **`ROTATE_TOKEN`** — changes the jamo of a single-jamo pool token to `targetJamo`. Only valid for single-jamo tokens. No-op if token is not single-jamo.
 
 **`COMBINE_TOKENS`** — two cases:
-1. *Pool combination*: both tokens are standalone single-jamo pool tokens → calls `combineJamo`. No-op if result is null.
-2. *Jongseong upgrade*: token A is a complete syllable with single jongseong, token B is a consonant → calls `upgradeJongseong`. No-op if result is null.
+
+1. _Pool combination_: both tokens are standalone single-jamo pool tokens → calls `combineJamo`. No-op if result is null.
+2. _Jongseong upgrade_: token A is a complete syllable with single jongseong, token B is a consonant → calls `upgradeJongseong`. No-op if result is null.
 
 If neither case applies, no-op.
 

@@ -8,6 +8,7 @@
 Component structure, interaction model, and data flow for the game UI.
 
 **Boundaries:**
+
 - Reads from: `useGame()` (state)
 - Dispatches to: `useGame()` (dispatch)
 - Calls into: `src/lib/engine/` for `canSubmit`, `evaluateGuess`; `src/lib/character/` for `resolveCharacter`; `src/lib/jamo/` for `getNextRotation`
@@ -70,11 +71,13 @@ Starts `setupGame()` on mount. Shows `InstructionsScreen` while loading — game
 Token is the core interactive element. Only appears in the pool.
 
 **Tap:**
+
 - Rotatable single-jamo → `ROTATE_TOKEN` (cycles via `getNextRotation`)
 - Non-rotatable / multi-jamo → `SPLIT_TOKEN` (one step via `decomposeJamo`)
 - Basic non-rotatable, non-splittable → inert to taps (drag only)
 
 **Drag:**
+
 - Onto another pool token → validity check first (`combineJamo` or `upgradeJongseong`); if valid → `COMBINE_TOKENS`; if invalid → shake animation, no dispatch
 - Onto empty submission slot → `PLACE_TOKEN`
 - Onto filled submission slot → no-op (MVP)
@@ -99,6 +102,7 @@ SubmitButton click
 ## Win State
 
 `isWon(state)` derived from last GuessRecord (all `'correct'`). On win:
+
 - Pool area shows score (`calculateScore(state.guesses)`) and target word
 - Board remains visible — final guess row shows all-correct tiles (effectively reveals the word)
 - SubmitButton becomes Share placeholder (inert in MVP)
