@@ -17,4 +17,4 @@ Low-level Unicode mechanics for Hangul Compatibility Jamo (U+3130–U+318F). Pro
 
 - Game rules for how a player builds a character — that is `character/combine`.
 - Which jamo belong in which position for a given game state — callers are responsible for passing semantically correct inputs.
-- Rotation set design — sets are defined in `jamo.ts` and are designer-controlled, not derived from Unicode.
+- Rotation set design — sets are defined in `rotation.ts` and are designer-controlled, not derived from Unicode.

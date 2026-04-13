@@ -8,6 +8,7 @@
 Everything that is a fact about the Korean writing system: rotation rules, combination rules, syllable composition and decomposition, Unicode index tables. The linguistic foundation every other domain calls into.
 
 **Boundaries:**
+
 - In: raw jamo strings, syllable block strings
 - Out: transformed jamo strings, composed/decomposed syllables, lookup results
 - Calls into: nothing
@@ -19,10 +20,10 @@ All exports are pure functions or readonly constants.
 
 ```
 src/lib/jamo/
-├── jamo-data.ts        # all static data: index tables, rotation sets, combination rules
-├── rotation.ts         # getRotationOptions(), getNextRotation()
-├── composition.ts      # combineJamo(), upgradeJongseong(), composeSyllable(), decomposeSyllable()
-├── jamo-data.test.ts
+├── jamo.ts             # type definitions + CHOSEONG/JUNGSEONG/JONGSEONG index tables
+├── rotation.ts         # ROTATION_SETS, getNextRotation()
+├── composition.ts      # CombinationRule, COMBINATION_RULES, composeJamo(), decomposeJamo(), composeSyllable(), decomposeSyllable()
+├── jamo.test.ts
 ├── rotation.test.ts
 └── composition.test.ts
 ```
@@ -30,17 +31,24 @@ src/lib/jamo/
 ## Types
 
 ```typescript
-// jamo-data.ts
-type CombinationRule = {
-  inputs: readonly [string, string];
-  output: string;
-  kind: "doubleConsonant" | "complexVowel";
-};
+// jamo.ts — position-specific type aliases
+type BasicConsonantJamo    // 14 basic consonants
+type DoubleConsonantJamo   // 5 double consonants (ㄲ ㄸ ㅃ ㅆ ㅉ)
+type CompoundBatchimJamo   // 11 compound batchim (ㄳ ㄵ ㄶ ㄺ ㄻ ㄼ ㄽ ㄾ ㄿ ㅀ ㅄ)
+type ConsonantJamo         // BasicConsonantJamo | DoubleConsonantJamo | CompoundBatchimJamo
+type ChoseongJamo          // BasicConsonantJamo | DoubleConsonantJamo (19 members)
+type JongseongJamo         // ConsonantJamo excluding ㄸ/ㅃ/ㅉ (27 members)
+type BasicVowelJamo        // 10 basic vowels
+type ComplexVowelJamo      // 11 complex vowels
+type VowelJamo             // BasicVowelJamo | ComplexVowelJamo (21 members)
+type Jamo                  // ConsonantJamo | VowelJamo (51 members total)
 
-type JongseongUpgradeRule = {
-  existing: string;   // single consonant already in jongseong position
-  additional: string; // consonant being added
-  output: string;     // resulting compound batchim
+// composition.ts
+type CombinationRule = {
+  inputs: readonly [Jamo, Jamo];
+  output: Jamo;
+  kind: "DOUBLE_CONSONANT" | "COMPLEX_VOWEL" | "COMPOUND_BATCHIM";
+  alternate?: true; // alternate input path that produces the same output; excluded from DECOMPOSE_MAP
 };
 ```
 
@@ -50,18 +58,31 @@ type JongseongUpgradeRule = {
 
 **Jungseong (21 entries):** ㅏ:0 ㅐ:1 ㅑ:2 ㅒ:3 ㅓ:4 ㅔ:5 ㅕ:6 ㅖ:7 ㅗ:8 ㅘ:9 ㅙ:10 ㅚ:11 ㅛ:12 ㅜ:13 ㅝ:14 ㅞ:15 ㅟ:16 ㅠ:17 ㅡ:18 ㅢ:19 ㅣ:20
 
-**Jongseong (28 entries, index 0 = no final consonant):** '':0 ㄱ:1 ㄲ:2 ㄳ:3 ㄴ:4 ㄵ:5 ㄶ:6 ㄹ:7 ㄺ:8 ㄻ:9 ㄼ:10 ㄽ:11 ㄾ:12 ㄿ:13 ㅀ:14 ㅁ:15 ㅂ:16 ㅄ:17 ㅅ:18 ㅆ:19 ㅇ:20 ㅈ:21 ㅊ:22 ㅋ:23 ㅌ:24 ㅍ:25 ㅎ:26
+**Jongseong (28 entries, index 0 = no final consonant):** '':0 ㄱ:1 ㄲ:2 ㄳ:3 ㄴ:4 ㄵ:5 ㄶ:6 ㄷ:7 ㄹ:8 ㄺ:9 ㄻ:10 ㄼ:11 ㄽ:12 ㄾ:13 ㄿ:14 ㅀ:15 ㅁ:16 ㅂ:17 ㅄ:18 ㅅ:19 ㅆ:20 ㅇ:21 ㅈ:22 ㅊ:23 ㅋ:24 ㅌ:25 ㅍ:26 ㅎ:27
 
 Note: ㄸ, ㅃ, ㅉ are valid choseong but NOT valid jongseong.
+
+## Rotation Sets
+
+Designer-controlled sets in `rotation.ts`. Jamo not in any set are not rotatable.
+
+```
+["ㄱ", "ㄴ"]
+["ㅏ", "ㅜ", "ㅓ", "ㅗ"]   // clockwise
+["ㅣ", "ㅡ"]
+["ㅑ", "ㅠ", "ㅕ", "ㅛ"]   // clockwise
+```
+
+`getNextRotation` cycles forward and wraps; returns null for non-rotatable jamo.
 
 ## Key Decisions
 
 **J1 — Compatibility Jamo only.** All table entries use U+3130–U+318F (Hangul Compatibility Jamo), not U+1100–U+11FF (Hangul Jamo). Verify: `'ㄱ'.codePointAt(0) === 0x3131`. Copy-pasting from sources using the Jamo block causes silent lookup failures.
 
-**J2 — Combination is commutative; jongseong upgrade is not.** `COMBINATION_MAP` keys are sorted pairs (`[a,b].sort().join('|')`). `JONGSEONG_UPGRADE_MAP` keys are ordered `'existing|additional'` — `ㄱ+ㅅ→ㄳ` is valid, `ㅅ+ㄱ` is not.
+**J2 — Commutativity via dual map entries, not sorted keys.** `COMBINATION_MAP` stores both `"a|b"` and `"b|a"` for DOUBLE_CONSONANT and COMPLEX_VOWEL rules. COMPOUND_BATCHIM rules store only canonical `"a|b"` (e.g. `"ㄱ|ㅅ"→ㄳ`; `"ㅅ|ㄱ"` has no entry). Key format is `"${a}|${b}"` — not sorted.
 
-**J3 — `combineJamo` does not produce compound batchim.** `combineJamo('ㄱ','ㅅ')` returns `null`. Use `upgradeJongseong` instead. The caller (reducer) decides which applies based on context.
+**J3 — `composeJamo` produces compound batchim.** `composeJamo('ㄱ','ㅅ')` returns `'ㄳ'`. Compound batchim rules are part of `COMBINATION_RULES` with `kind: "COMPOUND_BATCHIM"`. The caller (`compose()` in character/) decides whether to invoke this based on slot context.
 
-**J4 — Rotation wraps around.** `getNextRotation` cycles through the set and wraps: the last member returns the first. `getRotationOptions` excludes self.
+**J4 — Alternate input rules for ㅙ and ㅞ.** Both complex vowels can be reached via two paths. `alternate: true` rules are included in `COMBINATION_MAP` (compose) but excluded from `DECOMPOSE_MAP` (decompose always returns the canonical path).
 
 **J5 — `decomposeSyllable` returns compatibility jamo.** Verified by: `decomposeSyllable('가')?.choseong === 'ㄱ'` where `'ㄱ'.codePointAt(0) === 0x3131`.
