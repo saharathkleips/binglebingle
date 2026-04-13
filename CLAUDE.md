@@ -2,6 +2,15 @@
 
 **빙글빙글 (Binglebingle)** — single-player Korean word-guessing game. Player is given a pool of jamo and constructs Korean syllable characters by rotating jamo into related forms, combining them into double consonants or complex vowels, and composing them into syllable blocks. Guesses are evaluated character-by-character as correct / present / absent.
 
+## Environment
+
+Running in a locked-down devcontainer (Debian bookworm-slim). If a failure looks like an environment constraint rather than a code problem, **stop and ask** — do not attempt to work around it automatically.
+
+- **Network**: outbound firewall — package fetches and registry calls may be blocked
+- **pnpm**: supply-chain hardened — new installs or registry changes may be restricted
+- **Tools**: minimal image — some CLI tools may not be present
+- **Git**: config is read-only — do not attempt to modify it
+
 ## Non-Negotiable Constraints
 
 - **Package manager**: pnpm only — never npm or yarn
