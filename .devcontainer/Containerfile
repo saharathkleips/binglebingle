@@ -60,12 +60,15 @@ RUN mkdir -p \
         /home/dev/.claude \
         /home/dev/.local
 
-# ── firewall script ───────────────────────────────────────────────────────────
+# ── firewall & permissions script ────────────────────────────────────────────────────────
 COPY init-firewall.sh /usr/local/bin/init-firewall.sh
+COPY fix-permissions.sh /usr/local/bin/fix-permissions.sh
 
-RUN chmod +x /usr/local/bin/init-firewall.sh && \
+RUN chmod +x /usr/local/bin/init-firewall.sh /usr/local/bin/fix-permissions.sh && \
     echo "dev ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" \
-    > /etc/sudoers.d/dev-firewall && \
+        > /etc/sudoers.d/dev-firewall && \
+    echo "dev ALL=(root) NOPASSWD: /usr/local/bin/fix-permissions.sh" \
+        >> /etc/sudoers.d/dev-firewall && \
     chmod 0440 /etc/sudoers.d/dev-firewall
 
 # ── pnpm ──────────────────────────────────────────────────────────────────────
