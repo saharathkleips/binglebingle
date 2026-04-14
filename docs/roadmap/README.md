@@ -2,18 +2,16 @@
 
 ## Current Status
 
-**Active version:** 1.1.x — Domain Logic
-**Next milestone:** `1.x.x/1.1.x/1.1.3-engine.md`
-
-> **Note:** 1.1.3 (Engine) has a prerequisite step — `STAT-01` (state types) must be defined first since `canSubmit()` depends on `SubmissionState`. See `1.1.3-engine.md` execution ledger.
+**Active version:** 1.2.x — Playable Game
+**Next milestone:** `1.x.x/1.2.x/1.2.1-game-state.md`
 
 ## Versions
 
 | Version | Theme              | Status      |
 | ------- | ------------------ | ----------- |
 | 1.0.x   | Foundation         | Complete    |
-| 1.1.x   | Domain Logic       | In progress |
-| 1.2.x   | Playable Game      | Pending     |
+| 1.1.x   | Domain Logic       | Complete    |
+| 1.2.x   | Playable Game      | In progress |
 | 1.3.x   | Full Product Shell | Pending     |
 | 2.0.x   | Post-Launch        | Backlog     |
 
