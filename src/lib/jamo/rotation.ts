@@ -33,3 +33,15 @@ export function getNextRotation(jamo: Jamo): Jamo | null {
   const idx = set.indexOf(jamo);
   return set[(idx + 1) % set.length] ?? null;
 }
+
+/**
+ * Returns the 0-index (canonical) member of the rotation set containing this jamo.
+ * Returns the jamo unchanged if it is not rotatable.
+ *
+ * @param jamo - A Hangul Compatibility Jamo string
+ * @returns The canonical jamo for this rotation set, or the input if not rotatable
+ */
+export function normalizeJamo(jamo: Jamo): Jamo {
+  const set = ROTATION_SETS.find((s) => s.includes(jamo));
+  return set?.[0] ?? jamo;
+}

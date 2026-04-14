@@ -3,7 +3,7 @@
 ## Current Status
 
 **Active version:** 1.1.x — Domain Logic
-**Next milestone:** `1.x.x/1.1.x/1.1.2-word-pool.md`
+**Next milestone:** `1.x.x/1.1.x/1.1.3-engine.md`
 
 > **Note:** 1.1.3 (Engine) has a prerequisite step — `STAT-01` (state types) must be defined first since `canSubmit()` depends on `SubmissionState`. See `1.1.3-engine.md` execution ledger.
 

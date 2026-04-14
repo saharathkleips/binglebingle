@@ -10,6 +10,7 @@ Low-level Unicode mechanics for Hangul Compatibility Jamo (U+3130–U+318F). Pro
 - `composeSyllable(choseong, jungseong, jongseong?)` — returns the Unicode syllable block (U+AC00–U+D7A3) for valid inputs, or `null` if any component is not valid for its position.
 - `decomposeSyllable(syllable)` — returns `{ choseong, jungseong, jongseong }` for a syllable block, or `null` if the input is not in U+AC00–U+D7A3.
 - `getNextRotation(jamo)` — returns the next jamo in the rotation cycle (wrapping), or `null` if not rotatable.
+- `normalizeJamo(jamo)` — returns the 0-index (canonical) member of the rotation set containing this jamo, or the jamo unchanged if not rotatable.
 - All jamo arguments must be Hangul Compatibility Jamo. Mixing in Hangul Jamo (U+1100–U+11FF) produces incorrect results.
 - All functions are pure — no side effects, no module-level state beyond lookup maps built once at load time.
 

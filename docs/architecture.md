@@ -15,7 +15,7 @@ flowchart TD
     end
 
     subgraph Domain["Domain Logic — src/lib/"]
-        domain["jamo · character · word · engine\nNo React · No I/O · Pure functions"]
+        domain["jamo · character · word · puzzle · engine\nNo React · Pure functions (puzzle owns the only I/O)"]
     end
 
     UI -->|"reads via useGame() / dispatches actions"| State
@@ -26,7 +26,9 @@ flowchart TD
 
 **`src/lib/character/`** — The `Character` slot model and its operations. Bridge between raw jamo and the player-visible assembly state. See `src/lib/character/README.md`.
 
-**`src/lib/word/`** — Word type, pool derivation, word loading and selection. The only layer that performs I/O. See `src/lib/word/README.md`.
+**`src/lib/word/`** — Word type, pool derivation, and string conversion. Pure functions only. See `src/lib/word/README.md`.
+
+**`src/lib/puzzle/`** — Word list loading and word selection by strategy (daily, random, fixed, byDate). The only layer that performs I/O. See `src/lib/puzzle/README.md`.
 
 **`src/lib/engine/`** — Guess validation, evaluation, and scoring. See `src/lib/engine/README.md`.
 

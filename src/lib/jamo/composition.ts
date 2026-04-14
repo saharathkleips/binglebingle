@@ -193,7 +193,7 @@ export function composeSyllable(
  */
 export function decomposeSyllable(
   syllable: string,
-): { choseong: ChoseongJamo; jungseong: VowelJamo; jongseong: JongseongJamo | null } | null {
+): { choseong: ChoseongJamo; jungseong: VowelJamo; jongseong?: JongseongJamo } | null {
   const cp = syllable.codePointAt(0);
   if (cp === undefined || cp < 0xac00 || cp > 0xd7a3) return null;
 
@@ -205,10 +205,10 @@ export function decomposeSyllable(
   const choseong = CHOSEONG_BY_INDEX[choIdx];
   const jungseong = JUNGSEONG_BY_INDEX[jungIdx];
   // jongIdx === 0 means no final consonant
-  const jongseong: JongseongJamo | null =
-    jongIdx === 0 ? null : JONGSEONG_BY_INDEX[jongIdx] || null;
+  const jongseong: JongseongJamo | undefined =
+    jongIdx === 0 ? undefined : JONGSEONG_BY_INDEX[jongIdx] || undefined;
 
   if (choseong === undefined || jungseong === undefined) return null;
 
-  return { choseong, jungseong, jongseong };
+  return { choseong, jungseong, ...(jongseong !== undefined ? { jongseong } : {}) };
 }
