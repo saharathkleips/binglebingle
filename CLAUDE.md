@@ -26,6 +26,8 @@ Running in a locked-down devcontainer (Debian bookworm-slim). If a failure looks
 
 ## Naming
 
+- Prefer functional style (`map`/`flatMap`/`reduce`/`filter`) over imperative loops, `while`, or variable reassignment
+- Limit `as` casts — if one is unavoidable, add an inline comment explaining why
 - `camelCase` variables/params, `SCREAMING_SNAKE_CASE` module-level constants, `PascalCase` types/components
 - Booleans: prefix with `is`, `has`, `can`, `should`
 - Prefer `type` over `interface`; no `I` prefix; discriminated unions always have a `kind` or `type` literal field
@@ -47,4 +49,5 @@ E2E tests in `tests/**/*.spec.ts`. Test observable UI behavior only; use `data-t
 
 - `docs/architecture.md` — system design, layer boundaries, key decisions
 - `docs/roadmap/` — versioned milestones; README.md has current status and next milestone
-- `src/*/README.md` and `src/*/SPEC.md` — read before working in a slice
+- `src/*/README.md` — high-level overview; read for general orientation
+- `src/*/SPEC.md` — implementation details and decisions; read when making changes to that slice
