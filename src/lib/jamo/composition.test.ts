@@ -125,7 +125,7 @@ describe("decomposeSyllable", () => {
       expect(result).not.toBeNull();
       expect(result!.choseong).toBe(cho);
       expect(result!.jungseong).toBe(jung);
-      expect(result!.jongseong).toBe(jong ?? null);
+      expect(result!.jongseong).toBe(jong);
     },
   );
 
@@ -156,7 +156,7 @@ describe("decomposeSyllable", () => {
     expect(choCode).toBeLessThanOrEqual(0x318f);
     expect(jungCode).toBeGreaterThanOrEqual(0x3130);
     expect(jungCode).toBeLessThanOrEqual(0x318f);
-    if (jongseong !== null) {
+    if (jongseong !== undefined) {
       const jongCode = jongseong.codePointAt(0) ?? 0;
       expect(jongCode).toBeGreaterThanOrEqual(0x3130);
       expect(jongCode).toBeLessThanOrEqual(0x318f);

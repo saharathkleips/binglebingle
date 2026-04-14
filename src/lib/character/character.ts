@@ -83,7 +83,7 @@ export function character(slots?: {
   jongseong?: Jamo;
 }): Character | null;
 export function character(
-  input?: string | { choseong?: Jamo; jungseong?: Jamo; jongseong?: Jamo | null },
+  input?: string | { choseong?: Jamo; jungseong?: Jamo; jongseong?: Jamo },
 ): Character | null {
   if (typeof input === "string") {
     const decomposed = decomposeSyllable(input);
@@ -94,7 +94,7 @@ export function character(
   if (!choseong && !jungseong && !jongseong) return { kind: "EMPTY" };
   if (choseong !== undefined && !(choseong in CHOSEONG_INDEX)) return null;
   if (jungseong !== undefined && !(jungseong in JUNGSEONG_INDEX)) return null;
-  if (jongseong != null && !(jongseong in JONGSEONG_INDEX)) return null;
+  if (jongseong !== undefined && !(jongseong in JONGSEONG_INDEX)) return null;
   const cho = choseong as ChoseongJamo | undefined;
   const jung = jungseong as VowelJamo | undefined;
   const jong = jongseong as JongseongJamo | undefined;
