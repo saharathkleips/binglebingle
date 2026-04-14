@@ -30,7 +30,7 @@ src/state/
 ## Types
 
 ```typescript
-import type { GuessRecord } from "../lib/engine/types";
+import type { GuessRecord } from "../lib/engine/engine";
 import type { Word } from "../lib/word/word";
 import type { Character } from "../lib/character/character";
 

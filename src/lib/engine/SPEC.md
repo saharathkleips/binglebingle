@@ -21,7 +21,7 @@ src/lib/engine/
 ├── validate.ts       # canSubmit()
 ├── evaluate.ts       # evaluateGuess()
 ├── scoring.ts        # calculateScore()
-├── types.ts          # engine-owned types (GuessRecord, CharacterResult, etc.)
+├── engine.ts         # engine-owned types (GuessRecord, CharacterResult, etc.)
 ├── validate.test.ts
 ├── evaluate.test.ts
 ├── scoring.test.ts
@@ -31,11 +31,11 @@ src/lib/engine/
 ## Types
 
 ```typescript
-// types.ts
-export type CharacterResult = "correct" | "present" | "absent";
+// engine.ts
+export type CharacterResult = "CORRECT" | "PRESENT" | "ABSENT";
 
 export type EvaluatedCharacter = {
-  character: string; // resolved syllable string, or '' for an empty slot
+  character?: Character; // omitted when the slot was empty
   result: CharacterResult;
 };
 
@@ -71,7 +71,7 @@ Two-pass algorithm (standard Wordle duplicate semantics):
 1. Pass 1: mark exact position matches as `'correct'`, remove from available target pool
 2. Pass 2: mark remaining filled slots as `'present'` if character exists in remaining target pool, else `'absent'`
 
-Empty slots always produce `result: 'absent'`, `character: ''`.
+Empty slots always produce `{ result: 'ABSENT' }` with no `character` property.
 
 ### `calculateScore(guesses: readonly GuessRecord[]): ScoringResult`
 
