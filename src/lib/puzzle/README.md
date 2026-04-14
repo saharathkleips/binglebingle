@@ -7,12 +7,12 @@
 
 ### `puzzle.ts`
 
-| Export                        | Description                                                             |
-| ----------------------------- | ----------------------------------------------------------------------- |
-| `WordSelectionStrategy`       | Discriminated union: `daily`, `random`, `fixed`, `byDate`               |
-| `loadWords()`                 | Fetches `public/data/words.json`, validates each entry via `createWord` |
-| `selectWord(words, strategy)` | Selects a word by strategy (daily, random, fixed, byDate)               |
-| `fullDecompose(characters)`   | Fully decomposes a Word to basic single-jamo Characters (recursive)     |
+| Export                        | Description                                                                         |
+| ----------------------------- | ----------------------------------------------------------------------------------- |
+| `WordSelectionStrategy`       | Discriminated union: `daily`, `random`, `fixed`, `byDate`                           |
+| `loadWords()`                 | Fetches `public/data/words.json`, validates each entry via `createWord`             |
+| `selectWord(words, strategy)` | Selects a word by strategy (daily, random, fixed, byDate)                           |
+| `fullDecompose(characters)`   | Fully decomposes an array of Characters to basic single-jamo Characters (recursive) |
 
 ## Usage
 
