@@ -11,9 +11,11 @@ import type { Word } from "../lib/word/word";
 import type { Character } from "../lib/character/character";
 
 /**
- * A single tile in the player's jamo pool. The `id` is a stable index into
- * the original pool array and never changes, even as `character` mutates
- * through rotate, combine, or split actions.
+ * A single tile in the player's jamo pool.
+ *
+ * @property id - Stable index into the original pool array; never changes even
+ *   as `character` mutates through rotate, combine, or split actions.
+ * @property character - The current jamo character represented by this tile.
  */
 export type PoolToken = {
   id: number;
@@ -38,7 +40,14 @@ export type SubmissionSlot =
  */
 export type SubmissionState = readonly SubmissionSlot[];
 
-/** Top-level game state for a single round. */
+/**
+ * Top-level game state for a single round.
+ *
+ * @property word - The target word the player is trying to guess.
+ * @property pool - The jamo tiles currently available to the player.
+ * @property submission - The player's current in-progress guess.
+ * @property guesses - All evaluated guesses submitted so far this round.
+ */
 export type GameState = {
   word: Word;
   pool: PoolState;
