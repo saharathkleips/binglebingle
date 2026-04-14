@@ -3,51 +3,49 @@ import { canSubmit } from "./validate";
 import type { SubmissionState } from "../../state/types";
 import { character } from "../character/character";
 
-// 가 = OPEN_SYLLABLE (complete), ㄱ = CHOSEONG_ONLY (incomplete)
-const 가 = character("가")!;
-const 한 = character("한")!;
-const ㄱOnly = character({ choseong: "ㄱ" })!;
+const completeOpen = character("가")!; // OPEN_SYLLABLE — complete
+const completeFull = character("한")!; // FULL_SYLLABLE — complete
+const incompleteChoseong = character({ choseong: "ㄱ" })!; // CHOSEONG_ONLY — incomplete
+
+function filled(char: NonNullable<ReturnType<typeof character>>) {
+  return { filled: true as const, tokenId: 0, character: char };
+}
+
+const empty = { filled: false as const };
 
 describe("canSubmit", () => {
-  it("returns valid:true when all filled slots have complete characters", () => {
-    const submission: SubmissionState = [
-      { filled: true, tokenId: 0, character: 가 },
-      { filled: true, tokenId: 1, character: 한 },
-    ];
-    expect(canSubmit(submission)).toEqual({ valid: true });
-  });
-
-  it("returns valid:true with partial fill when filled slots are complete", () => {
-    const submission: SubmissionState = [
-      { filled: true, tokenId: 0, character: 가 },
-      { filled: false },
-    ];
-    expect(canSubmit(submission)).toEqual({ valid: true });
-  });
-
-  it("returns NO_CHARACTERS when no slots are filled", () => {
-    const submission: SubmissionState = [{ filled: false }, { filled: false }];
-    expect(canSubmit(submission)).toEqual({ valid: false, reason: "NO_CHARACTERS" });
-  });
-
-  it("returns NO_CHARACTERS when submission is empty", () => {
-    const submission: SubmissionState = [];
-    expect(canSubmit(submission)).toEqual({ valid: false, reason: "NO_CHARACTERS" });
-  });
-
-  it("returns INCOMPLETE_CHARACTER when a filled slot has an incomplete character", () => {
-    const submission: SubmissionState = [
-      { filled: true, tokenId: 0, character: ㄱOnly },
-      { filled: false },
-    ];
-    expect(canSubmit(submission)).toEqual({ valid: false, reason: "INCOMPLETE_CHARACTER" });
-  });
-
-  it("returns INCOMPLETE_CHARACTER when one slot is complete and another is incomplete", () => {
-    const submission: SubmissionState = [
-      { filled: true, tokenId: 0, character: 가 },
-      { filled: true, tokenId: 1, character: ㄱOnly },
-    ];
-    expect(canSubmit(submission)).toEqual({ valid: false, reason: "INCOMPLETE_CHARACTER" });
+  it.each([
+    {
+      label: "returns valid:true when all filled slots have complete characters",
+      submission: [filled(completeOpen), filled(completeFull)],
+      expected: { valid: true },
+    },
+    {
+      label: "returns valid:true when partial fill has complete characters",
+      submission: [filled(completeOpen), empty],
+      expected: { valid: true },
+    },
+    {
+      label: "returns NO_CHARACTERS when no slots are filled",
+      submission: [empty, empty],
+      expected: { valid: false, reason: "NO_CHARACTERS" },
+    },
+    {
+      label: "returns NO_CHARACTERS when submission is empty",
+      submission: [] as SubmissionState,
+      expected: { valid: false, reason: "NO_CHARACTERS" },
+    },
+    {
+      label: "returns INCOMPLETE_CHARACTER when a filled slot has an incomplete character",
+      submission: [filled(incompleteChoseong), empty],
+      expected: { valid: false, reason: "INCOMPLETE_CHARACTER" },
+    },
+    {
+      label: "returns INCOMPLETE_CHARACTER when one complete and one incomplete slot",
+      submission: [filled(completeOpen), filled(incompleteChoseong)],
+      expected: { valid: false, reason: "INCOMPLETE_CHARACTER" },
+    },
+  ])("$label", ({ submission, expected }) => {
+    expect(canSubmit(submission as SubmissionState)).toEqual(expected);
   });
 });

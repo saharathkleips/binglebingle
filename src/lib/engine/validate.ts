@@ -8,7 +8,7 @@
 
 import { isComplete } from "../character/character";
 import type { SubmissionState } from "../../state/types";
-import type { ValidationResult } from "./types";
+import type { ValidationResult } from "./engine";
 
 /**
  * Checks whether the current submission is valid to submit.

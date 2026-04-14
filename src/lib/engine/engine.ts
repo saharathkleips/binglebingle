@@ -1,23 +1,25 @@
 /**
- * @file types.ts
+ * @file engine.ts
  *
  * Engine-owned types: evaluation results, validation, and scoring.
  *
  * All types are pure data. No React. No side effects.
  */
 
+import type { Character } from "../character/character";
+
 /** Per-character evaluation result for a submitted guess. */
-export type CharacterResult = "correct" | "present" | "absent";
+export type CharacterResult = "CORRECT" | "PRESENT" | "ABSENT";
 
 /**
  * The evaluation of a single submission slot.
  *
- * @property character - The resolved syllable string for the slot, or `''` for an empty slot.
- *   UI can distinguish empty-slot absent from wrong-character absent by checking `character === ''`.
+ * @property character - The Character placed in this slot. Absent when the slot was empty —
+ *   absence signals "no tile placed here" rather than an invalid or failed state.
  * @property result - The evaluation result for this slot.
  */
 export type EvaluatedCharacter = {
-  character: string;
+  character?: Character;
   result: CharacterResult;
 };
 

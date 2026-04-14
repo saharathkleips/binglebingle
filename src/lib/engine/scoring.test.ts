@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { calculateScore } from "./scoring";
-import type { GuessRecord } from "./types";
+import type { GuessRecord } from "./engine";
+import { character } from "../character/character";
 
-const dummyGuess: GuessRecord = [{ character: "가", result: "correct" }];
+const dummyGuess: GuessRecord = [{ character: character("가")!, result: "CORRECT" }];
 
 describe("calculateScore", () => {
   it("returns guessCount of 0 when there are no guesses", () => {

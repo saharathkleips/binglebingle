@@ -5,16 +5,16 @@
 
 ## Exports
 
-### `types.ts`
+### `engine.ts`
 
-| Export                    | Description                                                            |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `CharacterResult`         | `'correct' \| 'present' \| 'absent'` — per-character evaluation result |
-| `EvaluatedCharacter`      | `{ character: string; result: CharacterResult }` — one slot in a guess |
-| `GuessRecord`             | `readonly EvaluatedCharacter[]` — a fully evaluated guess              |
-| `ValidationFailureReason` | `'NO_CHARACTERS' \| 'INCOMPLETE_CHARACTER'`                            |
-| `ValidationResult`        | `{ valid: true } \| { valid: false; reason: ValidationFailureReason }` |
-| `ScoringResult`           | `{ guessCount: number }`                                               |
+| Export                    | Description                                                                |
+| ------------------------- | -------------------------------------------------------------------------- |
+| `CharacterResult`         | `'CORRECT' \| 'PRESENT' \| 'ABSENT'` — per-character evaluation result     |
+| `EvaluatedCharacter`      | `{ character?: Character; result: CharacterResult }` — one slot in a guess |
+| `GuessRecord`             | `readonly EvaluatedCharacter[]` — a fully evaluated guess                  |
+| `ValidationFailureReason` | `'NO_CHARACTERS' \| 'INCOMPLETE_CHARACTER'`                                |
+| `ValidationResult`        | `{ valid: true } \| { valid: false; reason: ValidationFailureReason }`     |
+| `ScoringResult`           | `{ guessCount: number }`                                                   |
 
 ### `validate.ts`
 

@@ -3,9 +3,10 @@ import { evaluateGuess } from "./evaluate";
 import { createWord } from "../word/word";
 import { character } from "../character/character";
 import type { SubmissionState } from "../../state/types";
+import type { EvaluatedCharacter } from "./engine";
 
-const word가나 = createWord("가나")!;
-const word한국어 = createWord("한국어")!;
+const wordGaNa = createWord("가나")!;
+const wordHanGukEo = createWord("한국어")!;
 
 function filledSlot(syllable: string, tokenId = 0) {
   return { filled: true as const, tokenId, character: character(syllable)! };
@@ -13,53 +14,65 @@ function filledSlot(syllable: string, tokenId = 0) {
 
 const emptySlot = { filled: false as const };
 
+function correct(syllable: string): EvaluatedCharacter {
+  return { character: character(syllable)!, result: "CORRECT" };
+}
+
+function present(syllable: string): EvaluatedCharacter {
+  return { character: character(syllable)!, result: "PRESENT" };
+}
+
+function absent(syllable: string): EvaluatedCharacter {
+  return { character: character(syllable)!, result: "ABSENT" };
+}
+
+const absentEmpty: EvaluatedCharacter = { result: "ABSENT" };
+
 describe("evaluateGuess", () => {
-  it("marks a character as correct when it is in the right position", () => {
-    const submission: SubmissionState = [filledSlot("가"), filledSlot("나")];
-    const result = evaluateGuess(submission, word가나);
-    expect(result[0]).toEqual({ character: "가", result: "correct" });
-    expect(result[1]).toEqual({ character: "나", result: "correct" });
-  });
-
-  it("marks a character as present when it is in the word but wrong position", () => {
-    const submission: SubmissionState = [filledSlot("나"), filledSlot("가")];
-    const result = evaluateGuess(submission, word가나);
-    expect(result[0]).toEqual({ character: "나", result: "present" });
-    expect(result[1]).toEqual({ character: "가", result: "present" });
-  });
-
-  it("marks a character as absent when it is not in the word", () => {
-    const submission: SubmissionState = [filledSlot("다"), filledSlot("라")];
-    const result = evaluateGuess(submission, word가나);
-    expect(result[0]).toEqual({ character: "다", result: "absent" });
-    expect(result[1]).toEqual({ character: "라", result: "absent" });
-  });
-
-  it("marks empty slots as absent with empty character string", () => {
-    const submission: SubmissionState = [filledSlot("가"), emptySlot];
-    const result = evaluateGuess(submission, word가나);
-    expect(result[1]).toEqual({ character: "", result: "absent" });
-  });
-
-  it("does not double-count a target character as present", () => {
-    // word is 가나; guess is 가가 — second 가 should be absent (first consumed by correct match)
-    const submission: SubmissionState = [filledSlot("가"), filledSlot("가")];
-    const result = evaluateGuess(submission, word가나);
-    expect(result[0]).toEqual({ character: "가", result: "correct" });
-    expect(result[1]).toEqual({ character: "가", result: "absent" });
-  });
-
-  it("handles a fully correct multi-character word", () => {
-    const submission: SubmissionState = [filledSlot("한"), filledSlot("국"), filledSlot("어")];
-    const result = evaluateGuess(submission, word한국어);
-    expect(result.every((e) => e.result === "correct")).toBe(true);
-  });
-
-  it("does not mark a character present after it has been consumed by a correct match", () => {
-    // word is 가나; guess is 나나 — index 1 is correct (나=나), leaving no 나 for index 0 → absent
-    const submission: SubmissionState = [filledSlot("나"), filledSlot("나")];
-    const result = evaluateGuess(submission, word가나);
-    expect(result[0]).toEqual({ character: "나", result: "absent" });
-    expect(result[1]).toEqual({ character: "나", result: "correct" });
+  it.each([
+    {
+      label: "marks correct when all characters are in the right position",
+      submission: [filledSlot("가"), filledSlot("나")] as SubmissionState,
+      word: wordGaNa,
+      expected: [correct("가"), correct("나")],
+    },
+    {
+      label: "marks present when characters are in the word but wrong position",
+      submission: [filledSlot("나"), filledSlot("가")] as SubmissionState,
+      word: wordGaNa,
+      expected: [present("나"), present("가")],
+    },
+    {
+      label: "marks absent when characters are not in the word",
+      submission: [filledSlot("다"), filledSlot("라")] as SubmissionState,
+      word: wordGaNa,
+      expected: [absent("다"), absent("라")],
+    },
+    {
+      label: "marks absent with no character when slot is empty",
+      submission: [filledSlot("가"), emptySlot] as SubmissionState,
+      word: wordGaNa,
+      expected: [correct("가"), absentEmpty],
+    },
+    {
+      label: "does not double-count a target character as present",
+      submission: [filledSlot("가"), filledSlot("가")] as SubmissionState,
+      word: wordGaNa,
+      expected: [correct("가"), absent("가")],
+    },
+    {
+      label: "marks all correct in a fully correct multi-character word",
+      submission: [filledSlot("한"), filledSlot("국"), filledSlot("어")] as SubmissionState,
+      word: wordHanGukEo,
+      expected: [correct("한"), correct("국"), correct("어")],
+    },
+    {
+      label: "does not mark present after character is consumed by a correct match",
+      submission: [filledSlot("나"), filledSlot("나")] as SubmissionState,
+      word: wordGaNa,
+      expected: [absent("나"), correct("나")],
+    },
+  ])("$label", ({ submission, word, expected }) => {
+    expect(evaluateGuess(submission, word)).toEqual(expected);
   });
 });
