@@ -41,11 +41,21 @@ query($owner: String!, $repo: String!, $pr: Int!) {
     }
   }
 }' -f owner="$OWNER" -f repo="$REPO" -F pr=$PR_NUM \
-| jq '.data.repository.pullRequest.reviewThreads.nodes
+| jq -r '.data.repository.pullRequest.reviewThreads.nodes
     | map(select(.isResolved == false and .isOutdated == false))
     | map({
         file: .path,
         line: .line,
         diffHunk: .comments.nodes[0].diffHunk,
-        comments: (.comments.nodes | map(.body) | join("\n---\n"))
-      })'
+        comments: (.comments.nodes | map(.body) | join("\n\n"))
+      })
+    | group_by(.file)
+    | map(
+        "## " + .[0].file + "\n" +
+        (map(
+          "\n- **Line " + (.line | tostring) + "**\n" +
+          "  ```diff\n" + .diffHunk + "\n  ```\n\n" +
+          "  " + (.comments | gsub("\n"; "\n  "))
+        ) | join("\n"))
+      )
+    | join("\n\n")'
