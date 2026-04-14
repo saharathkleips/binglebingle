@@ -10,19 +10,35 @@ import type { GuessRecord } from "../lib/engine/types";
 import type { Word } from "../lib/word/word";
 import type { Character } from "../lib/character/character";
 
+/**
+ * A single tile in the player's jamo pool. The `id` is a stable index into
+ * the original pool array and never changes, even as `character` mutates
+ * through rotate, combine, or split actions.
+ */
 export type PoolToken = {
-  id: number; // stable index into original pool array — never changes
+  id: number;
   character: Character;
 };
 
+/** The full set of jamo tiles available to the player during a round. */
 export type PoolState = readonly PoolToken[];
 
+/**
+ * A single slot in the player's current guess submission.
+ * A filled slot holds a reference back to its source pool token so that
+ * mutations to the token (e.g. rotation) are reflected in the submission.
+ */
 export type SubmissionSlot =
   | { filled: true; tokenId: number; character: Character }
   | { filled: false };
 
-export type SubmissionState = readonly SubmissionSlot[]; // length always === [...word].length
+/**
+ * The ordered sequence of submission slots for the current guess.
+ * Length is always equal to the number of characters in `GameState.word`.
+ */
+export type SubmissionState = readonly SubmissionSlot[];
 
+/** Top-level game state for a single round. */
 export type GameState = {
   word: Word;
   pool: PoolState;
@@ -30,6 +46,17 @@ export type GameState = {
   guesses: readonly GuessRecord[];
 };
 
+/**
+ * All actions that can be dispatched to the game reducer.
+ *
+ * - `ROTATE_TOKEN` — change a token's jamo to an adjacent rotation target
+ * - `COMBINE_TOKENS` — merge two tokens into a double consonant or complex vowel
+ * - `SPLIT_TOKEN` — decompose a combined token back into its constituents
+ * - `PLACE_TOKEN` — move a token from the pool into a submission slot
+ * - `REMOVE_FROM_SLOT` — return the token in a slot back to the pool
+ * - `SUBMIT_GUESS` — record an evaluated guess and clear the submission
+ * - `RESET_ROUND` — restore the pool and clear the submission for a new attempt
+ */
 export type GameAction =
   | { type: "ROTATE_TOKEN"; payload: { tokenId: number; targetJamo: string } }
   | { type: "COMBINE_TOKENS"; payload: { tokenIdA: number; tokenIdB: number } }
