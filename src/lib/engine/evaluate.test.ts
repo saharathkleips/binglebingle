@@ -88,6 +88,19 @@ describe("evaluateGuess", () => {
       word: createWord("나나")!,
       expected: [absent("가"), correct("나")],
     },
+    {
+      label: "produces correct, present, and absent results in a single submission",
+      submission: [filledSlot("가"), filledSlot("다"), filledSlot("라")] as SubmissionState,
+      word: createWord("가나다")!,
+      expected: [correct("가"), present("다"), absent("라")],
+    },
+    {
+      label:
+        "marks correct then present when a duplicate word character is matched in both positions",
+      submission: [filledSlot("나"), filledSlot("나"), filledSlot("다")] as SubmissionState,
+      word: createWord("나가나")!,
+      expected: [correct("나"), present("나"), absent("다")],
+    },
   ])("$label", ({ submission, word, expected }) => {
     expect(evaluateGuess(submission, word)).toEqual(expected);
   });
