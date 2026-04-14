@@ -1,14 +1,14 @@
 /**
  * @file word.ts
  *
- * Word type, validation, pool derivation, and pool normalization for the word slice.
+ * Word type and validation for the word slice.
  *
  * All functions are pure. No React. No side effects.
  * Unicode note: syllable blocks range U+AC00–U+D7A3.
  */
 
-import { character, decompose, normalizeCharacter, resolveCharacter } from "../character/character";
-import type { Character, CompleteCharacter } from "../character/character";
+import { character, resolveCharacter } from "../character/character";
+import type { CompleteCharacter } from "../character/character";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,35 +38,6 @@ export function createWord(word: string): Word | null {
   return characters.length > 0 && characters.every((c): c is CompleteCharacter => c !== null)
     ? characters
     : null;
-}
-
-/**
- * Fully decomposes every syllable in a Word to basic single-jamo Characters
- * by iterating `decompose` until all Characters are irreducible.
- *
- * @param word - A validated Word
- * @returns Flat ordered array of basic single-jamo Characters
- */
-export function derivePool(word: Word): readonly Character[] {
-  let pool: readonly Character[] = word;
-  let expanded = pool.flatMap(decompose);
-  while (expanded.length !== pool.length) {
-    pool = expanded;
-    expanded = pool.flatMap(decompose);
-  }
-  return pool;
-}
-
-/**
- * Rotates each single-jamo Character to the 0-index member of its rotation set.
- * Non-rotatable jamo are returned unchanged. Called once after `derivePool` at
- * game init to prevent the pool from revealing which target jamo are rotated.
- *
- * @param pool - Ordered array of basic single-jamo Characters (output of derivePool)
- * @returns Array with each jamo normalized to its rotation base
- */
-export function normalizePool(pool: readonly Character[]): readonly Character[] {
-  return pool.map(normalizeCharacter);
 }
 
 /**

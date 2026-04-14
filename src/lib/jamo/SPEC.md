@@ -21,7 +21,7 @@ All exports are pure functions or readonly constants.
 ```
 src/lib/jamo/
 ├── jamo.ts             # type definitions + CHOSEONG/JUNGSEONG/JONGSEONG index tables
-├── rotation.ts         # ROTATION_SETS, getNextRotation(), getRotationBase()
+├── rotation.ts         # ROTATION_SETS, getNextRotation(), normalizeJamo()
 ├── composition.ts      # CombinationRule, COMBINATION_RULES, composeJamo(), decomposeJamo(), composeSyllable(), decomposeSyllable()
 ├── jamo.test.ts
 ├── rotation.test.ts
@@ -74,7 +74,7 @@ Designer-controlled sets in `rotation.ts`. Jamo not in any set are not rotatable
 ```
 
 `getNextRotation` cycles forward and wraps; returns null for non-rotatable jamo.
-`getRotationBase` returns the 0-index member of the set; returns the jamo unchanged if not rotatable. Used by `normalizePool` in the word slice to canonicalize pool jamo at game init.
+`normalizeJamo` returns the 0-index member of the set; returns the jamo unchanged if not rotatable. Used by `normalizeCharacter` in the character slice to canonicalize pool jamo at game init.
 
 ## Key Decisions
 

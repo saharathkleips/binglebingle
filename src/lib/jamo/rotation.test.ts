@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Jamo } from "./jamo";
-import { getNextRotation, getRotationBase } from "./rotation";
+import { getNextRotation, normalizeJamo } from "./rotation";
 
 describe("getNextRotation", () => {
   const ROTATABLE_CASES: [string, Jamo, Jamo][] = [
@@ -31,7 +31,7 @@ describe("getNextRotation", () => {
   });
 });
 
-describe("getRotationBase", () => {
+describe("normalizeJamo", () => {
   const BASE_CASES: [string, Jamo, Jamo][] = [
     ["ㄱ is already the base of [ㄱ,ㄴ]", "ㄱ", "ㄱ"],
     ["ㄴ normalizes to ㄱ", "ㄴ", "ㄱ"],
@@ -48,12 +48,12 @@ describe("getRotationBase", () => {
   ];
 
   it.each(BASE_CASES)("%s", (_desc, input, expected) => {
-    expect(getRotationBase(input)).toBe(expected);
+    expect(normalizeJamo(input)).toBe(expected);
   });
 
   const NON_ROTATABLE_BASE: Jamo[] = ["ㅎ", "ㅊ", "ㅂ", "ㄷ", "ㅁ"];
 
   it.each(NON_ROTATABLE_BASE)("returns %s unchanged when not rotatable", (jamo) => {
-    expect(getRotationBase(jamo)).toBe(jamo);
+    expect(normalizeJamo(jamo)).toBe(jamo);
   });
 });

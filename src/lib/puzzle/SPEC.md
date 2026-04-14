@@ -11,16 +11,16 @@ structurally is and how it decomposes.
 
 **Boundaries:**
 
-- In: raw fetch response, `WordSelectionStrategy`
-- Out: validated word lists, selected `Word` values
-- Calls into: `src/lib/word/` for `createWord` and `wordToString`
-- No knowledge of: game state, pool, UI, React
+- In: raw fetch response, `WordSelectionStrategy`, Character arrays
+- Out: validated word lists, selected `Word` values, decomposed jamo pools
+- Calls into: `src/lib/word/` for `createWord` and `wordToString`; `src/lib/character/` for `decompose`
+- No knowledge of: game state, UI, React
 
 ## File Map
 
 ```
 src/lib/puzzle/
-├── puzzle.ts       # WordSelectionStrategy, loadWords(), selectWord()
+├── puzzle.ts       # WordSelectionStrategy, loadWords(), selectWord(), fullDecompose()
 ├── puzzle.test.ts
 ├── README.md
 └── SPEC.md
@@ -42,6 +42,18 @@ export type WordSelectionStrategy =
 
 Fetches `public/data/words.json` and validates each string entry via `createWord`. Invalid entries
 are silently dropped. Returns an empty array if the JSON is not an array.
+
+### `fullDecompose(characters: readonly Character[]): readonly Character[]`
+
+Recursively applies `decompose()` from `character/` until all Characters are irreducible
+(i.e. `decompose(char).length === 1` for every element). Used at game init to build the jamo pool
+from the selected word.
+
+**Full pipeline at game init:**
+
+```typescript
+const pool = fullDecompose(word).map(normalizeCharacter);
+```
 
 ### `selectWord(words, strategy): Word`
 

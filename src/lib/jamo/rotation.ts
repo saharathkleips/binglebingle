@@ -41,7 +41,7 @@ export function getNextRotation(jamo: Jamo): Jamo | null {
  * @param jamo - A Hangul Compatibility Jamo string
  * @returns The canonical jamo for this rotation set, or the input if not rotatable
  */
-export function getRotationBase(jamo: Jamo): Jamo {
+export function normalizeJamo(jamo: Jamo): Jamo {
   const set = ROTATION_SETS.find((s) => s.includes(jamo));
   return set?.[0] ?? jamo;
 }

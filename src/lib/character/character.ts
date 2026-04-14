@@ -17,7 +17,7 @@ import {
 } from "../jamo/composition";
 import type { VowelJamo, Jamo, ChoseongJamo, JongseongJamo } from "../jamo/jamo";
 import { CHOSEONG_INDEX, JUNGSEONG_INDEX, JONGSEONG_INDEX } from "../jamo/jamo";
-import { getRotationBase } from "../jamo/rotation";
+import { normalizeJamo } from "../jamo/rotation";
 
 // ---------------------------------------------------------------------------
 // Character — discriminated union
@@ -83,21 +83,18 @@ export function character(slots?: {
   jongseong?: Jamo;
 }): Character | null;
 export function character(
-  input?: string | { choseong?: Jamo; jungseong?: Jamo; jongseong?: Jamo },
+  input?: string | { choseong?: Jamo; jungseong?: Jamo; jongseong?: Jamo | null },
 ): Character | null {
   if (typeof input === "string") {
     const decomposed = decomposeSyllable(input);
     if (decomposed === null) return null;
-    const { choseong, jungseong, jongseong } = decomposed;
-    const char = character({ choseong, jungseong, ...(jongseong !== null ? { jongseong } : {}) });
-    if (char === null || !isComplete(char)) return null;
-    return char;
+    input = decomposed;
   }
   const { choseong, jungseong, jongseong } = input ?? {};
   if (!choseong && !jungseong && !jongseong) return { kind: "EMPTY" };
   if (choseong !== undefined && !(choseong in CHOSEONG_INDEX)) return null;
   if (jungseong !== undefined && !(jungseong in JUNGSEONG_INDEX)) return null;
-  if (jongseong !== undefined && !(jongseong in JONGSEONG_INDEX)) return null;
+  if (jongseong != null && !(jongseong in JONGSEONG_INDEX)) return null;
   const cho = choseong as ChoseongJamo | undefined;
   const jung = jungseong as VowelJamo | undefined;
   const jong = jongseong as JongseongJamo | undefined;
@@ -392,15 +389,15 @@ export function decompose(char: Character): Character[] {
 export function normalizeCharacter(char: Character): Character {
   switch (char.kind) {
     case "CHOSEONG_ONLY": {
-      const base = getRotationBase(char.choseong);
+      const base = normalizeJamo(char.choseong);
       return character({ choseong: base }) ?? char;
     }
     case "JUNGSEONG_ONLY": {
-      const base = getRotationBase(char.jungseong as Jamo);
+      const base = normalizeJamo(char.jungseong);
       return character({ jungseong: base }) ?? char;
     }
     case "JONGSEONG_ONLY": {
-      const base = getRotationBase(char.jongseong as Jamo);
+      const base = normalizeJamo(char.jongseong);
       return character({ jongseong: base }) ?? char;
     }
     default:

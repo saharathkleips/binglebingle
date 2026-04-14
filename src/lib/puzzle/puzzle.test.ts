@@ -1,6 +1,51 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { loadWords, selectWord } from "./puzzle";
+import { fullDecompose, loadWords, selectWord } from "./puzzle";
+import { character } from "../character/character";
 import { createWord, wordToString } from "../word/word";
+
+// ---------------------------------------------------------------------------
+// fullDecompose
+// ---------------------------------------------------------------------------
+
+describe("fullDecompose", () => {
+  it("decomposes 한국어 into the correct flat basic jamo Characters", () => {
+    const word = createWord("한국어")!;
+    // 한 = ㅎ + ㅏ + ㄴ; 국 = ㄱ + ㅜ + ㄱ; 어 = ㅇ + ㅓ
+    expect(fullDecompose(word)).toEqual([
+      character({ choseong: "ㅎ" }),
+      character({ jungseong: "ㅏ" }),
+      character({ choseong: "ㄴ" }),
+      character({ choseong: "ㄱ" }),
+      character({ jungseong: "ㅜ" }),
+      character({ choseong: "ㄱ" }),
+      character({ choseong: "ㅇ" }),
+      character({ jungseong: "ㅓ" }),
+    ]);
+  });
+
+  it("fully decomposes compound jongseong ㄺ in 닭 (ㄷ ㅏ ㄹ ㄱ)", () => {
+    const word = createWord("닭")!;
+    expect(fullDecompose(word)).toEqual([
+      character({ choseong: "ㄷ" }),
+      character({ jungseong: "ㅏ" }),
+      character({ choseong: "ㄹ" }),
+      character({ choseong: "ㄱ" }),
+    ]);
+  });
+
+  it("fully decomposes 훿 (complex vowel + compound batchim) → ㅎ ㅜ ㅓ ㅣ ㄱ ㅅ", () => {
+    // 훿: choseong=ㅎ, jungseong=ㅞ (→ ㅝ+ㅣ → ㅜ+ㅓ+ㅣ), jongseong=ㄳ (→ ㄱ+ㅅ)
+    const word = createWord("훿")!;
+    expect(fullDecompose(word)).toEqual([
+      character({ choseong: "ㅎ" }),
+      character({ jungseong: "ㅜ" }),
+      character({ jungseong: "ㅓ" }),
+      character({ jungseong: "ㅣ" }),
+      character({ choseong: "ㄱ" }),
+      character({ choseong: "ㅅ" }),
+    ]);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Fixtures

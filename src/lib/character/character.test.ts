@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { character, compose, decompose, isComplete, resolveCharacter } from "./character";
+import {
+  character,
+  compose,
+  decompose,
+  isComplete,
+  normalizeCharacter,
+  resolveCharacter,
+} from "./character";
 import type { Character } from "./character";
 
 // ---------------------------------------------------------------------------
@@ -805,6 +812,87 @@ describe("full jamo workflow: 홱 (5 jamo: ㅎ ㅗ ㅏ ㅣ ㄱ)", () => {
     expect(resolveCharacter(character({ choseong: "ㅎ", jungseong: "ㅙ", jongseong: "ㄱ" })!)).toBe(
       "홱",
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// character() string overload
+// ---------------------------------------------------------------------------
+
+describe("character() string overload", () => {
+  it.each([
+    ["open syllable 가", "가", { kind: "OPEN_SYLLABLE", choseong: "ㄱ", jungseong: "ㅏ" }],
+    [
+      "full syllable 한",
+      "한",
+      { kind: "FULL_SYLLABLE", choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" },
+    ],
+    [
+      "syllable with complex vowel 화",
+      "화",
+      { kind: "OPEN_SYLLABLE", choseong: "ㅎ", jungseong: "ㅘ" },
+    ],
+    [
+      "syllable with compound batchim 닭",
+      "닭",
+      { kind: "FULL_SYLLABLE", choseong: "ㄷ", jungseong: "ㅏ", jongseong: "ㄺ" },
+    ],
+    ["empty string → null", "", null],
+    ["raw jamo ㄱ (not a syllable block) → null", "ㄱ", null],
+    ["Latin letter → null", "a", null],
+  ] as [string, string, Character | null][])("%s", (_, input, expected) => {
+    expect(character(input)).toEqual(expected);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// normalizeCharacter()
+// ---------------------------------------------------------------------------
+
+describe("normalizeCharacter", () => {
+  it.each([
+    // Rotatable jamo → normalized to rotation base
+    [
+      "CHOSEONG_ONLY ㄴ → ㄱ (base of [ㄱ,ㄴ])",
+      character({ choseong: "ㄴ" }),
+      character({ choseong: "ㄱ" }),
+    ],
+    [
+      "JUNGSEONG_ONLY ㅓ → ㅏ (base of [ㅏ,ㅜ,ㅓ,ㅗ])",
+      character({ jungseong: "ㅓ" }),
+      character({ jungseong: "ㅏ" }),
+    ],
+    [
+      "JUNGSEONG_ONLY ㅡ → ㅣ (base of [ㅣ,ㅡ])",
+      character({ jungseong: "ㅡ" }),
+      character({ jungseong: "ㅣ" }),
+    ],
+    // Already at base → unchanged
+    [
+      "CHOSEONG_ONLY ㄱ → ㄱ (already base)",
+      character({ choseong: "ㄱ" }),
+      character({ choseong: "ㄱ" }),
+    ],
+    [
+      "JUNGSEONG_ONLY ㅏ → ㅏ (already base)",
+      character({ jungseong: "ㅏ" }),
+      character({ jungseong: "ㅏ" }),
+    ],
+    // Non-rotatable → unchanged
+    [
+      "CHOSEONG_ONLY ㅎ → ㅎ (non-rotatable)",
+      character({ choseong: "ㅎ" }),
+      character({ choseong: "ㅎ" }),
+    ],
+    // Multi-jamo or EMPTY → unchanged
+    [
+      "OPEN_SYLLABLE 가 → unchanged (multi-jamo)",
+      character({ choseong: "ㄱ", jungseong: "ㅏ" }),
+      character({ choseong: "ㄱ", jungseong: "ㅏ" }),
+    ],
+    ["EMPTY → unchanged", character(), character()],
+  ] as [string, Character, Character][])("%s", (_, char, expected) => {
+    expect(normalizeCharacter(char)).toEqual(expected);
   });
 });
 

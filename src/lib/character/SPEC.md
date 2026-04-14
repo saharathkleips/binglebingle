@@ -18,7 +18,7 @@
 
 ```
 src/lib/character/
-├── character.ts        # Character type, character(), compose(), resolveCharacter(), isComplete(), decompose()
+├── character.ts        # Character type, CompleteCharacter, character(), compose(), resolveCharacter(), isComplete(), decompose(), normalizeCharacter()
 └── character.test.ts
 ```
 
@@ -26,11 +26,8 @@ src/lib/character/
 
 ```typescript
 // character.ts
-export type Character =
-  | { kind: "EMPTY" }
-  | { kind: "CHOSEONG_ONLY"; choseong: ChoseongJamo }
-  | { kind: "JUNGSEONG_ONLY"; jungseong: VowelJamo }
-  | { kind: "JONGSEONG_ONLY"; jongseong: JongseongJamo }
+
+export type CompleteCharacter =
   | { kind: "OPEN_SYLLABLE"; choseong: ChoseongJamo; jungseong: VowelJamo }
   | {
       kind: "FULL_SYLLABLE";
@@ -39,16 +36,20 @@ export type Character =
       jongseong: JongseongJamo;
     };
 
-// A Character that is a complete syllable block — OPEN_SYLLABLE or FULL_SYLLABLE.
-// Obtained by narrowing via isComplete().
-export type CompleteCharacter = Extract<Character, { kind: "OPEN_SYLLABLE" | "FULL_SYLLABLE" }>;
+export type Character =
+  | { kind: "EMPTY" }
+  | { kind: "CHOSEONG_ONLY"; choseong: ChoseongJamo }
+  | { kind: "JUNGSEONG_ONLY"; jungseong: VowelJamo }
+  | { kind: "JONGSEONG_ONLY"; jongseong: JongseongJamo }
+  | CompleteCharacter;
 ```
 
-Use `character(slots?)` to construct — the `kind` is derived from which slots are present. The factory returns `null` for invalid combinations (e.g. ㄸ/ㅃ/ㅉ as jongseong; jungseong + jongseong without choseong).
+Use `character(input?)` to construct. The factory returns `null` for invalid combinations (e.g. ㄸ/ㅃ/ㅉ as jongseong; jungseong + jongseong without choseong).
 
 ## Function Signatures
 
 ```typescript
+function character(syllable: string): CompleteCharacter | null;
 function character(slots?: {
   choseong?: Jamo;
   jungseong?: Jamo;
@@ -58,6 +59,7 @@ function compose(target: Character, incoming: Character): Character | null;
 function resolveCharacter(char: Character): string | null;
 function isComplete(char: Character): char is CompleteCharacter;
 function decompose(char: Character): Character[];
+function normalizeCharacter(char: Character): Character;
 ```
 
 ## compose() Rules
@@ -111,3 +113,5 @@ Steps a Character back by one construction level — never drops a jamo.
 **C3 — Compound batchim stored as a collapsed JONGSEONG_ONLY.** When `composeJamo('ㄱ','ㅅ')` produces `'ㄳ'`, it is stored as `{ kind: "JONGSEONG_ONLY", jongseong: "ㄳ" }`, not as two separate jamo. `decompose()` re-expands it using `COMBINATION_RULES` lookup.
 
 **C4 — `isComplete` checks the resolved codepoint, not the kind.** Only OPEN_SYLLABLE and FULL_SYLLABLE produce values in U+AC00–U+D7A3, but the check is done via codepoint rather than kind to avoid coupling to the union shape.
+
+**C5 — `normalizeCharacter` operates on single-jamo Characters only.** Multi-jamo Characters (OPEN_SYLLABLE, FULL_SYLLABLE) and EMPTY are returned unchanged. The function delegates to `normalizeJamo` from `jamo/rotation` and is applied element-wise to a pool after full decomposition, before presenting it to the player.
