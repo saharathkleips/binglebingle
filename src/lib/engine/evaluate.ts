@@ -27,7 +27,7 @@ import type { EvaluatedCharacter, GuessRecord } from "./engine";
 export function evaluateGuess(submission: SubmissionState, word: Word): GuessRecord {
   // Resolve each slot to a string for comparison only — Character is stored directly in results
   const submitted = submission.map((slot) =>
-    slot.filled
+    slot.state === "FILLED"
       ? { str: resolveCharacter(slot.character) ?? "", char: slot.character }
       : { str: "", char: undefined },
   );

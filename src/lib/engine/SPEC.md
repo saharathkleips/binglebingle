@@ -41,7 +41,7 @@ export type EvaluatedCharacter = {
 
 export type GuessRecord = readonly EvaluatedCharacter[];
 
-export type ValidationResult = { valid: true } | { valid: false; reason: ValidationFailureReason };
+export type ValidationResult = "VALID" | ValidationFailureReason;
 
 export type ValidationFailureReason =
   | "NO_CHARACTERS" // no slots filled at all

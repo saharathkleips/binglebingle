@@ -42,8 +42,8 @@ export type PoolToken = {
 export type PoolState = readonly PoolToken[];
 
 export type SubmissionSlot =
-  | { filled: true; tokenId: number; character: Character }
-  | { filled: false };
+  | { state: "FILLED"; tokenId: number; character: Character }
+  | { state: "EMPTY" };
 
 export type SubmissionState = readonly SubmissionSlot[]; // length always === [...word].length
 
@@ -90,7 +90,7 @@ If neither case applies, no-op.
 
 **`PLACE_TOKEN`** — moves token from pool to submission slot. Removes from `pool`, sets slot to filled.
 
-**`REMOVE_FROM_SLOT`** — returns token from submission slot to pool. Sets slot to `{ filled: false }`.
+**`REMOVE_FROM_SLOT`** — returns token from submission slot to pool. Sets slot to `{ state: "EMPTY" }`.
 
 **`SUBMIT_GUESS`** — receives pre-computed `GuessRecord` in payload, appends to `guesses`, resets pool and submission. Reducer does not compute evaluation.
 

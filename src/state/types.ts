@@ -31,8 +31,8 @@ export type PoolState = readonly PoolToken[];
  * mutations to the token (e.g. rotation) are reflected in the submission.
  */
 export type SubmissionSlot =
-  | { filled: true; tokenId: number; character: Character }
-  | { filled: false };
+  | { state: "FILLED"; tokenId: number; character: Character }
+  | { state: "EMPTY" };
 
 /**
  * The ordered sequence of submission slots for the current guess.

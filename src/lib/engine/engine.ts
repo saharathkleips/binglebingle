@@ -34,8 +34,8 @@ export type GuessRecord = readonly EvaluatedCharacter[];
  */
 export type ValidationFailureReason = "NO_CHARACTERS" | "INCOMPLETE_CHARACTER";
 
-/** Result of validating a submission before dispatch. */
-export type ValidationResult = { valid: true } | { valid: false; reason: ValidationFailureReason };
+/** Result of validating a submission before dispatch. `"VALID"` or the specific failure reason. */
+export type ValidationResult = "VALID" | ValidationFailureReason;
 
 /**
  * Scoring output for a completed game.

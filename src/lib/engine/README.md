@@ -13,7 +13,7 @@
 | `EvaluatedCharacter`      | `{ character?: Character; result: CharacterResult }` — one slot in a guess |
 | `GuessRecord`             | `readonly EvaluatedCharacter[]` — a fully evaluated guess                  |
 | `ValidationFailureReason` | `'NO_CHARACTERS' \| 'INCOMPLETE_CHARACTER'`                                |
-| `ValidationResult`        | `{ valid: true } \| { valid: false; reason: ValidationFailureReason }`     |
+| `ValidationResult`        | `"VALID" \| ValidationFailureReason`                                       |
 | `ScoringResult`           | `{ guessCount: number }`                                                   |
 
 ### `validate.ts`
@@ -42,7 +42,7 @@ import { evaluateGuess } from "src/lib/engine/evaluate";
 import { calculateScore } from "src/lib/engine/scoring";
 
 const validation = canSubmit(submission);
-if (validation.valid) {
+if (validation === "VALID") {
   const record = evaluateGuess(submission, word);
   const score = calculateScore([...guesses, record]);
 }
