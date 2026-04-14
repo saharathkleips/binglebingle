@@ -6,9 +6,9 @@
       "TZ": "${localEnv:TZ:Asia/Seoul}"
     }
   },
-  "appPort": [5173],
+  "forwardPorts": [5173],
   "runArgs": ["--userns=keep-id", "--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
-  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh && sudo /usr/local/bin/fix-permissions.sh",
   "waitFor": "postStartCommand",
   "remoteUser": "dev",
   "containerEnv": {
