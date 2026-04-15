@@ -20,12 +20,21 @@ Two responsibilities: the game state machine (reducer + context) and game setup 
 
 ```
 src/context/game/
-├── game.ts               # GameState, GameAction, PoolToken, SubmissionSlot
-├── game-reducer.ts       # gameReducer(), createInitialGameState()
-├── GameContext.tsx        # GameProvider, useGame()
+├── game.ts                  # GameState, GameAction, PoolToken, PoolState, SubmissionSlot, SubmissionState
+├── character-actions.ts     # handleRotateToken, handleCombineTokens, handleSplitToken
+├── submission-actions.ts    # handlePlaceToken, handleRemoveFromSlot
+├── round-actions.ts         # handleSubmitGuess, handleResetRound, buildInitialPool, buildEmptySubmission
+├── game-reducer.ts          # gameReducer() (shallow router), createInitialGameState()
+├── GameContext.tsx           # GameProvider, useGame()
 ├── game-reducer.test.ts
 └── README.md
 ```
+
+`game.ts` is the public surface — shared types consumed across the slice and by external consumers. No internal slice imports.
+
+Per-action payload types live colocated with their handler files and import shared types from `game.ts` as needed.
+
+`game-reducer.ts` stays separate from `GameContext.tsx` to preserve the pure/React boundary — the reducer is non-React logic and should not live in a `.tsx` file.
 
 ## Types
 

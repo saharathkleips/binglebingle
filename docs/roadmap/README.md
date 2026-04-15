@@ -3,7 +3,7 @@
 ## Current Status
 
 **Active version:** 1.2.x — Playable Game
-**Next milestone:** `1.x.x/1.2.x/1.2.1-game-state.md`
+**Next milestone:** `1.x.x/1.2.x/1.2.2-word-data.md`
 
 ## Versions
 
