@@ -1,7 +1,7 @@
 /**
  * @file submission-actions.ts
  *
- * Handlers for submission-slot actions: SUBMISSION_SLOT_INSERT, SUBMISSION_SLOT_REMOVE.
+ * Handlers for submission-slot actions: SUBMISSION_SLOT_INSERT, SUBMISSION_SLOT_REMOVE, SUBMISSION_SLOT_MOVE.
  * No React. No side effects.
  */
 
@@ -39,6 +39,35 @@ export function handleSubmissionSlotInsert(
         ? { state: "FILLED" as const, tokenId: token.id, character: token.character }
         : slot,
     ),
+  };
+}
+
+/**
+ * Moves a token from one submission slot to another without a pool round-trip.
+ * If the destination slot is filled, the two tokens are swapped.
+ * No-op if either index is out of bounds or the source slot is empty.
+ *
+ * @param state - Current game state
+ * @param payload - fromSlotIndex to move from and toSlotIndex to move to
+ * @returns Next game state
+ */
+export function handleSubmissionSlotMove(
+  state: GameState,
+  payload: (SubmissionAction & { type: "SUBMISSION_SLOT_MOVE" })["payload"],
+): GameState {
+  const { fromSlotIndex, toSlotIndex } = payload;
+  const fromSlot = state.submission[fromSlotIndex];
+  const toSlot = state.submission[toSlotIndex];
+  if (fromSlot === undefined || toSlot === undefined || fromSlot.state !== "FILLED") {
+    return state;
+  }
+  return {
+    ...state,
+    submission: state.submission.map((slot, i) => {
+      if (i === toSlotIndex) return fromSlot;
+      if (i === fromSlotIndex) return toSlot;
+      return slot;
+    }),
   };
 }
 

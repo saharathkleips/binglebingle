@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { handleSubmissionSlotInsert, handleSubmissionSlotRemove } from "./submission-actions";
+import {
+  handleSubmissionSlotInsert,
+  handleSubmissionSlotMove,
+  handleSubmissionSlotRemove,
+} from "./submission-actions";
 import { character } from "../../lib/character/character";
 import { createWord } from "../../lib/word/word";
 import type { GameState } from "./game";
@@ -86,5 +90,48 @@ describe("handleSubmissionSlotRemove", () => {
   ])("is a no-op for $label", ({ slotIndex }) => {
     const state = twoSlotState();
     expect(handleSubmissionSlotRemove(state, { slotIndex })).toBe(state);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// handleSubmissionSlotMove
+// ---------------------------------------------------------------------------
+
+describe("handleSubmissionSlotMove", () => {
+  it("moves a token from one slot to an empty slot", () => {
+    const state = twoSlotState();
+    const placed = handleSubmissionSlotInsert(state, { tokenId: 0, slotIndex: 0 });
+    const moved = handleSubmissionSlotMove(placed, { fromSlotIndex: 0, toSlotIndex: 1 });
+    expect(moved.submission[0]?.state).toBe("EMPTY");
+    const toSlot = moved.submission[1];
+    expect(toSlot?.state === "FILLED" && toSlot.tokenId).toBe(0);
+  });
+
+  it("swaps tokens when the destination slot is filled", () => {
+    const state = twoSlotState();
+    const placed = handleSubmissionSlotInsert(state, { tokenId: 0, slotIndex: 0 });
+    const placed2 = handleSubmissionSlotInsert(placed, { tokenId: 1, slotIndex: 1 });
+    const moved = handleSubmissionSlotMove(placed2, { fromSlotIndex: 0, toSlotIndex: 1 });
+    const slot0 = moved.submission[0];
+    const slot1 = moved.submission[1];
+    expect(slot0?.state === "FILLED" && slot0.tokenId).toBe(1);
+    expect(slot1?.state === "FILLED" && slot1.tokenId).toBe(0);
+  });
+
+  it("does not touch the pool", () => {
+    const state = twoSlotState();
+    const placed = handleSubmissionSlotInsert(state, { tokenId: 0, slotIndex: 0 });
+    const moved = handleSubmissionSlotMove(placed, { fromSlotIndex: 0, toSlotIndex: 1 });
+    expect(moved.pool).toEqual(placed.pool);
+  });
+
+  it.each([
+    { label: "empty source slot", fromSlotIndex: 1, toSlotIndex: 0 },
+    { label: "out-of-bounds source", fromSlotIndex: 99, toSlotIndex: 0 },
+    { label: "out-of-bounds destination", fromSlotIndex: 0, toSlotIndex: 99 },
+  ])("is a no-op for $label", ({ fromSlotIndex, toSlotIndex }) => {
+    const state = twoSlotState();
+    const placed = handleSubmissionSlotInsert(state, { tokenId: 0, slotIndex: 0 });
+    expect(handleSubmissionSlotMove(placed, { fromSlotIndex, toSlotIndex })).toBe(placed);
   });
 });

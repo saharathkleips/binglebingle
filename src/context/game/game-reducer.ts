@@ -13,7 +13,11 @@ import {
   handleCharacterCompose,
   handleCharacterDecompose,
 } from "./character-actions";
-import { handleSubmissionSlotInsert, handleSubmissionSlotRemove } from "./submission-actions";
+import {
+  handleSubmissionSlotInsert,
+  handleSubmissionSlotMove,
+  handleSubmissionSlotRemove,
+} from "./submission-actions";
 import {
   handleSubmitGuess,
   handleResetRound,
@@ -57,6 +61,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return handleCharacterDecompose(state, action.payload);
     case "SUBMISSION_SLOT_INSERT":
       return handleSubmissionSlotInsert(state, action.payload);
+    case "SUBMISSION_SLOT_MOVE":
+      return handleSubmissionSlotMove(state, action.payload);
     case "SUBMISSION_SLOT_REMOVE":
       return handleSubmissionSlotRemove(state, action.payload);
     case "SUBMIT_GUESS":

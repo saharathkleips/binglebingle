@@ -73,10 +73,12 @@ export type CharacterAction =
  *
  * - `SUBMISSION_SLOT_INSERT` — move a token from the pool into a submission slot
  * - `SUBMISSION_SLOT_REMOVE` — return the token in a slot back to the pool
+ * - `SUBMISSION_SLOT_MOVE` — move a token from one submission slot to another
  */
 export type SubmissionAction =
   | { type: "SUBMISSION_SLOT_INSERT"; payload: { tokenId: number; slotIndex: number } }
-  | { type: "SUBMISSION_SLOT_REMOVE"; payload: { slotIndex: number } };
+  | { type: "SUBMISSION_SLOT_REMOVE"; payload: { slotIndex: number } }
+  | { type: "SUBMISSION_SLOT_MOVE"; payload: { fromSlotIndex: number; toSlotIndex: number } };
 
 /**
  * All actions that can be dispatched to the game reducer.
@@ -86,6 +88,7 @@ export type SubmissionAction =
  * - `CHARACTER_DECOMPOSE` — split a composed token back into its constituent tokens
  * - `SUBMISSION_SLOT_INSERT` — move a token from the pool into a submission slot
  * - `SUBMISSION_SLOT_REMOVE` — return the token in a slot back to the pool
+ * - `SUBMISSION_SLOT_MOVE` — move a token from one submission slot to another
  * - `SUBMIT_GUESS` — record an evaluated guess and clear the submission
  * - `RESET_ROUND` — restore the pool and clear the submission for a new attempt
  */

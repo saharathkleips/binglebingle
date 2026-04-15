@@ -97,6 +97,20 @@ describe("gameReducer", () => {
     expect(next.submission[0]?.state).toBe("FILLED");
   });
 
+  it("routes SUBMISSION_SLOT_MOVE — swaps tokens between slots", () => {
+    const state = createInitialGameState(word("가나"));
+    const placed = gameReducer(state, {
+      type: "SUBMISSION_SLOT_INSERT",
+      payload: { tokenId: 0, slotIndex: 0 },
+    });
+    const next = gameReducer(placed, {
+      type: "SUBMISSION_SLOT_MOVE",
+      payload: { fromSlotIndex: 0, toSlotIndex: 1 },
+    });
+    expect(next.submission[0]?.state).toBe("EMPTY");
+    expect(next.submission[1]?.state).toBe("FILLED");
+  });
+
   it("routes SUBMISSION_SLOT_REMOVE — returns a token to the pool", () => {
     const placed = gameReducer(createInitialGameState(word("가")), {
       type: "SUBMISSION_SLOT_INSERT",
