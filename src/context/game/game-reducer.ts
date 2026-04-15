@@ -45,11 +45,11 @@ export function createInitialGameState(word: Word): GameState {
  */
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
-    case "ROTATE_TOKEN":
+    case "CHARACTER_ROTATE_NEXT":
       return handleRotateToken(state, action.payload);
-    case "COMBINE_TOKENS":
+    case "CHARACTER_COMPOSE":
       return handleCombineTokens(state, action.payload);
-    case "SPLIT_TOKEN":
+    case "CHARACTER_DECOMPOSE":
       return handleSplitToken(state, action.payload);
     case "PLACE_TOKEN":
       return handlePlaceToken(state, action.payload);

@@ -30,36 +30,41 @@ function token(id: number, char: Character) {
 describe("handleRotateToken", () => {
   it.each([
     {
-      label: "choseong",
+      label: "choseong ㄱ → ㄴ",
       char: character({ choseong: "ㄱ" })!,
-      target: "ㄴ",
+      expected: "ㄴ",
     },
     {
-      label: "jungseong",
+      label: "jungseong ㅏ → ㅜ",
       char: character({ jungseong: "ㅏ" })!,
-      target: "ㅜ",
+      expected: "ㅜ",
     },
     {
-      label: "jongseong",
+      label: "jongseong ㄱ → ㄴ",
       char: character({ jongseong: "ㄱ" })!,
-      target: "ㄴ",
+      expected: "ㄴ",
     },
-  ])("rotates a $label token to the target jamo", ({ char, target }) => {
+  ])("rotates a $label token to the next jamo in its rotation set", ({ char, expected }) => {
     const state = makeState([token(0, char)]);
-    const next = handleRotateToken(state, { tokenId: 0, targetJamo: target });
-    expect(resolveCharacter(next.pool[0]!.character)).toBe(target);
+    const next = handleRotateToken(state, { tokenId: 0 });
+    expect(resolveCharacter(next.pool[0]!.character)).toBe(expected);
   });
 
   it.each([
     {
       label: "unknown token id",
       pool: [token(0, character({ choseong: "ㄱ" })!)],
-      payload: { tokenId: 99, targetJamo: "ㄴ" },
+      payload: { tokenId: 99 },
     },
     {
       label: "multi-jamo token",
       pool: [token(0, character("가")!)],
-      payload: { tokenId: 0, targetJamo: "ㄴ" },
+      payload: { tokenId: 0 },
+    },
+    {
+      label: "non-rotatable single-jamo token",
+      pool: [token(0, character({ choseong: "ㅁ" })!)],
+      payload: { tokenId: 0 },
     },
   ])("is a no-op for $label", ({ pool, payload }) => {
     const state = makeState(pool);
@@ -77,16 +82,16 @@ describe("handleCombineTokens", () => {
       token(0, character({ choseong: "ㄱ" })!),
       token(1, character({ jungseong: "ㅏ" })!),
     ]);
-    const next = handleCombineTokens(state, { tokenIdA: 0, tokenIdB: 1 });
+    const next = handleCombineTokens(state, { targetId: 0, incomingId: 1 });
     expect(next.pool).toHaveLength(1);
   });
 
-  it("keeps tokenIdA and removes tokenIdB after combination", () => {
+  it("keeps targetId and removes incomingId after combination", () => {
     const state = makeState([
       token(0, character({ choseong: "ㄱ" })!),
       token(1, character({ jungseong: "ㅏ" })!),
     ]);
-    const next = handleCombineTokens(state, { tokenIdA: 0, tokenIdB: 1 });
+    const next = handleCombineTokens(state, { targetId: 0, incomingId: 1 });
     expect(next.pool[0]?.id).toBe(0);
     expect(next.pool.some((t) => t.id === 1)).toBe(false);
   });
@@ -96,25 +101,25 @@ describe("handleCombineTokens", () => {
       token(0, character({ choseong: "ㄱ" })!),
       token(1, character({ jungseong: "ㅏ" })!),
     ]);
-    const next = handleCombineTokens(state, { tokenIdA: 0, tokenIdB: 1 });
+    const next = handleCombineTokens(state, { targetId: 0, incomingId: 1 });
     expect(resolveCharacter(next.pool[0]!.character)).toBe("가");
   });
 
   it.each([
     {
-      label: "unknown tokenIdA",
+      label: "unknown targetId",
       pool: [token(0, character({ choseong: "ㄱ" })!), token(1, character({ jungseong: "ㅏ" })!)],
-      payload: { tokenIdA: 99, tokenIdB: 1 },
+      payload: { targetId: 99, incomingId: 1 },
     },
     {
-      label: "unknown tokenIdB",
+      label: "unknown incomingId",
       pool: [token(0, character({ choseong: "ㄱ" })!), token(1, character({ jungseong: "ㅏ" })!)],
-      payload: { tokenIdA: 0, tokenIdB: 99 },
+      payload: { targetId: 0, incomingId: 99 },
     },
     {
       label: "incompatible pair (vowel + vowel)",
       pool: [token(0, character({ jungseong: "ㅏ" })!), token(1, character({ jungseong: "ㅏ" })!)],
-      payload: { tokenIdA: 0, tokenIdB: 1 },
+      payload: { targetId: 0, incomingId: 1 },
     },
   ])("is a no-op for $label", ({ pool, payload }) => {
     const state = makeState(pool);
@@ -137,9 +142,9 @@ describe("handleSplitToken", () => {
     expect(resolved).toContain("ㅏ");
   });
 
-  it("reassigns all pool ids sequentially from 0 after split", () => {
+  it("assigns next-available ids to split tokens, preserving existing ids", () => {
     // Pool: [combined(id 0), standalone(id 2), standalone(id 3)]
-    // After splitting id 0 into 2 parts → 4 tokens, ids should be 0–3
+    // After splitting id 0 into 2 parts → 4 tokens, new parts take ids 0 and 1
     const state = makeState([
       token(0, character("가")!),
       token(2, character({ choseong: "ㄱ" })!),
@@ -147,6 +152,21 @@ describe("handleSplitToken", () => {
     ]);
     const next = handleSplitToken(state, { tokenId: 0 });
     expect(next.pool.map((t) => t.id)).toEqual([0, 1, 2, 3]);
+  });
+
+  it("inserts split tokens in place of the original, preserving surrounding token ids", () => {
+    // Pool: [standalone(id 0), combined(id 1), standalone(id 2)]
+    // Splitting id 1 → parts take next-available ids (1 and 3); token(id 2) keeps its id
+    const state = makeState([
+      token(0, character({ choseong: "ㄴ" })!),
+      token(1, character("가")!),
+      token(2, character({ jungseong: "ㅡ" })!),
+    ]);
+    const next = handleSplitToken(state, { tokenId: 1 });
+    expect(next.pool).toHaveLength(4);
+    expect(next.pool[0]!.id).toBe(0);
+    // parts are inserted in place; token(id 2) is shifted to the end but retains its id
+    expect(next.pool[3]!.id).toBe(2);
   });
 
   it.each([

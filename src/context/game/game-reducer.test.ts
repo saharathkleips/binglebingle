@@ -58,32 +58,32 @@ describe("createInitialGameState", () => {
 // ---------------------------------------------------------------------------
 
 describe("gameReducer", () => {
-  it("routes ROTATE_TOKEN — mutates the target token's jamo", () => {
+  it("routes CHARACTER_ROTATE_NEXT — advances the target token's jamo", () => {
     const state = createInitialGameState(word("가")); // pool: [{id:0, ㄱ}, {id:1, ㅏ}]
     const next = gameReducer(state, {
-      type: "ROTATE_TOKEN",
-      payload: { tokenId: 0, targetJamo: "ㄴ" },
+      type: "CHARACTER_ROTATE_NEXT",
+      payload: { tokenId: 0 },
     });
     expect(next).not.toBe(state);
     const tok = next.pool.find((t) => t.id === 0);
     expect(tok?.character.kind === "CHOSEONG_ONLY" && tok.character.choseong).toBe("ㄴ");
   });
 
-  it("routes COMBINE_TOKENS — merges two tokens into one", () => {
+  it("routes CHARACTER_COMPOSE — merges two tokens into one", () => {
     const state = createInitialGameState(word("가")); // pool: [{id:0, ㄱ}, {id:1, ㅏ}]
     const next = gameReducer(state, {
-      type: "COMBINE_TOKENS",
-      payload: { tokenIdA: 0, tokenIdB: 1 },
+      type: "CHARACTER_COMPOSE",
+      payload: { targetId: 0, incomingId: 1 },
     });
     expect(next.pool).toHaveLength(1);
   });
 
-  it("routes SPLIT_TOKEN — expands a combined token", () => {
+  it("routes CHARACTER_DECOMPOSE — expands a combined token", () => {
     const combined = gameReducer(createInitialGameState(word("가")), {
-      type: "COMBINE_TOKENS",
-      payload: { tokenIdA: 0, tokenIdB: 1 },
+      type: "CHARACTER_COMPOSE",
+      payload: { targetId: 0, incomingId: 1 },
     });
-    const next = gameReducer(combined, { type: "SPLIT_TOKEN", payload: { tokenId: 0 } });
+    const next = gameReducer(combined, { type: "CHARACTER_DECOMPOSE", payload: { tokenId: 0 } });
     expect(next.pool).toHaveLength(2);
   });
 

@@ -83,7 +83,7 @@ export function selectWord(words: readonly Word[], strategy: WordSelectionStrate
  * @returns Flat ordered array of basic single-jamo Characters
  */
 export function fullDecompose(characters: readonly Character[]): readonly Character[] {
-  const decomposed = characters.flatMap(decompose);
+  const decomposed = characters.flatMap((c) => decompose(c) ?? [c]);
   return decomposed.length === characters.length ? decomposed : fullDecompose(decomposed);
 }
 

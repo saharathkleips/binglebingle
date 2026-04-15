@@ -17,7 +17,7 @@ import {
 } from "../jamo/composition";
 import type { VowelJamo, Jamo, ChoseongJamo, JongseongJamo } from "../jamo/jamo";
 import { CHOSEONG_INDEX, JUNGSEONG_INDEX, JONGSEONG_INDEX } from "../jamo/jamo";
-import { normalizeJamo } from "../jamo/rotation";
+import { normalizeJamo, getNextRotation as getNextJamoRotation } from "../jamo/rotation";
 
 // ---------------------------------------------------------------------------
 // Character — discriminated union
@@ -289,16 +289,16 @@ export function isComplete(char: Character): char is CompleteCharacter {
 // ---------------------------------------------------------------------------
 
 /**
- * Steps a Character back by one construction level. Never loses a jamo —
- * a single-jamo Character always returns a single-element array.
- * At most two Characters are returned per call.
+ * Steps a Character back by one construction level.
+ * Returns null when the Character is irreducible (EMPTY or single-jamo);
+ * otherwise returns the two constituent Characters.
  *
- * - EMPTY → `[]`
- * - CHOSEONG_ONLY, simple → `[itself]`
+ * - EMPTY → `null`
+ * - CHOSEONG_ONLY, simple → `null`
  * - CHOSEONG_ONLY, double consonant (e.g. ㄲ) → `[cho first, cho second]`
- * - JUNGSEONG_ONLY, simple → `[itself]`
+ * - JUNGSEONG_ONLY, simple → `null`
  * - JUNGSEONG_ONLY, complex vowel (e.g. ㅘ) → `[jung base, jung last]`
- * - JONGSEONG_ONLY, simple → `[itself]`
+ * - JONGSEONG_ONLY, simple → `null`
  * - JONGSEONG_ONLY, compound batchim (e.g. ㄳ) → `[cho first, cho second]`
  * - OPEN_SYLLABLE, simple vowel → `[choseong, jungseong]`
  * - OPEN_SYLLABLE, complex vowel → `[open(choseong, base), jung last]`
@@ -306,19 +306,19 @@ export function isComplete(char: Character): char is CompleteCharacter {
  * - FULL_SYLLABLE, compound jongseong → `[full(choseong, jungseong, first), cho second]`
  *
  * @param char - The Character to decompose
- * @returns Array of simpler Characters (empty only for EMPTY)
+ * @returns A pair of simpler Characters, or null if the Character cannot be decomposed
  */
-export function decompose(char: Character): Character[] {
+export function decompose(char: Character): [Character, Character] | null {
   switch (char.kind) {
     case "EMPTY":
-      return [];
+      return null;
 
     case "CHOSEONG_ONLY": {
       const parts = decomposeJamo(char.choseong);
       if (parts !== null) {
         return [character({ choseong: parts[0] })!, character({ choseong: parts[1] })!];
       }
-      return [char];
+      return null;
     }
 
     case "JUNGSEONG_ONLY": {
@@ -326,7 +326,7 @@ export function decompose(char: Character): Character[] {
       if (parts !== null) {
         return [character({ jungseong: parts[0] })!, character({ jungseong: parts[1] })!];
       }
-      return [char];
+      return null;
     }
 
     case "JONGSEONG_ONLY": {
@@ -337,7 +337,7 @@ export function decompose(char: Character): Character[] {
         const [first, second] = rule.inputs;
         return [character({ choseong: first })!, character({ choseong: second })!];
       }
-      return [char];
+      return null;
     }
 
     case "OPEN_SYLLABLE": {
@@ -402,5 +402,35 @@ export function normalizeCharacter(char: Character): Character {
     }
     default:
       return char;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// getNextRotation()
+// ---------------------------------------------------------------------------
+
+/**
+ * Advances a single-jamo Character to the next member of its rotation set (wraps around).
+ * Returns null if the Character is not single-jamo or its jamo is not rotatable.
+ *
+ * @param char - The Character to rotate
+ * @returns The Character with its jamo advanced one step, or null if not rotatable
+ */
+export function getNextRotation(char: Character): Character | null {
+  switch (char.kind) {
+    case "CHOSEONG_ONLY": {
+      const next = getNextJamoRotation(char.choseong);
+      return next !== null ? character({ choseong: next }) : null;
+    }
+    case "JUNGSEONG_ONLY": {
+      const next = getNextJamoRotation(char.jungseong);
+      return next !== null ? character({ jungseong: next }) : null;
+    }
+    case "JONGSEONG_ONLY": {
+      const next = getNextJamoRotation(char.jongseong);
+      return next !== null ? character({ jongseong: next }) : null;
+    }
+    default:
+      return null;
   }
 }

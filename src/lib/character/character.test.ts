@@ -615,21 +615,11 @@ describe("isComplete", () => {
 
 describe("decompose", () => {
   it.each([
-    // --- Empty ---
-    ["empty → []", character(), []],
-
-    // --- Single jamo: no loss ---
-    ["choseong-only → [choseong]", character({ choseong: "ㄱ" }), [character({ choseong: "ㄱ" })]],
-    [
-      "jungseong-only → [jungseong]",
-      character({ jungseong: "ㅏ" }),
-      [character({ jungseong: "ㅏ" })],
-    ],
-    [
-      "simple jongseong-only → [jongseong]",
-      character({ jongseong: "ㄱ" }),
-      [character({ jongseong: "ㄱ" })],
-    ],
+    // --- Irreducible: returns null ---
+    ["empty → null", character(), null],
+    ["choseong-only (simple) → null", character({ choseong: "ㄱ" }), null],
+    ["jungseong-only (simple) → null", character({ jungseong: "ㅏ" }), null],
+    ["simple jongseong-only → null", character({ jongseong: "ㄱ" }), null],
 
     // --- Jongseong-only compound batchim splits into two choseong ---
     [
@@ -741,7 +731,7 @@ describe("decompose", () => {
         character({ choseong: "ㅅ" }),
       ],
     ],
-  ] as [string, Character, Character[]][])("%s", (_, char, expected) => {
+  ] as [string, Character, [Character, Character] | null][])("%s", (_, char, expected) => {
     expect(decompose(char)).toEqual(expected);
   });
 });

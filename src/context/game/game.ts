@@ -56,20 +56,31 @@ export type GameState = {
 };
 
 /**
+ * Actions that operate on pool tokens: rotating jamo, composing two tokens into
+ * one, or decomposing a token back into its constituents.
+ *
+ * - `CHARACTER_ROTATE_NEXT` — advance a token's jamo to the next member of its rotation set
+ * - `CHARACTER_COMPOSE` — merge two tokens into a double consonant or complex vowel
+ * - `CHARACTER_DECOMPOSE` — split a composed token back into its constituent tokens
+ */
+export type CharacterAction =
+  | { type: "CHARACTER_ROTATE_NEXT"; payload: { tokenId: number } }
+  | { type: "CHARACTER_COMPOSE"; payload: { targetId: number; incomingId: number } }
+  | { type: "CHARACTER_DECOMPOSE"; payload: { tokenId: number } };
+
+/**
  * All actions that can be dispatched to the game reducer.
  *
- * - `ROTATE_TOKEN` — change a token's jamo to an adjacent rotation target
- * - `COMBINE_TOKENS` — merge two tokens into a double consonant or complex vowel
- * - `SPLIT_TOKEN` — decompose a combined token back into its constituents
+ * - `CHARACTER_ROTATE_NEXT` — advance a token's jamo to the next member of its rotation set
+ * - `CHARACTER_COMPOSE` — merge two tokens into a double consonant or complex vowel
+ * - `CHARACTER_DECOMPOSE` — split a composed token back into its constituent tokens
  * - `PLACE_TOKEN` — move a token from the pool into a submission slot
  * - `REMOVE_FROM_SLOT` — return the token in a slot back to the pool
  * - `SUBMIT_GUESS` — record an evaluated guess and clear the submission
  * - `RESET_ROUND` — restore the pool and clear the submission for a new attempt
  */
 export type GameAction =
-  | { type: "ROTATE_TOKEN"; payload: { tokenId: number; targetJamo: string } }
-  | { type: "COMBINE_TOKENS"; payload: { tokenIdA: number; tokenIdB: number } }
-  | { type: "SPLIT_TOKEN"; payload: { tokenId: number } }
+  | CharacterAction
   | { type: "PLACE_TOKEN"; payload: { tokenId: number; slotIndex: number } }
   | { type: "REMOVE_FROM_SLOT"; payload: { slotIndex: number } }
   | { type: "SUBMIT_GUESS"; payload: { evaluation: GuessRecord } }
