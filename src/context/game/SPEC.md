@@ -22,7 +22,7 @@ Two responsibilities: the game state machine (reducer + context) and game setup 
 src/context/game/
 ├── game.ts                  # GameState, GameAction, PoolToken, PoolState, SubmissionSlot, SubmissionState
 ├── character-actions.ts     # handleCharacterRotateNext, handleCharacterCompose, handleCharacterDecompose
-├── submission-actions.ts    # handlePlaceToken, handleRemoveFromSlot
+├── submission-actions.ts    # handleSubmissionSlotInsert, handleSubmissionSlotRemove
 ├── round-actions.ts         # handleSubmitGuess, handleResetRound, buildInitialPool, buildEmptySubmission
 ├── game-reducer.ts          # gameReducer() (shallow router), createInitialGameState()
 ├── GameContext.tsx           # GameProvider, useGame()
@@ -67,8 +67,8 @@ export type GameAction =
   | { type: "ROTATE_TOKEN"; payload: { tokenId: number; targetJamo: string } }
   | { type: "COMBINE_TOKENS"; payload: { tokenIdA: number; tokenIdB: number } }
   | { type: "SPLIT_TOKEN"; payload: { tokenId: number } }
-  | { type: "PLACE_TOKEN"; payload: { tokenId: number; slotIndex: number } }
-  | { type: "REMOVE_FROM_SLOT"; payload: { slotIndex: number } }
+  | { type: "SUBMISSION_SLOT_INSERT"; payload: { tokenId: number; slotIndex: number } }
+  | { type: "SUBMISSION_SLOT_REMOVE"; payload: { slotIndex: number } }
   | { type: "SUBMIT_GUESS"; payload: { evaluation: GuessRecord } }
   | { type: "RESET_ROUND" };
 ```
@@ -97,9 +97,9 @@ If neither case applies, no-op.
 
 **`SPLIT_TOKEN`** — decomposes a multi-jamo token back into two single-jamo tokens. The original token is updated in place with the first part (retaining its id); the second part is appended to the pool with the next available id.
 
-**`PLACE_TOKEN`** — moves token from pool to submission slot. Removes from `pool`, sets slot to filled.
+**`SUBMISSION_SLOT_INSERT`** — moves token from pool to submission slot. Removes from `pool`, sets slot to filled.
 
-**`REMOVE_FROM_SLOT`** — returns token from submission slot to pool. Sets slot to `{ state: "EMPTY" }`.
+**`SUBMISSION_SLOT_REMOVE`** — returns token from submission slot to pool. Sets slot to `{ state: "EMPTY" }`.
 
 **`SUBMIT_GUESS`** — receives pre-computed `GuessRecord` in payload, appends to `guesses`, resets pool and submission. Reducer does not compute evaluation.
 

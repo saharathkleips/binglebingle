@@ -87,19 +87,22 @@ describe("gameReducer", () => {
     expect(next.pool).toHaveLength(2);
   });
 
-  it("routes PLACE_TOKEN — moves a token from pool into the submission slot", () => {
+  it("routes SUBMISSION_SLOT_INSERT — moves a token from pool into the submission slot", () => {
     const state = createInitialGameState(word("가"));
-    const next = gameReducer(state, { type: "PLACE_TOKEN", payload: { tokenId: 0, slotIndex: 0 } });
+    const next = gameReducer(state, {
+      type: "SUBMISSION_SLOT_INSERT",
+      payload: { tokenId: 0, slotIndex: 0 },
+    });
     expect(next.pool.some((t) => t.id === 0)).toBe(false);
     expect(next.submission[0]?.state).toBe("FILLED");
   });
 
-  it("routes REMOVE_FROM_SLOT — returns a token to the pool", () => {
+  it("routes SUBMISSION_SLOT_REMOVE — returns a token to the pool", () => {
     const placed = gameReducer(createInitialGameState(word("가")), {
-      type: "PLACE_TOKEN",
+      type: "SUBMISSION_SLOT_INSERT",
       payload: { tokenId: 0, slotIndex: 0 },
     });
-    const next = gameReducer(placed, { type: "REMOVE_FROM_SLOT", payload: { slotIndex: 0 } });
+    const next = gameReducer(placed, { type: "SUBMISSION_SLOT_REMOVE", payload: { slotIndex: 0 } });
     expect(next.pool.some((t) => t.id === 0)).toBe(true);
     expect(next.submission[0]?.state).toBe("EMPTY");
   });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { handlePlaceToken, handleRemoveFromSlot } from "./submission-actions";
+import { handleSubmissionSlotInsert, handleSubmissionSlotRemove } from "./submission-actions";
 import { character } from "../../lib/character/character";
 import { createWord } from "../../lib/word/word";
 import type { GameState } from "./game";
@@ -23,13 +23,13 @@ function twoSlotState(): GameState {
 }
 
 // ---------------------------------------------------------------------------
-// handlePlaceToken
+// handleSubmissionSlotInsert
 // ---------------------------------------------------------------------------
 
-describe("handlePlaceToken", () => {
+describe("handleSubmissionSlotInsert", () => {
   it("removes the token from the pool and fills the target slot", () => {
     const state = twoSlotState();
-    const next = handlePlaceToken(state, { tokenId: 0, slotIndex: 0 });
+    const next = handleSubmissionSlotInsert(state, { tokenId: 0, slotIndex: 0 });
     expect(next.pool.some((t) => t.id === 0)).toBe(false);
     const slot = next.submission[0];
     expect(slot?.state).toBe("FILLED");
@@ -38,8 +38,8 @@ describe("handlePlaceToken", () => {
 
   it("returns the displaced token to the pool when replacing a filled slot", () => {
     const state = twoSlotState();
-    const after1 = handlePlaceToken(state, { tokenId: 0, slotIndex: 0 });
-    const after2 = handlePlaceToken(after1, { tokenId: 1, slotIndex: 0 });
+    const after1 = handleSubmissionSlotInsert(state, { tokenId: 0, slotIndex: 0 });
+    const after2 = handleSubmissionSlotInsert(after1, { tokenId: 1, slotIndex: 0 });
     // Token 0 should be back in pool; slot 0 should hold token 1
     expect(after2.pool.some((t) => t.id === 0)).toBe(true);
     const slot = after2.submission[0];
@@ -57,19 +57,19 @@ describe("handlePlaceToken", () => {
     },
   ])("is a no-op for $label", ({ payload }) => {
     const state = twoSlotState();
-    expect(handlePlaceToken(state, payload)).toBe(state);
+    expect(handleSubmissionSlotInsert(state, payload)).toBe(state);
   });
 });
 
 // ---------------------------------------------------------------------------
-// handleRemoveFromSlot
+// handleSubmissionSlotRemove
 // ---------------------------------------------------------------------------
 
-describe("handleRemoveFromSlot", () => {
+describe("handleSubmissionSlotRemove", () => {
   it("returns the token to the pool and empties the slot", () => {
     const state = twoSlotState();
-    const placed = handlePlaceToken(state, { tokenId: 0, slotIndex: 0 });
-    const removed = handleRemoveFromSlot(placed, { slotIndex: 0 });
+    const placed = handleSubmissionSlotInsert(state, { tokenId: 0, slotIndex: 0 });
+    const removed = handleSubmissionSlotRemove(placed, { slotIndex: 0 });
     expect(removed.pool.some((t) => t.id === 0)).toBe(true);
     expect(removed.submission[0]?.state).toBe("EMPTY");
   });
@@ -85,6 +85,6 @@ describe("handleRemoveFromSlot", () => {
     },
   ])("is a no-op for $label", ({ slotIndex }) => {
     const state = twoSlotState();
-    expect(handleRemoveFromSlot(state, { slotIndex })).toBe(state);
+    expect(handleSubmissionSlotRemove(state, { slotIndex })).toBe(state);
   });
 });

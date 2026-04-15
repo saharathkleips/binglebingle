@@ -69,19 +69,28 @@ export type CharacterAction =
   | { type: "CHARACTER_DECOMPOSE"; payload: { tokenId: number } };
 
 /**
+ * Actions for moving tokens between the pool and submission slots.
+ *
+ * - `SUBMISSION_SLOT_INSERT` — move a token from the pool into a submission slot
+ * - `SUBMISSION_SLOT_REMOVE` — return the token in a slot back to the pool
+ */
+export type SubmissionAction =
+  | { type: "SUBMISSION_SLOT_INSERT"; payload: { tokenId: number; slotIndex: number } }
+  | { type: "SUBMISSION_SLOT_REMOVE"; payload: { slotIndex: number } };
+
+/**
  * All actions that can be dispatched to the game reducer.
  *
  * - `CHARACTER_ROTATE_NEXT` — advance a token's jamo to the next member of its rotation set
  * - `CHARACTER_COMPOSE` — merge two tokens into a double consonant or complex vowel
  * - `CHARACTER_DECOMPOSE` — split a composed token back into its constituent tokens
- * - `PLACE_TOKEN` — move a token from the pool into a submission slot
- * - `REMOVE_FROM_SLOT` — return the token in a slot back to the pool
+ * - `SUBMISSION_SLOT_INSERT` — move a token from the pool into a submission slot
+ * - `SUBMISSION_SLOT_REMOVE` — return the token in a slot back to the pool
  * - `SUBMIT_GUESS` — record an evaluated guess and clear the submission
  * - `RESET_ROUND` — restore the pool and clear the submission for a new attempt
  */
 export type GameAction =
   | CharacterAction
-  | { type: "PLACE_TOKEN"; payload: { tokenId: number; slotIndex: number } }
-  | { type: "REMOVE_FROM_SLOT"; payload: { slotIndex: number } }
+  | SubmissionAction
   | { type: "SUBMIT_GUESS"; payload: { evaluation: GuessRecord } }
   | { type: "RESET_ROUND" };

@@ -1,7 +1,7 @@
 /**
  * @file submission-actions.ts
  *
- * Handlers for board-movement actions: PLACE_TOKEN, REMOVE_FROM_SLOT.
+ * Handlers for submission-slot actions: SUBMISSION_SLOT_INSERT, SUBMISSION_SLOT_REMOVE.
  * No React. No side effects.
  */
 
@@ -16,7 +16,7 @@ import type { PoolToken, GameState } from "./game";
  * @param payload - tokenId to place and slotIndex to place it in
  * @returns Next game state
  */
-export function handlePlaceToken(
+export function handleSubmissionSlotInsert(
   state: GameState,
   payload: { tokenId: number; slotIndex: number },
 ): GameState {
@@ -50,7 +50,10 @@ export function handlePlaceToken(
  * @param payload - slotIndex to remove from
  * @returns Next game state
  */
-export function handleRemoveFromSlot(state: GameState, payload: { slotIndex: number }): GameState {
+export function handleSubmissionSlotRemove(
+  state: GameState,
+  payload: { slotIndex: number },
+): GameState {
   const { slotIndex } = payload;
   const slot = state.submission[slotIndex];
   if (slot === undefined || slot.state !== "FILLED") return state;
