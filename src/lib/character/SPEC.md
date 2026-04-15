@@ -18,7 +18,7 @@
 
 ```
 src/lib/character/
-├── character.ts        # Character type, CompleteCharacter, character(), compose(), resolveCharacter(), isComplete(), decompose(), normalizeCharacter()
+├── character.ts        # Character type, CompleteCharacter, character(), compose(), resolveCharacter(), isComplete(), decompose(), normalizeCharacter(), getNextRotation()
 └── character.test.ts
 ```
 
@@ -58,8 +58,9 @@ function character(slots?: {
 function compose(target: Character, incoming: Character): Character | null;
 function resolveCharacter(char: Character): string | null;
 function isComplete(char: Character): char is CompleteCharacter;
-function decompose(char: Character): Character[];
+function decompose(char: Character): [Character, Character] | null;
 function normalizeCharacter(char: Character): Character;
+function getNextRotation(char: Character): Character | null;
 ```
 
 ## compose() Rules
@@ -90,19 +91,23 @@ Commutativity is also supported when the incoming is a larger unit: e.g. `CHOSEO
 
 ## decompose() Rules
 
-Steps a Character back by one construction level — never drops a jamo.
+Steps a Character back by one construction level — never drops a jamo. Returns `null` for irreducible Characters (EMPTY or single-jamo); otherwise returns a `[Character, Character]` pair.
 
-- EMPTY → `[]`
-- CHOSEONG_ONLY (simple) → `[itself]`
+- EMPTY → `null`
+- CHOSEONG_ONLY (simple) → `null`
 - CHOSEONG_ONLY (double consonant, e.g. ㄲ) → `[cho first, cho second]`
-- JUNGSEONG_ONLY (simple) → `[itself]`
+- JUNGSEONG_ONLY (simple) → `null`
 - JUNGSEONG_ONLY (complex vowel, e.g. ㅘ) → `[jung base, jung last]`
-- JONGSEONG_ONLY (simple) → `[itself]`
+- JONGSEONG_ONLY (simple) → `null`
 - JONGSEONG_ONLY (compound batchim, e.g. ㄳ) → `[cho first, cho second]`
 - OPEN_SYLLABLE (simple vowel) → `[choseong, jungseong]`
 - OPEN_SYLLABLE (complex vowel) → `[open(choseong, base), jungseong last]`
 - FULL_SYLLABLE (simple jongseong) → `[open(choseong, jungseong), cho jongseong]`
 - FULL_SYLLABLE (compound jongseong) → `[full(choseong, jungseong, first), cho second]`
+
+## getNextRotation() Rules
+
+Advances a single-jamo Character one step through its rotation set (wraps around). Returns `null` if the Character is not single-jamo or its jamo is not in any rotation set. Delegates to `getNextRotation` in `jamo/rotation` — this wrapper keeps callers in the game layer from importing directly from `jamo/`.
 
 ## Key Decisions
 
@@ -115,3 +120,7 @@ Steps a Character back by one construction level — never drops a jamo.
 **C4 — `isComplete` checks the resolved codepoint, not the kind.** Only OPEN_SYLLABLE and FULL_SYLLABLE produce values in U+AC00–U+D7A3, but the check is done via codepoint rather than kind to avoid coupling to the union shape.
 
 **C5 — `normalizeCharacter` operates on single-jamo Characters only.** Multi-jamo Characters (OPEN_SYLLABLE, FULL_SYLLABLE) and EMPTY are returned unchanged. The function delegates to `normalizeJamo` from `jamo/rotation` and is applied element-wise to a pool after full decomposition, before presenting it to the player.
+
+**C6 — `decompose` returns `[Character, Character] | null` rather than `Character[]`.** The previous `Character[]` return type required callers to check length to distinguish "can't split" (length ≤ 1) from "did split" (length 2). The new type encodes that distinction structurally: `null` means irreducible; a pair means the two halves. Callers in `puzzle.ts` that need a flat-map idiom use `decompose(c) ?? [c]`.
+
+**C7 — `getNextRotation` is owned by the Character slice, not consumed directly from `jamo/rotation`.** The game state reducer works in terms of `Character`, not raw `Jamo`. Exposing a `Character → Character | null` entry point here keeps the reducer from importing across layer boundaries and ensures the rotation contract is expressed at the right abstraction level.
