@@ -8,7 +8,11 @@
 
 import type { Word } from "../../lib/word/word";
 import type { GameState, GameAction } from "./game";
-import { handleRotateToken, handleCombineTokens, handleSplitToken } from "./character-actions";
+import {
+  handleCharacterRotateNext,
+  handleCharacterCompose,
+  handleCharacterDecompose,
+} from "./character-actions";
 import { handlePlaceToken, handleRemoveFromSlot } from "./submission-actions";
 import {
   handleSubmitGuess,
@@ -46,11 +50,11 @@ export function createInitialGameState(word: Word): GameState {
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case "CHARACTER_ROTATE_NEXT":
-      return handleRotateToken(state, action.payload);
+      return handleCharacterRotateNext(state, action.payload);
     case "CHARACTER_COMPOSE":
-      return handleCombineTokens(state, action.payload);
+      return handleCharacterCompose(state, action.payload);
     case "CHARACTER_DECOMPOSE":
-      return handleSplitToken(state, action.payload);
+      return handleCharacterDecompose(state, action.payload);
     case "PLACE_TOKEN":
       return handlePlaceToken(state, action.payload);
     case "REMOVE_FROM_SLOT":

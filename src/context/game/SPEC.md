@@ -21,7 +21,7 @@ Two responsibilities: the game state machine (reducer + context) and game setup 
 ```
 src/context/game/
 ├── game.ts                  # GameState, GameAction, PoolToken, PoolState, SubmissionSlot, SubmissionState
-├── character-actions.ts     # handleRotateToken, handleCombineTokens, handleSplitToken
+├── character-actions.ts     # handleCharacterRotateNext, handleCharacterCompose, handleCharacterDecompose
 ├── submission-actions.ts    # handlePlaceToken, handleRemoveFromSlot
 ├── round-actions.ts         # handleSubmitGuess, handleResetRound, buildInitialPool, buildEmptySubmission
 ├── game-reducer.ts          # gameReducer() (shallow router), createInitialGameState()
@@ -95,7 +95,7 @@ No `status` field, no `'idle'` state. The application layer controls whether a g
 
 If neither case applies, no-op.
 
-**`SPLIT_TOKEN`** — decomposes a multi-jamo token back into individual single-jamo tokens. All pool token ids are reassigned from scratch (0, 1, 2, …) after split.
+**`SPLIT_TOKEN`** — decomposes a multi-jamo token back into two single-jamo tokens. The original token is updated in place with the first part (retaining its id); the second part is appended to the pool with the next available id.
 
 **`PLACE_TOKEN`** — moves token from pool to submission slot. Removes from `pool`, sets slot to filled.
 
@@ -110,7 +110,7 @@ If neither case applies, no-op.
 - `submission.length === [...state.word].length` at all times
 - `pool` and `submission` are reset after `SUBMIT_GUESS`
 - `guesses` grows by one record per `SUBMIT_GUESS`
-- Token `id` values are stable across rotation/combination; reassigned from scratch after `SPLIT_TOKEN`
+- Token `id` values are stable across rotation/combination/decompose; the original token keeps its id on split, only the new part gets a fresh id
 
 ## Key Decisions
 
@@ -118,7 +118,7 @@ If neither case applies, no-op.
 
 **S1 — Reducer does not evaluate guesses.** `SUBMIT_GUESS` receives a pre-computed `GuessRecord`. Evaluation is the engine's job.
 
-**S2 — `SPLIT_TOKEN` reassigns all pool ids from scratch.** No id counter in state. IDs are position-stable during a round but reset after split.
+**S2 — `SPLIT_TOKEN` preserves the original token's id.** The original token is updated in place; only the second part needs a new id (next available). No id counter in state — derived from the pool on demand.
 
 **S3 — Partial submission is valid.** Empty slots evaluate as `'absent'`. The player does not need to fill every slot.
 

@@ -35,7 +35,7 @@ function nextMissingId(pool: PoolState): number {
  * @param payload - tokenId to rotate
  * @returns Next game state
  */
-export function handleRotateToken(
+export function handleCharacterRotateNext(
   state: GameState,
   payload: (CharacterAction & { type: "CHARACTER_ROTATE_NEXT" })["payload"],
 ): GameState {
@@ -59,7 +59,7 @@ export function handleRotateToken(
  * @param payload - targetId and incomingId to combine
  * @returns Next game state
  */
-export function handleCombineTokens(
+export function handleCharacterCompose(
   state: GameState,
   payload: (CharacterAction & { type: "CHARACTER_COMPOSE" })["payload"],
 ): GameState {
@@ -87,7 +87,7 @@ export function handleCombineTokens(
  * @param payload - tokenId to split
  * @returns Next game state
  */
-export function handleSplitToken(
+export function handleCharacterDecompose(
   state: GameState,
   payload: (CharacterAction & { type: "CHARACTER_DECOMPOSE" })["payload"],
 ): GameState {
@@ -96,15 +96,12 @@ export function handleSplitToken(
   if (token === undefined) return state;
   const parts = decompose(token.character);
   if (parts === null) return state;
-  const poolWithoutToken = state.pool.filter((t) => t.id !== tokenId);
-  const idA = nextMissingId(poolWithoutToken);
-  const idB = nextMissingId([...poolWithoutToken, { id: idA, character: parts[0] }]);
-  const newTokens = [
-    { id: idA, character: parts[0] },
-    { id: idB, character: parts[1] },
-  ];
+  const idB = nextMissingId(state.pool);
   return {
     ...state,
-    pool: state.pool.flatMap((t) => (t.id === tokenId ? newTokens : [t])),
+    pool: [
+      ...state.pool.map((t) => (t.id === tokenId ? { ...t, character: parts[0] } : t)),
+      { id: idB, character: parts[1] },
+    ],
   };
 }

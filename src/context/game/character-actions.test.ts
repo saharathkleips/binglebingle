@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { handleRotateToken, handleCombineTokens, handleSplitToken } from "./character-actions";
+import {
+  handleCharacterRotateNext,
+  handleCharacterCompose,
+  handleCharacterDecompose,
+} from "./character-actions";
 import { character, resolveCharacter } from "../../lib/character/character";
 import type { Character } from "../../lib/character/character";
 import type { GameState, PoolState } from "./game";
@@ -24,10 +28,10 @@ function token(id: number, char: Character) {
 }
 
 // ---------------------------------------------------------------------------
-// handleRotateToken
+// handleCharacterRotateNext
 // ---------------------------------------------------------------------------
 
-describe("handleRotateToken", () => {
+describe("handleCharacterRotateNext", () => {
   it.each([
     {
       label: "choseong ㄱ → ㄴ",
@@ -46,7 +50,7 @@ describe("handleRotateToken", () => {
     },
   ])("rotates a $label token to the next jamo in its rotation set", ({ char, expected }) => {
     const state = makeState([token(0, char)]);
-    const next = handleRotateToken(state, { tokenId: 0 });
+    const next = handleCharacterRotateNext(state, { tokenId: 0 });
     expect(resolveCharacter(next.pool[0]!.character)).toBe(expected);
   });
 
@@ -68,21 +72,21 @@ describe("handleRotateToken", () => {
     },
   ])("is a no-op for $label", ({ pool, payload }) => {
     const state = makeState(pool);
-    expect(handleRotateToken(state, payload)).toBe(state);
+    expect(handleCharacterRotateNext(state, payload)).toBe(state);
   });
 });
 
 // ---------------------------------------------------------------------------
-// handleCombineTokens
+// handleCharacterCompose
 // ---------------------------------------------------------------------------
 
-describe("handleCombineTokens", () => {
+describe("handleCharacterCompose", () => {
   it("reduces the pool by one after a valid combination", () => {
     const state = makeState([
       token(0, character({ choseong: "ㄱ" })!),
       token(1, character({ jungseong: "ㅏ" })!),
     ]);
-    const next = handleCombineTokens(state, { targetId: 0, incomingId: 1 });
+    const next = handleCharacterCompose(state, { targetId: 0, incomingId: 1 });
     expect(next.pool).toHaveLength(1);
   });
 
@@ -91,7 +95,7 @@ describe("handleCombineTokens", () => {
       token(0, character({ choseong: "ㄱ" })!),
       token(1, character({ jungseong: "ㅏ" })!),
     ]);
-    const next = handleCombineTokens(state, { targetId: 0, incomingId: 1 });
+    const next = handleCharacterCompose(state, { targetId: 0, incomingId: 1 });
     expect(next.pool[0]?.id).toBe(0);
     expect(next.pool.some((t) => t.id === 1)).toBe(false);
   });
@@ -101,7 +105,7 @@ describe("handleCombineTokens", () => {
       token(0, character({ choseong: "ㄱ" })!),
       token(1, character({ jungseong: "ㅏ" })!),
     ]);
-    const next = handleCombineTokens(state, { targetId: 0, incomingId: 1 });
+    const next = handleCharacterCompose(state, { targetId: 0, incomingId: 1 });
     expect(resolveCharacter(next.pool[0]!.character)).toBe("가");
   });
 
@@ -123,50 +127,51 @@ describe("handleCombineTokens", () => {
     },
   ])("is a no-op for $label", ({ pool, payload }) => {
     const state = makeState(pool);
-    expect(handleCombineTokens(state, payload)).toBe(state);
+    expect(handleCharacterCompose(state, payload)).toBe(state);
   });
 });
 
 // ---------------------------------------------------------------------------
-// handleSplitToken
+// handleCharacterDecompose
 // ---------------------------------------------------------------------------
 
-describe("handleSplitToken", () => {
+describe("handleCharacterDecompose", () => {
   it("expands a combined token into its component jamo", () => {
     // Start with 가 (OPEN_SYLLABLE) — split should yield ㄱ + ㅏ
     const state = makeState([token(0, character("가")!)]);
-    const next = handleSplitToken(state, { tokenId: 0 });
+    const next = handleCharacterDecompose(state, { tokenId: 0 });
     expect(next.pool).toHaveLength(2);
     const resolved = next.pool.map((t) => resolveCharacter(t.character));
     expect(resolved).toContain("ㄱ");
     expect(resolved).toContain("ㅏ");
   });
 
-  it("assigns next-available ids to split tokens, preserving existing ids", () => {
+  it("keeps the original token id for the first part and appends the second part with the next-available id", () => {
     // Pool: [combined(id 0), standalone(id 2), standalone(id 3)]
-    // After splitting id 0 into 2 parts → 4 tokens, new parts take ids 0 and 1
+    // Splitting id 0: original keeps id 0 (parts[0]), new token gets id 1 (next available), appended at end
     const state = makeState([
       token(0, character("가")!),
       token(2, character({ choseong: "ㄱ" })!),
       token(3, character({ jungseong: "ㅏ" })!),
     ]);
-    const next = handleSplitToken(state, { tokenId: 0 });
-    expect(next.pool.map((t) => t.id)).toEqual([0, 1, 2, 3]);
+    const next = handleCharacterDecompose(state, { tokenId: 0 });
+    expect(next.pool.map((t) => t.id)).toEqual([0, 2, 3, 1]);
   });
 
-  it("inserts split tokens in place of the original, preserving surrounding token ids", () => {
+  it("updates the original token in place and appends the extra token to the end", () => {
     // Pool: [standalone(id 0), combined(id 1), standalone(id 2)]
-    // Splitting id 1 → parts take next-available ids (1 and 3); token(id 2) keeps its id
+    // Splitting id 1: original keeps id 1 (parts[0]), new token gets id 3 (next available), appended at end
     const state = makeState([
       token(0, character({ choseong: "ㄴ" })!),
       token(1, character("가")!),
       token(2, character({ jungseong: "ㅡ" })!),
     ]);
-    const next = handleSplitToken(state, { tokenId: 1 });
+    const next = handleCharacterDecompose(state, { tokenId: 1 });
     expect(next.pool).toHaveLength(4);
     expect(next.pool[0]!.id).toBe(0);
-    // parts are inserted in place; token(id 2) is shifted to the end but retains its id
-    expect(next.pool[3]!.id).toBe(2);
+    expect(next.pool[1]!.id).toBe(1);
+    expect(next.pool[2]!.id).toBe(2);
+    expect(next.pool[3]!.id).toBe(3);
   });
 
   it.each([
@@ -182,6 +187,6 @@ describe("handleSplitToken", () => {
     },
   ])("is a no-op for $label", ({ pool, payload }) => {
     const state = makeState(pool);
-    expect(handleSplitToken(state, payload)).toBe(state);
+    expect(handleCharacterDecompose(state, payload)).toBe(state);
   });
 });
