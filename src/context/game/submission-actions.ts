@@ -5,7 +5,7 @@
  * No React. No side effects.
  */
 
-import type { PoolToken, GameState } from "./game";
+import type { PoolToken, GameState, SubmissionAction } from "./game";
 
 /**
  * Moves a token from the pool into a submission slot.
@@ -18,7 +18,7 @@ import type { PoolToken, GameState } from "./game";
  */
 export function handleSubmissionSlotInsert(
   state: GameState,
-  payload: { tokenId: number; slotIndex: number },
+  payload: (SubmissionAction & { type: "SUBMISSION_SLOT_INSERT" })["payload"],
 ): GameState {
   const { tokenId, slotIndex } = payload;
   const token = state.pool.find((t) => t.id === tokenId);
@@ -52,7 +52,7 @@ export function handleSubmissionSlotInsert(
  */
 export function handleSubmissionSlotRemove(
   state: GameState,
-  payload: { slotIndex: number },
+  payload: (SubmissionAction & { type: "SUBMISSION_SLOT_REMOVE" })["payload"],
 ): GameState {
   const { slotIndex } = payload;
   const slot = state.submission[slotIndex];
