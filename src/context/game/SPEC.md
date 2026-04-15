@@ -1,7 +1,7 @@
-# SPEC: State
+# SPEC: context/game
 
 **Status:** draft
-**Slice:** `src/state/`
+**Slice:** `src/context/game/`
 
 ## Purpose
 
@@ -19,8 +19,8 @@ Two responsibilities: the game state machine (reducer + context) and game setup 
 ## File Map
 
 ```
-src/state/
-├── types.ts              # GameState, GameAction, PoolToken, SubmissionSlot
+src/context/game/
+├── game.ts               # GameState, GameAction, PoolToken, SubmissionSlot
 ├── game-reducer.ts       # gameReducer(), createInitialGameState()
 ├── GameContext.tsx        # GameProvider, useGame()
 ├── game-reducer.test.ts

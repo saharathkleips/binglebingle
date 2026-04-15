@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { canSubmit } from "./validate";
-import type { SubmissionState } from "../../state/types";
+import type { SubmissionState } from "../../context/game/game";
 import type { Character } from "../character/character";
 import { character } from "../character/character";
 

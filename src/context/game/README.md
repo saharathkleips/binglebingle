@@ -1,4 +1,4 @@
-# state
+# context/game
 
 Game state machine for Binglebingle. Single `useReducer` + `GameContext` — the only place in the app that holds mutable game state.
 

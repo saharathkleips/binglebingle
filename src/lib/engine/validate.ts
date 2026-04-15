@@ -7,7 +7,7 @@
  */
 
 import { isComplete } from "../character/character";
-import type { SubmissionState } from "../../state/types";
+import type { SubmissionState } from "../../context/game/game";
 import type { ValidationResult } from "./engine";
 
 /**

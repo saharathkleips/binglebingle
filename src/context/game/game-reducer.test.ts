@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { gameReducer, createInitialGameState } from "./game-reducer";
-import { createWord } from "../lib/word/word";
-import { character, resolveCharacter } from "../lib/character/character";
-import type { GameState, GameAction, SubmissionSlot } from "./types";
-import type { GuessRecord } from "../lib/engine/engine";
+import { createWord } from "../../lib/word/word";
+import { character, resolveCharacter } from "../../lib/character/character";
+import type { GameState, GameAction, SubmissionSlot } from "./game";
+import type { GuessRecord } from "../../lib/engine/engine";
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -8,7 +8,7 @@
  */
 
 import { resolveCharacter } from "../character/character";
-import type { SubmissionState } from "../../state/types";
+import type { SubmissionState } from "../../context/game/game";
 import type { Word } from "../word/word";
 import type { GuessRecord } from "./engine";
 

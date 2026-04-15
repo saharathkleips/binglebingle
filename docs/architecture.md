@@ -10,7 +10,7 @@ flowchart TD
         ui["Token pool · Submission slots · Guess board · Modals"]
     end
 
-    subgraph State["State — src/state/"]
+    subgraph State["Context — src/context/"]
         state["useReducer + GameContext"]
     end
 
@@ -32,7 +32,7 @@ flowchart TD
 
 **`src/lib/engine/`** — Guess validation, evaluation, and scoring. See `src/lib/engine/README.md`.
 
-**`src/state/`** — Single `useReducer` + `GameContext`. Reducer enforces valid state transitions; engine computes what they mean. See `src/state/README.md`.
+**`src/context/game/`** — Single `useReducer` + `GameContext`. Reducer enforces valid state transitions; engine computes what they mean. See `src/context/game/README.md`.
 
 **`src/components/`** — Renders state, dispatches actions. No business logic. See `src/components/README.md`.
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { evaluateGuess } from "./evaluate";
 import { createWord } from "../word/word";
 import { character } from "../character/character";
-import type { SubmissionState } from "../../state/types";
+import type { SubmissionState } from "../../context/game/game";
 import type { EvaluatedCharacter } from "./engine";
 
 function filledSlot(syllable: string, tokenId = 0) {

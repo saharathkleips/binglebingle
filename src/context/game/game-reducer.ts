@@ -5,12 +5,12 @@
  * No async, no side effects.
  */
 
-import { compose, decompose, character, normalizeCharacter } from "../lib/character/character";
-import type { Character } from "../lib/character/character";
-import { fullDecompose } from "../lib/puzzle/puzzle";
-import type { Jamo } from "../lib/jamo/jamo";
-import type { Word } from "../lib/word/word";
-import type { GameState, GameAction, PoolToken, PoolState, SubmissionState } from "./types";
+import { compose, decompose, character, normalizeCharacter } from "../../lib/character/character";
+import type { Character } from "../../lib/character/character";
+import { fullDecompose } from "../../lib/puzzle/puzzle";
+import type { Jamo } from "../../lib/jamo/jamo";
+import type { Word } from "../../lib/word/word";
+import type { GameState, GameAction, PoolToken, PoolState, SubmissionState } from "./game";
 
 // ---------------------------------------------------------------------------
 // Internal helpers

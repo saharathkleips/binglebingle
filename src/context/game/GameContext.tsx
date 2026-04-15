@@ -7,7 +7,7 @@
 
 import { createContext, useContext, useReducer, type Dispatch, type ReactNode } from "react";
 import { gameReducer } from "./game-reducer";
-import type { GameState, GameAction } from "./types";
+import type { GameState, GameAction } from "./game";
 
 // ---------------------------------------------------------------------------
 // Context
