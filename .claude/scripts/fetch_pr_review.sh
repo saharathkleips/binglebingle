@@ -43,19 +43,12 @@ query($owner: String!, $repo: String!, $pr: Int!) {
 }' -f owner="$OWNER" -f repo="$REPO" -F pr=$PR_NUM \
 | jq -r '.data.repository.pullRequest.reviewThreads.nodes
     | map(select(.isResolved == false and .isOutdated == false))
-    | map({
-        file: .path,
-        line: .line,
-        diffHunk: .comments.nodes[0].diffHunk,
-        comments: (.comments.nodes | map(.body) | join("\n\n"))
-      })
-    | group_by(.file)
+    | group_by(.path)
     | map(
-        "## " + .[0].file + "\n" +
+        "## File: " + .[0].path + "\n" +
         (map(
-          "\n- **Line " + (.line | tostring) + "**\n" +
-          "  ```diff\n" + .diffHunk + "\n  ```\n\n" +
-          "  " + (.comments | gsub("\n"; "\n  "))
-        ) | join("\n"))
+          "### Line " + (.line | tostring) + "\n\n" +
+          (.comments.nodes | map(.body) | join("\n\n---\n\n"))
+        ) | join("\n\n"))
       )
-    | join("\n\n")'
+    | join("\n\n---\n\n")'

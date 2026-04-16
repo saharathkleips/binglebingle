@@ -105,15 +105,14 @@ Token is the core interactive element. Only appears in the pool.
 ```
 SubmitButton click
   → canSubmit(state.submission)        // check validity
-  → evaluateGuess(state.submission, state.word)  // compute result
-  → dispatch SUBMIT_GUESS              // reducer records it
+  → dispatch ROUND_SUBMISSION_SUBMIT   // reducer evaluates and records
 ```
 
 ## Win State
 
 `isWon(state)` derived from last GuessRecord (all `'correct'`). On win:
 
-- Pool area shows score (`calculateScore(state.guesses)`) and target word
+- Pool area shows score (`calculateScore(state.history)`) and target word
 - Board remains visible — final guess row shows all-correct tiles (effectively reveals the word)
 - SubmitButton becomes Share placeholder (inert in MVP)
 

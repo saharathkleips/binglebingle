@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { canSubmit } from "./validate";
-import type { SubmissionState } from "../../state/types";
+import type { SubmissionSlot } from "../../context/game/game";
 import type { Character } from "../character/character";
 import { character } from "../character/character";
 
 function filled(char: Character) {
-  return { state: "FILLED" as const, tokenId: 0, character: char };
+  return { state: "FILLED" as const, tileId: 0, character: char };
 }
 
 const empty = { state: "EMPTY" as const };
@@ -30,7 +30,7 @@ describe("canSubmit", () => {
     },
     {
       label: "returns NO_CHARACTERS when submission is empty",
-      submission: [] as SubmissionState,
+      submission: [] as readonly SubmissionSlot[],
       expected: "NO_CHARACTERS",
     },
     {
@@ -45,6 +45,6 @@ describe("canSubmit", () => {
       expected: "INCOMPLETE_CHARACTER",
     },
   ])("$label", ({ submission, expected }) => {
-    expect(canSubmit(submission as SubmissionState)).toEqual(expected);
+    expect(canSubmit(submission as readonly SubmissionSlot[])).toEqual(expected);
   });
 });

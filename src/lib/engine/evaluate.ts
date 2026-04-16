@@ -8,9 +8,8 @@
  */
 
 import { resolveCharacter } from "../character/character";
-import type { SubmissionState } from "../../state/types";
 import type { Word } from "../word/word";
-import type { GuessRecord } from "./engine";
+import type { GuessRecord, Submission } from "./engine";
 
 /**
  * Evaluates a submission against the target word using two-pass Wordle semantics.
@@ -24,10 +23,10 @@ import type { GuessRecord } from "./engine";
  * @param word - The target word to evaluate against
  * @returns A GuessRecord with per-character evaluation results
  */
-export function evaluateGuess(submission: SubmissionState, word: Word): GuessRecord {
-  const slots = submission.map((slot) =>
-    slot.state === "FILLED"
-      ? { resolved: resolveCharacter(slot.character) ?? "", character: slot.character }
+export function evaluateGuess(submission: Submission, word: Word): GuessRecord {
+  const slots = submission.map((char) =>
+    char !== null
+      ? { resolved: resolveCharacter(char) ?? "", character: char }
       : { resolved: "", character: undefined },
   );
   const targetStrings = word.map((wordChar) => resolveCharacter(wordChar) ?? "");

@@ -12,6 +12,6 @@ React UI layer for Binglebingle. Renders game state and dispatches actions — n
 ## Dependencies
 
 - `src/state/` — `useGame()`, `GameProvider`, `GameAction`
-- `src/lib/engine/` — `canSubmit`, `evaluateGuess`
+- `src/lib/engine/` — `canSubmit`
 - `src/lib/character/` — `resolveCharacter`
 - `src/lib/jamo/` — `getNextRotation`
