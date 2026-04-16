@@ -51,12 +51,11 @@ export type CombinationRule = {
  * All combination rules: double consonants (5), complex vowels (13), and
  * compound batchim (11). 29 entries total (including 2 alternate-input rules).
  *
- * DOUBLE_CONSONANT and COMPLEX_VOWEL rules are commutative (COMBINATION_MAP stores both a|b and b|a).
- * COMPOUND_BATCHIM rules are NOT commutative (canonical order only in COMBINATION_MAP).
+ * DOUBLE_CONSONANT and COMPLEX_VOWEL rules are commutative. COMPOUND_BATCHIM
+ * rules are not — canonical input order only (e.g. ㄱ+ㅅ→ㄳ; ㅅ+ㄱ has no rule).
  *
- * For ㅙ and ㅞ, two input paths exist. The alternate-input rules are marked with
- * `alternate: true` and are included in COMBINATION_MAP (compose) but excluded from
- * DECOMPOSE_MAP (decompose always returns the canonical path).
+ * ㅙ and ㅞ each have two input paths. The non-canonical paths are marked
+ * `alternate: true`; decomposition always returns the canonical path.
  */
 export const COMBINATION_RULES: readonly CombinationRule[] = [
   // Double consonants (5)
