@@ -1,55 +1,16 @@
-# Engine Slice — Public Contract
+# engine
 
-**Slice:** `src/lib/engine/`
-**Status:** stable
+The game rules. Given a submission and a target word, answers: can this be submitted, what does it evaluate to, and what is the score?
 
 ## Exports
 
-### `engine.ts`
-
-| Export                    | Description                                                                |
-| ------------------------- | -------------------------------------------------------------------------- |
-| `Submission`              | `readonly (Character \| null)[]` — engine's view of a guess submission     |
-| `CharacterResult`         | `'CORRECT' \| 'PRESENT' \| 'ABSENT'` — per-character evaluation result     |
-| `EvaluatedCharacter`      | `{ character?: Character; result: CharacterResult }` — one slot in a guess |
-| `GuessRecord`             | `readonly EvaluatedCharacter[]` — a fully evaluated guess                  |
-| `ValidationFailureReason` | `'NO_CHARACTERS' \| 'INCOMPLETE_CHARACTER'`                                |
-| `ValidationResult`        | `"VALID" \| ValidationFailureReason`                                       |
-| `ScoringResult`           | `{ guessCount: number }`                                                   |
-
-### `validate.ts`
-
-| Export         | Description                                                                  |
-| -------------- | ---------------------------------------------------------------------------- |
-| `canSubmit(s)` | Returns `ValidationResult` — gates submission on filled, complete characters |
-
-### `evaluate.ts`
-
-| Export                   | Description                                                                              |
-| ------------------------ | ---------------------------------------------------------------------------------------- |
-| `evaluateGuess(s, word)` | Returns `GuessRecord` — two-pass Wordle duplicate semantics (correct / present / absent) |
-
-### `scoring.ts`
-
-| Export                    | Description                                  |
-| ------------------------- | -------------------------------------------- |
-| `calculateScore(guesses)` | Returns `ScoringResult` based on guess count |
-
-## Usage
-
-```typescript
-import { canSubmit } from "src/lib/engine/validate";
-import { evaluateGuess } from "src/lib/engine/evaluate";
-import { calculateScore } from "src/lib/engine/scoring";
-
-const validation = canSubmit(submission);
-if (validation === "VALID") {
-  const record = evaluateGuess(submission, word);
-  const score = calculateScore([...guesses, record]);
-}
-```
-
-## Boundaries
-
-- Calls into: `src/lib/character/` for character resolution and completion checks; `src/lib/word/` for target word iteration
-- No knowledge of: React, state management, UI, word loading
+- `Submission` — `readonly (Character | null)[]`; the engine's view of a guess submission
+- `CharacterResult` — `'CORRECT' | 'PRESENT' | 'ABSENT'`; per-character evaluation result
+- `EvaluatedCharacter` — `{ character?: Character; result: CharacterResult }`; one evaluated slot in a guess
+- `GuessRecord` — `readonly EvaluatedCharacter[]`; a fully evaluated guess
+- `ValidationFailureReason` — `'NO_CHARACTERS' | 'INCOMPLETE_CHARACTER'`; reason submission was rejected
+- `ValidationResult` — `"VALID" | ValidationFailureReason`; outcome of submission validation
+- `ScoringResult` — `{ guessCount: number }`; scoring output for a completed game
+- `canSubmit(submission) => ValidationResult` — gates submission on at least one filled, complete character; does not validate word membership
+- `evaluateGuess(submission, word) => GuessRecord` — two-pass Wordle duplicate semantics (correct / present / absent)
+- `calculateScore(guesses) => ScoringResult` — returns score based on guess count
