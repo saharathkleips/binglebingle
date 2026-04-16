@@ -21,13 +21,16 @@ Running in a locked-down devcontainer (Debian bookworm-slim). If a failure looks
 
 - Folders: `kebab-case`; React components: `PascalCase.tsx`; everything else: `kebab-case.ts`
 - Tests: mirror source name + `.test.ts(x)`
-- Each module folder has a `README.md` (public contract) and `SPEC.md` (internals/decisions) — see `docs/templates/` for formats
+- Each module has a `README.md` (public API) — read this before the source
+- Each module has a `SPEC.md` (implementation decisions) — read before making changes, and document any non-obvious decisions while working
 - No index barrels — import directly from the file that owns the export
+- File layout: exported symbols (types, functions) at the top; unexported helpers at the bottom
 
 ## Naming
 
 - Prefer functional style (`map`/`flatMap`/`reduce`/`filter`) over imperative loops, `while`, or variable reassignment
 - Limit `as` casts — if one is unavoidable, add an inline comment explaining why
+- Variable names: favor descriptive full words — avoid abbreviations and single-letter names
 - `camelCase` variables/params, `SCREAMING_SNAKE_CASE` module-level constants, `PascalCase` types/components
 - Booleans: prefix with `is`, `has`, `can`, `should`
 - Prefer `type` over `interface`; no `I` prefix; discriminated unions always have a `kind` or `type` literal field
@@ -49,5 +52,4 @@ E2E tests in `tests/**/*.spec.ts`. Test observable UI behavior only; use `data-t
 
 - `docs/architecture.md` — system design, layer boundaries, key decisions
 - `docs/roadmap/` — versioned milestones; README.md has current status and next milestone
-- `src/*/README.md` — high-level overview; read for general orientation
-- `src/*/SPEC.md` — implementation details and decisions; read when making changes to that slice
+- `docs/templates/` — templates for new docs; check here before creating any new doc, and if no template exists for the doc type, suggest whether one should be added
