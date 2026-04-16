@@ -112,7 +112,7 @@ SubmitButton click
 
 `isWon(state)` derived from last GuessRecord (all `'correct'`). On win:
 
-- Pool area shows score (`calculateScore(state.guesses)`) and target word
+- Pool area shows score (`calculateScore(state.history)`) and target word
 - Board remains visible — final guess row shows all-correct tiles (effectively reveals the word)
 - SubmitButton becomes Share placeholder (inert in MVP)
 

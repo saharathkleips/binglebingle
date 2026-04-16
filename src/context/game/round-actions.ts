@@ -9,7 +9,7 @@
 import { fullDecompose, normalizeCharacter } from "../../lib/character/character";
 import { evaluateGuess } from "../../lib/engine/evaluate";
 import type { Word } from "../../lib/word/word";
-import type { GameState, PoolState, SubmissionState, PoolToken } from "./game";
+import type { GameState, SubmissionSlot, Tile } from "./game";
 
 // ---------------------------------------------------------------------------
 // Shared builders (also used by createInitialGameState in game-reducer.ts)
@@ -21,9 +21,9 @@ import type { GameState, PoolState, SubmissionState, PoolToken } from "./game";
  * revealing which rotation target the word uses.
  *
  * @param word - The target word to decompose
- * @returns An ordered pool of single-jamo tokens
+ * @returns An ordered pool of single-jamo tiles
  */
-export function buildInitialPool(word: Word): PoolState {
+export function buildInitialPool(word: Word): readonly Tile[] {
   return fullDecompose(word).map((char, index) => ({
     id: index,
     character: normalizeCharacter(char),
@@ -36,7 +36,7 @@ export function buildInitialPool(word: Word): PoolState {
  * @param word - The target word whose length determines the submission size
  * @returns An array of EMPTY submission slots
  */
-export function buildEmptySubmission(word: Word): SubmissionState {
+export function buildEmptySubmission(word: Word): readonly SubmissionSlot[] {
   return word.map(() => ({ state: "EMPTY" as const }));
 }
 
@@ -46,7 +46,7 @@ export function buildEmptySubmission(word: Word): SubmissionState {
 
 /**
  * Evaluates the current submission against the target word and records the result.
- * Correct and present slots remain filled; absent tokens are fully decomposed
+ * Correct and present slots remain filled; absent tiles are fully decomposed
  * (without normalizing) and returned to the pool.
  *
  * @param state - Current game state
@@ -55,34 +55,34 @@ export function buildEmptySubmission(word: Word): SubmissionState {
 export function handleSubmitGuess(state: GameState): GameState {
   const evaluation = evaluateGuess(
     state.submission.map((slot) => (slot.state === "FILLED" ? slot.character : null)),
-    state.word,
+    state.targetWord,
   );
 
   // Zip each slot with its evaluation result for use in the steps below.
   const pairs = state.submission.map((slot, i) => ({ slot, result: evaluation[i]?.result }));
 
   // Correct and present slots remain filled; absent slots are cleared.
-  const newSubmission: SubmissionState = pairs.map(({ slot, result }) =>
+  const newSubmission: readonly SubmissionSlot[] = pairs.map(({ slot, result }) =>
     slot.state === "FILLED" && result !== "CORRECT" && result !== "PRESENT"
       ? { state: "EMPTY" as const }
       : slot,
   );
 
-  // Collect the tokens being returned to the pool.
-  const absentTokens: PoolToken[] = pairs.flatMap(({ slot, result }) =>
+  // Collect the tiles being returned to the pool.
+  const absentTiles: Tile[] = pairs.flatMap(({ slot, result }) =>
     slot.state === "FILLED" && result !== "CORRECT" && result !== "PRESENT"
-      ? [{ id: slot.tokenId, character: slot.character }]
+      ? [{ id: slot.tileId, character: slot.character }]
       : [],
   );
 
-  // Fully decompose absent tokens without normalizing. A composed jamo (e.g. ㄲ)
+  // Fully decompose absent tiles without normalizing. A composed jamo (e.g. ㄲ)
   // expands to its parts (ㄱ, ㄱ); extra parts from decomposition get fresh IDs.
   const usedIds = new Set([
     ...state.pool.map((t) => t.id),
-    ...absentTokens.map((t) => t.id),
-    ...newSubmission.flatMap((s) => (s.state === "FILLED" ? [s.tokenId] : [])),
+    ...absentTiles.map((t) => t.id),
+    ...newSubmission.flatMap((s) => (s.state === "FILLED" ? [s.tileId] : [])),
   ]);
-  const decomposedTokens = absentTokens.flatMap(({ id, character }) => {
+  const decomposedTiles = absentTiles.flatMap(({ id, character }) => {
     const parts = fullDecompose([character]);
     return parts.map((char, partIndex) => {
       if (partIndex === 0) return { id, character: char };
@@ -95,15 +95,15 @@ export function handleSubmitGuess(state: GameState): GameState {
 
   return {
     ...state,
-    guesses: [...state.guesses, evaluation],
-    pool: [...state.pool, ...decomposedTokens],
+    history: [...state.history, evaluation],
+    pool: [...state.pool, ...decomposedTiles],
     submission: newSubmission,
   };
 }
 
 /**
  * Restores the pool from the word and clears all submission slots.
- * Does not append to guesses.
+ * Does not append to history.
  *
  * @param state - Current game state
  * @returns Next game state with fresh pool and empty submission
@@ -111,7 +111,7 @@ export function handleSubmitGuess(state: GameState): GameState {
 export function handleResetRound(state: GameState): GameState {
   return {
     ...state,
-    pool: buildInitialPool(state.word),
-    submission: buildEmptySubmission(state.word),
+    pool: buildInitialPool(state.targetWord),
+    submission: buildEmptySubmission(state.targetWord),
   };
 }

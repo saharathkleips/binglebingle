@@ -9,7 +9,7 @@ The game rules. Given a submission and a target word, answers: can this be submi
 
 **Boundaries:**
 
-- In: `SubmissionState`, `Word`, `readonly GuessRecord[]`
+- In: `readonly SubmissionSlot[]`, `Word`, `readonly GuessRecord[]`
 - Out: `ValidationResult`, `GuessRecord`, `ScoringResult`
 - Calls into: `src/lib/jamo/`, `src/lib/character/`, `src/lib/word/`
 - No knowledge of: React, state management, UI, loading
@@ -56,7 +56,7 @@ export type ScoringResult = {
 
 ## Functions
 
-### `canSubmit(submission: SubmissionState): ValidationResult`
+### `canSubmit(submission: readonly SubmissionSlot[]): ValidationResult`
 
 Checks whether the current submission can be submitted. Does **not** check:
 
@@ -81,6 +81,6 @@ MVP: `{ guessCount: guesses.length }`. `ScoringResult` is typed for extensibilit
 
 **E1 — Validation is submission-gate only.** `canSubmit` is called once before dispatch, not continuously. Disabling the submit button is the UI's job.
 
-**E2 — Evaluation is computed inside the reducer, not by the caller.** `ROUND_SUBMISSION_SUBMIT` carries no payload; the reducer calls `evaluateGuess` against its own `state.submission` and `state.word`. This prevents the caller from dispatching a mismatched or fabricated evaluation.
+**E2 — Evaluation is computed inside the reducer, not by the caller.** `ROUND_SUBMISSION_SUBMIT` carries no payload; the reducer calls `evaluateGuess` against its own `state.submission` and `state.targetWord`. This prevents the caller from dispatching a mismatched or fabricated evaluation.
 
 **E3 — Empty slot `character` is `''`.** UI can distinguish empty-slot absent from wrong-character absent by checking `character === ''` if different visual treatment is needed.

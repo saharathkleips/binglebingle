@@ -6,17 +6,17 @@
  */
 
 import { compose, decompose, getNextRotation } from "../../lib/character/character";
-import type { CharacterAction, GameState, PoolState } from "./game";
+import type { CharacterAction, GameState, Tile } from "./game";
 
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Returns the smallest non-negative integer not already used as a pool token id.
+ * Returns the smallest non-negative integer not already used as a tile id.
  * Derived purely from the pool — no stored counter needed.
  */
-function nextMissingId(pool: PoolState): number {
+function nextMissingId(pool: readonly Tile[]): number {
   const usedIds = new Set(pool.map((t) => t.id));
   let id = 0;
   while (usedIds.has(id)) id++;
@@ -28,32 +28,32 @@ function nextMissingId(pool: PoolState): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Advances a single-jamo pool token to the next jamo in its rotation set.
- * No-op if the token is not found, is not single-jamo, or is not rotatable.
+ * Advances a single-jamo pool tile to the next jamo in its rotation set.
+ * No-op if the tile is not found, is not single-jamo, or is not rotatable.
  *
  * @param state - Current game state
- * @param payload - tokenId to rotate
+ * @param payload - tileId to rotate
  * @returns Next game state
  */
 export function handleCharacterRotateNext(
   state: GameState,
   payload: (CharacterAction & { type: "CHARACTER_ROTATE_NEXT" })["payload"],
 ): GameState {
-  const { tokenId } = payload;
-  const token = state.pool.find((t) => t.id === tokenId);
-  if (token === undefined) return state;
-  const newChar = getNextRotation(token.character);
+  const { tileId } = payload;
+  const tile = state.pool.find((t) => t.id === tileId);
+  if (tile === undefined) return state;
+  const newChar = getNextRotation(tile.character);
   if (newChar === null) return state;
   return {
     ...state,
-    pool: state.pool.map((t) => (t.id === tokenId ? { ...t, character: newChar } : t)),
+    pool: state.pool.map((t) => (t.id === tileId ? { ...t, character: newChar } : t)),
   };
 }
 
 /**
- * Merges two pool tokens into one using compose(). The combined token takes
+ * Merges two pool tiles into one using compose(). The combined tile takes
  * the id of targetId; incomingId is removed from the pool.
- * No-op if either token is not found or compose() returns null.
+ * No-op if either tile is not found or compose() returns null.
  *
  * @param state - Current game state
  * @param payload - targetId and incomingId to combine
@@ -64,10 +64,10 @@ export function handleCharacterCompose(
   payload: (CharacterAction & { type: "CHARACTER_COMPOSE" })["payload"],
 ): GameState {
   const { targetId, incomingId } = payload;
-  const targetToken = state.pool.find((t) => t.id === targetId);
-  const incomingToken = state.pool.find((t) => t.id === incomingId);
-  if (targetToken === undefined || incomingToken === undefined) return state;
-  const combined = compose(targetToken.character, incomingToken.character);
+  const targetTile = state.pool.find((t) => t.id === targetId);
+  const incomingTile = state.pool.find((t) => t.id === incomingId);
+  if (targetTile === undefined || incomingTile === undefined) return state;
+  const combined = compose(targetTile.character, incomingTile.character);
   if (combined === null) return state;
   return {
     ...state,
@@ -78,29 +78,29 @@ export function handleCharacterCompose(
 }
 
 /**
- * Decomposes a multi-jamo pool token back into two individual tokens.
- * The new tokens are inserted in place of the original, assigned the smallest
- * available ids. Existing token ids are preserved.
- * No-op if the token is not found or cannot be decomposed.
+ * Decomposes a multi-jamo pool tile back into two individual tiles.
+ * The new tiles are inserted in place of the original, assigned the smallest
+ * available ids. Existing tile ids are preserved.
+ * No-op if the tile is not found or cannot be decomposed.
  *
  * @param state - Current game state
- * @param payload - tokenId to split
+ * @param payload - tileId to split
  * @returns Next game state
  */
 export function handleCharacterDecompose(
   state: GameState,
   payload: (CharacterAction & { type: "CHARACTER_DECOMPOSE" })["payload"],
 ): GameState {
-  const { tokenId } = payload;
-  const token = state.pool.find((t) => t.id === tokenId);
-  if (token === undefined) return state;
-  const parts = decompose(token.character);
+  const { tileId } = payload;
+  const tile = state.pool.find((t) => t.id === tileId);
+  if (tile === undefined) return state;
+  const parts = decompose(tile.character);
   if (parts === null) return state;
   const idB = nextMissingId(state.pool);
   return {
     ...state,
     pool: [
-      ...state.pool.map((t) => (t.id === tokenId ? { ...t, character: parts[0] } : t)),
+      ...state.pool.map((t) => (t.id === tileId ? { ...t, character: parts[0] } : t)),
       { id: idB, character: parts[1] },
     ],
   };

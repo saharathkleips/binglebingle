@@ -11,16 +11,16 @@ import type { GameState, SubmissionSlot } from "./game";
 function makeState(overrides: Partial<GameState> = {}): GameState {
   const word = createWord("가나")!;
   return {
-    word,
+    targetWord: word,
     pool: [],
     submission: [{ state: "EMPTY" }, { state: "EMPTY" }],
-    guesses: [],
+    history: [],
     ...overrides,
   };
 }
 
-function filledSlot(syllable: string, tokenId: number): SubmissionSlot {
-  return { state: "FILLED", tokenId, character: character(syllable)! };
+function filledSlot(syllable: string, tileId: number): SubmissionSlot {
+  return { state: "FILLED", tileId, character: character(syllable)! };
 }
 
 // ---------------------------------------------------------------------------
@@ -29,27 +29,27 @@ function filledSlot(syllable: string, tokenId: number): SubmissionSlot {
 // ---------------------------------------------------------------------------
 
 describe("handleSubmitGuess", () => {
-  it("appends the evaluation to guesses, preserving character and result order", () => {
+  it("appends the evaluation to history, preserving character and result order", () => {
     // [가, 나] against "가나" → [CORRECT, CORRECT]
     const state = makeState({
       submission: [filledSlot("가", 0), filledSlot("나", 1)],
     });
     const next = handleSubmitGuess(state);
-    expect(next.guesses).toHaveLength(1);
-    expect(next.guesses[0]?.[0]?.character).toEqual(character("가"));
-    expect(next.guesses[0]?.[0]?.result).toBe("CORRECT");
-    expect(next.guesses[0]?.[1]?.character).toEqual(character("나"));
-    expect(next.guesses[0]?.[1]?.result).toBe("CORRECT");
+    expect(next.history).toHaveLength(1);
+    expect(next.history[0]?.[0]?.character).toEqual(character("가"));
+    expect(next.history[0]?.[0]?.result).toBe("CORRECT");
+    expect(next.history[0]?.[1]?.character).toEqual(character("나"));
+    expect(next.history[0]?.[1]?.result).toBe("CORRECT");
   });
 
-  it("grows guesses by one per call", () => {
+  it("grows history by one per call", () => {
     // CORRECT slots remain filled, so re-evaluating produces the same result
     const state = makeState({
       submission: [filledSlot("가", 0), filledSlot("나", 1)],
     });
     const after1 = handleSubmitGuess(state);
     const after2 = handleSubmitGuess(after1);
-    expect(after2.guesses).toHaveLength(2);
+    expect(after2.history).toHaveLength(2);
   });
 
   it("keeps CORRECT slots filled after submission", () => {
@@ -74,7 +74,7 @@ describe("handleSubmitGuess", () => {
     expect(next.pool.some((t) => t.id === 0)).toBe(false);
   });
 
-  it("returns ABSENT tokens to the pool and empties their slots", () => {
+  it("returns ABSENT tiles to the pool and empties their slots", () => {
     // [다, 나] against "가나" → [ABSENT, CORRECT]
     // 다 = OPEN_SYLLABLE(ㄷ, ㅏ) → fullDecompose → [CHOSEONG_ONLY(ㄷ), JUNGSEONG_ONLY(ㅏ)]
     const state = makeState({
@@ -83,12 +83,12 @@ describe("handleSubmitGuess", () => {
     const next = handleSubmitGuess(state);
     expect(next.submission[0]?.state).toBe("EMPTY");
     expect(next.pool).toHaveLength(2);
-    const absentToken = next.pool.find((t) => t.id === 0);
-    expect(absentToken?.character).toEqual(character({ choseong: "ㄷ" }));
+    const absentTile = next.pool.find((t) => t.id === 0);
+    expect(absentTile?.character).toEqual(character({ choseong: "ㄷ" }));
     expect(next.pool.some((t) => t.character.kind === "JUNGSEONG_ONLY")).toBe(true);
   });
 
-  it("fully decomposes absent tokens containing composed jamo", () => {
+  it("fully decomposes absent tiles containing composed jamo", () => {
     // [까, 나] against "가나" → [ABSENT, CORRECT]
     // 까 = OPEN_SYLLABLE(ㄲ, ㅏ) → fullDecompose → [ㄱ, ㄱ, ㅏ] (ㄲ splits into two ㄱ)
     const state = makeState({
@@ -96,8 +96,8 @@ describe("handleSubmitGuess", () => {
     });
     const next = handleSubmitGuess(state);
     expect(next.pool).toHaveLength(3);
-    const tokenAtId0 = next.pool.find((t) => t.id === 0);
-    expect(tokenAtId0?.character).toEqual(character({ choseong: "ㄱ" }));
+    const tileAtId0 = next.pool.find((t) => t.id === 0);
+    expect(tileAtId0?.character).toEqual(character({ choseong: "ㄱ" }));
     expect(next.pool.filter((t) => t.character.kind === "CHOSEONG_ONLY")).toHaveLength(2);
     expect(next.pool.filter((t) => t.character.kind === "JUNGSEONG_ONLY")).toHaveLength(1);
   });
@@ -110,7 +110,7 @@ describe("handleSubmitGuess", () => {
 describe("handleResetRound", () => {
   it("restores the pool to the full word decomposition", () => {
     // 가나 fully decomposes to 4 jamo (ㄱ ㅏ ㄴ* ㅏ) — *normalized from ㄴ→ㄱ, but count is 4
-    const base = makeState({ word: createWord("가나")! });
+    const base = makeState({ targetWord: createWord("가나")! });
     const dirty = { ...base, pool: [] };
     const next = handleResetRound(dirty);
     expect(next.pool.length).toBe(4);
@@ -124,9 +124,9 @@ describe("handleResetRound", () => {
     expect(next.submission.every((s) => s.state === "EMPTY")).toBe(true);
   });
 
-  it("does not modify guesses", () => {
-    const state = makeState({ guesses: [[{ result: "ABSENT" as const }]] });
+  it("does not modify history", () => {
+    const state = makeState({ history: [[{ result: "ABSENT" as const }]] });
     const next = handleResetRound(state);
-    expect(next.guesses).toHaveLength(1);
+    expect(next.history).toHaveLength(1);
   });
 });

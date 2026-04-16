@@ -28,7 +28,7 @@ describe("createInitialGameState", () => {
     expect(state.pool.length).toBe(5);
   });
 
-  it("assigns sequential ids to pool tokens starting at 0", () => {
+  it("assigns sequential ids to pool tiles starting at 0", () => {
     const state = createInitialGameState(word("바나나"));
     expect(state.pool.map((t) => t.id)).toEqual([0, 1, 2, 3, 4, 5]);
   });
@@ -36,15 +36,15 @@ describe("createInitialGameState", () => {
   it("normalizes rotatable jamo to their canonical form", () => {
     // 나 = ㄴ+ㅏ; ㄴ is in the rotation set ["ㄱ","ㄴ"] and normalizes to ㄱ
     const state = createInitialGameState(word("나"));
-    const consonantToken = state.pool.find((t) => t.character.kind === "CHOSEONG_ONLY");
+    const consonantTile = state.pool.find((t) => t.character.kind === "CHOSEONG_ONLY");
     expect(
-      consonantToken?.character.kind === "CHOSEONG_ONLY" && consonantToken.character.choseong,
+      consonantTile?.character.kind === "CHOSEONG_ONLY" && consonantTile.character.choseong,
     ).toBe("ㄱ");
   });
 
-  it("starts with an empty guesses list", () => {
+  it("starts with an empty history", () => {
     const state = createInitialGameState(word("바나나"));
-    expect(state.guesses).toHaveLength(0);
+    expect(state.history).toHaveLength(0);
   });
 });
 
@@ -57,18 +57,18 @@ describe("createInitialGameState", () => {
 // ---------------------------------------------------------------------------
 
 describe("gameReducer", () => {
-  it("routes CHARACTER_ROTATE_NEXT — advances the target token's jamo", () => {
+  it("routes CHARACTER_ROTATE_NEXT — advances the target tile's jamo", () => {
     const state = createInitialGameState(word("가")); // pool: [{id:0, ㄱ}, {id:1, ㅏ}]
     const next = gameReducer(state, {
       type: "CHARACTER_ROTATE_NEXT",
-      payload: { tokenId: 0 },
+      payload: { tileId: 0 },
     });
     expect(next).not.toBe(state);
     const tok = next.pool.find((t) => t.id === 0);
     expect(tok?.character.kind === "CHOSEONG_ONLY" && tok.character.choseong).toBe("ㄴ");
   });
 
-  it("routes CHARACTER_COMPOSE — merges two tokens into one", () => {
+  it("routes CHARACTER_COMPOSE — merges two tiles into one", () => {
     const state = createInitialGameState(word("가")); // pool: [{id:0, ㄱ}, {id:1, ㅏ}]
     const next = gameReducer(state, {
       type: "CHARACTER_COMPOSE",
@@ -77,30 +77,30 @@ describe("gameReducer", () => {
     expect(next.pool).toHaveLength(1);
   });
 
-  it("routes CHARACTER_DECOMPOSE — expands a combined token", () => {
+  it("routes CHARACTER_DECOMPOSE — expands a combined tile", () => {
     const combined = gameReducer(createInitialGameState(word("가")), {
       type: "CHARACTER_COMPOSE",
       payload: { targetId: 0, incomingId: 1 },
     });
-    const next = gameReducer(combined, { type: "CHARACTER_DECOMPOSE", payload: { tokenId: 0 } });
+    const next = gameReducer(combined, { type: "CHARACTER_DECOMPOSE", payload: { tileId: 0 } });
     expect(next.pool).toHaveLength(2);
   });
 
-  it("routes SUBMISSION_SLOT_INSERT — moves a token from pool into the submission slot", () => {
+  it("routes SUBMISSION_SLOT_INSERT — moves a tile from pool into the submission slot", () => {
     const state = createInitialGameState(word("가"));
     const next = gameReducer(state, {
       type: "SUBMISSION_SLOT_INSERT",
-      payload: { tokenId: 0, slotIndex: 0 },
+      payload: { tileId: 0, slotIndex: 0 },
     });
     expect(next.pool.some((t) => t.id === 0)).toBe(false);
     expect(next.submission[0]?.state).toBe("FILLED");
   });
 
-  it("routes SUBMISSION_SLOT_MOVE — swaps tokens between slots", () => {
+  it("routes SUBMISSION_SLOT_MOVE — swaps tiles between slots", () => {
     const state = createInitialGameState(word("가나"));
     const placed = gameReducer(state, {
       type: "SUBMISSION_SLOT_INSERT",
-      payload: { tokenId: 0, slotIndex: 0 },
+      payload: { tileId: 0, slotIndex: 0 },
     });
     const next = gameReducer(placed, {
       type: "SUBMISSION_SLOT_MOVE",
@@ -110,26 +110,26 @@ describe("gameReducer", () => {
     expect(next.submission[1]?.state).toBe("FILLED");
   });
 
-  it("routes SUBMISSION_SLOT_REMOVE — returns a token to the pool", () => {
+  it("routes SUBMISSION_SLOT_REMOVE — returns a tile to the pool", () => {
     const placed = gameReducer(createInitialGameState(word("가")), {
       type: "SUBMISSION_SLOT_INSERT",
-      payload: { tokenId: 0, slotIndex: 0 },
+      payload: { tileId: 0, slotIndex: 0 },
     });
     const next = gameReducer(placed, { type: "SUBMISSION_SLOT_REMOVE", payload: { slotIndex: 0 } });
     expect(next.pool.some((t) => t.id === 0)).toBe(true);
     expect(next.submission[0]?.state).toBe("EMPTY");
   });
 
-  it("routes ROUND_SUBMISSION_SUBMIT — appends the evaluation to guesses", () => {
+  it("routes ROUND_SUBMISSION_SUBMIT — appends the evaluation to history", () => {
     const initial = createInitialGameState(word("가"));
     // Manually place "가" in slot 0 so evaluateGuess has a filled submission to work with
     const state = {
       ...initial,
       pool: [],
-      submission: [{ state: "FILLED" as const, tokenId: 0, character: character("가")! }],
+      submission: [{ state: "FILLED" as const, tileId: 0, character: character("가")! }],
     };
     const next = gameReducer(state, { type: "ROUND_SUBMISSION_SUBMIT" });
-    expect(next.guesses).toHaveLength(1);
+    expect(next.history).toHaveLength(1);
   });
 
   it("routes ROUND_RESET — restores the pool and clears the submission", () => {

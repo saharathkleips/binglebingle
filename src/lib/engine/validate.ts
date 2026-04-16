@@ -7,7 +7,7 @@
  */
 
 import { isComplete } from "../character/character";
-import type { SubmissionState } from "../../context/game/game";
+import type { SubmissionSlot } from "../../context/game/game";
 import type { ValidationResult } from "./engine";
 
 /**
@@ -21,7 +21,7 @@ import type { ValidationResult } from "./engine";
  * @param submission - The current submission state
  * @returns A ValidationResult — `"VALID"` or the specific failure reason
  */
-export function canSubmit(submission: SubmissionState): ValidationResult {
+export function canSubmit(submission: readonly SubmissionSlot[]): ValidationResult {
   const filledSlots = submission.filter((slot) => slot.state === "FILLED");
 
   if (filledSlots.length === 0) {

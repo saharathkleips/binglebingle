@@ -35,10 +35,10 @@ import {
  */
 export function createInitialGameState(word: Word): GameState {
   return {
-    word,
+    targetWord: word,
     pool: buildInitialPool(word),
     submission: buildEmptySubmission(word),
-    guesses: [],
+    history: [],
   };
 }
 
