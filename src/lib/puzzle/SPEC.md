@@ -1,7 +1,6 @@
-# SPEC: Puzzle
+# SPEC: puzzle
 
 **Status:** stable
-**Slice:** `src/lib/puzzle/`
 
 ## Purpose
 
@@ -19,7 +18,7 @@ structurally is and how it decomposes.
 ## File Map
 
 ```
-src/lib/puzzle/
+puzzle/
 ├── puzzle.ts       # WordSelectionStrategy, loadWords(), selectWord()
 ├── puzzle.test.ts
 ├── README.md
@@ -38,12 +37,14 @@ export type WordSelectionStrategy =
 
 ## Functions
 
-### `loadWords(): Promise<readonly Word[]>`
+### `loadWords() => Promise<readonly Word[]>`
 
 Fetches `public/data/words.json` and validates each string entry via `createWord`. Invalid entries
 are silently dropped. Returns an empty array if the JSON is not an array.
 
-### `selectWord(words, strategy): Word`
+### `selectWord(words, strategy) => Word`
+
+Selects a word from the list by the given strategy.
 
 | strategy | behaviour                                                           |
 | -------- | ------------------------------------------------------------------- |
@@ -58,9 +59,9 @@ that do not reorder existing entries.
 
 ## Key Decisions
 
-**P1 — Puzzle owns selection strategy, not word/.** `WordSelectionStrategy` is a game-initialization
+**Puzzle owns selection strategy, not word/.** `WordSelectionStrategy` is a game-initialization
 concept — it has no meaning in the pure word domain. Co-locating it here keeps `word/` free of
 application concerns.
 
-**P2 — loadWords is the only I/O in the domain layer.** All other domain functions are pure. This
+**loadWords is the only I/O in the domain layer.** All other domain functions are pure. This
 makes puzzle/ the single seam to mock in integration tests.

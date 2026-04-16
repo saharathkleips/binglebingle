@@ -1,7 +1,6 @@
 # SPEC: Engine
 
 **Status:** draft
-**Slice:** `src/lib/engine/`
 
 ## Purpose
 
@@ -17,7 +16,7 @@ The game rules. Given a submission and a target word, answers: can this be submi
 ## File Map
 
 ```
-src/lib/engine/
+engine/
 ├── validate.ts       # canSubmit()
 ├── evaluate.ts       # evaluateGuess()
 ├── scoring.ts        # calculateScore()
@@ -56,7 +55,7 @@ export type ScoringResult = {
 
 ## Functions
 
-### `canSubmit(submission: readonly SubmissionSlot[]): ValidationResult`
+### `canSubmit(submission: readonly SubmissionSlot[]) => ValidationResult`
 
 Checks whether the current submission can be submitted. Does **not** check:
 
@@ -64,7 +63,9 @@ Checks whether the current submission can be submitted. Does **not** check:
 - Whether all slots are filled (partial guesses allowed; empty slots → `'absent'`)
 - Whether characters are constructible from the pool (guaranteed by reducer invariants)
 
-### `evaluateGuess(submission: Submission, word: Word): GuessRecord`
+**Validation is submission-gate only.** `canSubmit` is called once before dispatch, not continuously. Disabling the submit button is the UI's job.
+
+### `evaluateGuess(submission: Submission, word: Word) => GuessRecord`
 
 Two-pass algorithm (standard Wordle duplicate semantics):
 
@@ -73,14 +74,12 @@ Two-pass algorithm (standard Wordle duplicate semantics):
 
 Empty slots always produce `{ result: 'ABSENT' }` with no `character` property.
 
-### `calculateScore(guesses: readonly GuessRecord[]): ScoringResult`
+**Empty slot `character` is `''`.** UI can distinguish empty-slot absent from wrong-character absent by checking `character === ''` if different visual treatment is needed.
+
+### `calculateScore(guesses: readonly GuessRecord[]) => ScoringResult`
 
 MVP: `{ guessCount: guesses.length }`. `ScoringResult` is typed for extensibility.
 
 ## Key Decisions
 
-**E1 — Validation is submission-gate only.** `canSubmit` is called once before dispatch, not continuously. Disabling the submit button is the UI's job.
-
-**E2 — Evaluation is computed inside the reducer, not by the caller.** `ROUND_SUBMISSION_SUBMIT` carries no payload; the reducer calls `evaluateGuess` against its own `state.submission` and `state.targetWord`. This prevents the caller from dispatching a mismatched or fabricated evaluation.
-
-**E3 — Empty slot `character` is `''`.** UI can distinguish empty-slot absent from wrong-character absent by checking `character === ''` if different visual treatment is needed.
+**Evaluation is computed inside the reducer, not by the caller.** `ROUND_SUBMISSION_SUBMIT` carries no payload; the reducer calls `evaluateGuess` against its own `state.submission` and `state.targetWord`. This prevents the caller from dispatching a mismatched or fabricated evaluation.

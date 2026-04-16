@@ -1,12 +1,10 @@
 # SPEC: Word
 
 **Status:** stable
-**Slice:** `src/lib/word/`
 
 ## Purpose
 
-Defines the `Word` type and the functions for constructing words from strings, decomposing them
-into their constituent jamo Characters (the starting pool), and converting words back to strings.
+Defines the `Word` type and the functions for constructing words from strings and converting words back to strings.
 
 **Boundaries:**
 
@@ -18,7 +16,7 @@ into their constituent jamo Characters (the starting pool), and converting words
 ## File Map
 
 ```
-src/lib/word/
+word/
 ├── word.ts         # Word type, createWord(), wordToString()
 ├── word.test.ts
 └── README.md
@@ -42,20 +40,20 @@ const str: string = wordToString(word); // resolved Unicode string
 
 ## Functions
 
-### `createWord(s: string): Word | null`
+### `createWord(word: string) => Word | null`
 
 Parses and validates a raw string. Uses `character(syllable)` to convert each codepoint to a
 `CompleteCharacter`. Returns `null` if the string is empty or any character is outside U+AC00–U+D7A3.
 
-### `wordToString(word: Word): string`
+### `wordToString(word: Word) => string`
 
 Converts a Word back to its Unicode string by resolving each CompleteCharacter.
 
 ## Key Decisions
 
-**W1 — `Word = readonly CompleteCharacter[]`, no brand.** The type itself enforces the invariant —
+**`Word = readonly CompleteCharacter[]`, no brand.** The type itself enforces the invariant —
 only `OPEN_SYLLABLE` and `FULL_SYLLABLE` Characters are valid elements, and `isComplete()` from
 `character/` is the gate. A brand on an array type adds no structural safety.
 
-**W2 — Word selection, loading, and pool derivation live in `src/lib/puzzle/`.** These are
+**Word selection, loading, and pool derivation live in `src/lib/puzzle/`.** These are
 game-initialization concerns. `word/` has no knowledge of I/O, selection strategy, or pools.

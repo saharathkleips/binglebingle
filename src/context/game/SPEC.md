@@ -1,7 +1,6 @@
 # SPEC: context/game
 
 **Status:** draft
-**Slice:** `src/context/game/`
 
 ## Purpose
 
@@ -19,10 +18,10 @@ Two responsibilities: the game state machine (reducer + context) and game setup 
 ## File Map
 
 ```
-src/context/game/
+game/
 ├── game.ts                  # GameState, GameAction, Tile, SubmissionSlot
 ├── character-actions.ts     # handleCharacterRotateNext, handleCharacterCompose, handleCharacterDecompose
-├── submission-actions.ts    # handleSubmissionSlotInsert, handleSubmissionSlotRemove
+├── submission-actions.ts    # handleSubmissionSlotInsert, handleSubmissionSlotRemove, handleSubmissionSlotMove
 ├── round-actions.ts         # handleSubmitGuess, handleResetRound, buildInitialPool, buildEmptySubmission
 ├── game-reducer.ts          # gameReducer() (shallow router), createInitialGameState()
 ├── GameContext.tsx           # GameProvider, useGame()
@@ -65,6 +64,7 @@ export type GameAction =
   | { type: "CHARACTER_DECOMPOSE"; payload: { tileId: number } }
   | { type: "SUBMISSION_SLOT_INSERT"; payload: { tileId: number; slotIndex: number } }
   | { type: "SUBMISSION_SLOT_REMOVE"; payload: { slotIndex: number } }
+  | { type: "SUBMISSION_SLOT_MOVE"; payload: { fromSlotIndex: number; toSlotIndex: number } }
   | { type: "ROUND_SUBMISSION_SUBMIT" }
   | { type: "ROUND_RESET" };
 ```
@@ -80,45 +80,68 @@ function isWon(state: GameState): boolean {
 
 No `status` field, no `'idle'` state. The application layer controls whether a game is active by deciding whether to render the game component.
 
-## Action Semantics
+## Functions
 
-**`ROTATE_TOKEN`** — changes the jamo of a single-jamo pool tile to the next in its rotation set. No-op if tile is not single-jamo or not rotatable.
+### gameReducer(state, action) => GameState
 
-**`COMBINE_TOKENS`** — two cases:
+Shallow routing switch — dispatches each action type to its dedicated handler. Returns state unchanged for invalid or no-op actions. Each case is self-contained; no fall-through.
 
-1. _Pool combination_: both tiles are standalone single-jamo pool tiles → calls `combineJamo`. No-op if result is null.
-2. _Jongseong upgrade_: tile A is a complete syllable with single jongseong, tile B is a consonant → calls `upgradeJongseong`. No-op if result is null.
+### createInitialGameState(word) => GameState
 
-If neither case applies, no-op.
+Builds the initial `GameState` for a given word. Delegates pool construction to `buildInitialPool` and submission sizing to `buildEmptySubmission`.
 
-**`SPLIT_TOKEN`** — decomposes a multi-jamo tile back into two single-jamo tiles. The original tile is updated in place with the first part (retaining its id); the second part is appended to the pool with the next available id.
+### buildInitialPool(word) => readonly Tile[]
 
-**`SUBMISSION_SLOT_INSERT`** — moves tile from pool to submission slot. Removes from `pool`, sets slot to filled.
+Fully decomposes each character in the word and normalizes each jamo to the canonical (base) member of its rotation set. Normalization prevents the pool from hinting which specific rotated form the target word uses.
 
-**`SUBMISSION_SLOT_REMOVE`** — returns tile from submission slot to pool. Sets slot to `{ state: "EMPTY" }`.
+### buildEmptySubmission(word) => readonly SubmissionSlot[]
 
-**`ROUND_SUBMISSION_SUBMIT`** — evaluates `state.submission` against `state.targetWord` internally, appends the result to `history`. Correct and present slots remain filled; absent tiles are fully decomposed and returned to the pool. No payload — evaluation is never caller-supplied.
+Builds an all-`EMPTY` submission array sized to match the character count of the word.
 
-**`ROUND_RESET`** — resets pool and submission without appending to history.
+### handleCharacterRotateNext(state, payload) => GameState
 
-## Invariants
+Advances a single-jamo pool tile to the next jamo in its rotation set by calling `getNextRotation`. No-op if the tile is not found, is not single-jamo, or is not rotatable (`getNextRotation` returns null).
 
-- `submission.length === [...state.targetWord].length` at all times
-- Correct and present slots remain filled after `ROUND_SUBMISSION_SUBMIT`; absent tiles are returned to pool fully decomposed
-- `history` grows by one record per `ROUND_SUBMISSION_SUBMIT`
-- Tile `id` values are stable across rotation/combination/decompose; the original tile keeps its id on split, only the new part gets a fresh id
+### handleCharacterCompose(state, payload) => GameState
+
+Merges two pool tiles into one by calling `compose(targetTile, incomingTile)`. The combined tile takes the id of `targetId`; `incomingId` is removed from the pool. No-op if either tile is not found or `compose` returns null.
+
+### handleCharacterDecompose(state, payload) => GameState
+
+Decomposes a multi-jamo pool tile back into two individual tiles by calling `decompose`. The original tile is updated in place (retaining its id and position) with the first part; the second part is appended to the end of the pool with the smallest available id. No-op if the tile is not found or `decompose` returns null.
+
+**Key decision:** The original tile keeps its id on decompose; only the new part needs a fresh id. Fresh ids are derived from the pool on demand (`nextMissingId`) — no stored counter in state.
+
+### handleSubmissionSlotInsert(state, payload) => GameState
+
+Moves a tile from the pool into a submission slot. If the destination slot is already filled, the existing tile is returned to the pool before the new tile is placed. No-op if the tile is not found or the slot index is out of bounds.
+
+### handleSubmissionSlotMove(state, payload) => GameState
+
+Moves a tile from one submission slot to another without a pool round-trip. If the destination slot is filled, the two tiles are swapped. No-op if either index is out of bounds or the source slot is empty.
+
+### handleSubmissionSlotRemove(state, payload) => GameState
+
+Returns the tile in a submission slot to the pool and marks the slot `EMPTY`. No-op if the slot is already empty or the index is out of bounds.
+
+### handleSubmitGuess(state) => GameState
+
+Evaluates `state.submission` against `state.targetWord` by calling `evaluateGuess`, then appends the result to `history`. Correct and present slots remain filled; absent slots are cleared and their tiles are fully decomposed (without normalizing) and returned to the pool. Extra parts from decomposition receive fresh ids derived from all currently-in-use ids.
+
+**Key decisions:**
+
+- No payload — evaluation is computed inside the reducer against its own `state.submission` and `state.targetWord`. This prevents callers from dispatching a mismatched or fabricated evaluation.
+- Partial submission is valid: empty slots evaluate as `'absent'`. The player does not need to fill every slot before submitting.
+
+### handleResetRound(state) => GameState
+
+Rebuilds the pool from the target word and clears all submission slots. Does not append to `history`.
 
 ## Key Decisions
 
-**S0 — No fall-through between reducer cases.** Each case must be self-contained. Extract a shared helper function instead of falling through.
+**No fall-through between reducer cases.** Each case in `gameReducer` must be self-contained. Extract a shared helper function instead of falling through.
 
-**S1 — Evaluation is computed inside the reducer.** `ROUND_SUBMISSION_SUBMIT` carries no payload; the reducer calls `evaluateGuess` against its own `state.submission` and `state.targetWord`. This prevents callers from dispatching a mismatched or fabricated evaluation.
-
-**S2 — `SPLIT_TOKEN` preserves the original tile's id.** The original tile is updated in place; only the second part needs a new id (next available). No id counter in state — derived from the pool on demand.
-
-**S3 — Partial submission is valid.** Empty slots evaluate as `'absent'`. The player does not need to fill every slot.
-
-**S4 — `DevSettings` live in application state, not game state.** Not persisted to localStorage.
+**`DevSettings` live in application state, not game state.** Not persisted to localStorage.
 
 ```typescript
 type DevSettings = {
