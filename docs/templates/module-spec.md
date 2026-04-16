@@ -13,11 +13,10 @@ Higher-level SPECs describe cross-cutting concerns and link to lower-level ones.
 
 ## Format
 
-````markdown
+```markdown
 # SPEC: module-name
 
 **Status:** draft | stable
-**Module:** `src/path/to/module/`
 
 ## Purpose
 
@@ -27,7 +26,7 @@ in, what goes out, what it calls into, and what it has no knowledge of.
 ## File Map
 
 ​`
-src/path/to/module/
+module/
 ├── file.ts        # brief note
 └── file.test.ts
 ​`
@@ -59,4 +58,4 @@ design — not tied to a single function. Same rule: include dead ends.
 
 - Unresolved design questions while status is draft.
 - Remove when answered — answers become Function or Key Decisions entries.
-````
+```
