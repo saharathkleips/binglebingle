@@ -31,19 +31,20 @@ const SYLLABLE_BASE = 0xac00;
 // Combination data
 // ---------------------------------------------------------------------------
 
-/** A rule that combines two jamo into a double consonant, complex vowel, or compound batchim. */
+/**
+ * A rule that combines two jamo into a double consonant, complex vowel, or compound batchim.
+ *
+ * @property inputs - The two input jamo; order matches display order.
+ * @property output - The resulting combined jamo.
+ * @property kind - Whether this produces a double consonant, complex vowel, or compound batchim.
+ * @property alternate - True for non-canonical input paths that produce the same output as another
+ *   rule. Alternate rules are used for composition but excluded from decomposition, so outputs with
+ *   multiple input paths always decompose via their canonical path.
+ */
 export type CombinationRule = {
-  /** The two input jamo that combine. Order in array matches display order. */
   readonly inputs: readonly [Jamo, Jamo];
-  /** The resulting combined jamo. */
   readonly output: Jamo;
-  /** Whether this produces a double consonant, a complex vowel, or a compound batchim. */
   readonly kind: "DOUBLE_CONSONANT" | "COMPLEX_VOWEL" | "COMPOUND_BATCHIM";
-  /**
-   * True for alternate input paths that produce the same output as another rule.
-   * Alternate rules are included in COMBINATION_MAP (compose) but excluded from
-   * DECOMPOSE_MAP, so decomposition always returns the canonical path.
-   */
   readonly alternate?: true;
 };
 
