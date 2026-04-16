@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { gameReducer, createInitialGameState } from "./game-reducer";
 import { createWord } from "../../lib/word/word";
 import { character } from "../../lib/character/character";
-import type { GuessRecord } from "../../lib/engine/engine";
 
 function word(str: string) {
   return createWord(str)!;
@@ -121,16 +120,21 @@ describe("gameReducer", () => {
     expect(next.submission[0]?.state).toBe("EMPTY");
   });
 
-  it("routes SUBMIT_GUESS — appends the evaluation to guesses", () => {
-    const state = createInitialGameState(word("가"));
-    const evaluation: GuessRecord = [{ character: character("가")!, result: "CORRECT" }];
-    const next = gameReducer(state, { type: "SUBMIT_GUESS", payload: { evaluation } });
+  it("routes ROUND_SUBMISSION_SUBMIT — appends the evaluation to guesses", () => {
+    const initial = createInitialGameState(word("가"));
+    // Manually place "가" in slot 0 so evaluateGuess has a filled submission to work with
+    const state = {
+      ...initial,
+      pool: [],
+      submission: [{ state: "FILLED" as const, tokenId: 0, character: character("가")! }],
+    };
+    const next = gameReducer(state, { type: "ROUND_SUBMISSION_SUBMIT" });
     expect(next.guesses).toHaveLength(1);
   });
 
-  it("routes RESET_ROUND — restores the pool and clears the submission", () => {
+  it("routes ROUND_RESET — restores the pool and clears the submission", () => {
     const dirty = { ...createInitialGameState(word("가")), pool: [] };
-    const next = gameReducer(dirty, { type: "RESET_ROUND" });
+    const next = gameReducer(dirty, { type: "ROUND_RESET" });
     expect(next.pool.length).toBeGreaterThan(0);
     expect(next.submission.every((s) => s.state === "EMPTY")).toBe(true);
   });

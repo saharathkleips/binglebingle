@@ -18,7 +18,7 @@
 
 ```
 src/lib/character/
-├── character.ts        # Character type, CompleteCharacter, character(), compose(), resolveCharacter(), isComplete(), decompose(), normalizeCharacter(), getNextRotation()
+├── character.ts        # Character type, CompleteCharacter, character(), compose(), resolveCharacter(), isComplete(), decompose(), fullDecompose(), normalizeCharacter(), getNextRotation()
 └── character.test.ts
 ```
 
@@ -59,6 +59,7 @@ function compose(target: Character, incoming: Character): Character | null;
 function resolveCharacter(char: Character): string | null;
 function isComplete(char: Character): char is CompleteCharacter;
 function decompose(char: Character): [Character, Character] | null;
+function fullDecompose(characters: readonly Character[]): readonly Character[];
 function normalizeCharacter(char: Character): Character;
 function getNextRotation(char: Character): Character | null;
 ```

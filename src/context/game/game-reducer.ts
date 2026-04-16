@@ -65,9 +65,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return handleSubmissionSlotMove(state, action.payload);
     case "SUBMISSION_SLOT_REMOVE":
       return handleSubmissionSlotRemove(state, action.payload);
-    case "SUBMIT_GUESS":
-      return handleSubmitGuess(state, action.payload);
-    case "RESET_ROUND":
+    case "ROUND_SUBMISSION_SUBMIT":
+      return handleSubmitGuess(state);
+    case "ROUND_RESET":
       return handleResetRound(state);
   }
 }

@@ -373,6 +373,18 @@ export function decompose(char: Character): [Character, Character] | null {
   }
 }
 
+/**
+ * Fully decomposes an array of Characters to basic single-jamo Characters by
+ * recursively applying `decompose` until all Characters are irreducible.
+ *
+ * @param characters - A Word or any array of Characters to decompose
+ * @returns Flat ordered array of basic single-jamo Characters
+ */
+export function fullDecompose(characters: readonly Character[]): readonly Character[] {
+  const expanded = characters.flatMap((c) => decompose(c) ?? [c]);
+  return expanded.length === characters.length ? expanded : fullDecompose(expanded);
+}
+
 // ---------------------------------------------------------------------------
 // normalizeCharacter()
 // ---------------------------------------------------------------------------

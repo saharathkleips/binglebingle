@@ -105,8 +105,7 @@ Token is the core interactive element. Only appears in the pool.
 ```
 SubmitButton click
   → canSubmit(state.submission)        // check validity
-  → evaluateGuess(state.submission, state.word)  // compute result
-  → dispatch SUBMIT_GUESS              // reducer records it
+  → dispatch ROUND_SUBMISSION_SUBMIT   // reducer evaluates and records
 ```
 
 ## Win State

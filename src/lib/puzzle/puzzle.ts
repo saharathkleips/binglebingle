@@ -9,8 +9,6 @@
  * No React. No game-state knowledge beyond the initial word choice.
  */
 
-import { decompose } from "../character/character";
-import type { Character } from "../character/character";
 import { createWord, wordToString } from "../word/word";
 import type { Word } from "../word/word";
 
@@ -73,18 +71,6 @@ export function selectWord(words: readonly Word[], strategy: WordSelectionStrate
       return found ?? words[0]!;
     }
   }
-}
-
-/**
- * Fully decomposes an array of Characters to basic single-jamo Characters by
- * recursively applying `decompose` until all Characters are irreducible.
- *
- * @param characters - A Word or any array of Characters to decompose
- * @returns Flat ordered array of basic single-jamo Characters
- */
-export function fullDecompose(characters: readonly Character[]): readonly Character[] {
-  const decomposed = characters.flatMap((c) => decompose(c) ?? [c]);
-  return decomposed.length === characters.length ? decomposed : fullDecompose(decomposed);
 }
 
 // ---------------------------------------------------------------------------

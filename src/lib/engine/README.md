@@ -9,6 +9,7 @@
 
 | Export                    | Description                                                                |
 | ------------------------- | -------------------------------------------------------------------------- |
+| `Submission`              | `readonly (Character \| null)[]` — engine's view of a guess submission     |
 | `CharacterResult`         | `'CORRECT' \| 'PRESENT' \| 'ABSENT'` — per-character evaluation result     |
 | `EvaluatedCharacter`      | `{ character?: Character; result: CharacterResult }` — one slot in a guess |
 | `GuessRecord`             | `readonly EvaluatedCharacter[]` — a fully evaluated guess                  |

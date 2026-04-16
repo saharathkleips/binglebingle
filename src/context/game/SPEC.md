@@ -69,8 +69,8 @@ export type GameAction =
   | { type: "SPLIT_TOKEN"; payload: { tokenId: number } }
   | { type: "SUBMISSION_SLOT_INSERT"; payload: { tokenId: number; slotIndex: number } }
   | { type: "SUBMISSION_SLOT_REMOVE"; payload: { slotIndex: number } }
-  | { type: "SUBMIT_GUESS"; payload: { evaluation: GuessRecord } }
-  | { type: "RESET_ROUND" };
+  | { type: "ROUND_SUBMISSION_SUBMIT"; payload: { evaluation: GuessRecord } }
+  | { type: "ROUND_RESET" };
 ```
 
 `won` is derived, never stored:
@@ -101,22 +101,22 @@ If neither case applies, no-op.
 
 **`SUBMISSION_SLOT_REMOVE`** — returns token from submission slot to pool. Sets slot to `{ state: "EMPTY" }`.
 
-**`SUBMIT_GUESS`** — receives pre-computed `GuessRecord` in payload, appends to `guesses`, resets pool and submission. Reducer does not compute evaluation.
+**`ROUND_SUBMISSION_SUBMIT`** — evaluates `state.submission` against `state.word` internally, appends the result to `guesses`. Correct and present slots remain filled; absent tokens are fully decomposed and returned to the pool. No payload — evaluation is never caller-supplied.
 
-**`RESET_ROUND`** — resets pool and submission without appending to guesses.
+**`ROUND_RESET`** — resets pool and submission without appending to guesses.
 
 ## Invariants
 
 - `submission.length === [...state.word].length` at all times
-- `pool` and `submission` are reset after `SUBMIT_GUESS`
-- `guesses` grows by one record per `SUBMIT_GUESS`
+- Correct and present slots remain filled after `ROUND_SUBMISSION_SUBMIT`; absent tokens are returned to pool fully decomposed
+- `guesses` grows by one record per `ROUND_SUBMISSION_SUBMIT`
 - Token `id` values are stable across rotation/combination/decompose; the original token keeps its id on split, only the new part gets a fresh id
 
 ## Key Decisions
 
 **S0 — No fall-through between reducer cases.** Each case must be self-contained. Extract a shared helper function instead of falling through.
 
-**S1 — Reducer does not evaluate guesses.** `SUBMIT_GUESS` receives a pre-computed `GuessRecord`. Evaluation is the engine's job.
+**S1 — Evaluation is computed inside the reducer.** `ROUND_SUBMISSION_SUBMIT` carries no payload; the reducer calls `evaluateGuess` against its own `state.submission` and `state.word`. This prevents callers from dispatching a mismatched or fabricated evaluation.
 
 **S2 — `SPLIT_TOKEN` preserves the original token's id.** The original token is updated in place; only the second part needs a new id (next available). No id counter in state — derived from the pool on demand.
 

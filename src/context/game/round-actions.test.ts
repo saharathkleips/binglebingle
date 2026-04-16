@@ -3,7 +3,6 @@ import { handleSubmitGuess, handleResetRound } from "./round-actions";
 import { character } from "../../lib/character/character";
 import { createWord } from "../../lib/word/word";
 import type { GameState, SubmissionSlot } from "./game";
-import type { GuessRecord } from "../../lib/engine/engine";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -24,54 +23,83 @@ function filledSlot(syllable: string, tokenId: number): SubmissionSlot {
   return { state: "FILLED", tokenId, character: character(syllable)! };
 }
 
-function evalEntry(
-  syllable: string,
-  result: "CORRECT" | "PRESENT" | "ABSENT",
-): GuessRecord[number] {
-  return { character: character(syllable)!, result };
-}
-
 // ---------------------------------------------------------------------------
 // handleSubmitGuess
+// Word is "가나" throughout — evaluations are determined by submission content.
 // ---------------------------------------------------------------------------
 
 describe("handleSubmitGuess", () => {
-  it("appends the evaluation to guesses", () => {
-    const evaluation: GuessRecord = [evalEntry("가", "CORRECT"), evalEntry("나", "ABSENT")];
-    const next = handleSubmitGuess(makeState(), { evaluation });
+  it("appends the evaluation to guesses, preserving character and result order", () => {
+    // [가, 나] against "가나" → [CORRECT, CORRECT]
+    const state = makeState({
+      submission: [filledSlot("가", 0), filledSlot("나", 1)],
+    });
+    const next = handleSubmitGuess(state);
     expect(next.guesses).toHaveLength(1);
-    expect(next.guesses[0]).toBe(evaluation);
+    expect(next.guesses[0]?.[0]?.character).toEqual(character("가"));
+    expect(next.guesses[0]?.[0]?.result).toBe("CORRECT");
+    expect(next.guesses[0]?.[1]?.character).toEqual(character("나"));
+    expect(next.guesses[0]?.[1]?.result).toBe("CORRECT");
   });
 
   it("grows guesses by one per call", () => {
-    const evaluation: GuessRecord = [evalEntry("가", "ABSENT"), evalEntry("나", "ABSENT")];
-    const after1 = handleSubmitGuess(makeState(), { evaluation });
-    const after2 = handleSubmitGuess(after1, { evaluation });
+    // CORRECT slots remain filled, so re-evaluating produces the same result
+    const state = makeState({
+      submission: [filledSlot("가", 0), filledSlot("나", 1)],
+    });
+    const after1 = handleSubmitGuess(state);
+    const after2 = handleSubmitGuess(after1);
     expect(after2.guesses).toHaveLength(2);
   });
 
   it("keeps CORRECT slots filled after submission", () => {
+    // [가, 다] against "가나" → [CORRECT, ABSENT]
     const state = makeState({
-      pool: [],
-      submission: [filledSlot("가", 0), { state: "EMPTY" }],
+      submission: [filledSlot("가", 0), filledSlot("다", 1)],
     });
-    const evaluation: GuessRecord = [evalEntry("가", "CORRECT"), evalEntry("나", "ABSENT")];
-    const next = handleSubmitGuess(state, { evaluation });
+    const next = handleSubmitGuess(state);
     expect(next.submission[0]?.state).toBe("FILLED");
+    expect(next.submission[0]).toEqual(filledSlot("가", 0));
+    expect(next.submission[1]?.state).toBe("EMPTY");
   });
 
-  it.each([
-    { label: "ABSENT", result: "ABSENT" as const },
-    { label: "PRESENT", result: "PRESENT" as const },
-  ])("returns $label tokens to the pool and empties their slots", ({ result }) => {
+  it("keeps PRESENT slots filled after submission", () => {
+    // [나, 가] against "가나" → [PRESENT, PRESENT]
     const state = makeState({
-      pool: [],
-      submission: [filledSlot("가", 0), { state: "EMPTY" }],
+      submission: [filledSlot("나", 0), filledSlot("가", 1)],
     });
-    const evaluation: GuessRecord = [evalEntry("가", result), evalEntry("나", "ABSENT")];
-    const next = handleSubmitGuess(state, { evaluation });
-    expect(next.pool.some((t) => t.id === 0)).toBe(true);
+    const next = handleSubmitGuess(state);
+    expect(next.submission[0]?.state).toBe("FILLED");
+    expect(next.submission[0]).toEqual(filledSlot("나", 0));
+    expect(next.pool.some((t) => t.id === 0)).toBe(false);
+  });
+
+  it("returns ABSENT tokens to the pool and empties their slots", () => {
+    // [다, 나] against "가나" → [ABSENT, CORRECT]
+    // 다 = OPEN_SYLLABLE(ㄷ, ㅏ) → fullDecompose → [CHOSEONG_ONLY(ㄷ), JUNGSEONG_ONLY(ㅏ)]
+    const state = makeState({
+      submission: [filledSlot("다", 0), filledSlot("나", 1)],
+    });
+    const next = handleSubmitGuess(state);
     expect(next.submission[0]?.state).toBe("EMPTY");
+    expect(next.pool).toHaveLength(2);
+    const absentToken = next.pool.find((t) => t.id === 0);
+    expect(absentToken?.character).toEqual(character({ choseong: "ㄷ" }));
+    expect(next.pool.some((t) => t.character.kind === "JUNGSEONG_ONLY")).toBe(true);
+  });
+
+  it("fully decomposes absent tokens containing composed jamo", () => {
+    // [까, 나] against "가나" → [ABSENT, CORRECT]
+    // 까 = OPEN_SYLLABLE(ㄲ, ㅏ) → fullDecompose → [ㄱ, ㄱ, ㅏ] (ㄲ splits into two ㄱ)
+    const state = makeState({
+      submission: [filledSlot("까", 0), filledSlot("나", 1)],
+    });
+    const next = handleSubmitGuess(state);
+    expect(next.pool).toHaveLength(3);
+    const tokenAtId0 = next.pool.find((t) => t.id === 0);
+    expect(tokenAtId0?.character).toEqual(character({ choseong: "ㄱ" }));
+    expect(next.pool.filter((t) => t.character.kind === "CHOSEONG_ONLY")).toHaveLength(2);
+    expect(next.pool.filter((t) => t.character.kind === "JUNGSEONG_ONLY")).toHaveLength(1);
   });
 });
 
@@ -97,8 +125,7 @@ describe("handleResetRound", () => {
   });
 
   it("does not modify guesses", () => {
-    const evaluation: GuessRecord = [evalEntry("가", "ABSENT"), evalEntry("나", "ABSENT")];
-    const state = makeState({ guesses: [evaluation] });
+    const state = makeState({ guesses: [[{ result: "ABSENT" as const }]] });
     const next = handleResetRound(state);
     expect(next.guesses).toHaveLength(1);
   });

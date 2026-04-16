@@ -8,6 +8,12 @@
 
 import type { Character } from "../character/character";
 
+/**
+ * A guess submission as seen by the engine: one Character per slot, or null
+ * for an empty slot. Positional — slot index corresponds to word position.
+ */
+export type Submission = readonly (Character | null)[];
+
 /** Per-character evaluation result for a submitted guess. */
 export type CharacterResult = "CORRECT" | "PRESENT" | "ABSENT";
 

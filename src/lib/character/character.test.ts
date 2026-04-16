@@ -3,6 +3,7 @@ import {
   character,
   compose,
   decompose,
+  fullDecompose,
   isComplete,
   normalizeCharacter,
   resolveCharacter,
@@ -885,6 +886,63 @@ describe("normalizeCharacter", () => {
     expect(normalizeCharacter(char)).toEqual(expected);
   });
 });
+
+// ---------------------------------------------------------------------------
+// fullDecompose()
+// ---------------------------------------------------------------------------
+
+describe("fullDecompose", () => {
+  it("decomposes 한국어 into the correct flat basic jamo Characters", () => {
+    // 한 = ㅎ + ㅏ + ㄴ; 국 = ㄱ + ㅜ + ㄱ; 어 = ㅇ + ㅓ
+    const input = [
+      character({ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" })!,
+      character({ choseong: "ㄱ", jungseong: "ㅜ", jongseong: "ㄱ" })!,
+      character({ choseong: "ㅇ", jungseong: "ㅓ" })!,
+    ];
+    expect(fullDecompose(input)).toEqual([
+      character({ choseong: "ㅎ" }),
+      character({ jungseong: "ㅏ" }),
+      character({ choseong: "ㄴ" }),
+      character({ choseong: "ㄱ" }),
+      character({ jungseong: "ㅜ" }),
+      character({ choseong: "ㄱ" }),
+      character({ choseong: "ㅇ" }),
+      character({ jungseong: "ㅓ" }),
+    ]);
+  });
+
+  it("fully decomposes compound jongseong ㄺ in 닭 (ㄷ ㅏ ㄹ ㄱ)", () => {
+    const input = [character({ choseong: "ㄷ", jungseong: "ㅏ", jongseong: "ㄺ" })!];
+    expect(fullDecompose(input)).toEqual([
+      character({ choseong: "ㄷ" }),
+      character({ jungseong: "ㅏ" }),
+      character({ choseong: "ㄹ" }),
+      character({ choseong: "ㄱ" }),
+    ]);
+  });
+
+  it("fully decomposes 훿 (complex vowel + compound batchim) → ㅎ ㅜ ㅓ ㅣ ㄱ ㅅ", () => {
+    // 훿: choseong=ㅎ, jungseong=ㅞ (→ ㅝ+ㅣ → ㅜ+ㅓ+ㅣ), jongseong=ㄳ (→ ㄱ+ㅅ)
+    const input = [character({ choseong: "ㅎ", jungseong: "ㅞ", jongseong: "ㄳ" })!];
+    expect(fullDecompose(input)).toEqual([
+      character({ choseong: "ㅎ" }),
+      character({ jungseong: "ㅜ" }),
+      character({ jungseong: "ㅓ" }),
+      character({ jungseong: "ㅣ" }),
+      character({ choseong: "ㄱ" }),
+      character({ choseong: "ㅅ" }),
+    ]);
+  });
+
+  it("returns irreducible single-jamo Characters unchanged", () => {
+    const input = [character({ choseong: "ㄱ" })!, character({ jungseong: "ㅏ" })!];
+    expect(fullDecompose(input)).toEqual(input);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// full jamo workflow
+// ---------------------------------------------------------------------------
 
 describe("full jamo workflow: 홳 (6 jamo: ㅎ ㅗ ㅏ ㅣ ㄱ ㅅ)", () => {
   it("decomposes full(ㅙ,ㄳ) → [cho+jung(ㅙ)+ㄱ, cho ㅅ] (compound batchim splits)", () => {

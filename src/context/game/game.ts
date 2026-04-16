@@ -81,6 +81,15 @@ export type SubmissionAction =
   | { type: "SUBMISSION_SLOT_MOVE"; payload: { fromSlotIndex: number; toSlotIndex: number } };
 
 /**
+ * Actions for round progression: submitting a guess or resetting the round.
+ *
+ * - `ROUND_SUBMISSION_SUBMIT` — evaluate the current submission, record the result; correct/present
+ *   slots remain filled, absent tokens are fully decomposed and returned to the pool
+ * - `ROUND_RESET` — restore the pool and clear the submission for a new attempt
+ */
+export type RoundAction = { type: "ROUND_SUBMISSION_SUBMIT" } | { type: "ROUND_RESET" };
+
+/**
  * All actions that can be dispatched to the game reducer.
  *
  * - `CHARACTER_ROTATE_NEXT` — advance a token's jamo to the next member of its rotation set
@@ -89,11 +98,7 @@ export type SubmissionAction =
  * - `SUBMISSION_SLOT_INSERT` — move a token from the pool into a submission slot
  * - `SUBMISSION_SLOT_REMOVE` — return the token in a slot back to the pool
  * - `SUBMISSION_SLOT_MOVE` — move a token from one submission slot to another
- * - `SUBMIT_GUESS` — record an evaluated guess and clear the submission
- * - `RESET_ROUND` — restore the pool and clear the submission for a new attempt
+ * - `ROUND_SUBMISSION_SUBMIT` — record an evaluated guess and update slots by result
+ * - `ROUND_RESET` — restore the pool and clear the submission for a new attempt
  */
-export type GameAction =
-  | CharacterAction
-  | SubmissionAction
-  | { type: "SUBMIT_GUESS"; payload: { evaluation: GuessRecord } }
-  | { type: "RESET_ROUND" };
+export type GameAction = CharacterAction | SubmissionAction | RoundAction;

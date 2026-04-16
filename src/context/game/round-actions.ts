@@ -1,15 +1,14 @@
 /**
  * @file round-actions.ts
  *
- * Handlers for round-progression actions: SUBMIT_GUESS, RESET_ROUND.
+ * Handlers for round-progression actions: ROUND_SUBMISSION_SUBMIT, ROUND_RESET.
  * Also exports pool/submission builders shared with createInitialGameState.
  * No React. No side effects.
  */
 
-import { normalizeCharacter } from "../../lib/character/character";
-import { fullDecompose } from "../../lib/puzzle/puzzle";
+import { fullDecompose, normalizeCharacter } from "../../lib/character/character";
+import { evaluateGuess } from "../../lib/engine/evaluate";
 import type { Word } from "../../lib/word/word";
-import type { GuessRecord } from "../../lib/engine/engine";
 import type { GameState, PoolState, SubmissionState, PoolToken } from "./game";
 
 // ---------------------------------------------------------------------------
@@ -46,31 +45,58 @@ export function buildEmptySubmission(word: Word): SubmissionState {
 // ---------------------------------------------------------------------------
 
 /**
- * Appends a pre-computed evaluation to guesses. Correct slots remain filled;
- * present/absent tokens are returned to the pool.
- * Reducer does not compute evaluation — that is the engine's job.
+ * Evaluates the current submission against the target word and records the result.
+ * Correct and present slots remain filled; absent tokens are fully decomposed
+ * (without normalizing) and returned to the pool.
  *
  * @param state - Current game state
- * @param payload - Pre-computed GuessRecord to record
  * @returns Next game state
  */
-export function handleSubmitGuess(
-  state: GameState,
-  payload: { evaluation: GuessRecord },
-): GameState {
-  const { evaluation } = payload;
-  const returnedTokens: PoolToken[] = [];
-  const newSubmission: SubmissionState = state.submission.map((slot, i) => {
-    if (slot.state !== "FILLED") return slot;
-    // Correct slots remain filled; present/absent tokens return to the pool
-    if (evaluation[i]?.result === "CORRECT") return slot;
-    returnedTokens.push({ id: slot.tokenId, character: slot.character });
-    return { state: "EMPTY" as const };
+export function handleSubmitGuess(state: GameState): GameState {
+  const evaluation = evaluateGuess(
+    state.submission.map((slot) => (slot.state === "FILLED" ? slot.character : null)),
+    state.word,
+  );
+
+  // Zip each slot with its evaluation result for use in the steps below.
+  const pairs = state.submission.map((slot, i) => ({ slot, result: evaluation[i]?.result }));
+
+  // Correct and present slots remain filled; absent slots are cleared.
+  const newSubmission: SubmissionState = pairs.map(({ slot, result }) =>
+    slot.state === "FILLED" && result !== "CORRECT" && result !== "PRESENT"
+      ? { state: "EMPTY" as const }
+      : slot,
+  );
+
+  // Collect the tokens being returned to the pool.
+  const absentTokens: PoolToken[] = pairs.flatMap(({ slot, result }) =>
+    slot.state === "FILLED" && result !== "CORRECT" && result !== "PRESENT"
+      ? [{ id: slot.tokenId, character: slot.character }]
+      : [],
+  );
+
+  // Fully decompose absent tokens without normalizing. A composed jamo (e.g. ㄲ)
+  // expands to its parts (ㄱ, ㄱ); extra parts from decomposition get fresh IDs.
+  const usedIds = new Set([
+    ...state.pool.map((t) => t.id),
+    ...absentTokens.map((t) => t.id),
+    ...newSubmission.flatMap((s) => (s.state === "FILLED" ? [s.tokenId] : [])),
+  ]);
+  const decomposedTokens = absentTokens.flatMap(({ id, character }) => {
+    const parts = fullDecompose([character]);
+    return parts.map((char, partIndex) => {
+      if (partIndex === 0) return { id, character: char };
+      let newId = 0;
+      while (usedIds.has(newId)) newId++;
+      usedIds.add(newId);
+      return { id: newId, character: char };
+    });
   });
+
   return {
     ...state,
     guesses: [...state.guesses, evaluation],
-    pool: [...state.pool, ...returnedTokens],
+    pool: [...state.pool, ...decomposedTokens],
     submission: newSubmission,
   };
 }

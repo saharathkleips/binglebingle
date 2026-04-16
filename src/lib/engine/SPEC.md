@@ -64,7 +64,7 @@ Checks whether the current submission can be submitted. Does **not** check:
 - Whether all slots are filled (partial guesses allowed; empty slots → `'absent'`)
 - Whether characters are constructible from the pool (guaranteed by reducer invariants)
 
-### `evaluateGuess(submission: SubmissionState, word: Word): GuessRecord`
+### `evaluateGuess(submission: Submission, word: Word): GuessRecord`
 
 Two-pass algorithm (standard Wordle duplicate semantics):
 
@@ -81,6 +81,6 @@ MVP: `{ guessCount: guesses.length }`. `ScoringResult` is typed for extensibilit
 
 **E1 — Validation is submission-gate only.** `canSubmit` is called once before dispatch, not continuously. Disabling the submit button is the UI's job.
 
-**E2 — Engine does not compute evaluation; reducer does not evaluate.** `SUBMIT_GUESS` receives a pre-computed `GuessRecord` in its payload. The caller computes it via `evaluateGuess` before dispatching.
+**E2 — Evaluation is computed inside the reducer, not by the caller.** `ROUND_SUBMISSION_SUBMIT` carries no payload; the reducer calls `evaluateGuess` against its own `state.submission` and `state.word`. This prevents the caller from dispatching a mismatched or fabricated evaluation.
 
 **E3 — Empty slot `character` is `''`.** UI can distinguish empty-slot absent from wrong-character absent by checking `character === ''` if different visual treatment is needed.
