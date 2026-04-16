@@ -1,7 +1,6 @@
 # SPEC: Jamo
 
 **Status:** stable
-**Module:** `src/lib/jamo/`
 
 ## Purpose
 
@@ -19,7 +18,7 @@ All exports are pure functions or readonly constants.
 ## File Map
 
 ```
-src/lib/jamo/
+jamo/
 ├── jamo.ts             # type definitions + CHOSEONG/JUNGSEONG/JONGSEONG index tables
 ├── rotation.ts         # ROTATION_SETS, getNextRotation(), normalizeJamo()
 ├── composition.ts      # CombinationRule, COMBINATION_RULES, composeJamo(), decomposeJamo(), composeSyllable(), decomposeSyllable()
