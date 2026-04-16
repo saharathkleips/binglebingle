@@ -1,28 +1,9 @@
-# Word Slice — Public Contract
+# word
 
-**Slice:** `src/lib/word/`
-**Status:** stable
+Defines the `Word` type and functions for constructing words from raw Korean strings and converting them back to Unicode.
 
 ## Exports
 
-### `word.ts`
-
-| Export            | Description                                                                           |
-| ----------------- | ------------------------------------------------------------------------------------- |
-| `Word`            | `readonly CompleteCharacter[]` — ordered array of complete Korean syllable characters |
-| `createWord(s)`   | Parses and validates a raw string; returns `Word` or `null`                           |
-| `wordToString(w)` | Converts a `Word` back to its Unicode string                                          |
-
-## Usage
-
-```typescript
-import { createWord } from "src/lib/word/word";
-
-const word: Word | null = createWord("한국어");
-```
-
-## Boundaries
-
-- Calls into: `src/lib/character/` for construction and resolution
-- No knowledge of: word selection, I/O, game state, UI, React
-- Word loading and selection live in `src/lib/puzzle/`
+- `Word` — `readonly CompleteCharacter[]` — ordered array of complete Korean syllable characters; each element resolves to a codepoint in U+AC00–U+D7A3
+- `createWord(word: string) => Word | null` — parses and validates a raw string; returns `null` if the string is empty or any character is outside U+AC00–U+D7A3
+- `wordToString(word: Word) => string` — converts a `Word` back to its Unicode string
