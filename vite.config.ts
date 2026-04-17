@@ -15,7 +15,11 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "html"],
       include: ["src/lib/**"],
-      exclude: ["src/lib/**/*.md"],
+      exclude: [
+        "src/lib/**/*.md",
+        // Types-only files: no runtime code, nothing to cover
+        "src/lib/engine/index.ts",
+      ],
     },
   },
 });
