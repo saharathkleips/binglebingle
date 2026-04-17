@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { Jamo } from "./jamo";
+import type { Jamo } from "./index";
 import { getNextRotation, normalizeJamo } from "./rotation";
 
 describe("getNextRotation", () => {

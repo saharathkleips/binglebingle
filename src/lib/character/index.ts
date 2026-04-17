@@ -9,8 +9,8 @@
  */
 
 import { composeSyllable, decomposeSyllable } from "../jamo/composition";
-import type { VowelJamo, Jamo, ChoseongJamo, JongseongJamo } from "../jamo/jamo";
-import { CHOSEONG_INDEX, JUNGSEONG_INDEX, JONGSEONG_INDEX } from "../jamo/jamo";
+import type { VowelJamo, Jamo, ChoseongJamo, JongseongJamo } from "../jamo";
+import { CHOSEONG_INDEX, JUNGSEONG_INDEX, JONGSEONG_INDEX } from "../jamo";
 
 /**
  * A Character that resolves to a complete Korean syllable block (U+AC00–U+D7A3).

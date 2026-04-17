@@ -18,14 +18,8 @@ import {
   type ChoseongJamo,
   type JongseongJamo,
   type VowelJamo,
-} from "./jamo";
-import type { Jamo } from "./jamo";
-
-// ---------------------------------------------------------------------------
-// Syllable base codepoint (UAX #15)
-// ---------------------------------------------------------------------------
-
-const SYLLABLE_BASE = 0xac00;
+} from "./index";
+import type { Jamo } from "./index";
 
 // ---------------------------------------------------------------------------
 // Combination data
@@ -94,43 +88,6 @@ export const COMBINATION_RULES: readonly CombinationRule[] = [
   { inputs: ["ㄹ", "ㅎ"], output: "ㅀ", kind: "COMPOUND_BATCHIM" },
   { inputs: ["ㅂ", "ㅅ"], output: "ㅄ", kind: "COMPOUND_BATCHIM" },
 ];
-
-/**
- * Unified lookup map for all three kinds of jamo combination.
- * - DOUBLE_CONSONANT (5 rules): stores both a|b and b|a keys (same key since a===b)
- * - COMPLEX_VOWEL (13 rules): stores both a|b and b|a keys for commutativity
- * - COMPOUND_BATCHIM (11 rules): stores only canonical a|b key (not commutative)
- *
- * Total: 5 + 26 + 11 = 42 entries (13 rules × 2 = 26; all 13 complex vowel rules, including
- * the 2 alternate-input rules, are commutative).
- * Keys are `"${a}|${b}"` strings. Built once at module load.
- * @internal
- */
-const COMBINATION_MAP: ReadonlyMap<string, Jamo> = new Map(
-  COMBINATION_RULES.flatMap((rule) => {
-    const [a, b] = rule.inputs;
-    const fwd: [string, Jamo] = [`${a}|${b}`, rule.output];
-    if ((rule.kind === "DOUBLE_CONSONANT" || rule.kind === "COMPLEX_VOWEL") && a !== b) {
-      return [fwd, [`${b}|${a}`, rule.output]];
-    }
-    return [fwd];
-  }),
-);
-
-/**
- * Reverse lookup map: combination output → [input0, input1] using canonical order.
- * Alternate-input rules (alternate: true) are excluded so that outputs with multiple
- * input paths (ㅙ, ㅞ) always decompose via their canonical path.
- * Built once at module load.
- * @internal
- */
-const DECOMPOSE_MAP: ReadonlyMap<Jamo, readonly [Jamo, Jamo]> = new Map(
-  COMBINATION_RULES.filter((rule) => !rule.alternate).map((rule) => [rule.output, rule.inputs]),
-);
-
-// ---------------------------------------------------------------------------
-// Exported functions
-// ---------------------------------------------------------------------------
 
 /**
  * Combines two jamo into the double consonant, complex vowel, or compound batchim
@@ -212,3 +169,42 @@ export function decomposeSyllable(
 
   return { choseong, jungseong, ...(jongseong !== undefined ? { jongseong } : {}) };
 }
+
+// ---------------------------------------------------------------------------
+// Internal lookup maps
+// ---------------------------------------------------------------------------
+
+/**
+ * Unified lookup map for all three kinds of jamo combination.
+ * - DOUBLE_CONSONANT (5 rules): stores both a|b and b|a keys (same key since a===b)
+ * - COMPLEX_VOWEL (13 rules): stores both a|b and b|a keys for commutativity
+ * - COMPOUND_BATCHIM (11 rules): stores only canonical a|b key (not commutative)
+ *
+ * Total: 5 + 26 + 11 = 42 entries (13 rules × 2 = 26; all 13 complex vowel rules, including
+ * the 2 alternate-input rules, are commutative).
+ * Keys are `"${a}|${b}"` strings. Built once at module load.
+ * @internal
+ */
+const COMBINATION_MAP: ReadonlyMap<string, Jamo> = new Map(
+  COMBINATION_RULES.flatMap((rule) => {
+    const [a, b] = rule.inputs;
+    const fwd: [string, Jamo] = [`${a}|${b}`, rule.output];
+    if ((rule.kind === "DOUBLE_CONSONANT" || rule.kind === "COMPLEX_VOWEL") && a !== b) {
+      return [fwd, [`${b}|${a}`, rule.output]];
+    }
+    return [fwd];
+  }),
+);
+
+/**
+ * Reverse lookup map: combination output → [input0, input1] using canonical order.
+ * Alternate-input rules (alternate: true) are excluded so that outputs with multiple
+ * input paths (ㅙ, ㅞ) always decompose via their canonical path.
+ * Built once at module load.
+ * @internal
+ */
+const DECOMPOSE_MAP: ReadonlyMap<Jamo, readonly [Jamo, Jamo]> = new Map(
+  COMBINATION_RULES.filter((rule) => !rule.alternate).map((rule) => [rule.output, rule.inputs]),
+);
+
+const SYLLABLE_BASE = 0xac00;
