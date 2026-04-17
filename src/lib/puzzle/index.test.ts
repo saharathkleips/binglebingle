@@ -49,6 +49,18 @@ describe("loadWords", () => {
     expect(wordToString(words[1]!)).toBe("고양이");
   });
 
+  it("skips non-string entries", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        json: async () => [42, null, "한국어", { word: "고양이" }],
+      })),
+    );
+    const words = await loadWords();
+    expect(words).toHaveLength(1);
+    expect(wordToString(words[0]!)).toBe("한국어");
+  });
+
   it("returns empty array when json is not an array", async () => {
     vi.stubGlobal(
       "fetch",
