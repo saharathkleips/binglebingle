@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { handleSubmitGuess, handleResetRound } from "./round-actions";
 import { character } from "../../lib/character";
-import { createWord } from "../../lib/word/word";
+import { createWord } from "../../lib/word";
 import type { GameState, SubmissionSlot } from "./game";
 
 // ---------------------------------------------------------------------------

@@ -19,7 +19,7 @@ structurally is and how it decomposes.
 
 ```
 puzzle/
-├── puzzle.ts       # WordSelectionStrategy, loadWords(), selectWord()
+├── index.ts        # WordSelectionStrategy, loadWords(), selectWord()
 ├── puzzle.test.ts
 ├── README.md
 └── SPEC.md

@@ -1,5 +1,5 @@
 /**
- * @file puzzle.ts
+ * @file index.ts
  *
  * Word list loading and daily/random/fixed word selection.
  * This slice owns the game-initialization concern of *which word to play* —
@@ -9,8 +9,8 @@
  * No React. No game-state knowledge beyond the initial word choice.
  */
 
-import { createWord, wordToString } from "../word/word";
-import type { Word } from "../word/word";
+import { createWord, wordToString } from "../word";
+import type { Word } from "../word";
 
 // ---------------------------------------------------------------------------
 // Types

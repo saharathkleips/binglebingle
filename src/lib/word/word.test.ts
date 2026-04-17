@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createWord, wordToString } from "./word";
+import { createWord, wordToString } from ".";
 
 describe("createWord", () => {
   it("returns a Word (CompleteCharacter[]) for a valid Korean syllable block string", () => {

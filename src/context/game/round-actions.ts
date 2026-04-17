@@ -9,7 +9,7 @@
 import { fullDecompose } from "../../lib/character/composition";
 import { normalizeCharacter } from "../../lib/character/rotation";
 import { evaluateGuess } from "../../lib/engine/evaluate";
-import type { Word } from "../../lib/word/word";
+import type { Word } from "../../lib/word";
 import type { GameState, SubmissionSlot, Tile } from "./game";
 
 // ---------------------------------------------------------------------------

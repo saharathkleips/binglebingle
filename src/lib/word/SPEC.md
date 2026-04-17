@@ -17,7 +17,7 @@ Defines the `Word` type and the functions for constructing words from strings an
 
 ```
 word/
-├── word.ts         # Word type, createWord(), wordToString()
+├── index.ts        # Word type, createWord(), wordToString()
 ├── word.test.ts
 └── README.md
 ```

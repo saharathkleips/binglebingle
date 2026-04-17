@@ -7,7 +7,7 @@ import {
 import { character, resolveCharacter } from "../../lib/character";
 import type { Character } from "../../lib/character";
 import type { GameState, Tile } from "./game";
-import { createWord } from "../../lib/word/word";
+import { createWord } from "../../lib/word";
 
 // ---------------------------------------------------------------------------
 // Helpers

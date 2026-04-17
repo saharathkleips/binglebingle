@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { loadWords, selectWord } from "./puzzle";
-import { createWord, wordToString } from "../word/word";
+import { loadWords, selectWord } from ".";
+import { createWord, wordToString } from "../word";
 
 // ---------------------------------------------------------------------------
 // Fixtures
