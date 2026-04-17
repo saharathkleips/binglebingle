@@ -8,7 +8,7 @@
 
 import { isComplete } from "../character";
 import type { SubmissionSlot } from "../../context/game/game";
-import type { ValidationResult } from "./engine";
+import type { ValidationResult } from "./index";
 
 /**
  * Checks whether the current submission is valid to submit.

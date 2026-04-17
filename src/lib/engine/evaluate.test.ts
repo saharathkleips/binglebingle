@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { evaluateGuess } from "./evaluate";
 import { createWord } from "../word/word";
 import { character } from "../character";
-import type { EvaluatedCharacter } from "./engine";
+import type { EvaluatedCharacter } from "./index";
 
 function correct(syllable: string): EvaluatedCharacter {
   return { character: character(syllable)!, result: "CORRECT" };

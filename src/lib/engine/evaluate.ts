@@ -9,7 +9,7 @@
 
 import { resolveCharacter } from "../character";
 import type { Word } from "../word/word";
-import type { GuessRecord, Submission } from "./engine";
+import type { GuessRecord, Submission } from "./index";
 
 /**
  * Evaluates a submission against the target word using two-pass Wordle semantics.

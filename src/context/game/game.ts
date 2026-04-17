@@ -6,7 +6,7 @@
  * No React. No side effects.
  */
 
-import type { GuessRecord } from "../../lib/engine/engine";
+import type { GuessRecord } from "../../lib/engine";
 import type { Word } from "../../lib/word/word";
 import type { Character } from "../../lib/character";
 
