@@ -159,13 +159,11 @@ export function decomposeSyllable(
   const jungIdx = Math.floor(offset / 28) % 21;
   const choIdx = Math.floor(offset / 28 / 21);
 
-  const choseong = CHOSEONG_BY_INDEX[choIdx];
-  const jungseong = JUNGSEONG_BY_INDEX[jungIdx];
-  // jongIdx === 0 means no final consonant
-  const jongseong: JongseongJamo | undefined =
-    jongIdx === 0 ? undefined : JONGSEONG_BY_INDEX[jongIdx] || undefined;
-
-  if (choseong === undefined || jungseong === undefined) return null;
+  // choIdx/jungIdx are always in-range for a valid syllable block (range already validated above)
+  const choseong = CHOSEONG_BY_INDEX[choIdx]!;
+  const jungseong = JUNGSEONG_BY_INDEX[jungIdx]!;
+  // jongIdx 0 maps to "" in JONGSEONG_BY_INDEX (Unicode "no final consonant" slot); || undefined converts it
+  const jongseong = JONGSEONG_BY_INDEX[jongIdx] || undefined;
 
   return { choseong, jungseong, ...(jongseong !== undefined ? { jongseong } : {}) };
 }
