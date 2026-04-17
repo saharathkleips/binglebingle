@@ -5,7 +5,7 @@
  * No React. No side effects.
  */
 
-import type { Tile, GameState, SubmissionAction } from "./game";
+import type { Tile, GameState, SubmissionAction } from "./index";
 
 /**
  * Moves a tile from the pool into a submission slot.

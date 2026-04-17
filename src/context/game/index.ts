@@ -1,5 +1,5 @@
 /**
- * @file game.ts
+ * @file index.ts
  *
  * Game state types: pool, submission, and the top-level GameState/GameAction.
  *

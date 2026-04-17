@@ -7,18 +7,7 @@
 
 import { createContext, useContext, useReducer, type Dispatch, type ReactNode } from "react";
 import { gameReducer } from "./game-reducer";
-import type { GameState, GameAction } from "./game";
-
-// ---------------------------------------------------------------------------
-// Context
-// ---------------------------------------------------------------------------
-
-type GameContextValue = {
-  state: GameState;
-  dispatch: Dispatch<GameAction>;
-};
-
-const GameContext = createContext<GameContextValue | null>(null);
+import type { GameState, GameAction } from "./index";
 
 // ---------------------------------------------------------------------------
 // Provider
@@ -57,3 +46,14 @@ export function useGame(): GameContextValue {
   if (ctx === null) throw new Error("useGame must be called inside a GameProvider");
   return ctx;
 }
+
+// ---------------------------------------------------------------------------
+// Internals
+// ---------------------------------------------------------------------------
+
+type GameContextValue = {
+  state: GameState;
+  dispatch: Dispatch<GameAction>;
+};
+
+const GameContext = createContext<GameContextValue | null>(null);
