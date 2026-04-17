@@ -9,7 +9,7 @@ import {
   type ChoseongJamo,
   type JongseongJamo,
   type VowelJamo,
-} from "./jamo";
+} from "./index";
 
 describe("CHOSEONG_INDEX", () => {
   it("contains exactly 19 entries", () => {

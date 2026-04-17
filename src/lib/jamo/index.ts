@@ -1,5 +1,5 @@
 /**
- * @file jamo.ts
+ * @file index.ts
  *
  * Type definitions and Unicode index tables for the jamo domain.
  * Combines type declarations (previously types.ts) with the choseong, jungseong,

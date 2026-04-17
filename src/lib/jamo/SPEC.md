@@ -19,10 +19,10 @@ All exports are pure functions or readonly constants.
 
 ```
 jamo/
-├── jamo.ts             # type definitions + CHOSEONG/JUNGSEONG/JONGSEONG index tables
+├── index.ts            # type definitions + CHOSEONG/JUNGSEONG/JONGSEONG index tables
 ├── rotation.ts         # ROTATION_SETS, getNextRotation(), normalizeJamo()
 ├── composition.ts      # CombinationRule, COMBINATION_RULES, composeJamo(), decomposeJamo(), composeSyllable(), decomposeSyllable()
-├── jamo.test.ts
+├── index.test.ts
 ├── rotation.test.ts
 └── composition.test.ts
 ```
@@ -30,7 +30,7 @@ jamo/
 ## Types
 
 ```typescript
-// jamo.ts — position-specific type aliases
+// index.ts — position-specific type aliases
 type BasicConsonantJamo    // 14 basic consonants
 type DoubleConsonantJamo   // 5 double consonants (ㄲ ㄸ ㅃ ㅆ ㅉ)
 type CompoundBatchimJamo   // 11 compound batchim (ㄳ ㄵ ㄶ ㄺ ㄻ ㄼ ㄽ ㄾ ㄿ ㅀ ㅄ)
