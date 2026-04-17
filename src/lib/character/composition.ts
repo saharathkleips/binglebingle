@@ -33,106 +33,123 @@ export function compose(target: Character, incoming: Character): Character | nul
 
   switch (target.kind) {
     case "FULL_SYLLABLE": {
-      // Only a consonant can extend the jongseong slot (compound/double batchim)
-      if (incoming.kind !== "CHOSEONG_ONLY") return null;
-      const combined = composeJamo(target.jongseong, incoming.choseong);
-      if (combined === null) return null;
-      return character({
-        choseong: target.choseong,
-        jungseong: target.jungseong,
-        jongseong: combined,
-      });
+      switch (incoming.kind) {
+        case "CHOSEONG_ONLY": {
+          // Only a consonant can extend the jongseong slot (compound/double batchim)
+          const combined = composeJamo(target.jongseong, incoming.choseong);
+          if (combined === null) return null;
+          return character({
+            choseong: target.choseong,
+            jungseong: target.jungseong,
+            jongseong: combined,
+          });
+        }
+        case "JUNGSEONG_ONLY":
+        case "JONGSEONG_ONLY":
+        case "OPEN_SYLLABLE":
+        case "FULL_SYLLABLE":
+          return null;
+      }
     }
 
     case "OPEN_SYLLABLE": {
-      if (incoming.kind === "JUNGSEONG_ONLY") {
-        const combined = composeJamo(target.jungseong, incoming.jungseong);
-        if (combined === null) return null;
-        return character({ choseong: target.choseong, jungseong: combined });
+      switch (incoming.kind) {
+        case "JUNGSEONG_ONLY": {
+          const combined = composeJamo(target.jungseong, incoming.jungseong);
+          if (combined === null) return null;
+          return character({ choseong: target.choseong, jungseong: combined });
+        }
+        case "JONGSEONG_ONLY":
+          return character({
+            choseong: target.choseong,
+            jungseong: target.jungseong,
+            jongseong: incoming.jongseong,
+          });
+        case "CHOSEONG_ONLY":
+          // Incoming consonant fills the jongseong slot; factory rejects ㄸ/ㅃ/ㅉ
+          return character({
+            choseong: target.choseong,
+            jungseong: target.jungseong,
+            jongseong: incoming.choseong,
+          });
+        case "OPEN_SYLLABLE":
+        case "FULL_SYLLABLE":
+          return null; // both multi-slot
       }
-      if (incoming.kind === "JONGSEONG_ONLY") {
-        return character({
-          choseong: target.choseong,
-          jungseong: target.jungseong,
-          jongseong: incoming.jongseong,
-        });
-      }
-      if (incoming.kind === "CHOSEONG_ONLY") {
-        // Incoming consonant fills the jongseong slot; factory rejects ㄸ/ㅃ/ㅉ
-        return character({
-          choseong: target.choseong,
-          jungseong: target.jungseong,
-          jongseong: incoming.choseong,
-        });
-      }
-      return null; // both multi-slot
     }
 
     case "CHOSEONG_ONLY": {
-      if (incoming.kind === "CHOSEONG_ONLY") {
-        const combined = composeJamo(target.choseong, incoming.choseong);
-        if (combined === null) return null;
-        return character({ choseong: combined }) ?? character({ jongseong: combined }) ?? null;
+      switch (incoming.kind) {
+        case "CHOSEONG_ONLY": {
+          const combined = composeJamo(target.choseong, incoming.choseong);
+          if (combined === null) return null;
+          return character({ choseong: combined }) ?? character({ jongseong: combined });
+        }
+        case "JUNGSEONG_ONLY":
+          return character({ choseong: target.choseong, jungseong: incoming.jungseong });
+        case "OPEN_SYLLABLE":
+          // Target consonant slots in as jongseong of the incoming syllable; factory rejects invalid jongseong
+          return character({
+            choseong: incoming.choseong,
+            jungseong: incoming.jungseong,
+            jongseong: target.choseong,
+          });
+        case "FULL_SYLLABLE": {
+          // Target consonant extends the incoming syllable's jongseong (compound/double batchim)
+          const combined = composeJamo(incoming.jongseong, target.choseong);
+          if (combined === null) return null;
+          return character({
+            choseong: incoming.choseong,
+            jungseong: incoming.jungseong,
+            jongseong: combined,
+          });
+        }
+        case "JONGSEONG_ONLY": {
+          // Treat jongseong consonant as a combinable peer — mirrors JONGSEONG_ONLY + CHOSEONG_ONLY
+          const combined = composeJamo(target.choseong, incoming.jongseong);
+          if (combined === null) return null;
+          return character({ choseong: combined }) ?? character({ jongseong: combined });
+        }
       }
-      if (incoming.kind === "JUNGSEONG_ONLY") {
-        return character({ choseong: target.choseong, jungseong: incoming.jungseong });
-      }
-      if (incoming.kind === "OPEN_SYLLABLE") {
-        // Target consonant slots in as jongseong of the incoming syllable; factory rejects invalid jongseong
-        return character({
-          choseong: incoming.choseong,
-          jungseong: incoming.jungseong,
-          jongseong: target.choseong,
-        });
-      }
-      if (incoming.kind === "FULL_SYLLABLE") {
-        // Target consonant extends the incoming syllable's jongseong (compound/double batchim)
-        const combined = composeJamo(incoming.jongseong, target.choseong);
-        if (combined === null) return null;
-        return character({
-          choseong: incoming.choseong,
-          jungseong: incoming.jungseong,
-          jongseong: combined,
-        });
-      }
-      if (incoming.kind === "JONGSEONG_ONLY") {
-        // Treat jongseong consonant as a combinable peer — mirrors JONGSEONG_ONLY + CHOSEONG_ONLY
-        const combined = composeJamo(target.choseong, incoming.jongseong);
-        if (combined === null) return null;
-        return character({ choseong: combined }) ?? character({ jongseong: combined }) ?? null;
-      }
-      return null;
     }
 
     case "JONGSEONG_ONLY": {
-      if (incoming.kind === "OPEN_SYLLABLE") {
-        // Jongseong slots directly into the incoming syllable (e.g. ㄻ + 사 → 삶)
-        return character({
-          choseong: incoming.choseong,
-          jungseong: incoming.jungseong,
-          jongseong: target.jongseong,
-        });
+      switch (incoming.kind) {
+        case "OPEN_SYLLABLE":
+          // Jongseong slots directly into the incoming syllable (e.g. ㄻ + 사 → 삶)
+          return character({
+            choseong: incoming.choseong,
+            jungseong: incoming.jungseong,
+            jongseong: target.jongseong,
+          });
+        case "CHOSEONG_ONLY": {
+          // Only meaningful for single-jamo JONGSEONG_ONLY; compound batchim has no composition rules
+          const combined = composeJamo(target.jongseong, incoming.choseong);
+          if (combined === null) return null;
+          return character({ choseong: combined }) ?? character({ jongseong: combined });
+        }
+        case "JUNGSEONG_ONLY":
+        case "JONGSEONG_ONLY":
+        case "FULL_SYLLABLE":
+          return null;
       }
-      if (incoming.kind === "CHOSEONG_ONLY") {
-        // Only meaningful for single-jamo JONGSEONG_ONLY; compound batchim has no composition rules
-        const combined = composeJamo(target.jongseong, incoming.choseong);
-        if (combined === null) return null;
-        return character({ choseong: combined }) ?? character({ jongseong: combined }) ?? null;
-      }
-      return null;
     }
 
     case "JUNGSEONG_ONLY": {
-      if (incoming.kind === "JUNGSEONG_ONLY") {
-        const combined = composeJamo(target.jungseong, incoming.jungseong);
-        if (combined === null) return null;
-        return character({ jungseong: combined });
+      switch (incoming.kind) {
+        case "JUNGSEONG_ONLY": {
+          const combined = composeJamo(target.jungseong, incoming.jungseong);
+          if (combined === null) return null;
+          return character({ jungseong: combined });
+        }
+        case "CHOSEONG_ONLY":
+          // Consonant becomes choseong, vowel stays as jungseong
+          return character({ choseong: incoming.choseong, jungseong: target.jungseong });
+        case "JONGSEONG_ONLY":
+        case "OPEN_SYLLABLE":
+        case "FULL_SYLLABLE":
+          return null;
       }
-      if (incoming.kind === "CHOSEONG_ONLY") {
-        // Consonant becomes choseong, vowel stays as jungseong
-        return character({ choseong: incoming.choseong, jungseong: target.jungseong });
-      }
-      return null; // JONGSEONG_ONLY, OPEN_SYLLABLE, FULL_SYLLABLE not valid here
     }
   }
 }

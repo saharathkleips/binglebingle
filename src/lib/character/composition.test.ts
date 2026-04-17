@@ -42,6 +42,9 @@ describe("compose", () => {
       character({ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" }),
     ],
 
+    // --- Non-empty target + empty incoming → null ---
+    ["choseong + empty → null", character({ choseong: "ㄱ" }), character(), null],
+
     // --- Both multi-slot → always null (both sides would drop jamo) ---
     [
       "open syllable 가 + open syllable 해 (cho+jung) → null",
