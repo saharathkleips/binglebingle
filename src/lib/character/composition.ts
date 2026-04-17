@@ -95,7 +95,13 @@ export function compose(target: Character, incoming: Character): Character | nul
           jongseong: combined,
         });
       }
-      return null; // JONGSEONG_ONLY not valid here
+      if (incoming.kind === "JONGSEONG_ONLY") {
+        // Treat jongseong consonant as a combinable peer — mirrors JONGSEONG_ONLY + CHOSEONG_ONLY
+        const combined = composeJamo(target.choseong, incoming.jongseong);
+        if (combined === null) return null;
+        return character({ choseong: combined }) ?? character({ jongseong: combined }) ?? null;
+      }
+      return null;
     }
 
     case "JONGSEONG_ONLY": {

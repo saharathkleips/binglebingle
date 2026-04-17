@@ -227,6 +227,24 @@ describe("compose", () => {
       character({ choseong: "ㄴ" }),
       null,
     ],
+    [
+      "cho(ㄱ)+jong(ㄱ) → ㄲ (jongseong treated as combinable peer, mirrors reverse order)",
+      character({ choseong: "ㄱ" }),
+      character({ jongseong: "ㄱ" }),
+      character({ choseong: "ㄲ" }),
+    ],
+    [
+      "cho(ㄱ)+jong(ㅅ) → jong(ㄳ) (compound batchim result)",
+      character({ choseong: "ㄱ" }),
+      character({ jongseong: "ㅅ" }),
+      character({ jongseong: "ㄳ" }),
+    ],
+    [
+      "cho(ㄱ)+jong(ㄳ) → null (no rule for ㄱ+ㄳ)",
+      character({ choseong: "ㄱ" }),
+      character({ jongseong: "ㄳ" }),
+      null,
+    ],
 
     // --- Jungseong-only: complex vowel combinations ---
     [
@@ -332,6 +350,12 @@ describe("compose", () => {
       character({ jungseong: "ㅏ" }),
       character({ choseong: "ㄱ" }),
       character({ choseong: "ㄱ", jungseong: "ㅏ" }),
+    ],
+    [
+      "jung(ㅏ)+jong(ㄱ) → null (JONGSEONG_ONLY not valid incoming for JUNGSEONG_ONLY)",
+      character({ jungseong: "ㅏ" }),
+      character({ jongseong: "ㄱ" }),
+      null,
     ],
 
     // --- Choseong+jungseong: vowel combination ---
