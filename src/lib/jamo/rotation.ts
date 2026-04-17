@@ -6,7 +6,7 @@
  * These sets are designer-controlled.
  */
 
-import type { Jamo } from "./index";
+import type { Jamo } from ".";
 
 /**
  * Returns the next jamo when cycling through the rotation set (wraps around).

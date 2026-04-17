@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { character } from "./index";
-import type { Character } from "./index";
+import { character } from ".";
+import type { Character } from ".";
 import { normalizeCharacter } from "./rotation";
 
 // ---------------------------------------------------------------------------

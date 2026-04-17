@@ -7,7 +7,7 @@
  */
 
 import type { Word } from "../../lib/word";
-import type { GameState, GameAction } from "./index";
+import type { GameState, GameAction } from ".";
 import {
   handleCharacterRotateNext,
   handleCharacterCompose,

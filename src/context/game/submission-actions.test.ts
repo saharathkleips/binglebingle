@@ -6,7 +6,7 @@ import {
 } from "./submission-actions";
 import { character } from "../../lib/character";
 import { createWord } from "../../lib/word";
-import type { GameState } from "./index";
+import type { GameState } from ".";
 
 // ---------------------------------------------------------------------------
 // Helpers

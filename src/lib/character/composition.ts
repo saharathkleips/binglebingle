@@ -8,8 +8,8 @@
  */
 
 import { composeJamo, decomposeJamo, COMBINATION_RULES } from "../jamo/composition";
-import { character } from "./index";
-import type { Character } from "./index";
+import { character } from ".";
+import type { Character } from ".";
 
 /**
  * Adds an incoming Character to a target Character following Korean syllable

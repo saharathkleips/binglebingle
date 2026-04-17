@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { character, resolveCharacter } from "./index";
-import type { Character } from "./index";
+import { character, resolveCharacter } from ".";
+import type { Character } from ".";
 import { compose, decompose, fullDecompose } from "./composition";
 
 // ---------------------------------------------------------------------------
