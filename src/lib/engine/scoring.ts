@@ -6,7 +6,7 @@
  * All functions are pure. No React. No side effects.
  */
 
-import type { GuessRecord, ScoringResult } from "./engine";
+import type { GuessRecord, ScoringResult } from "./index";
 
 /**
  * Calculates the score based on the number of guesses made.
