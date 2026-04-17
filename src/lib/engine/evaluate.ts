@@ -7,7 +7,7 @@
  * Unicode note: syllable blocks range U+AC00–U+D7A3.
  */
 
-import { resolveCharacter } from "../character/character";
+import { resolveCharacter } from "../character";
 import type { Word } from "../word/word";
 import type { GuessRecord, Submission } from "./engine";
 

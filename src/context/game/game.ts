@@ -8,7 +8,7 @@
 
 import type { GuessRecord } from "../../lib/engine/engine";
 import type { Word } from "../../lib/word/word";
-import type { Character } from "../../lib/character/character";
+import type { Character } from "../../lib/character";
 
 /**
  * A single tile in the player's jamo pool.

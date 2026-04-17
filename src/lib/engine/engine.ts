@@ -6,7 +6,7 @@
  * All types are pure data. No React. No side effects.
  */
 
-import type { Character } from "../character/character";
+import type { Character } from "../character";
 
 /**
  * A guess submission as seen by the engine: one Character per slot, or null

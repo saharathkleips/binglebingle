@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { canSubmit } from "./validate";
 import type { SubmissionSlot } from "../../context/game/game";
-import type { Character } from "../character/character";
-import { character } from "../character/character";
+import type { Character } from "../character";
+import { character } from "../character";
 
 function filled(char: Character) {
   return { state: "FILLED" as const, tileId: 0, character: char };

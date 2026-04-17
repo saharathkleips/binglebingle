@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { gameReducer, createInitialGameState } from "./game-reducer";
 import { createWord } from "../../lib/word/word";
-import { character } from "../../lib/character/character";
+import { character } from "../../lib/character";
 
 function word(str: string) {
   return createWord(str)!;
