@@ -12,10 +12,6 @@ import { composeSyllable, decomposeSyllable } from "../jamo/composition";
 import type { VowelJamo, Jamo, ChoseongJamo, JongseongJamo } from "../jamo/jamo";
 import { CHOSEONG_INDEX, JUNGSEONG_INDEX, JONGSEONG_INDEX } from "../jamo/jamo";
 
-// ---------------------------------------------------------------------------
-// Character — discriminated union
-// ---------------------------------------------------------------------------
-
 /**
  * A Character that resolves to a complete Korean syllable block (U+AC00–U+D7A3).
  * Either OPEN_SYLLABLE (choseong + jungseong) or FULL_SYLLABLE (choseong + jungseong + jongseong).
@@ -51,10 +47,6 @@ export type Character =
   | { kind: "JUNGSEONG_ONLY"; jungseong: VowelJamo }
   | { kind: "JONGSEONG_ONLY"; jongseong: JongseongJamo }
   | CompleteCharacter;
-
-// ---------------------------------------------------------------------------
-// character() — factory
-// ---------------------------------------------------------------------------
 
 /**
  * Constructs a Character from a Unicode syllable string or from slot values.
@@ -100,10 +92,6 @@ export function character(
   return null; // jungseong + jongseong without choseong is unrepresentable
 }
 
-// ---------------------------------------------------------------------------
-// resolveCharacter()
-// ---------------------------------------------------------------------------
-
 /**
  * Reduces a Character to its rendered Unicode string form.
  *
@@ -133,10 +121,6 @@ export function resolveCharacter(char: Character): string | null {
       return composeSyllable(char.choseong, char.jungseong, char.jongseong);
   }
 }
-
-// ---------------------------------------------------------------------------
-// isComplete()
-// ---------------------------------------------------------------------------
 
 /**
  * Type guard that returns true iff resolveCharacter produces a valid Korean

@@ -11,10 +11,6 @@ import { composeJamo, decomposeJamo, COMBINATION_RULES } from "../jamo/compositi
 import { character } from "./index";
 import type { Character } from "./index";
 
-// ---------------------------------------------------------------------------
-// compose()
-// ---------------------------------------------------------------------------
-
 /**
  * Adds an incoming Character to a target Character following Korean syllable
  * construction rules.
@@ -134,10 +130,6 @@ export function compose(target: Character, incoming: Character): Character | nul
     }
   }
 }
-
-// ---------------------------------------------------------------------------
-// decompose()
-// ---------------------------------------------------------------------------
 
 /**
  * Steps a Character back by one construction level.
