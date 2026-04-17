@@ -19,7 +19,7 @@ Two responsibilities: the game state machine (reducer + context) and game setup 
 
 ```
 game/
-├── game.ts                  # GameState, GameAction, Tile, SubmissionSlot
+├── index.ts                 # GameState, GameAction, Tile, SubmissionSlot
 ├── character-actions.ts     # handleCharacterRotateNext, handleCharacterCompose, handleCharacterDecompose
 ├── submission-actions.ts    # handleSubmissionSlotInsert, handleSubmissionSlotRemove, handleSubmissionSlotMove
 ├── round-actions.ts         # handleSubmitGuess, handleResetRound, buildInitialPool, buildEmptySubmission
@@ -29,7 +29,7 @@ game/
 └── README.md
 ```
 
-`game.ts` is the public surface — shared types consumed across the slice and by external consumers. No internal slice imports.
+`index.ts` is the public surface — shared types consumed across the slice and by external consumers. No internal slice imports.
 
 Per-action payload types live colocated with their handler files and import shared types from `game.ts` as needed.
 
@@ -38,9 +38,9 @@ Per-action payload types live colocated with their handler files and import shar
 ## Types
 
 ```typescript
-import type { GuessRecord } from "../lib/engine";
-import type { Word } from "../lib/word";
-import type { Character } from "../lib/character";
+import type { GuessRecord } from "../../lib/engine";
+import type { Word } from "../../lib/word";
+import type { Character } from "../../lib/character";
 
 export type Tile = {
   id: number; // stable index into original pool array — never changes

@@ -7,7 +7,7 @@
  */
 
 import { isComplete } from "../character";
-import type { SubmissionSlot } from "../../context/game/game";
+import type { SubmissionSlot } from "../../context/game";
 import type { ValidationResult } from "./index";
 
 /**

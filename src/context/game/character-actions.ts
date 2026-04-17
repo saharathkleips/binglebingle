@@ -7,26 +7,7 @@
 
 import { compose, decompose } from "../../lib/character/composition";
 import { getNextRotation } from "../../lib/character/rotation";
-import type { CharacterAction, GameState, Tile } from "./game";
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Returns the smallest non-negative integer not already used as a tile id.
- * Derived purely from the pool — no stored counter needed.
- */
-function nextMissingId(pool: readonly Tile[]): number {
-  const usedIds = new Set(pool.map((t) => t.id));
-  let id = 0;
-  while (usedIds.has(id)) id++;
-  return id;
-}
-
-// ---------------------------------------------------------------------------
-// Handlers
-// ---------------------------------------------------------------------------
+import type { CharacterAction, GameState, Tile } from "./index";
 
 /**
  * Advances a single-jamo pool tile to the next jamo in its rotation set.
@@ -105,4 +86,19 @@ export function handleCharacterDecompose(
       { id: idB, character: parts[1] },
     ],
   };
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the smallest non-negative integer not already used as a tile id.
+ * Derived purely from the pool — no stored counter needed.
+ */
+function nextMissingId(pool: readonly Tile[]): number {
+  const usedIds = new Set(pool.map((t) => t.id));
+  let id = 0;
+  while (usedIds.has(id)) id++;
+  return id;
 }
