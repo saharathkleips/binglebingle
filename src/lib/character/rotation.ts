@@ -11,10 +11,6 @@ import { normalizeJamo, getNextRotation as getNextJamoRotation } from "../jamo/r
 import { character } from "./index";
 import type { Character } from "./index";
 
-// ---------------------------------------------------------------------------
-// normalizeCharacter()
-// ---------------------------------------------------------------------------
-
 /**
  * Rotates a single-jamo Character to the canonical (0-index) member of its
  * rotation set. Non-rotatable or multi-jamo Characters are returned unchanged.
@@ -42,10 +38,6 @@ export function normalizeCharacter(char: Character): Character {
       return char;
   }
 }
-
-// ---------------------------------------------------------------------------
-// getNextRotation()
-// ---------------------------------------------------------------------------
 
 /**
  * Advances a single-jamo Character to the next member of its rotation set (wraps around).

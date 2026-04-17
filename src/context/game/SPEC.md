@@ -40,7 +40,7 @@ Per-action payload types live colocated with their handler files and import shar
 ```typescript
 import type { GuessRecord } from "../lib/engine/engine";
 import type { Word } from "../lib/word/word";
-import type { Character } from "../lib/character/index";
+import type { Character } from "../lib/character";
 
 export type Tile = {
   id: number; // stable index into original pool array — never changes
