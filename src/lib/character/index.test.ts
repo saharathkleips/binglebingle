@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { character, isComplete, resolveCharacter } from "./index";
-import type { Character } from "./index";
+import { character, isComplete, resolveCharacter } from ".";
+import type { Character } from ".";
 
 // ---------------------------------------------------------------------------
 // character() factory

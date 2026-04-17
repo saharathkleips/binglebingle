@@ -18,8 +18,8 @@ import {
   type ChoseongJamo,
   type JongseongJamo,
   type VowelJamo,
-} from "./index";
-import type { Jamo } from "./index";
+} from ".";
+import type { Jamo } from ".";
 
 // ---------------------------------------------------------------------------
 // Combination data

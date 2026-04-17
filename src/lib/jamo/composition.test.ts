@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { composeJamo, decomposeJamo, composeSyllable, decomposeSyllable } from "./composition";
 import { COMBINATION_RULES } from "./composition";
-import type { Jamo } from "./index";
-import type { ChoseongJamo, VowelJamo, JongseongJamo } from "./index";
+import type { Jamo } from ".";
+import type { ChoseongJamo, VowelJamo, JongseongJamo } from ".";
 
 describe("composeJamo — all COMBINATION_RULES", () => {
   it.each(COMBINATION_RULES)("$kind: $inputs → $output", ({ inputs, output }) => {

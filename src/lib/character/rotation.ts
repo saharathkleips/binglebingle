@@ -8,8 +8,8 @@
  */
 
 import { normalizeJamo, getNextRotation as getNextJamoRotation } from "../jamo/rotation";
-import { character } from "./index";
-import type { Character } from "./index";
+import { character } from ".";
+import type { Character } from ".";
 
 /**
  * Rotates a single-jamo Character to the canonical (0-index) member of its

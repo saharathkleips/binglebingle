@@ -6,7 +6,7 @@ import {
 } from "./character-actions";
 import { character, resolveCharacter } from "../../lib/character";
 import type { Character } from "../../lib/character";
-import type { GameState, Tile } from "./index";
+import type { GameState, Tile } from ".";
 import { createWord } from "../../lib/word";
 
 // ---------------------------------------------------------------------------

@@ -7,7 +7,7 @@
 
 import { compose, decompose } from "../../lib/character/composition";
 import { getNextRotation } from "../../lib/character/rotation";
-import type { CharacterAction, GameState, Tile } from "./index";
+import type { CharacterAction, GameState, Tile } from ".";
 
 /**
  * Advances a single-jamo pool tile to the next jamo in its rotation set.
