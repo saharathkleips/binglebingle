@@ -6,7 +6,7 @@
  * No async, no side effects.
  */
 
-import type { Word } from "../../lib/word/word";
+import type { Word } from "../../lib/word";
 import type { GameState, GameAction } from "./game";
 import {
   handleCharacterRotateNext,

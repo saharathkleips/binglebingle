@@ -7,7 +7,7 @@
  */
 
 import type { GuessRecord } from "../../lib/engine";
-import type { Word } from "../../lib/word/word";
+import type { Word } from "../../lib/word";
 import type { Character } from "../../lib/character";
 
 /**

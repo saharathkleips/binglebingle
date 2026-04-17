@@ -8,7 +8,7 @@
  */
 
 import { resolveCharacter } from "../character";
-import type { Word } from "../word/word";
+import type { Word } from "../word";
 import type { GuessRecord, Submission } from "./index";
 
 /**

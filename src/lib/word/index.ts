@@ -1,5 +1,5 @@
 /**
- * @file word.ts
+ * @file index.ts
  *
  * Word type and validation for the word slice.
  *

@@ -39,7 +39,7 @@ Per-action payload types live colocated with their handler files and import shar
 
 ```typescript
 import type { GuessRecord } from "../lib/engine";
-import type { Word } from "../lib/word/word";
+import type { Word } from "../lib/word";
 import type { Character } from "../lib/character";
 
 export type Tile = {
