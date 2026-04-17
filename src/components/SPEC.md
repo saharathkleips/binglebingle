@@ -23,7 +23,7 @@ Visual design and styling are deferred — components render functionally correc
 
 **Memoization:** React 19 + React Compiler handles this automatically — no speculative `useMemo` or `useCallback`.
 
-**Styling:** Tailwind only — no custom CSS except `src/index.css` for base resets and design tokens. No inline `style` props except for values that cannot be expressed as Tailwind classes. Use `cn` (`clsx` + `tailwind-merge`) for conditional classes — lives at `src/lib/utils/cn.ts`.
+**Styling:** CSS Modules only — each component has a colocated `ComponentName.module.css` file. Global design tokens (colors, spacing, font sizes) and base resets live in `src/index.css` as CSS custom properties. No inline `style` props except for values that must be computed at runtime (e.g. dynamic widths). Apply multiple classes via template literals or `clsx` — no `tailwind-merge` needed.
 
 ## Interactions
 
@@ -45,13 +45,14 @@ Token is the core interactive element. Only appears in the pool.
 
 **Shake animation:** local `shaking` boolean state on `Token`. Set to `true` on invalid combine, reset via `onAnimationEnd`. Drives a CSS shake class. Required for MVP to confirm invalid combine attempts.
 
-**Drag threshold:** `@dnd-kit` pointer/touch sensor activation distance prevents accidental drags on tap.
+**Drag threshold:** A 4px movement threshold is enforced in the `dragstart` handler before activating drag state, preventing accidental drags on tap. This is implemented via `pointerdown` + `pointermove` tracking rather than relying on a library sensor.
 
 ### SubmissionSlot
 
 - **Empty slot**: drop target — accepts dragged tokens, dispatches `PLACE_TOKEN`
 - **Filled slot**: tap → `REMOVE_FROM_SLOT`; drag token back toward pool → `REMOVE_FROM_SLOT`
 - Slots are both drop targets and drag sources
+- Drop targets set `dragover` to `preventDefault()` to allow drops; visual drop feedback via a CSS class toggled on `dragenter`/`dragleave`
 
 ### Submit
 

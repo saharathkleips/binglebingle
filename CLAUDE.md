@@ -15,7 +15,7 @@ Running in a locked-down devcontainer (Debian bookworm-slim). If a failure looks
 
 - **Package manager**: pnpm only — never npm or yarn
 - **Unicode**: Hangul Compatibility Jamo (U+3130–U+318F) in all application code
-- **Stack**: TypeScript strict + React 19 + Tailwind CSS v4 + Vite, deployed as a PWA on GitHub Pages — do not introduce alternatives
+- **Stack**: TypeScript strict + React 19 + CSS Modules + native CSS + Vite, deployed as a PWA on GitHub Pages — do not introduce alternatives
 
 ## File & Folder Naming
 
