@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { calculateScore } from "./scoring";
 import type { GuessRecord } from "./engine";
-import { character } from "../character/character";
+import { character } from "../character";
 
 const dummyGuess: GuessRecord = [{ character: character("가")!, result: "CORRECT" }];
 

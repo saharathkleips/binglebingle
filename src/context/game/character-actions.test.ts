@@ -4,8 +4,8 @@ import {
   handleCharacterCompose,
   handleCharacterDecompose,
 } from "./character-actions";
-import { character, resolveCharacter } from "../../lib/character/character";
-import type { Character } from "../../lib/character/character";
+import { character, resolveCharacter } from "../../lib/character";
+import type { Character } from "../../lib/character";
 import type { GameState, Tile } from "./game";
 import { createWord } from "../../lib/word/word";
 

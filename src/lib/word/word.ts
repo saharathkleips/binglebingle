@@ -7,8 +7,8 @@
  * Unicode note: syllable blocks range U+AC00–U+D7A3.
  */
 
-import { character, resolveCharacter } from "../character/character";
-import type { CompleteCharacter } from "../character/character";
+import { character, resolveCharacter } from "../character";
+import type { CompleteCharacter } from "../character";
 
 // ---------------------------------------------------------------------------
 // Types

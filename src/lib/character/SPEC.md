@@ -17,8 +17,12 @@
 
 ```
 character/
-├── character.ts        # Character type, CompleteCharacter, character(), compose(), resolveCharacter(), isComplete(), decompose(), fullDecompose(), normalizeCharacter(), getNextRotation()
-└── character.test.ts
+├── index.ts            # Character type, CompleteCharacter, character(), resolveCharacter(), isComplete()
+├── index.test.ts
+├── composition.ts      # compose(), decompose(), fullDecompose()
+├── composition.test.ts
+├── rotation.ts         # normalizeCharacter(), getNextRotation()
+└── rotation.test.ts
 ```
 
 ## Types

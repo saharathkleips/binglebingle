@@ -6,7 +6,7 @@
  * All functions are pure. No React. No side effects.
  */
 
-import { isComplete } from "../character/character";
+import { isComplete } from "../character";
 import type { SubmissionSlot } from "../../context/game/game";
 import type { ValidationResult } from "./engine";
 

@@ -1,14 +1,7 @@
 import { describe, expect, it } from "vitest";
-import {
-  character,
-  compose,
-  decompose,
-  fullDecompose,
-  isComplete,
-  normalizeCharacter,
-  resolveCharacter,
-} from "./character";
-import type { Character } from "./character";
+import { character, resolveCharacter } from "./index";
+import type { Character } from "./index";
+import { compose, decompose, fullDecompose } from "./composition";
 
 // ---------------------------------------------------------------------------
 // compose()
@@ -519,98 +512,6 @@ describe("compose", () => {
 });
 
 // ---------------------------------------------------------------------------
-// resolveCharacter()
-// ---------------------------------------------------------------------------
-
-describe("resolveCharacter", () => {
-  it.each([
-    [character(), null],
-    [character({ choseong: "ㄱ" }), "ㄱ"],
-    [character({ jungseong: "ㅏ" }), "ㅏ"],
-    [character({ choseong: "ㄱ", jungseong: "ㅏ" }), "가"],
-    [character({ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" }), "한"],
-    [character({ choseong: "ㅎ", jungseong: "ㅞ", jongseong: "ㄳ" }), "훿"],
-    [character({ choseong: "ㄲ", jungseong: "ㅐ", jongseong: "ㄳ" }), "깫"], // double consonant + complex vowel + compound batchim
-    [character({ jongseong: "ㄳ" }), "ㄳ"], // jongseong-only renders as bare consonant
-    [character({ jongseong: "ㄱ" }), "ㄱ"], // simple jongseong-only renders as bare consonant
-  ] as [Character, string | null][])("resolveCharacter(%j) → %s", (char, expected) => {
-    expect(resolveCharacter(char)).toBe(expected);
-  });
-
-  it("invalid combo (OPEN_SYLLABLE with consonant as jungseong) → null", () => {
-    // Force an invalid jungseong via 'as any' to test composeSyllable boundary
-    expect(
-      resolveCharacter({ kind: "OPEN_SYLLABLE", choseong: "ㄱ", jungseong: "ㄱ" as any }),
-    ).toBeNull();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// character() factory
-// ---------------------------------------------------------------------------
-
-describe("character() factory", () => {
-  it.each([
-    // Valid constructions — every kind
-    ["no args → EMPTY", undefined, { kind: "EMPTY" }],
-    ["empty slots → EMPTY", {}, { kind: "EMPTY" }],
-    ["choseong only", { choseong: "ㄱ" }, { kind: "CHOSEONG_ONLY", choseong: "ㄱ" }],
-    ["double consonant choseong", { choseong: "ㄲ" }, { kind: "CHOSEONG_ONLY", choseong: "ㄲ" }],
-    ["jungseong only", { jungseong: "ㅏ" }, { kind: "JUNGSEONG_ONLY", jungseong: "ㅏ" }],
-    ["complex vowel jungseong", { jungseong: "ㅘ" }, { kind: "JUNGSEONG_ONLY", jungseong: "ㅘ" }],
-    ["jongseong only (simple)", { jongseong: "ㄱ" }, { kind: "JONGSEONG_ONLY", jongseong: "ㄱ" }],
-    [
-      "jongseong only (compound ㄳ)",
-      { jongseong: "ㄳ" },
-      { kind: "JONGSEONG_ONLY", jongseong: "ㄳ" },
-    ],
-    [
-      "cho+jung → OPEN_SYLLABLE",
-      { choseong: "ㄱ", jungseong: "ㅏ" },
-      { kind: "OPEN_SYLLABLE", choseong: "ㄱ", jungseong: "ㅏ" },
-    ],
-    [
-      "cho+jung+jong → FULL_SYLLABLE",
-      { choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" },
-      { kind: "FULL_SYLLABLE", choseong: "ㄱ", jungseong: "ㅏ", jongseong: "ㄴ" },
-    ],
-
-    // Invalid slot values → null (no cast needed: slots accept Jamo, factory validates)
-    ["vowel ㅏ as choseong → null", { choseong: "ㅏ" }, null],
-    ["consonant ㄱ as jungseong → null", { jungseong: "ㄱ" }, null],
-    ["ㄸ as jongseong → null (no valid final)", { jongseong: "ㄸ" }, null],
-    ["ㅃ as jongseong → null (no valid final)", { jongseong: "ㅃ" }, null],
-    ["ㅉ as jongseong → null (no valid final)", { jongseong: "ㅉ" }, null],
-
-    // Structural invalidity → null
-    ["jung+jong without cho → null", { jungseong: "ㅏ", jongseong: "ㄱ" }, null],
-  ] as [string, Parameters<typeof character>[0], Character | null][])(
-    "%s",
-    (_, slots, expected) => {
-      expect(character(slots)).toEqual(expected);
-    },
-  );
-});
-
-// ---------------------------------------------------------------------------
-// isComplete()
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-
-describe("isComplete", () => {
-  it.each([
-    [character({ choseong: "ㄱ", jungseong: "ㅏ" }), true],
-    [character({ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" }), true],
-    [character({ choseong: "ㄱ" }), false],
-    [character({ jungseong: "ㅏ" }), false],
-    [character(), false],
-  ] as [Character, boolean][])("isComplete(%j) → %s", (char, expected) => {
-    expect(isComplete(char)).toBe(expected);
-  });
-});
-
-// ---------------------------------------------------------------------------
 // decompose()
 // ---------------------------------------------------------------------------
 
@@ -738,7 +639,60 @@ describe("decompose", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Full jamo workflow: step-by-step decompose → recompose
+// fullDecompose()
+// ---------------------------------------------------------------------------
+
+describe("fullDecompose", () => {
+  it("decomposes 한국어 into the correct flat basic jamo Characters", () => {
+    // 한 = ㅎ + ㅏ + ㄴ; 국 = ㄱ + ㅜ + ㄱ; 어 = ㅇ + ㅓ
+    const input = [
+      character({ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" })!,
+      character({ choseong: "ㄱ", jungseong: "ㅜ", jongseong: "ㄱ" })!,
+      character({ choseong: "ㅇ", jungseong: "ㅓ" })!,
+    ];
+    expect(fullDecompose(input)).toEqual([
+      character({ choseong: "ㅎ" }),
+      character({ jungseong: "ㅏ" }),
+      character({ choseong: "ㄴ" }),
+      character({ choseong: "ㄱ" }),
+      character({ jungseong: "ㅜ" }),
+      character({ choseong: "ㄱ" }),
+      character({ choseong: "ㅇ" }),
+      character({ jungseong: "ㅓ" }),
+    ]);
+  });
+
+  it("fully decomposes compound jongseong ㄺ in 닭 (ㄷ ㅏ ㄹ ㄱ)", () => {
+    const input = [character({ choseong: "ㄷ", jungseong: "ㅏ", jongseong: "ㄺ" })!];
+    expect(fullDecompose(input)).toEqual([
+      character({ choseong: "ㄷ" }),
+      character({ jungseong: "ㅏ" }),
+      character({ choseong: "ㄹ" }),
+      character({ choseong: "ㄱ" }),
+    ]);
+  });
+
+  it("fully decomposes 훿 (complex vowel + compound batchim) → ㅎ ㅜ ㅓ ㅣ ㄱ ㅅ", () => {
+    // 훿: choseong=ㅎ, jungseong=ㅞ (→ ㅝ+ㅣ → ㅜ+ㅓ+ㅣ), jongseong=ㄳ (→ ㄱ+ㅅ)
+    const input = [character({ choseong: "ㅎ", jungseong: "ㅞ", jongseong: "ㄳ" })!];
+    expect(fullDecompose(input)).toEqual([
+      character({ choseong: "ㅎ" }),
+      character({ jungseong: "ㅜ" }),
+      character({ jungseong: "ㅓ" }),
+      character({ jungseong: "ㅣ" }),
+      character({ choseong: "ㄱ" }),
+      character({ choseong: "ㅅ" }),
+    ]);
+  });
+
+  it("returns irreducible single-jamo Characters unchanged", () => {
+    const input = [character({ choseong: "ㄱ" })!, character({ jungseong: "ㅏ" })!];
+    expect(fullDecompose(input)).toEqual(input);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Full jamo workflows
 // ---------------------------------------------------------------------------
 
 describe("full jamo workflow: 호 (2 jamo: ㅎ ㅗ)", () => {
@@ -805,144 +759,6 @@ describe("full jamo workflow: 홱 (5 jamo: ㅎ ㅗ ㅏ ㅣ ㄱ)", () => {
     );
   });
 });
-
-// ---------------------------------------------------------------------------
-// character() string overload
-// ---------------------------------------------------------------------------
-
-describe("character() string overload", () => {
-  it.each([
-    ["open syllable 가", "가", { kind: "OPEN_SYLLABLE", choseong: "ㄱ", jungseong: "ㅏ" }],
-    [
-      "full syllable 한",
-      "한",
-      { kind: "FULL_SYLLABLE", choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" },
-    ],
-    [
-      "syllable with complex vowel 화",
-      "화",
-      { kind: "OPEN_SYLLABLE", choseong: "ㅎ", jungseong: "ㅘ" },
-    ],
-    [
-      "syllable with compound batchim 닭",
-      "닭",
-      { kind: "FULL_SYLLABLE", choseong: "ㄷ", jungseong: "ㅏ", jongseong: "ㄺ" },
-    ],
-    ["empty string → null", "", null],
-    ["raw jamo ㄱ (not a syllable block) → null", "ㄱ", null],
-    ["Latin letter → null", "a", null],
-  ] as [string, string, Character | null][])("%s", (_, input, expected) => {
-    expect(character(input)).toEqual(expected);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// normalizeCharacter()
-// ---------------------------------------------------------------------------
-
-describe("normalizeCharacter", () => {
-  it.each([
-    // Rotatable jamo → normalized to rotation base
-    [
-      "CHOSEONG_ONLY ㄴ → ㄱ (base of [ㄱ,ㄴ])",
-      character({ choseong: "ㄴ" }),
-      character({ choseong: "ㄱ" }),
-    ],
-    [
-      "JUNGSEONG_ONLY ㅓ → ㅏ (base of [ㅏ,ㅜ,ㅓ,ㅗ])",
-      character({ jungseong: "ㅓ" }),
-      character({ jungseong: "ㅏ" }),
-    ],
-    [
-      "JUNGSEONG_ONLY ㅡ → ㅣ (base of [ㅣ,ㅡ])",
-      character({ jungseong: "ㅡ" }),
-      character({ jungseong: "ㅣ" }),
-    ],
-    // Already at base → unchanged
-    [
-      "CHOSEONG_ONLY ㄱ → ㄱ (already base)",
-      character({ choseong: "ㄱ" }),
-      character({ choseong: "ㄱ" }),
-    ],
-    [
-      "JUNGSEONG_ONLY ㅏ → ㅏ (already base)",
-      character({ jungseong: "ㅏ" }),
-      character({ jungseong: "ㅏ" }),
-    ],
-    // Non-rotatable → unchanged
-    [
-      "CHOSEONG_ONLY ㅎ → ㅎ (non-rotatable)",
-      character({ choseong: "ㅎ" }),
-      character({ choseong: "ㅎ" }),
-    ],
-    // Multi-jamo or EMPTY → unchanged
-    [
-      "OPEN_SYLLABLE 가 → unchanged (multi-jamo)",
-      character({ choseong: "ㄱ", jungseong: "ㅏ" }),
-      character({ choseong: "ㄱ", jungseong: "ㅏ" }),
-    ],
-    ["EMPTY → unchanged", character(), character()],
-  ] as [string, Character, Character][])("%s", (_, char, expected) => {
-    expect(normalizeCharacter(char)).toEqual(expected);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// fullDecompose()
-// ---------------------------------------------------------------------------
-
-describe("fullDecompose", () => {
-  it("decomposes 한국어 into the correct flat basic jamo Characters", () => {
-    // 한 = ㅎ + ㅏ + ㄴ; 국 = ㄱ + ㅜ + ㄱ; 어 = ㅇ + ㅓ
-    const input = [
-      character({ choseong: "ㅎ", jungseong: "ㅏ", jongseong: "ㄴ" })!,
-      character({ choseong: "ㄱ", jungseong: "ㅜ", jongseong: "ㄱ" })!,
-      character({ choseong: "ㅇ", jungseong: "ㅓ" })!,
-    ];
-    expect(fullDecompose(input)).toEqual([
-      character({ choseong: "ㅎ" }),
-      character({ jungseong: "ㅏ" }),
-      character({ choseong: "ㄴ" }),
-      character({ choseong: "ㄱ" }),
-      character({ jungseong: "ㅜ" }),
-      character({ choseong: "ㄱ" }),
-      character({ choseong: "ㅇ" }),
-      character({ jungseong: "ㅓ" }),
-    ]);
-  });
-
-  it("fully decomposes compound jongseong ㄺ in 닭 (ㄷ ㅏ ㄹ ㄱ)", () => {
-    const input = [character({ choseong: "ㄷ", jungseong: "ㅏ", jongseong: "ㄺ" })!];
-    expect(fullDecompose(input)).toEqual([
-      character({ choseong: "ㄷ" }),
-      character({ jungseong: "ㅏ" }),
-      character({ choseong: "ㄹ" }),
-      character({ choseong: "ㄱ" }),
-    ]);
-  });
-
-  it("fully decomposes 훿 (complex vowel + compound batchim) → ㅎ ㅜ ㅓ ㅣ ㄱ ㅅ", () => {
-    // 훿: choseong=ㅎ, jungseong=ㅞ (→ ㅝ+ㅣ → ㅜ+ㅓ+ㅣ), jongseong=ㄳ (→ ㄱ+ㅅ)
-    const input = [character({ choseong: "ㅎ", jungseong: "ㅞ", jongseong: "ㄳ" })!];
-    expect(fullDecompose(input)).toEqual([
-      character({ choseong: "ㅎ" }),
-      character({ jungseong: "ㅜ" }),
-      character({ jungseong: "ㅓ" }),
-      character({ jungseong: "ㅣ" }),
-      character({ choseong: "ㄱ" }),
-      character({ choseong: "ㅅ" }),
-    ]);
-  });
-
-  it("returns irreducible single-jamo Characters unchanged", () => {
-    const input = [character({ choseong: "ㄱ" })!, character({ jungseong: "ㅏ" })!];
-    expect(fullDecompose(input)).toEqual(input);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// full jamo workflow
-// ---------------------------------------------------------------------------
 
 describe("full jamo workflow: 홳 (6 jamo: ㅎ ㅗ ㅏ ㅣ ㄱ ㅅ)", () => {
   it("decomposes full(ㅙ,ㄳ) → [cho+jung(ㅙ)+ㄱ, cho ㅅ] (compound batchim splits)", () => {

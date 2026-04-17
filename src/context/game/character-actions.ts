@@ -5,7 +5,8 @@
  * No React. No side effects.
  */
 
-import { compose, decompose, getNextRotation } from "../../lib/character/character";
+import { compose, decompose } from "../../lib/character/composition";
+import { getNextRotation } from "../../lib/character/rotation";
 import type { CharacterAction, GameState, Tile } from "./game";
 
 // ---------------------------------------------------------------------------
