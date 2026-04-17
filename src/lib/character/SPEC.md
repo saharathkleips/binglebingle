@@ -28,7 +28,7 @@ character/
 ## Types
 
 ```typescript
-// character.ts
+// index.ts
 
 export type CompleteCharacter =
   | { kind: "OPEN_SYLLABLE"; choseong: ChoseongJamo; jungseong: VowelJamo }
