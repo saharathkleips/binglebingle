@@ -20,7 +20,7 @@ engine/
 ├── validate.ts       # canSubmit()
 ├── evaluate.ts       # evaluateGuess()
 ├── scoring.ts        # calculateScore()
-├── engine.ts         # engine-owned types (GuessRecord, CharacterResult, etc.)
+├── index.ts          # engine-owned types (GuessRecord, CharacterResult, etc.)
 ├── validate.test.ts
 ├── evaluate.test.ts
 ├── scoring.test.ts
@@ -30,7 +30,7 @@ engine/
 ## Types
 
 ```typescript
-// engine.ts
+// index.ts
 export type CharacterResult = "CORRECT" | "PRESENT" | "ABSENT";
 
 export type EvaluatedCharacter = {
