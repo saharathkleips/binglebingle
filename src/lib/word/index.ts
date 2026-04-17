@@ -47,5 +47,5 @@ export function createWord(word: string): Word | null {
  * @returns The concatenated syllable block string
  */
 export function wordToString(word: Word): string {
-  return word.map((char) => resolveCharacter(char) ?? "").join("");
+  return word.map((char) => resolveCharacter(char)).join("");
 }

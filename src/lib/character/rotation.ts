@@ -24,15 +24,15 @@ export function normalizeCharacter(char: Character): Character {
   switch (char.kind) {
     case "CHOSEONG_ONLY": {
       const base = normalizeJamo(char.choseong);
-      return character({ choseong: base }) ?? char;
+      return character({ choseong: base })!;
     }
     case "JUNGSEONG_ONLY": {
       const base = normalizeJamo(char.jungseong);
-      return character({ jungseong: base }) ?? char;
+      return character({ jungseong: base })!;
     }
     case "JONGSEONG_ONLY": {
       const base = normalizeJamo(char.jongseong);
-      return character({ jongseong: base }) ?? char;
+      return character({ jongseong: base })!;
     }
     default:
       return char;

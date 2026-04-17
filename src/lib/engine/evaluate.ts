@@ -29,7 +29,7 @@ export function evaluateGuess(submission: Submission, word: Word): GuessRecord {
       ? { resolved: resolveCharacter(char) ?? "", character: char }
       : { resolved: "", character: undefined },
   );
-  const targetStrings = word.map((wordChar) => resolveCharacter(wordChar) ?? "");
+  const targetStrings = word.map((wordChar) => resolveCharacter(wordChar));
 
   // Pass 1: mark target positions consumed by exact matches as unavailable
   const targetAvailable = targetStrings.map((targetString, i) => {

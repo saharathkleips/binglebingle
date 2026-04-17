@@ -16,6 +16,12 @@ export default defineConfig({
       reporter: ["text", "json", "html"],
       include: ["src/lib/**"],
       exclude: ["src/lib/**/*.md"],
+      thresholds: {
+        statements: 98,
+        functions: 100,
+        lines: 99,
+        branches: 95,
+      },
     },
   },
 });
