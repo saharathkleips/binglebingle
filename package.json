@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "pnpm test:unit && pnpm test:typecheck",
+    "test": "pnpm test:typecheck && pnpm test:unit",
     "test:unit": "vitest run",
     "test:typecheck": "tsc -b --noEmit",
     "test:watch": "vitest",
