@@ -103,8 +103,10 @@ export function character(
  * - FULL_SYLLABLE → composeSyllable(choseong, jungseong, jongseong)
  *
  * @param char - The Character to resolve
- * @returns The resolved string, or null if the jamo cannot form a valid unit
+ * @returns The resolved string, or null if the character is EMPTY
  */
+export function resolveCharacter(char: CompleteCharacter): string;
+export function resolveCharacter(char: Character): string | null;
 export function resolveCharacter(char: Character): string | null {
   switch (char.kind) {
     case "EMPTY":

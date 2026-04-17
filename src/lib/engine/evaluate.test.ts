@@ -45,6 +45,12 @@ describe("evaluateGuess", () => {
       expected: [correct("가"), absentEmpty],
     },
     {
+      label: "marks absent with no character when slot holds an EMPTY character",
+      submission: [character("가")!, character()!],
+      word: createWord("가나")!,
+      expected: [correct("가"), absentEmpty],
+    },
+    {
       label: "does not double-count a target character as present",
       submission: [character("가")!, character("가")!],
       word: createWord("가나")!,
