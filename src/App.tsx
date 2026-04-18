@@ -1,7 +1,31 @@
+import { GameProvider } from "./context/game/GameContext";
+import { createInitialGameState } from "./context/game/game-reducer";
+import { createWord } from "./lib/word";
+import { Rack } from "./components/rack/Rack";
+import { Composer } from "./components/composer/Composer";
+import { Board } from "./components/board/Board";
+
+// Temporary dev wiring — replaced by Game.tsx in milestone 1.3.1
+const DEV_WORD = createWord("고양이")!;
+const DEV_INITIAL_STATE = createInitialGameState(DEV_WORD);
+
 export function App() {
   return (
-    <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
-      <h1 className="text-2xl font-bold">빙글빙글</h1>
-    </div>
+    <GameProvider initialState={DEV_INITIAL_STATE}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "1.5rem",
+          padding: "2rem",
+        }}
+      >
+        <h1 style={{ fontSize: "1.5rem", fontWeight: "bold" }}>빙글빙글</h1>
+        <Board />
+        <Composer />
+        <Rack />
+      </div>
+    </GameProvider>
   );
 }
