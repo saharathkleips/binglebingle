@@ -18,10 +18,17 @@
 .filled {
   cursor: pointer;
   background: #fff;
+  /* touch-action:none allows pointer capture for drag on touch devices */
+  touch-action: none;
 }
 
 .filled:active {
   background: #f0f0f0;
+}
+
+.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
 }
 
 /* Drop target highlight set imperatively by Token during drag */

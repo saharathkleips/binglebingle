@@ -174,6 +174,21 @@ describe("handleCharacterDecompose", () => {
     expect(next.pool[3]!.id).toBe(3);
   });
 
+  it("does not assign an id already held by a filled submission slot", () => {
+    // Tile 0 is in a submission slot — only tile 1 (가) is in the pool.
+    // nextMissingId must skip 0 even though it is absent from the pool.
+    const state: GameState = {
+      targetWord: createWord("가")!,
+      pool: [tile(1, character("가")!)],
+      submission: [{ state: "FILLED", tileId: 0, character: character({ choseong: "ㄴ" })! }],
+      history: [],
+    };
+    const next = handleCharacterDecompose(state, { tileId: 1 });
+    expect(next.pool).toHaveLength(2);
+    const ids = next.pool.map((t) => t.id);
+    expect(ids).not.toContain(0); // 0 is occupied by the submission slot tile
+  });
+
   it.each([
     {
       label: "single-jamo tile",

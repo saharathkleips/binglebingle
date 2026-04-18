@@ -38,6 +38,8 @@ Reads `state.submission` from `useGame()` and renders a `SubmissionSlot` for eac
 
 Renders a single slot. Empty slots show a dashed placeholder. Filled slots display `resolveCharacter(slot.character)` and dispatch `SUBMISSION_SLOT_REMOVE` on tap.
 
+Filled slots also act as drag sources: dragging a filled slot onto another slot dispatches `SUBMISSION_SLOT_MOVE`, swapping the two tiles (or moving into an empty slot). A 4px movement threshold distinguishes tap from drag, matching Token's behavior. Drop targets are identified by `data-slot-index`; the slot never drops onto itself.
+
 ### SubmitButton
 
 Calls `canSubmit(submission)` to determine validity. Disabled when invalid; dispatches `ROUND_SUBMISSION_SUBMIT` on click when valid.

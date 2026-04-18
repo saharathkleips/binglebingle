@@ -43,4 +43,10 @@ describe("SubmissionSlot", () => {
     fireEvent.click(screen.getByTestId("slot-0"));
     expect(dispatch).not.toHaveBeenCalled();
   });
+
+  it("exposes data-slot-index attribute on the button element", () => {
+    const slot: SlotType = { state: "EMPTY" };
+    render(<SubmissionSlot slot={slot} slotIndex={2} dispatch={vi.fn()} />);
+    expect(screen.getByTestId("slot-2").getAttribute("data-slot-index")).toBe("2");
+  });
 });
