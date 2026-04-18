@@ -1,63 +1,91 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render } from "vitest-browser-react";
 import { Token } from "./Token";
 import { character } from "../../lib/character";
 import type { Tile, GameAction } from "../../context/game";
+import styles from "./Token.module.css";
 
 function tile(id: number, char: ReturnType<typeof character>): Tile {
   return { id, character: char! };
 }
 
+/** Dispatch a sequence of pointer events directly on a DOM element. */
+function pointerSequence(
+  element: Element,
+  events: Array<{ type: string; clientX: number; clientY: number }>,
+) {
+  for (const { type, clientX, clientY } of events) {
+    element.dispatchEvent(
+      new PointerEvent(type, {
+        clientX,
+        clientY,
+        bubbles: true,
+        cancelable: true,
+        pointerId: 1,
+        isPrimary: true,
+      }),
+    );
+  }
+}
+
 describe("Token", () => {
-  it("displays the resolved character", () => {
+  it("displays the resolved character", async () => {
     const dispatch = vi.fn();
-    render(<Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />);
-    expect(screen.getByTestId("token-0").textContent).toBe("ㄱ");
+    const screen = await render(
+      <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
+    );
+    await expect.element(screen.getByTestId("token-0")).toHaveTextContent("ㄱ");
   });
 
-  it("dispatches CHARACTER_ROTATE_NEXT on tap when rotatable", () => {
+  it("dispatches CHARACTER_ROTATE_NEXT on tap when rotatable", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
-    render(<Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />);
-    fireEvent.click(screen.getByTestId("token-0"));
+    const screen = await render(
+      <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
+    );
+    await screen.getByTestId("token-0").click();
     expect(dispatch).toHaveBeenCalledWith({
       type: "CHARACTER_ROTATE_NEXT",
       payload: { tileId: 0 },
     });
   });
 
-  it("dispatches CHARACTER_DECOMPOSE on tap when decomposable but not rotatable", () => {
+  it("dispatches CHARACTER_DECOMPOSE on tap when decomposable but not rotatable", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
     // ㄲ is a double consonant — not rotatable but decomposable into ㄱ+ㄱ
-    render(<Token tile={tile(1, character({ choseong: "ㄲ" }))} dispatch={dispatch} />);
-    fireEvent.click(screen.getByTestId("token-1"));
+    const screen = await render(
+      <Token tile={tile(1, character({ choseong: "ㄲ" }))} dispatch={dispatch} />,
+    );
+    await screen.getByTestId("token-1").click();
     expect(dispatch).toHaveBeenCalledWith({
       type: "CHARACTER_DECOMPOSE",
       payload: { tileId: 1 },
     });
   });
 
-  it("does not dispatch on tap when inert", () => {
+  it("does not dispatch on tap when inert", async () => {
     const dispatch = vi.fn();
     // ㅁ is not rotatable and not decomposable
-    render(<Token tile={tile(2, character({ choseong: "ㅁ" }))} dispatch={dispatch} />);
-    fireEvent.click(screen.getByTestId("token-2"));
+    const screen = await render(
+      <Token tile={tile(2, character({ choseong: "ㅁ" }))} dispatch={dispatch} />,
+    );
+    await screen.getByTestId("token-2").click();
     expect(dispatch).not.toHaveBeenCalled();
   });
 });
 
 describe("Token drag", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("does not dispatch on movement below the 4px threshold", () => {
+  it("does not dispatch on movement below the 4px threshold", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
-    render(<Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />);
-    const tokenEl = screen.getByTestId("token-0");
+    const screen = await render(
+      <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
+    );
+    const element = screen.getByTestId("token-0").element();
 
-    fireEvent.pointerDown(tokenEl, { clientX: 0, clientY: 0 });
-    fireEvent.pointerMove(tokenEl, { clientX: 2, clientY: 0 });
-    fireEvent.pointerUp(tokenEl, { clientX: 2, clientY: 0 });
+    pointerSequence(element, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 2, clientY: 0 }, // only 2px — below 4px threshold
+      { type: "pointerup", clientX: 2, clientY: 0 },
+    ]);
 
     expect(dispatch).not.toHaveBeenCalledWith(
       expect.objectContaining({ type: "SUBMISSION_SLOT_INSERT" }),
@@ -67,18 +95,27 @@ describe("Token drag", () => {
     );
   });
 
-  it("dispatches SUBMISSION_SLOT_INSERT when dropped on a slot", () => {
+  it("dispatches SUBMISSION_SLOT_INSERT when dropped on a slot", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
-    render(<Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />);
-    const tokenEl = screen.getByTestId("token-0");
+    const screen = await render(
+      <div style={{ display: "flex", gap: "100px" }}>
+        <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <button data-slot-index="1" data-testid="slot-1">
+          _
+        </button>
+      </div>,
+    );
+    const tokenElement = screen.getByTestId("token-0").element();
+    const slotRect = screen.getByTestId("slot-1").element().getBoundingClientRect();
+    const slotCenterX = slotRect.left + slotRect.width / 2;
+    const slotCenterY = slotRect.top + slotRect.height / 2;
 
-    const mockSlot = document.createElement("button");
-    mockSlot.setAttribute("data-slot-index", "1");
-    document.elementsFromPoint = vi.fn().mockReturnValue([mockSlot]);
-
-    fireEvent.pointerDown(tokenEl, { clientX: 0, clientY: 0 });
-    fireEvent.pointerMove(tokenEl, { clientX: 10, clientY: 0 });
-    fireEvent.pointerUp(tokenEl, { clientX: 10, clientY: 0 });
+    pointerSequence(tokenElement, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
+      { type: "pointerup", clientX: slotCenterX, clientY: slotCenterY },
+    ]);
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "SUBMISSION_SLOT_INSERT",
@@ -86,21 +123,28 @@ describe("Token drag", () => {
     });
   });
 
-  it("dispatches CHARACTER_COMPOSE when dropped on a valid target token", () => {
+  it("dispatches CHARACTER_COMPOSE when dropped on a valid target token", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
     // ㄱ (choseong) + ㅏ (jungseong) → open syllable 가 — valid compose
     const sourceTile = tile(0, character({ choseong: "ㄱ" })!);
     const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
-    render(<Token tile={sourceTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />);
-    const tokenEl = screen.getByTestId("token-0");
+    const screen = await render(
+      <div style={{ display: "flex", gap: "100px" }}>
+        <Token tile={sourceTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
+        <Token tile={targetTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
+      </div>,
+    );
+    const tokenElement = screen.getByTestId("token-0").element();
+    const targetRect = screen.getByTestId("token-1").element().getBoundingClientRect();
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
 
-    const mockTarget = document.createElement("button");
-    mockTarget.setAttribute("data-tile-id", "1");
-    document.elementsFromPoint = vi.fn().mockReturnValue([mockTarget]);
-
-    fireEvent.pointerDown(tokenEl, { clientX: 0, clientY: 0 });
-    fireEvent.pointerMove(tokenEl, { clientX: 10, clientY: 0 });
-    fireEvent.pointerUp(tokenEl, { clientX: 10, clientY: 0 });
+    pointerSequence(tokenElement, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
+      { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
+    ]);
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "CHARACTER_COMPOSE",
@@ -108,79 +152,123 @@ describe("Token drag", () => {
     });
   });
 
-  it("shakes and does not dispatch when dropped on an incompatible token", () => {
+  it("shakes and does not dispatch when dropped on an incompatible token", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
     // two open syllables cannot compose
     const sourceTile = tile(0, character({ choseong: "ㄱ", jungseong: "ㅏ" })!);
     const targetTile = tile(1, character({ choseong: "ㄴ", jungseong: "ㅏ" })!);
-    render(<Token tile={sourceTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />);
-    const tokenEl = screen.getByTestId("token-0");
+    const screen = await render(
+      <div style={{ display: "flex", gap: "100px" }}>
+        <Token tile={sourceTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
+        <Token tile={targetTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
+      </div>,
+    );
+    const tokenElement = screen.getByTestId("token-0").element();
+    const targetRect = screen.getByTestId("token-1").element().getBoundingClientRect();
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
 
-    const mockTarget = document.createElement("button");
-    mockTarget.setAttribute("data-tile-id", "1");
-    document.elementsFromPoint = vi.fn().mockReturnValue([mockTarget]);
-
-    fireEvent.pointerDown(tokenEl, { clientX: 0, clientY: 0 });
-    fireEvent.pointerMove(tokenEl, { clientX: 10, clientY: 0 });
-    fireEvent.pointerUp(tokenEl, { clientX: 10, clientY: 0 });
+    pointerSequence(tokenElement, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
+      { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
+    ]);
 
     expect(dispatch).not.toHaveBeenCalledWith(
       expect.objectContaining({ type: "CHARACTER_COMPOSE" }),
     );
-    expect(tokenEl.className).toContain("shaking");
+    await expect.element(screen.getByTestId("token-0")).toHaveClass(styles.shaking!);
   });
 
-  it("suppresses tap action after drag ends", () => {
+  it("suppresses tap action after drag ends", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
-    render(<Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />);
-    const tokenEl = screen.getByTestId("token-0");
+    const screen = await render(
+      <div style={{ display: "flex", gap: "100px" }}>
+        <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <div data-testid="empty-area" style={{ width: "50px", height: "50px" }} />
+      </div>,
+    );
+    const tokenElement = screen.getByTestId("token-0").element();
+    const emptyRect = screen.getByTestId("empty-area").element().getBoundingClientRect();
+    const emptyCenterX = emptyRect.left + emptyRect.width / 2;
+    const emptyCenterY = emptyRect.top + emptyRect.height / 2;
 
-    document.elementsFromPoint = vi.fn().mockReturnValue([]);
+    pointerSequence(tokenElement, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      { type: "pointermove", clientX: emptyCenterX, clientY: emptyCenterY },
+      { type: "pointerup", clientX: emptyCenterX, clientY: emptyCenterY },
+    ]);
 
-    fireEvent.pointerDown(tokenEl, { clientX: 0, clientY: 0 });
-    fireEvent.pointerMove(tokenEl, { clientX: 10, clientY: 0 });
-    fireEvent.pointerUp(tokenEl, { clientX: 10, clientY: 0 });
-    // Synthetic click that would normally fire after pointerup in a real browser
-    fireEvent.click(tokenEl);
-
+    // Simulate a click that may fire after pointerup in some browsers
+    await screen.getByTestId("token-0").click();
     expect(dispatch).not.toHaveBeenCalledWith(
       expect.objectContaining({ type: "CHARACTER_ROTATE_NEXT" }),
     );
   });
 
-  it("highlights drop target with data-drag-over during drag", () => {
+  it("highlights drop target with data-drag-over during drag", async () => {
     const dispatch = vi.fn();
-    render(<Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />);
-    const tokenEl = screen.getByTestId("token-0");
+    const screen = await render(
+      <div style={{ display: "flex", gap: "100px" }}>
+        <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <button data-slot-index="0" data-testid="slot-0">
+          _
+        </button>
+      </div>,
+    );
+    const tokenElement = screen.getByTestId("token-0").element();
+    const slotElement = screen.getByTestId("slot-0").element();
+    const slotRect = slotElement.getBoundingClientRect();
+    const slotCenterX = slotRect.left + slotRect.width / 2;
+    const slotCenterY = slotRect.top + slotRect.height / 2;
 
-    const mockSlot = document.createElement("button");
-    mockSlot.setAttribute("data-slot-index", "0");
-    document.elementsFromPoint = vi.fn().mockReturnValue([mockSlot]);
+    // Start drag (exceed threshold), then move to the slot's coordinates so
+    // document.elementsFromPoint returns the slot element.
+    pointerSequence(tokenElement, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 }, // exceed 4px threshold
+      { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
+    ]);
 
-    fireEvent.pointerDown(tokenEl, { clientX: 0, clientY: 0 });
-    fireEvent.pointerMove(tokenEl, { clientX: 10, clientY: 0 });
+    await expect.element(screen.getByTestId("slot-0")).toHaveAttribute("data-drag-over", "true");
 
-    expect(mockSlot.getAttribute("data-drag-over")).toBe("true");
+    pointerSequence(tokenElement, [
+      { type: "pointerup", clientX: slotCenterX, clientY: slotCenterY },
+    ]);
   });
 
-  it("removes data-drag-over from previous target when drag moves away", () => {
+  it("removes data-drag-over from previous target when drag moves away", async () => {
     const dispatch = vi.fn();
-    render(<Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />);
-    const tokenEl = screen.getByTestId("token-0");
+    const screen = await render(
+      <div style={{ display: "flex", gap: "100px" }}>
+        <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <button data-slot-index="0" data-testid="slot-0">
+          _
+        </button>
+      </div>,
+    );
+    const tokenElement = screen.getByTestId("token-0").element();
+    const slotElement = screen.getByTestId("slot-0").element();
+    const slotRect = slotElement.getBoundingClientRect();
+    const slotCenterX = slotRect.left + slotRect.width / 2;
+    const slotCenterY = slotRect.top + slotRect.height / 2;
 
-    const mockSlot = document.createElement("button");
-    mockSlot.setAttribute("data-slot-index", "0");
-    const mockFn = vi.fn<(x: number, y: number) => Element[]>().mockReturnValue([mockSlot]);
-    document.elementsFromPoint = mockFn;
+    // Drag over slot — data-drag-over should be set
+    pointerSequence(tokenElement, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
+    ]);
+    await expect.element(screen.getByTestId("slot-0")).toHaveAttribute("data-drag-over", "true");
 
-    fireEvent.pointerDown(tokenEl, { clientX: 0, clientY: 0 });
-    fireEvent.pointerMove(tokenEl, { clientX: 10, clientY: 0 });
-    expect(mockSlot.getAttribute("data-drag-over")).toBe("true");
+    // Pointer moves to empty space — data-drag-over should be removed
+    pointerSequence(tokenElement, [
+      { type: "pointermove", clientX: 0, clientY: 200 }, // off the slot, no element with data-slot-index
+    ]);
+    await expect.element(screen.getByTestId("slot-0")).not.toHaveAttribute("data-drag-over");
 
-    // Pointer moves to empty space
-    mockFn.mockReturnValue([]);
-    fireEvent.pointerMove(tokenEl, { clientX: 20, clientY: 0 });
-
-    expect(mockSlot.getAttribute("data-drag-over")).toBeNull();
+    pointerSequence(tokenElement, [{ type: "pointerup", clientX: 0, clientY: 200 }]);
   });
 });

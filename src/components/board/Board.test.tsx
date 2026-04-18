@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render } from "vitest-browser-react";
 import { Board } from "./Board";
 import { GameProvider } from "../../context/game/GameContext";
 import type { GameState } from "../../context/game";
@@ -7,7 +7,7 @@ import type { GuessRecord } from "../../lib/engine";
 import { character } from "../../lib/character";
 import { createWord } from "../../lib/word";
 
-function renderBoard(history: readonly GuessRecord[]) {
+async function renderBoard(history: readonly GuessRecord[]) {
   const state: GameState = {
     targetWord: createWord("가")!,
     pool: [],
@@ -22,25 +22,23 @@ function renderBoard(history: readonly GuessRecord[]) {
 }
 
 describe("Board", () => {
-  it("renders nothing when history is empty", () => {
-    renderBoard([]);
-    expect(screen.queryByTestId("board")).toBeNull();
+  it("renders nothing when history is empty", async () => {
+    const screen = await renderBoard([]);
+    await expect.element(screen.getByTestId("board")).not.toBeInTheDocument();
   });
 
-  it("renders one row per guess record", () => {
+  it("renders one row per guess record", async () => {
     const guess: GuessRecord = [{ character: character("가")!, result: "CORRECT" }];
-    renderBoard([guess]);
-    expect(screen.getByTestId("board-row-0")).toBeDefined();
-    expect(
-      screen.getByTestId("board-row-0").querySelectorAll("[data-testid='board-tile']").length,
-    ).toBe(1);
+    const screen = await renderBoard([guess]);
+    await expect.element(screen.getByTestId("board-row-0")).toBeInTheDocument();
+    expect(screen.getByTestId("board-row-0").getByTestId("board-tile").elements().length).toBe(1);
   });
 
-  it("renders multiple rows for multiple guesses", () => {
+  it("renders multiple rows for multiple guesses", async () => {
     const guess1: GuessRecord = [{ character: character("나")!, result: "ABSENT" }];
     const guess2: GuessRecord = [{ character: character("가")!, result: "CORRECT" }];
-    renderBoard([guess1, guess2]);
-    expect(screen.getByTestId("board-row-0")).toBeDefined();
-    expect(screen.getByTestId("board-row-1")).toBeDefined();
+    const screen = await renderBoard([guess1, guess2]);
+    await expect.element(screen.getByTestId("board-row-0")).toBeInTheDocument();
+    await expect.element(screen.getByTestId("board-row-1")).toBeInTheDocument();
   });
 });

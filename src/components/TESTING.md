@@ -24,8 +24,16 @@ Prefer accessible queries. These return **locators** with built-in retry.
 screen.getByRole("button", { name: /submit/i });
 screen.getByText("ㄱ");
 screen.getByLabelText(/email/i);
-page.getByTestId("token-0");
+screen.getByTestId("token-0");
 ```
+
+For regex-based selectors that match multiple elements, use `.elements()` to get the raw array:
+
+```tsx
+expect(screen.getByTestId(/^token-/).elements().length).toBe(3);
+```
+
+Note: `.elements()` returns synchronously. Ensure the parent container has already rendered (e.g. via a prior `await expect.element()`) before counting.
 
 ### Assertions
 
@@ -62,31 +70,30 @@ expect(result.current.count).toBe(1);
 
 ### Wrapping with Providers
 
+Components that read from `useGame()` need a `GameProvider` wrapper. Create a file-local render helper:
+
 ```tsx
 import { render } from "vitest-browser-react";
-import { GameProvider } from "../../context/game";
+import { GameProvider } from "../../context/game/GameContext";
+import { createInitialGameState } from "../../context/game/game-reducer";
+import { createWord } from "../../lib/word";
 
-const screen = await render(
-  <GameProvider initialState={mockState}>
-    <MyComponent />
-  </GameProvider>,
-);
-```
-
-For repeated wrapping, create a helper:
-
-```tsx
-function renderWithGame(ui: React.ReactElement, state = defaultState) {
-  return render(<GameProvider initialState={state}>{ui}</GameProvider>);
+async function renderMyComponent(word: string) {
+  const gameState = createInitialGameState(createWord(word)!);
+  return render(
+    <GameProvider initialState={gameState}>
+      <MyComponent />
+    </GameProvider>,
+  );
 }
 ```
 
 ### Asserting Dispatch Calls
 
-Pass a `vi.fn()` dispatch and assert on it after interaction:
+Pass a `vi.fn()` dispatch and assert on it after interaction. Type the mock when asserting specific action shapes:
 
 ```tsx
-const dispatch = vi.fn();
+const dispatch = vi.fn<(action: GameAction) => void>();
 const screen = await render(<Token tile={tile} dispatch={dispatch} />);
 await screen.getByTestId("token-0").click();
 expect(dispatch).toHaveBeenCalledWith({
@@ -95,16 +102,48 @@ expect(dispatch).toHaveBeenCalledWith({
 });
 ```
 
-### Drag and Drop
-
-Browser mode uses real pointer events — no need to mock `elementsFromPoint`:
+Use `expect.objectContaining` for negative assertions that only care about the action type:
 
 ```tsx
-const token = screen.getByTestId("token-0");
-const slot = screen.getByTestId("slot-1");
-
-await token.dragTo(slot);
+expect(dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: "CHARACTER_COMPOSE" }));
 ```
+
+### Drag and Drop (Pointer Events)
+
+Components use pointer-event-based drag (`onPointerDown`/`onPointerMove`/`onPointerUp`) with `setPointerCapture` and `elementsFromPoint`. The locator `dropTo()` method won't work — dispatch synthetic `PointerEvent`s instead via a helper:
+
+```tsx
+function pointerSequence(
+  element: HTMLElement,
+  events: Array<{ type: string; clientX: number; clientY: number }>,
+) {
+  for (const { type, clientX, clientY } of events) {
+    element.dispatchEvent(
+      new PointerEvent(type, {
+        clientX,
+        clientY,
+        bubbles: true,
+        cancelable: true,
+        pointerId: 1,
+        isPrimary: true,
+      }),
+    );
+  }
+}
+```
+
+Typical drag sequence — get the target's center via `getBoundingClientRect()`, then:
+
+```tsx
+pointerSequence(sourceElement, [
+  { type: "pointerdown", clientX: 0, clientY: 0 },
+  { type: "pointermove", clientX: 10, clientY: 0 }, // exceed 4px drag threshold
+  { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
+  { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
+]);
+```
+
+To assert intermediate drag state (e.g. `data-drag-over`), omit `pointerup` and assert before sending it separately.
 
 ### Waiting for Async State
 
@@ -122,9 +161,25 @@ Browser mode renders real CSS, so you can assert on computed styles:
 ```tsx
 const el = screen.getByTestId("token-0");
 const element = el.element();
-const styles = getComputedStyle(element);
-expect(styles.opacity).toBe("0.5");
+const computedStyles = getComputedStyle(element);
+expect(computedStyles.opacity).toBe("0.5");
 ```
+
+#### CSS Modules class names
+
+CSS Modules mangles class names at build time, so never match against raw strings like `"shaking"`. Import the module and use its values:
+
+```tsx
+import styles from "./Token.module.css";
+
+// ✅ matches the mangled class name
+await expect.element(screen.getByTestId("token-0")).toHaveClass(styles.shaking);
+
+// ❌ will never match — raw name doesn't exist at runtime
+expect(element.className).toContain("shaking");
+```
+
+Use `expect.element().toHaveClass()` rather than synchronous `className` checks — it auto-retries, which handles React state updates that add the class after a re-render.
 
 ### Testing Keyboard Navigation
 
