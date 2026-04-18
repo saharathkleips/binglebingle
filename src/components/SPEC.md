@@ -23,7 +23,7 @@ Visual design and styling are deferred — components render functionally correc
 
 **Memoization:** React 19 + React Compiler handles this automatically — no speculative `useMemo` or `useCallback`.
 
-**Styling:** CSS Modules only — each component has a colocated `ComponentName.module.css` file. Global design tokens (colors, spacing, font sizes) and base resets live in `src/index.css` as CSS custom properties. No inline `style` props except for values that must be computed at runtime (e.g. dynamic widths). Apply multiple classes via template literals or `clsx` — no `tailwind-merge` needed.
+**Styling:** CSS Modules only — each component has a colocated `ComponentName.module.css` file. Global design tokens (colors, spacing, font sizes) and base resets live in `src/index.css` as CSS custom properties. No inline `style` props except for values that must be computed at runtime (e.g. dynamic widths). Apply multiple classes via template literals or `clsx`.
 
 ## Interactions
 

@@ -2,10 +2,9 @@
 import { defineConfig } from "vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import babel from "@rolldown/plugin-babel";
-import tailwindcss from "@tailwindcss/vite";
 import { playwright } from "@vitest/browser-playwright";
 
-const plugins = [tailwindcss(), react(), babel({ presets: [reactCompilerPreset()] })];
+const plugins = [react(), babel({ presets: [reactCompilerPreset()] })];
 
 export default defineConfig({
   base: "/binglebingle/",
