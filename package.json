@@ -7,11 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "pnpm test:typecheck && pnpm test:unit",
-    "test:unit": "vitest run",
+    "test": "pnpm test:typecheck && pnpm test:unit && pnpm test:component",
+    "test:unit": "vitest run --project unit",
     "test:typecheck": "tsc -b --noEmit",
+    "test:component": "vitest run --project component",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --project unit --coverage",
     "test:e2e": "playwright test",
     "lint": "oxlint .",
     "format": "oxfmt .",
@@ -32,6 +33,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/browser-playwright": "^4.1.2",
     "@vitest/coverage-v8": "^4.1.2",
     "babel-plugin-react-compiler": "^1.0.0",
     "jsdom": "^29.0.1",
@@ -41,7 +43,8 @@
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2",
     "vite": "^8.0.3",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.2",
+    "vitest-browser-react": "^2.2.0"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm format && git add -u && pnpm lint && pnpm test:typecheck"

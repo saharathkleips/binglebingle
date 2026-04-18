@@ -3,14 +3,14 @@ import { defineConfig } from "vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
+import { playwright } from "@vitest/browser-playwright";
+
+const plugins = [tailwindcss(), react(), babel({ presets: [reactCompilerPreset()] })];
 
 export default defineConfig({
   base: "/binglebingle/",
-  plugins: [tailwindcss(), react(), babel({ presets: [reactCompilerPreset()] })],
+  plugins,
   test: {
-    environment: "jsdom",
-    globals: true,
-    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
@@ -23,5 +23,30 @@ export default defineConfig({
         branches: 95,
       },
     },
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unit",
+          environment: "jsdom",
+          globals: true,
+          include: ["src/**/*.test.ts"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "component",
+          include: ["src/**/*.test.tsx"],
+          setupFiles: ["./vitest-browser.setup.ts"],
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright(),
+            instances: [{ browser: "chromium" }],
+          },
+        },
+      },
+    ],
   },
 });
