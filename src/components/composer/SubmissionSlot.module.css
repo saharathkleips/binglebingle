@@ -23,3 +23,9 @@
 .filled:active {
   background: #f0f0f0;
 }
+
+/* Drop target highlight set imperatively by Token during drag */
+.slot[data-drag-over="true"] {
+  border-color: #4a90e2;
+  background: #e8f0fe;
+}

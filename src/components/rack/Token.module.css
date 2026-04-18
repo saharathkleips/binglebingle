@@ -9,7 +9,8 @@
   font-size: 1.5rem;
   cursor: pointer;
   user-select: none;
-  touch-action: manipulation;
+  /* touch-action:none allows pointer capture for drag on touch devices */
+  touch-action: none;
   background: #fff;
 }
 
@@ -19,6 +20,17 @@
 
 .inert {
   cursor: default;
+}
+
+.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+/* Drop target highlight set imperatively by Token during drag */
+.token[data-drag-over="true"] {
+  border-color: #4a90e2;
+  background: #e8f0fe;
 }
 
 .shaking {

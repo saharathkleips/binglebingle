@@ -14,7 +14,7 @@ export function Rack() {
   return (
     <div className={styles.rack} data-testid="rack">
       {state.pool.map((tile) => (
-        <Token key={tile.id} tile={tile} dispatch={dispatch} />
+        <Token key={tile.id} tile={tile} pool={state.pool} dispatch={dispatch} />
       ))}
     </div>
   );
