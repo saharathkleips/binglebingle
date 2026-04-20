@@ -15,11 +15,11 @@ function tileProps(
   return {
     tile: tile(0, character({ choseong: "ㄱ" })),
     isTappable: false,
-    isInvalid: false,
+    isRejected: false,
     onTap: vi.fn(),
     onDropOnTile: vi.fn(),
     onDropOnSlot: vi.fn(),
-    onInvalidStateEnd: vi.fn(),
+    onRejectedEnd: vi.fn(),
     ...overrides,
   };
 }
@@ -63,24 +63,24 @@ describe("Tile", () => {
     expect(onTap).not.toHaveBeenCalled();
   });
 
-  it("applies shaking class when isInvalid is true", async () => {
-    const screen = await render(<Tile {...tileProps({ isInvalid: true })} />);
+  it("applies shaking class when isRejected is true", async () => {
+    const screen = await render(<Tile {...tileProps({ isRejected: true })} />);
     await expect.element(screen.getByTestId("tile-0")).toHaveClass(styles.shaking!);
   });
 
-  it("does not apply shaking class when isInvalid is false", async () => {
-    const screen = await render(<Tile {...tileProps({ isInvalid: false })} />);
+  it("does not apply shaking class when isRejected is false", async () => {
+    const screen = await render(<Tile {...tileProps({ isRejected: false })} />);
     await expect.element(screen.getByTestId("tile-0")).not.toHaveClass(styles.shaking!);
   });
 
-  it("calls onInvalidStateEnd after animation ends", async () => {
-    const onInvalidStateEnd = vi.fn();
-    const screen = await render(<Tile {...tileProps({ isInvalid: true, onInvalidStateEnd })} />);
+  it("calls onRejectedEnd after animation ends", async () => {
+    const onRejectedEnd = vi.fn();
+    const screen = await render(<Tile {...tileProps({ isRejected: true, onRejectedEnd })} />);
     screen
       .getByTestId("tile-0")
       .element()
       .dispatchEvent(new Event("animationend", { bubbles: true }));
-    expect(onInvalidStateEnd).toHaveBeenCalledOnce();
+    expect(onRejectedEnd).toHaveBeenCalledOnce();
   });
 });
 
@@ -135,11 +135,11 @@ describe("Tile drag", () => {
         <Tile
           tile={targetTile}
           isTappable={false}
-          isInvalid={false}
+          isRejected={false}
           onTap={vi.fn()}
           onDropOnTile={vi.fn()}
           onDropOnSlot={vi.fn()}
-          onInvalidStateEnd={vi.fn()}
+          onRejectedEnd={vi.fn()}
         />
       </div>,
     );

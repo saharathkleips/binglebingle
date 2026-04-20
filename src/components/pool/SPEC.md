@@ -1,6 +1,6 @@
 # SPEC: components/pool
 
-**Status:** draft
+**Status:** stable
 
 ## Purpose
 
@@ -18,7 +18,7 @@ Renders the jamo pool and handles per-tile interactions. Reads pool state from `
 pool/
 ├── Pool.tsx             # Interaction coordinator — owns tap/drag logic, dispatches actions
 ├── Pool.module.css      # Flex-wrap layout for pool tiles
-├── Tile.tsx             # Single tile — pointer/drag mechanics, renders isInvalid shake
+├── Tile.tsx             # Single tile — pointer/drag mechanics, renders isRejected shake
 ├── Tile.module.css      # Tile styling + shake keyframes
 ├── Pool.test.tsx
 ├── Tile.test.tsx
@@ -33,9 +33,9 @@ pool/
 Reads `state.pool` from `useGame()` and renders a `Tile` for each tile. Owns all interaction logic:
 
 - **`handleTap(tile)`** — checks `getNextRotation` / `decompose` and dispatches `CHARACTER_ROTATE_NEXT` or `CHARACTER_DECOMPOSE`.
-- **`handleDropOnTile(sourceTile, targetId)`** — looks up the target tile, calls `compose()` to validate; dispatches `CHARACTER_COMPOSE` on success or sets `invalidTileId` on failure.
+- **`handleDropOnTile(sourceTile, targetId)`** — looks up the target tile, calls `compose()` to validate; dispatches `CHARACTER_COMPOSE` on success or sets `rejectedTileId` on failure.
 - **`handleDropOnSlot(sourceTile, slotIndex)`** — dispatches `SUBMISSION_SLOT_INSERT`.
-- **`invalidTileId`** local state — tracks which tile should shake; cleared via `onInvalidStateEnd` callback.
+- **`rejectedTileId`** local state — tracks which tile should shake; cleared via `onRejectedEnd` callback.
 
 Computes `isTappable` per tile and passes it as a prop.
 
@@ -47,11 +47,11 @@ Owns pointer/drag mechanics only — no lib imports, no game logic.
 **Props:**
 
 - `isTappable: boolean` — drives the `inert` CSS class; when `true`, tap calls `onTap()`.
-- `isInvalid: boolean` — Pool sets this when a compose operation fails; Tile renders the shake animation.
+- `isRejected: boolean` — Pool sets this when a compose operation is rejected; Tile renders feedback.
 - `onTap: () => void` — called on click when `isTappable`.
 - `onDropOnTile: (targetId: number) => void` — called when a drag ends on another tile.
 - `onDropOnSlot: (slotIndex: number) => void` — called when a drag ends on a submission slot.
-- `onInvalidStateEnd: () => void` — called from `onAnimationEnd`; Pool clears `invalidTileId`.
+- `onRejectedEnd: () => void` — called from `onAnimationEnd`; Pool clears `rejectedTileId`.
 
 **Drag behavior** (Pointer Events, no library):
 
@@ -68,7 +68,7 @@ Owns pointer/drag mechanics only — no lib imports, no game logic.
 
 **Tile is callback-only; Pool owns all game logic.** Tile no longer imports `compose`, `getNextRotation`, or `decompose`. The reducer already validates and no-ops on invalid actions; centralizing validity checks in Pool is more honest about ownership and leaves Tile as a pure "I exist, I can be interacted with, here's what happened" component.
 
-**`invalidTileId` in Pool, not `isShaking` in Tile.** Moving shake state to Pool lets it be cleared from outside (via `onInvalidStateEnd`) and avoids Tile needing to know what caused the shake.
+**`rejectedTileId` in Pool, not `isShaking` in Tile.** Moving shake state to Pool lets it be cleared from outside (via `onRejectedEnd`) and avoids Tile needing to know what caused the shake.
 
 **`isTappable` computed in Pool and passed as prop.** Tile has no knowledge of rotation sets or composition rules; Pool computes the flag once per render using the same lib calls it uses for dispatch.
 

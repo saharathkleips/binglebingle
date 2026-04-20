@@ -13,9 +13,13 @@ import { Tile } from "./Tile";
 import type { Tile as TileType } from "../../context/game";
 import styles from "./Pool.module.css";
 
+/**
+ * Renders the player's jamo pool. Reads pool state from `useGame()` and owns
+ * all interaction logic: tap dispatch, compose validation, slot insertion.
+ */
 export function Pool() {
   const { state, dispatch } = useGame();
-  const [invalidTileId, setInvalidTileId] = useState<number | null>(null);
+  const [rejectedTileId, setRejectedTileId] = useState<number | null>(null);
 
   function handleTap(tile: TileType) {
     if (getNextRotation(tile.character) !== null) {
@@ -30,7 +34,7 @@ export function Pool() {
     if (targetTile === undefined) return;
     const combined = compose(targetTile.character, sourceTile.character);
     if (combined === null) {
-      setInvalidTileId(sourceTile.id);
+      setRejectedTileId(sourceTile.id);
     } else {
       dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId, incomingId: sourceTile.id } });
     }
@@ -50,11 +54,11 @@ export function Pool() {
             key={tile.id}
             tile={tile}
             isTappable={isTappable}
-            isInvalid={tile.id === invalidTileId}
+            isRejected={tile.id === rejectedTileId}
             onTap={() => handleTap(tile)}
             onDropOnTile={(targetId) => handleDropOnTile(tile, targetId)}
             onDropOnSlot={(slotIndex) => handleDropOnSlot(tile, slotIndex)}
-            onInvalidStateEnd={() => setInvalidTileId(null)}
+            onRejectedEnd={() => setRejectedTileId(null)}
           />
         );
       })}

@@ -15,29 +15,39 @@ import { resolveCharacter } from "../../lib/character";
 import type { Tile } from "../../context/game";
 import styles from "./Tile.module.css";
 
+/** Props for the {@link Tile} component. */
 export type TileProps = {
   tile: Tile;
   /** Whether tapping this tile does anything; controls the inert CSS class. */
   isTappable: boolean;
-  /** Pool sets this when a compose operation fails; Tile renders a shake animation. */
-  isInvalid: boolean;
+  /** Pool sets this when a compose operation is rejected; Tile renders feedback. */
+  isRejected: boolean;
+  /** Called on click when `isTappable` is true. */
   onTap: () => void;
+  /** Called when a drag ends on another tile, with that tile's id. */
   onDropOnTile: (targetId: number) => void;
+  /** Called when a drag ends on a submission slot, with that slot's index. */
   onDropOnSlot: (slotIndex: number) => void;
-  /** Called from onAnimationEnd; Pool uses this to clear the invalid state. */
-  onInvalidStateEnd: () => void;
+  /** Called from onAnimationEnd; Pool uses this to clear the rejected state. */
+  onRejectedEnd: () => void;
 };
 
 const DRAG_THRESHOLD_PX = 4;
 
+/**
+ * A single interactive tile in the jamo pool.
+ * Owns pointer/drag mechanics only — all game logic lives in {@link Pool}.
+ *
+ * @param props - See {@link TileProps}.
+ */
 export function Tile({
   tile,
   isTappable,
-  isInvalid,
+  isRejected,
   onTap,
   onDropOnTile,
   onDropOnSlot,
-  onInvalidStateEnd,
+  onRejectedEnd,
 }: TileProps) {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -137,7 +147,7 @@ export function Tile({
   }
 
   function handleAnimationEnd() {
-    onInvalidStateEnd();
+    onRejectedEnd();
   }
 
   function cleanupDrag() {
@@ -153,7 +163,7 @@ export function Tile({
   const className = [
     styles.tile,
     !isTappable ? styles.inert : null,
-    isInvalid ? styles.shaking : null,
+    isRejected ? styles.shaking : null,
     isDragging ? styles.dragging : null,
   ]
     .filter(Boolean)
