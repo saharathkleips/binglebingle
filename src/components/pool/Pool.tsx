@@ -19,7 +19,7 @@ import styles from "./Pool.module.css";
  */
 export function Pool() {
   const { state, dispatch } = useGame();
-  const [rejectedTileId, setRejectedTileId] = useState<number | null>(null);
+  const [rejectedTileIds, setRejectedTileIds] = useState<Set<number>>(new Set());
 
   function handleTap(tile: TileType) {
     if (getNextRotation(tile.character) !== null) {
@@ -34,7 +34,7 @@ export function Pool() {
     if (targetTile === undefined) return;
     const combined = compose(targetTile.character, sourceTile.character);
     if (combined === null) {
-      setRejectedTileId(sourceTile.id);
+      setRejectedTileIds((prev) => new Set(prev).add(sourceTile.id));
     } else {
       dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId, incomingId: sourceTile.id } });
     }
@@ -54,11 +54,17 @@ export function Pool() {
             key={tile.id}
             tile={tile}
             isTappable={isTappable}
-            isRejected={tile.id === rejectedTileId}
+            isRejected={rejectedTileIds.has(tile.id)}
             onTap={() => handleTap(tile)}
             onDropOnTile={(targetId) => handleDropOnTile(tile, targetId)}
             onDropOnSlot={(slotIndex) => handleDropOnSlot(tile, slotIndex)}
-            onRejectedEnd={() => setRejectedTileId(null)}
+            onRejectedEnd={() =>
+              setRejectedTileIds((prev) => {
+                const next = new Set(prev);
+                next.delete(tile.id);
+                return next;
+              })
+            }
           />
         );
       })}

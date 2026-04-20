@@ -110,6 +110,36 @@ describe("Pool drag", () => {
     await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
   });
 
+  it("shakes both tiles independently when two compose attempts are rejected in quick succession", async () => {
+    // 나가 → pool [ㄱ(0), ㅏ(1), ㄱ(2), ㅏ(3)].
+    // Drag tile-1 (ㅏ) onto tile-3 (ㅏ) → rejected, tile-1 shakes.
+    // Before animation ends, drag tile-3 (ㅏ) onto tile-1 (ㅏ) → rejected, tile-3 also shakes.
+    // Both tiles should be shaking simultaneously.
+    const screen = await renderPool("나가");
+
+    const tile1 = screen.getByTestId("tile-1").element();
+    const tile3 = screen.getByTestId("tile-3").element();
+
+    function dragOnto(source: Element, target: Element) {
+      const rect = target.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      pointerSequence(source, [
+        { type: "pointerdown", clientX: 0, clientY: 0 },
+        { type: "pointermove", clientX: 10, clientY: 0 },
+        { type: "pointermove", clientX: centerX, clientY: centerY },
+        { type: "pointerup", clientX: centerX, clientY: centerY },
+      ]);
+    }
+
+    dragOnto(tile1, tile3);
+    await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
+
+    dragOnto(tile3, tile1);
+    await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
+    await expect.element(screen.getByTestId("tile-3")).toHaveClass(styles.shaking!);
+  });
+
   it("composes tiles and reduces pool count when compose is valid", async () => {
     // 가 → ㄱ + ㅏ; dragging ㄱ onto ㅏ should produce 가 (one tile)
     const screen = await renderPool("가");
