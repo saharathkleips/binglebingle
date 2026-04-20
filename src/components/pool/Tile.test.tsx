@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "vitest-browser-react";
-import { Token } from "./Token";
+import { Tile } from "./Tile";
 import { character } from "../../lib/character";
-import type { Tile, GameAction } from "../../context/game";
-import styles from "./Token.module.css";
+import type { Tile as TileType, GameAction } from "../../context/game";
+import styles from "./Tile.module.css";
 
-function tile(id: number, char: ReturnType<typeof character>): Tile {
+function tile(id: number, char: ReturnType<typeof character>): TileType {
   return { id, character: char! };
 }
 
@@ -28,21 +28,21 @@ function pointerSequence(
   }
 }
 
-describe("Token", () => {
+describe("Tile", () => {
   it("displays the resolved character", async () => {
     const dispatch = vi.fn();
     const screen = await render(
-      <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
+      <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
     );
-    await expect.element(screen.getByTestId("token-0")).toHaveTextContent("ㄱ");
+    await expect.element(screen.getByTestId("tile-0")).toHaveTextContent("ㄱ");
   });
 
   it("dispatches CHARACTER_ROTATE_NEXT on tap when rotatable", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
     const screen = await render(
-      <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
+      <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
     );
-    await screen.getByTestId("token-0").click();
+    await screen.getByTestId("tile-0").click();
     expect(dispatch).toHaveBeenCalledWith({
       type: "CHARACTER_ROTATE_NEXT",
       payload: { tileId: 0 },
@@ -53,9 +53,9 @@ describe("Token", () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
     // ㄲ is a double consonant — not rotatable but decomposable into ㄱ+ㄱ
     const screen = await render(
-      <Token tile={tile(1, character({ choseong: "ㄲ" }))} dispatch={dispatch} />,
+      <Tile tile={tile(1, character({ choseong: "ㄲ" }))} dispatch={dispatch} />,
     );
-    await screen.getByTestId("token-1").click();
+    await screen.getByTestId("tile-1").click();
     expect(dispatch).toHaveBeenCalledWith({
       type: "CHARACTER_DECOMPOSE",
       payload: { tileId: 1 },
@@ -66,20 +66,20 @@ describe("Token", () => {
     const dispatch = vi.fn();
     // ㅁ is not rotatable and not decomposable
     const screen = await render(
-      <Token tile={tile(2, character({ choseong: "ㅁ" }))} dispatch={dispatch} />,
+      <Tile tile={tile(2, character({ choseong: "ㅁ" }))} dispatch={dispatch} />,
     );
-    await screen.getByTestId("token-2").click();
+    await screen.getByTestId("tile-2").click();
     expect(dispatch).not.toHaveBeenCalled();
   });
 });
 
-describe("Token drag", () => {
+describe("Tile drag", () => {
   it("does not dispatch on movement below the 4px threshold", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
     const screen = await render(
-      <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
+      <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
     );
-    const element = screen.getByTestId("token-0").element();
+    const element = screen.getByTestId("tile-0").element();
 
     pointerSequence(element, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
@@ -99,18 +99,18 @@ describe("Token drag", () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
         <button data-slot-index="1" data-testid="slot-1">
           _
         </button>
       </div>,
     );
-    const tokenElement = screen.getByTestId("token-0").element();
+    const tileElement = screen.getByTestId("tile-0").element();
     const slotRect = screen.getByTestId("slot-1").element().getBoundingClientRect();
     const slotCenterX = slotRect.left + slotRect.width / 2;
     const slotCenterY = slotRect.top + slotRect.height / 2;
 
-    pointerSequence(tokenElement, [
+    pointerSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
@@ -123,23 +123,23 @@ describe("Token drag", () => {
     });
   });
 
-  it("dispatches CHARACTER_COMPOSE when dropped on a valid target token", async () => {
+  it("dispatches CHARACTER_COMPOSE when dropped on a valid target tile", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
     // ㄱ (choseong) + ㅏ (jungseong) → open syllable 가 — valid compose
     const sourceTile = tile(0, character({ choseong: "ㄱ" })!);
     const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Token tile={sourceTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
-        <Token tile={targetTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
+        <Tile tile={sourceTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
+        <Tile tile={targetTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
       </div>,
     );
-    const tokenElement = screen.getByTestId("token-0").element();
-    const targetRect = screen.getByTestId("token-1").element().getBoundingClientRect();
+    const tileElement = screen.getByTestId("tile-0").element();
+    const targetRect = screen.getByTestId("tile-1").element().getBoundingClientRect();
     const targetCenterX = targetRect.left + targetRect.width / 2;
     const targetCenterY = targetRect.top + targetRect.height / 2;
 
-    pointerSequence(tokenElement, [
+    pointerSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
@@ -152,23 +152,23 @@ describe("Token drag", () => {
     });
   });
 
-  it("shakes and does not dispatch when dropped on an incompatible token", async () => {
+  it("shakes and does not dispatch when dropped on an incompatible tile", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
     // two open syllables cannot compose
     const sourceTile = tile(0, character({ choseong: "ㄱ", jungseong: "ㅏ" })!);
     const targetTile = tile(1, character({ choseong: "ㄴ", jungseong: "ㅏ" })!);
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Token tile={sourceTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
-        <Token tile={targetTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
+        <Tile tile={sourceTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
+        <Tile tile={targetTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
       </div>,
     );
-    const tokenElement = screen.getByTestId("token-0").element();
-    const targetRect = screen.getByTestId("token-1").element().getBoundingClientRect();
+    const tileElement = screen.getByTestId("tile-0").element();
+    const targetRect = screen.getByTestId("tile-1").element().getBoundingClientRect();
     const targetCenterX = targetRect.left + targetRect.width / 2;
     const targetCenterY = targetRect.top + targetRect.height / 2;
 
-    pointerSequence(tokenElement, [
+    pointerSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
@@ -178,23 +178,23 @@ describe("Token drag", () => {
     expect(dispatch).not.toHaveBeenCalledWith(
       expect.objectContaining({ type: "CHARACTER_COMPOSE" }),
     );
-    await expect.element(screen.getByTestId("token-0")).toHaveClass(styles.shaking!);
+    await expect.element(screen.getByTestId("tile-0")).toHaveClass(styles.shaking!);
   });
 
   it("suppresses tap action after drag ends", async () => {
     const dispatch = vi.fn<(action: GameAction) => void>();
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
         <div data-testid="empty-area" style={{ width: "50px", height: "50px" }} />
       </div>,
     );
-    const tokenElement = screen.getByTestId("token-0").element();
+    const tileElement = screen.getByTestId("tile-0").element();
     const emptyRect = screen.getByTestId("empty-area").element().getBoundingClientRect();
     const emptyCenterX = emptyRect.left + emptyRect.width / 2;
     const emptyCenterY = emptyRect.top + emptyRect.height / 2;
 
-    pointerSequence(tokenElement, [
+    pointerSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: emptyCenterX, clientY: emptyCenterY },
@@ -202,7 +202,7 @@ describe("Token drag", () => {
     ]);
 
     // Simulate a click that may fire after pointerup in some browsers
-    await screen.getByTestId("token-0").click();
+    await screen.getByTestId("tile-0").click();
     expect(dispatch).not.toHaveBeenCalledWith(
       expect.objectContaining({ type: "CHARACTER_ROTATE_NEXT" }),
     );
@@ -212,13 +212,13 @@ describe("Token drag", () => {
     const dispatch = vi.fn();
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
         <button data-slot-index="0" data-testid="slot-0">
           _
         </button>
       </div>,
     );
-    const tokenElement = screen.getByTestId("token-0").element();
+    const tileElement = screen.getByTestId("tile-0").element();
     const slotElement = screen.getByTestId("slot-0").element();
     const slotRect = slotElement.getBoundingClientRect();
     const slotCenterX = slotRect.left + slotRect.width / 2;
@@ -226,7 +226,7 @@ describe("Token drag", () => {
 
     // Start drag (exceed threshold), then move to the slot's coordinates so
     // document.elementsFromPoint returns the slot element.
-    pointerSequence(tokenElement, [
+    pointerSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 }, // exceed 4px threshold
       { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
@@ -234,7 +234,7 @@ describe("Token drag", () => {
 
     await expect.element(screen.getByTestId("slot-0")).toHaveAttribute("data-drag-over", "true");
 
-    pointerSequence(tokenElement, [
+    pointerSequence(tileElement, [
       { type: "pointerup", clientX: slotCenterX, clientY: slotCenterY },
     ]);
   });
@@ -243,20 +243,20 @@ describe("Token drag", () => {
     const dispatch = vi.fn();
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Token tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
         <button data-slot-index="0" data-testid="slot-0">
           _
         </button>
       </div>,
     );
-    const tokenElement = screen.getByTestId("token-0").element();
+    const tileElement = screen.getByTestId("tile-0").element();
     const slotElement = screen.getByTestId("slot-0").element();
     const slotRect = slotElement.getBoundingClientRect();
     const slotCenterX = slotRect.left + slotRect.width / 2;
     const slotCenterY = slotRect.top + slotRect.height / 2;
 
     // Drag over slot — data-drag-over should be set
-    pointerSequence(tokenElement, [
+    pointerSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
@@ -264,11 +264,11 @@ describe("Token drag", () => {
     await expect.element(screen.getByTestId("slot-0")).toHaveAttribute("data-drag-over", "true");
 
     // Pointer moves to empty space — data-drag-over should be removed
-    pointerSequence(tokenElement, [
+    pointerSequence(tileElement, [
       { type: "pointermove", clientX: 0, clientY: 200 }, // off the slot, no element with data-slot-index
     ]);
     await expect.element(screen.getByTestId("slot-0")).not.toHaveAttribute("data-drag-over");
 
-    pointerSequence(tokenElement, [{ type: "pointerup", clientX: 0, clientY: 200 }]);
+    pointerSequence(tileElement, [{ type: "pointerup", clientX: 0, clientY: 200 }]);
   });
 });

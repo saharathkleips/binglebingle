@@ -7,7 +7,7 @@ Fully client-side, statically-hosted single-page PWA. No backend. No authenticat
 ```mermaid
 flowchart TD
     subgraph UI["UI — src/components/"]
-        ui["Token pool · Submission slots · Guess board · Modals"]
+        ui["Tile pool · Submission slots · Guess history · Modals"]
     end
 
     subgraph State["Context — src/context/"]

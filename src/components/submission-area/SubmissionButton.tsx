@@ -1,5 +1,5 @@
 /**
- * @file SubmitButton.tsx
+ * @file SubmissionButton.tsx
  *
  * Validates the current submission and dispatches ROUND_SUBMISSION_SUBMIT.
  */
@@ -8,12 +8,12 @@ import { type Dispatch } from "react";
 import { canSubmit } from "../../lib/engine/validate";
 import type { SubmissionSlot, GameAction } from "../../context/game";
 
-export type SubmitButtonProps = {
+export type SubmissionButtonProps = {
   submission: readonly SubmissionSlot[];
   dispatch: Dispatch<GameAction>;
 };
 
-export function SubmitButton({ submission, dispatch }: SubmitButtonProps) {
+export function SubmissionButton({ submission, dispatch }: SubmissionButtonProps) {
   const validation = canSubmit(submission);
   const isValid = validation === "VALID";
 
@@ -24,7 +24,7 @@ export function SubmitButton({ submission, dispatch }: SubmitButtonProps) {
   }
 
   return (
-    <button type="button" onClick={handleClick} disabled={!isValid} data-testid="submit-button">
+    <button type="button" onClick={handleClick} disabled={!isValid} data-testid="submission-button">
       Submit
     </button>
   );

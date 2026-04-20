@@ -1,5 +1,5 @@
 /**
- * @file Token.tsx
+ * @file Tile.tsx
  *
  * A single interactive tile in the jamo pool.
  * Tap behavior depends on the tile's character:
@@ -9,7 +9,7 @@
  *
  * Drag behavior (UI-04):
  * - Drag to SubmissionSlot → SUBMISSION_SLOT_INSERT
- * - Drag to another Token → CHARACTER_COMPOSE (shake on invalid)
+ * - Drag to another Tile → CHARACTER_COMPOSE (shake on invalid)
  * A 4px movement threshold distinguishes tap from drag.
  */
 
@@ -18,18 +18,18 @@ import { resolveCharacter } from "../../lib/character";
 import { getNextRotation } from "../../lib/character/rotation";
 import { decompose, compose } from "../../lib/character/composition";
 import type { Tile, GameAction } from "../../context/game";
-import styles from "./Token.module.css";
+import styles from "./Tile.module.css";
 
-export type TokenProps = {
+export type TileProps = {
   tile: Tile;
-  /** Pool tiles needed to look up the target character during Token→Token drag. */
+  /** Pool tiles needed to look up the target character during Tile→Tile drag. */
   pool?: readonly Tile[];
   dispatch: Dispatch<GameAction>;
 };
 
 const DRAG_THRESHOLD_PX = 4;
 
-export function Token({ tile, pool = [], dispatch }: TokenProps) {
+export function Tile({ tile, pool = [], dispatch }: TileProps) {
   const [isShaking, setIsShaking] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -160,7 +160,7 @@ export function Token({ tile, pool = [], dispatch }: TokenProps) {
 
   const display = resolveCharacter(tile.character);
   const className = [
-    styles.token,
+    styles.tile,
     !isTappable ? styles.inert : null,
     isShaking ? styles.shaking : null,
     isDragging ? styles.dragging : null,
@@ -179,7 +179,7 @@ export function Token({ tile, pool = [], dispatch }: TokenProps) {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
       onAnimationEnd={handleAnimationEnd}
-      data-testid={`token-${tile.id}`}
+      data-testid={`tile-${tile.id}`}
       data-tile-id={tile.id}
     >
       {display}
@@ -193,7 +193,7 @@ export function Token({ tile, pool = [], dispatch }: TokenProps) {
 
 /**
  * Finds the first drop-eligible element from a hit list, skipping the
- * dragging token itself.
+ * dragging tile itself.
  */
 function findDropTarget(elements: Element[], selfTileId: number): Element | null {
   for (const element of elements) {
@@ -206,7 +206,7 @@ function findDropTarget(elements: Element[], selfTileId: number): Element | null
   return null;
 }
 
-// Inline styles for the drag ghost so it matches Token visually without
+// Inline styles for the drag ghost so it matches Tile visually without
 // requiring a global CSS class.
 const GHOST_STYLES: Partial<CSSStyleDeclaration> = {
   position: "fixed",

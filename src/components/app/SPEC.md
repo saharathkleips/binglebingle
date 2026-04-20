@@ -9,7 +9,7 @@
 **Boundaries:**
 
 - Calls into: `src/lib/puzzle/` for `setupGame`; `src/lib/engine/` for `isWon`, `calculateScore`
-- Renders: `Board`, `Composer`, `Rack`
+- Renders: `HistoryArea`, `SubmissionArea`, `Pool`
 - No direct state mutation
 
 ## File Map
@@ -37,8 +37,8 @@ Shows `InstructionsScreen` while `setupGame()` resolves — game is typically re
 `isWon(state)` derived from the last `GuessRecord` (all `'correct'`). On win:
 
 - Pool area replaced by score (`calculateScore(state.history)`) and target word
-- Board remains visible — final guess row shows all-correct tiles
-- SubmitButton becomes a Share placeholder (inert in MVP)
+- HistoryArea remains visible — final guess row shows all-correct tiles
+- SubmissionButton becomes a Share placeholder (inert in MVP)
 - No separate results screen — game area transforms in place
 
 **Dev panel:**

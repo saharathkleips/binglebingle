@@ -1,9 +1,9 @@
 import { GameProvider } from "../../context/game/GameContext";
 import { createInitialGameState } from "../../context/game/game-reducer";
 import { createWord } from "../../lib/word";
-import { Rack } from "../rack/Rack";
-import { Composer } from "../composer/Composer";
-import { Board } from "../board/Board";
+import { Pool } from "../pool/Pool";
+import { SubmissionArea } from "../submission-area/SubmissionArea";
+import { HistoryArea } from "../history-area/HistoryArea";
 
 // Temporary dev wiring — replaced by Game.tsx in milestone 1.3.1
 const DEV_WORD = createWord("고양이")!;
@@ -22,9 +22,9 @@ export function App() {
         }}
       >
         <h1 style={{ fontSize: "1.5rem", fontWeight: "bold" }}>빙글빙글</h1>
-        <Board />
-        <Composer />
-        <Rack />
+        <HistoryArea />
+        <SubmissionArea />
+        <Pool />
       </div>
     </GameProvider>
   );

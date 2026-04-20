@@ -1,24 +1,24 @@
 /**
- * @file Board.tsx
+ * @file HistoryArea.tsx
  *
  * Displays the guess history as a grid of evaluated tiles.
  */
 
 import { useGame } from "../../context/game/GameContext";
-import { BoardTile } from "./BoardTile";
-import styles from "./Board.module.css";
+import { HistoryTile } from "./HistoryTile";
+import styles from "./HistoryArea.module.css";
 
-export function Board() {
+export function HistoryArea() {
   const { state } = useGame();
 
   if (state.history.length === 0) return null;
 
   return (
-    <div className={styles.board} data-testid="board">
+    <div className={styles.historyArea} data-testid="history-area">
       {state.history.map((guess, rowIndex) => (
-        <div key={rowIndex} className={styles.row} data-testid={`board-row-${rowIndex}`}>
+        <div key={rowIndex} className={styles.row} data-testid={`history-row-${rowIndex}`}>
           {guess.map((evaluated, colIndex) => (
-            <BoardTile key={colIndex} evaluated={evaluated} />
+            <HistoryTile key={colIndex} evaluated={evaluated} />
           ))}
         </div>
       ))}

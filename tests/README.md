@@ -6,14 +6,14 @@ Playwright tests live here. `smoke.spec.ts` checks the page loads. `demo.spec.ts
 
 ## Selectors
 
-| What                        | Selector                            |
-| --------------------------- | ----------------------------------- |
-| Rack token by tile ID       | `page.getByTestId("token-{id}")`    |
-| Composer slot by position   | `page.getByTestId("slot-{index}")`  |
-| Submit button               | `page.getByTestId("submit-button")` |
-| Board tiles (all, in order) | `page.getByTestId("board-tile")`    |
+| What                          | Selector                                |
+| ----------------------------- | --------------------------------------- |
+| Pool tile by tile ID          | `page.getByTestId("tile-{id}")`         |
+| Submission slot by position   | `page.getByTestId("slot-{index}")`      |
+| Submission button             | `page.getByTestId("submission-button")` |
+| History tiles (all, in order) | `page.getByTestId("history-tile")`      |
 
-Board tiles accumulate across guesses — the first guess fills `.nth(0–2)`, the second fills `.nth(3–5)`, and so on.
+History tiles accumulate across guesses — the first guess fills `.nth(0–2)`, the second fills `.nth(3–5)`, and so on.
 
 ---
 
@@ -45,7 +45,7 @@ Every jamo or syllable in the pool has a numeric ID. These IDs are **stable unti
 - The syllable's own ID stays with the first jamo (onset)
 - Each additional jamo gets the next lowest unused ID
 
-**PRESENT tiles do not auto-return** — they stay in their slot. Click the token to send it back to the pool (it returns as the composed syllable, not decomposed).
+**PRESENT tiles do not auto-return** — they stay in their slot. Click the slot to send the tile back to the pool (it returns as the composed syllable, not decomposed).
 
 **CORRECT tiles stay** in their slot permanently.
 
@@ -59,10 +59,10 @@ Every jamo or syllable in the pool has a numeric ID. These IDs are **stable unti
 async function drag(page: Page, source: Locator, target: Locator) { ... }
 ```
 
-Simulates `pointerdown → move → pointerup`. The move exceeds the 4px drag threshold used by `Token.tsx` before heading to the destination. Used for:
+Simulates `pointerdown → move → pointerup`. The move exceeds the 4px drag threshold used by `Tile.tsx` before heading to the destination. Used for:
 
-- **Token → token**: compose two jamo into a syllable (drag source onto target; target becomes the syllable, source is absorbed)
-- **Token → slot**: place a syllable into a submission slot
+- **Tile → tile**: compose two jamo into a syllable (drag source onto target; target becomes the syllable, source is absorbed)
+- **Tile → slot**: place a syllable into a submission slot
 - **Slot → slot**: move a tile between slots (not yet wired up as of initial demo)
 
 For **demo/recording** use the slow version with intermediate steps:
@@ -83,13 +83,13 @@ await page.mouse.up();
 
 ### Click
 
-Single click on a token has two effects depending on context:
+Single click on a tile has two effects depending on context:
 
-| Target                                 | Effect                                                   |
-| -------------------------------------- | -------------------------------------------------------- |
-| Composed syllable (multi-jamo) in rack | Decompose back to component jamo                         |
-| Single jamo in rack                    | Rotate to next in its set (e.g. ㅏ→ㅜ→ㅓ→ㅗ→ㅏ)          |
-| PRESENT tile in a slot                 | Return the tile (as-is, not decomposed) to the rack pool |
+| Target                                 | Effect                                              |
+| -------------------------------------- | --------------------------------------------------- |
+| Composed syllable (multi-jamo) in pool | Decompose back to component jamo                    |
+| Single jamo in pool                    | Rotate to next in its set (e.g. ㅏ→ㅜ→ㅓ→ㅗ→ㅏ)     |
+| PRESENT tile in a slot                 | Return the tile (as-is, not decomposed) to the pool |
 
 ### Rotation sets
 
@@ -105,12 +105,12 @@ Other rotation sets exist for double consonants and compound vowels — check `s
 
 ## Guess Results
 
-After submitting, each board tile gets a `data-result` attribute:
+After submitting, each history tile gets a `data-result` attribute:
 
 ```typescript
-await expect(page.getByTestId("board-tile").nth(0)).toHaveAttribute("data-result", "CORRECT");
-await expect(page.getByTestId("board-tile").nth(1)).toHaveAttribute("data-result", "PRESENT");
-await expect(page.getByTestId("board-tile").nth(2)).toHaveAttribute("data-result", "ABSENT");
+await expect(page.getByTestId("history-tile").nth(0)).toHaveAttribute("data-result", "CORRECT");
+await expect(page.getByTestId("history-tile").nth(1)).toHaveAttribute("data-result", "PRESENT");
+await expect(page.getByTestId("history-tile").nth(2)).toHaveAttribute("data-result", "ABSENT");
 ```
 
 Evaluation is **character (syllable block) level**, not jamo level. A tile is PRESENT if that exact syllable block appears in the target word but at a different position.

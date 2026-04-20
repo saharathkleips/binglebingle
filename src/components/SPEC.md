@@ -11,7 +11,7 @@ Component structure, interaction model, and data flow for the game UI.
 - Calls into: `src/lib/engine/` for `canSubmit`, `evaluateGuess`; `src/lib/character/` for `resolveCharacter`; `src/lib/jamo/` for `getNextRotation`
 - No direct state mutation
 
-Visual design and styling are deferred — components render functionally correct with minimal styling for MVP. Exception: token shake animation is required for MVP to confirm invalid combine attempts.
+Visual design and styling are deferred — components render functionally correct with minimal styling for MVP. Exception: tile shake animation is required for MVP to confirm invalid combine attempts.
 
 ## Conventions
 

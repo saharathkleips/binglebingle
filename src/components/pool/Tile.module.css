@@ -1,4 +1,4 @@
-.token {
+.tile {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,7 +14,7 @@
   background: var(--color-surface);
 }
 
-.token:active {
+.tile:active {
   background: var(--color-surface-active);
 }
 
@@ -27,8 +27,8 @@
   cursor: grabbing;
 }
 
-/* Drop target highlight set imperatively by Token during drag */
-.token[data-drag-over="true"] {
+/* Drop target highlight set imperatively by Tile during drag */
+.tile[data-drag-over="true"] {
   border-color: var(--color-drag-border);
   background: var(--color-drag-bg);
 }

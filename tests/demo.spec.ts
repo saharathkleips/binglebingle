@@ -66,41 +66,41 @@ async function pause(page: Page, ms = 600) {
 test("demo: guesses 가이아 → 고아이 → 고양이 to win", async ({ page }) => {
   await page.goto("/");
 
-  const token = (id: number) => page.getByTestId(`token-${id}`);
+  const tile = (id: number) => page.getByTestId(`tile-${id}`);
   const slot = (index: number) => page.getByTestId(`slot-${index}`);
-  const boardTiles = page.getByTestId("board-tile");
+  const historyTiles = page.getByTestId("history-tile");
 
   // -------------------------------------------------------------------------
   // GUESS 1 — 가이아  (showcase PRESENT: 이 belongs at position 2, not 1)
   // -------------------------------------------------------------------------
 
   // Build 가: drag ㅏ(1) onto ㄱ(0) → tile-0 becomes 가, tile-1 removed
-  await drag(page, token(1), token(0));
+  await drag(page, tile(1), tile(0));
   await pause(page);
   // Build 이: drag ㅣ(6) onto ㅇ(5) → tile-5 becomes 이, tile-6 removed
-  await drag(page, token(6), token(5));
+  await drag(page, tile(6), tile(5));
   await pause(page);
   // Build 아: drag ㅏ(3) onto ㅇ(2) → tile-2 becomes 아, tile-3 removed
-  await drag(page, token(3), token(2));
+  await drag(page, tile(3), tile(2));
   await pause(page);
 
   // Place syllables in deliberately wrong order to produce PRESENT
-  await drag(page, token(0), slot(0)); // 가 → slot 0  (ABSENT)
+  await drag(page, tile(0), slot(0)); // 가 → slot 0  (ABSENT)
   await pause(page);
-  await drag(page, token(5), slot(1)); // 이 → slot 1  (이 belongs at position 2 → PRESENT)
+  await drag(page, tile(5), slot(1)); // 이 → slot 1  (이 belongs at position 2 → PRESENT)
   await pause(page);
-  await drag(page, token(2), slot(2)); // 아 → slot 2  (ABSENT)
+  await drag(page, tile(2), slot(2)); // 아 → slot 2  (ABSENT)
   await pause(page);
 
-  await page.getByTestId("submit-button").click();
+  await page.getByTestId("submission-button").click();
   await pause(page, 1000);
 
   // Board row 0: 가 ABSENT · 이 PRESENT · 아 ABSENT
   // Pool after (가 and 아 decompose on return): 0:ㄱ  1:ㅏ  2:ㅇ  3:ㅏ  4:ㅇ
   // Submission: slot-0 EMPTY · slot-1 이(tile-5, PRESENT) · slot-2 EMPTY
-  await expect(boardTiles.nth(0)).toHaveAttribute("data-result", "ABSENT");
-  await expect(boardTiles.nth(1)).toHaveAttribute("data-result", "PRESENT");
-  await expect(boardTiles.nth(2)).toHaveAttribute("data-result", "ABSENT");
+  await expect(historyTiles.nth(0)).toHaveAttribute("data-result", "ABSENT");
+  await expect(historyTiles.nth(1)).toHaveAttribute("data-result", "PRESENT");
+  await expect(historyTiles.nth(2)).toHaveAttribute("data-result", "ABSENT");
 
   // -------------------------------------------------------------------------
   // GUESS 2 — 고아이  (showcase compose → decompose → rotate → recompose)
@@ -113,46 +113,46 @@ test("demo: guesses 가이아 → 고아이 → 고양이 to win", async ({ page
 
   // Begin building 고 — but compose with the wrong vowel first to show decompose.
   // Build 가 (wrong): drag ㅏ(1) onto ㄱ(0) → tile-0 becomes 가
-  await drag(page, token(1), token(0));
+  await drag(page, tile(1), tile(0));
   await pause(page);
 
   // Decompose 가 back into ㄱ(0) + ㅏ(1) by clicking the composed tile.
   // handleClick dispatches CHARACTER_DECOMPOSE for multi-jamo tiles.
-  await token(0).click();
+  await tile(0).click();
   await pause(page);
 
   // Rotate ㅏ(1) three times to reach ㅗ: ㅏ → ㅜ → ㅓ → ㅗ
-  await token(1).click(); // ㅏ → ㅜ
+  await tile(1).click(); // ㅏ → ㅜ
   await pause(page, 400);
-  await token(1).click(); // ㅜ → ㅓ
+  await tile(1).click(); // ㅜ → ㅓ
   await pause(page, 400);
-  await token(1).click(); // ㅓ → ㅗ
+  await tile(1).click(); // ㅓ → ㅗ
   await pause(page);
 
   // Build 고: drag ㅗ(1) onto ㄱ(0) → tile-0 becomes 고, tile-1 removed
-  await drag(page, token(1), token(0));
+  await drag(page, tile(1), tile(0));
   await pause(page);
   // Build 아: drag ㅏ(3) onto ㅇ(2) → tile-2 becomes 아, tile-3 removed
-  await drag(page, token(3), token(2));
+  await drag(page, tile(3), tile(2));
   await pause(page);
 
   // Place tiles: 고→slot 0, 아→slot 1, 이→slot 2
-  await drag(page, token(0), slot(0)); // 고 → slot 0
+  await drag(page, tile(0), slot(0)); // 고 → slot 0
   await pause(page);
-  await drag(page, token(2), slot(1)); // 아 → slot 1
+  await drag(page, tile(2), slot(1)); // 아 → slot 1
   await pause(page);
-  await drag(page, token(5), slot(2)); // 이 → slot 2
+  await drag(page, tile(5), slot(2)); // 이 → slot 2
   await pause(page);
 
-  await page.getByTestId("submit-button").click();
+  await page.getByTestId("submission-button").click();
   await pause(page, 1000);
 
   // Board row 1: 고 CORRECT · 아 ABSENT · 이 CORRECT
   // Pool after (아 decomposes on return): 1:ㅏ  2:ㅇ  4:ㅇ
   // Submission: slot-0 고(tile-0) · slot-1 EMPTY · slot-2 이(tile-5)
-  await expect(boardTiles.nth(3)).toHaveAttribute("data-result", "CORRECT");
-  await expect(boardTiles.nth(4)).toHaveAttribute("data-result", "ABSENT");
-  await expect(boardTiles.nth(5)).toHaveAttribute("data-result", "CORRECT");
+  await expect(historyTiles.nth(3)).toHaveAttribute("data-result", "CORRECT");
+  await expect(historyTiles.nth(4)).toHaveAttribute("data-result", "ABSENT");
+  await expect(historyTiles.nth(5)).toHaveAttribute("data-result", "CORRECT");
 
   // -------------------------------------------------------------------------
   // GUESS 3 — 고양이  (compose 양 and win)
@@ -160,20 +160,20 @@ test("demo: guesses 가이아 → 고아이 → 고양이 to win", async ({ page
   // Pool: 1:ㅏ  2:ㅇ  4:ㅇ
 
   // Build 아: drag ㅏ(1) onto ㅇ(2) → tile-2 becomes 아, tile-1 removed
-  await drag(page, token(1), token(2));
+  await drag(page, tile(1), tile(2));
   await pause(page);
   // Build 양: drag ㅇ(4) onto 아(2) → tile-2 becomes 양, tile-4 removed
-  await drag(page, token(4), token(2));
+  await drag(page, tile(4), tile(2));
   await pause(page);
   // Place 양 in the only empty slot; slots 0 and 2 are already correct.
-  await drag(page, token(2), slot(1)); // 양 → slot 1
+  await drag(page, tile(2), slot(1)); // 양 → slot 1
   await pause(page);
 
-  await page.getByTestId("submit-button").click();
+  await page.getByTestId("submission-button").click();
   await pause(page, 2000); // hold on the winning state
 
   // Board row 2: all CORRECT
-  await expect(boardTiles.nth(6)).toHaveAttribute("data-result", "CORRECT");
-  await expect(boardTiles.nth(7)).toHaveAttribute("data-result", "CORRECT");
-  await expect(boardTiles.nth(8)).toHaveAttribute("data-result", "CORRECT");
+  await expect(historyTiles.nth(6)).toHaveAttribute("data-result", "CORRECT");
+  await expect(historyTiles.nth(7)).toHaveAttribute("data-result", "CORRECT");
+  await expect(historyTiles.nth(8)).toHaveAttribute("data-result", "CORRECT");
 });

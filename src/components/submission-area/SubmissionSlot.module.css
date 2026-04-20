@@ -31,7 +31,7 @@
   cursor: grabbing;
 }
 
-/* Drop target highlight set imperatively by Token during drag */
+/* Drop target highlight set imperatively by Tile during drag */
 .slot[data-drag-over="true"] {
   border-color: var(--color-drag-border);
   background: var(--color-drag-bg);

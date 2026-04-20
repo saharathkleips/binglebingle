@@ -1,4 +1,4 @@
-.rack {
+.pool {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm);

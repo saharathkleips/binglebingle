@@ -1,11 +1,12 @@
-.board {
+.submissionArea {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  align-items: center;
+  gap: var(--space-md);
   padding: var(--space-sm);
 }
 
-.row {
+.slots {
   display: flex;
   gap: var(--space-sm);
 }
