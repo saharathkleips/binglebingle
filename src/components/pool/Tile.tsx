@@ -15,7 +15,17 @@ import { resolveCharacter } from "../../lib/character";
 import type { Tile } from "../../context/game";
 import styles from "./Tile.module.css";
 
-/** Props for the {@link Tile} component. */
+/**
+ * Props for the {@link Tile} component.
+ *
+ * @property tile - The tile data to render.
+ * @property isTappable - Whether tapping this tile does anything; controls the inert CSS class.
+ * @property isRejected - Pool sets this when a compose operation is rejected; Tile renders feedback.
+ * @property onTap - Called on click when `isTappable` is true.
+ * @property onDropOnTile - Called when a drag ends on another tile, with that tile's id.
+ * @property onDropOnSlot - Called when a drag ends on a submission slot, with that slot's index.
+ * @property onRejectedEnd - Called from onAnimationEnd; Pool uses this to clear the rejected state.
+ */
 export type TileProps = {
   tile: Tile;
   /** Whether tapping this tile does anything; controls the inert CSS class. */
