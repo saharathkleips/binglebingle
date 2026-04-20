@@ -1,9 +1,9 @@
-import { GameProvider } from "./context/game/GameContext";
-import { createInitialGameState } from "./context/game/game-reducer";
-import { createWord } from "./lib/word";
-import { Rack } from "./components/rack/Rack";
-import { Composer } from "./components/composer/Composer";
-import { Board } from "./components/board/Board";
+import { GameProvider } from "../../context/game/GameContext";
+import { createInitialGameState } from "../../context/game/game-reducer";
+import { createWord } from "../../lib/word";
+import { Rack } from "../rack/Rack";
+import { Composer } from "../composer/Composer";
+import { Board } from "../board/Board";
 
 // Temporary dev wiring — replaced by Game.tsx in milestone 1.3.1
 const DEV_WORD = createWord("고양이")!;
