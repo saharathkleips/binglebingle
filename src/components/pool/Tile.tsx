@@ -28,17 +28,11 @@ import styles from "./Tile.module.css";
  */
 export type TileProps = {
   tile: Tile;
-  /** Whether tapping this tile does anything; controls the inert CSS class. */
   isTappable: boolean;
-  /** Pool sets this when a compose operation is rejected; Tile renders feedback. */
   isRejected: boolean;
-  /** Called on click when `isTappable` is true. */
   onTap: () => void;
-  /** Called when a drag ends on another tile, with that tile's id. */
   onDropOnTile: (targetId: number) => void;
-  /** Called when a drag ends on a submission slot, with that slot's index. */
   onDropOnSlot: (slotIndex: number) => void;
-  /** Called from onAnimationEnd; Pool uses this to clear the rejected state. */
   onRejectedEnd: () => void;
 };
 
