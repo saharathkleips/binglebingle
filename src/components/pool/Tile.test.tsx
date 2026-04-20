@@ -2,11 +2,26 @@ import { describe, it, expect, vi } from "vitest";
 import { render } from "vitest-browser-react";
 import { Tile } from "./Tile";
 import { character } from "../../lib/character";
-import type { Tile as TileType, GameAction } from "../../context/game";
+import type { Tile as TileType } from "../../context/game";
 import styles from "./Tile.module.css";
 
 function tile(id: number, char: ReturnType<typeof character>): TileType {
   return { id, character: char! };
+}
+
+function tileProps(
+  overrides: Partial<React.ComponentProps<typeof Tile>> = {},
+): React.ComponentProps<typeof Tile> {
+  return {
+    tile: tile(0, character({ choseong: "ㄱ" })),
+    isTappable: false,
+    isInvalid: false,
+    onTap: vi.fn(),
+    onDropOnTile: vi.fn(),
+    onDropOnSlot: vi.fn(),
+    onInvalidStateEnd: vi.fn(),
+    ...overrides,
+  };
 }
 
 /** Dispatch a sequence of pointer events directly on a DOM element. */
@@ -30,55 +45,50 @@ function pointerSequence(
 
 describe("Tile", () => {
   it("displays the resolved character", async () => {
-    const dispatch = vi.fn();
-    const screen = await render(
-      <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
-    );
+    const screen = await render(<Tile {...tileProps()} />);
     await expect.element(screen.getByTestId("tile-0")).toHaveTextContent("ㄱ");
   });
 
-  it("dispatches CHARACTER_ROTATE_NEXT on tap when rotatable", async () => {
-    const dispatch = vi.fn<(action: GameAction) => void>();
-    const screen = await render(
-      <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
-    );
+  it("calls onTap on tap when isTappable", async () => {
+    const onTap = vi.fn();
+    const screen = await render(<Tile {...tileProps({ isTappable: true, onTap })} />);
     await screen.getByTestId("tile-0").click();
-    expect(dispatch).toHaveBeenCalledWith({
-      type: "CHARACTER_ROTATE_NEXT",
-      payload: { tileId: 0 },
-    });
+    expect(onTap).toHaveBeenCalledOnce();
   });
 
-  it("dispatches CHARACTER_DECOMPOSE on tap when decomposable but not rotatable", async () => {
-    const dispatch = vi.fn<(action: GameAction) => void>();
-    // ㄲ is a double consonant — not rotatable but decomposable into ㄱ+ㄱ
-    const screen = await render(
-      <Tile tile={tile(1, character({ choseong: "ㄲ" }))} dispatch={dispatch} />,
-    );
-    await screen.getByTestId("tile-1").click();
-    expect(dispatch).toHaveBeenCalledWith({
-      type: "CHARACTER_DECOMPOSE",
-      payload: { tileId: 1 },
-    });
+  it("does not call onTap on tap when not isTappable", async () => {
+    const onTap = vi.fn();
+    const screen = await render(<Tile {...tileProps({ isTappable: false, onTap })} />);
+    await screen.getByTestId("tile-0").click();
+    expect(onTap).not.toHaveBeenCalled();
   });
 
-  it("does not dispatch on tap when inert", async () => {
-    const dispatch = vi.fn();
-    // ㅁ is not rotatable and not decomposable
-    const screen = await render(
-      <Tile tile={tile(2, character({ choseong: "ㅁ" }))} dispatch={dispatch} />,
-    );
-    await screen.getByTestId("tile-2").click();
-    expect(dispatch).not.toHaveBeenCalled();
+  it("applies shaking class when isInvalid is true", async () => {
+    const screen = await render(<Tile {...tileProps({ isInvalid: true })} />);
+    await expect.element(screen.getByTestId("tile-0")).toHaveClass(styles.shaking!);
+  });
+
+  it("does not apply shaking class when isInvalid is false", async () => {
+    const screen = await render(<Tile {...tileProps({ isInvalid: false })} />);
+    await expect.element(screen.getByTestId("tile-0")).not.toHaveClass(styles.shaking!);
+  });
+
+  it("calls onInvalidStateEnd after animation ends", async () => {
+    const onInvalidStateEnd = vi.fn();
+    const screen = await render(<Tile {...tileProps({ isInvalid: true, onInvalidStateEnd })} />);
+    screen
+      .getByTestId("tile-0")
+      .element()
+      .dispatchEvent(new Event("animationend", { bubbles: true }));
+    expect(onInvalidStateEnd).toHaveBeenCalledOnce();
   });
 });
 
 describe("Tile drag", () => {
-  it("does not dispatch on movement below the 4px threshold", async () => {
-    const dispatch = vi.fn<(action: GameAction) => void>();
-    const screen = await render(
-      <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />,
-    );
+  it("does not call any drop callback on movement below the 4px threshold", async () => {
+    const onDropOnTile = vi.fn();
+    const onDropOnSlot = vi.fn();
+    const screen = await render(<Tile {...tileProps({ onDropOnTile, onDropOnSlot })} />);
     const element = screen.getByTestId("tile-0").element();
 
     pointerSequence(element, [
@@ -87,19 +97,15 @@ describe("Tile drag", () => {
       { type: "pointerup", clientX: 2, clientY: 0 },
     ]);
 
-    expect(dispatch).not.toHaveBeenCalledWith(
-      expect.objectContaining({ type: "SUBMISSION_SLOT_INSERT" }),
-    );
-    expect(dispatch).not.toHaveBeenCalledWith(
-      expect.objectContaining({ type: "CHARACTER_COMPOSE" }),
-    );
+    expect(onDropOnSlot).not.toHaveBeenCalled();
+    expect(onDropOnTile).not.toHaveBeenCalled();
   });
 
-  it("dispatches SUBMISSION_SLOT_INSERT when dropped on a slot", async () => {
-    const dispatch = vi.fn<(action: GameAction) => void>();
+  it("calls onDropOnSlot with slotIndex when dropped on a slot", async () => {
+    const onDropOnSlot = vi.fn();
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <Tile {...tileProps({ onDropOnSlot })} />
         <button data-slot-index="1" data-testid="slot-1">
           _
         </button>
@@ -117,21 +123,24 @@ describe("Tile drag", () => {
       { type: "pointerup", clientX: slotCenterX, clientY: slotCenterY },
     ]);
 
-    expect(dispatch).toHaveBeenCalledWith({
-      type: "SUBMISSION_SLOT_INSERT",
-      payload: { tileId: 0, slotIndex: 1 },
-    });
+    expect(onDropOnSlot).toHaveBeenCalledWith(1);
   });
 
-  it("dispatches CHARACTER_COMPOSE when dropped on a valid target tile", async () => {
-    const dispatch = vi.fn<(action: GameAction) => void>();
-    // ㄱ (choseong) + ㅏ (jungseong) → open syllable 가 — valid compose
-    const sourceTile = tile(0, character({ choseong: "ㄱ" })!);
+  it("calls onDropOnTile with targetId when dropped on another tile", async () => {
+    const onDropOnTile = vi.fn();
     const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Tile tile={sourceTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
-        <Tile tile={targetTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
+        <Tile {...tileProps({ onDropOnTile })} />
+        <Tile
+          tile={targetTile}
+          isTappable={false}
+          isInvalid={false}
+          onTap={vi.fn()}
+          onDropOnTile={vi.fn()}
+          onDropOnSlot={vi.fn()}
+          onInvalidStateEnd={vi.fn()}
+        />
       </div>,
     );
     const tileElement = screen.getByTestId("tile-0").element();
@@ -146,46 +155,14 @@ describe("Tile drag", () => {
       { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
     ]);
 
-    expect(dispatch).toHaveBeenCalledWith({
-      type: "CHARACTER_COMPOSE",
-      payload: { targetId: 1, incomingId: 0 },
-    });
+    expect(onDropOnTile).toHaveBeenCalledWith(1);
   });
 
-  it("shakes and does not dispatch when dropped on an incompatible tile", async () => {
-    const dispatch = vi.fn<(action: GameAction) => void>();
-    // two open syllables cannot compose
-    const sourceTile = tile(0, character({ choseong: "ㄱ", jungseong: "ㅏ" })!);
-    const targetTile = tile(1, character({ choseong: "ㄴ", jungseong: "ㅏ" })!);
+  it("suppresses tap after drag ends", async () => {
+    const onTap = vi.fn();
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Tile tile={sourceTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
-        <Tile tile={targetTile} pool={[sourceTile, targetTile]} dispatch={dispatch} />
-      </div>,
-    );
-    const tileElement = screen.getByTestId("tile-0").element();
-    const targetRect = screen.getByTestId("tile-1").element().getBoundingClientRect();
-    const targetCenterX = targetRect.left + targetRect.width / 2;
-    const targetCenterY = targetRect.top + targetRect.height / 2;
-
-    pointerSequence(tileElement, [
-      { type: "pointerdown", clientX: 0, clientY: 0 },
-      { type: "pointermove", clientX: 10, clientY: 0 },
-      { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
-      { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
-    ]);
-
-    expect(dispatch).not.toHaveBeenCalledWith(
-      expect.objectContaining({ type: "CHARACTER_COMPOSE" }),
-    );
-    await expect.element(screen.getByTestId("tile-0")).toHaveClass(styles.shaking!);
-  });
-
-  it("suppresses tap action after drag ends", async () => {
-    const dispatch = vi.fn<(action: GameAction) => void>();
-    const screen = await render(
-      <div style={{ display: "flex", gap: "100px" }}>
-        <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <Tile {...tileProps({ isTappable: true, onTap })} />
         <div data-testid="empty-area" style={{ width: "50px", height: "50px" }} />
       </div>,
     );
@@ -203,16 +180,13 @@ describe("Tile drag", () => {
 
     // Simulate a click that may fire after pointerup in some browsers
     await screen.getByTestId("tile-0").click();
-    expect(dispatch).not.toHaveBeenCalledWith(
-      expect.objectContaining({ type: "CHARACTER_ROTATE_NEXT" }),
-    );
+    expect(onTap).not.toHaveBeenCalled();
   });
 
   it("highlights drop target with data-drag-over during drag", async () => {
-    const dispatch = vi.fn();
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <Tile {...tileProps()} />
         <button data-slot-index="0" data-testid="slot-0">
           _
         </button>
@@ -240,10 +214,9 @@ describe("Tile drag", () => {
   });
 
   it("removes data-drag-over from previous target when drag moves away", async () => {
-    const dispatch = vi.fn();
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <Tile tile={tile(0, character({ choseong: "ㄱ" }))} dispatch={dispatch} />
+        <Tile {...tileProps()} />
         <button data-slot-index="0" data-testid="slot-0">
           _
         </button>

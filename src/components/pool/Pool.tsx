@@ -2,20 +2,62 @@
  * @file Pool.tsx
  *
  * Displays the player's jamo pool as a row of interactive Tile tiles.
+ * Owns all interaction logic: tap dispatch, compose validation, slot insertion.
  */
 
+import { useState } from "react";
 import { useGame } from "../../context/game/GameContext";
+import { getNextRotation } from "../../lib/character/rotation";
+import { decompose, compose } from "../../lib/character/composition";
 import { Tile } from "./Tile";
+import type { Tile as TileType } from "../../context/game";
 import styles from "./Pool.module.css";
 
 export function Pool() {
   const { state, dispatch } = useGame();
+  const [invalidTileId, setInvalidTileId] = useState<number | null>(null);
+
+  function handleTap(tile: TileType) {
+    if (getNextRotation(tile.character) !== null) {
+      dispatch({ type: "CHARACTER_ROTATE_NEXT", payload: { tileId: tile.id } });
+    } else if (decompose(tile.character) !== null) {
+      dispatch({ type: "CHARACTER_DECOMPOSE", payload: { tileId: tile.id } });
+    }
+  }
+
+  function handleDropOnTile(sourceTile: TileType, targetId: number) {
+    const targetTile = state.pool.find((tile) => tile.id === targetId);
+    if (targetTile === undefined) return;
+    const combined = compose(targetTile.character, sourceTile.character);
+    if (combined === null) {
+      setInvalidTileId(sourceTile.id);
+    } else {
+      dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId, incomingId: sourceTile.id } });
+    }
+  }
+
+  function handleDropOnSlot(sourceTile: TileType, slotIndex: number) {
+    dispatch({ type: "SUBMISSION_SLOT_INSERT", payload: { tileId: sourceTile.id, slotIndex } });
+  }
 
   return (
     <div className={styles.pool} data-testid="pool">
-      {state.pool.map((tile) => (
-        <Tile key={tile.id} tile={tile} pool={state.pool} dispatch={dispatch} />
-      ))}
+      {state.pool.map((tile) => {
+        const isTappable =
+          getNextRotation(tile.character) !== null || decompose(tile.character) !== null;
+        return (
+          <Tile
+            key={tile.id}
+            tile={tile}
+            isTappable={isTappable}
+            isInvalid={tile.id === invalidTileId}
+            onTap={() => handleTap(tile)}
+            onDropOnTile={(targetId) => handleDropOnTile(tile, targetId)}
+            onDropOnSlot={(slotIndex) => handleDropOnSlot(tile, slotIndex)}
+            onInvalidStateEnd={() => setInvalidTileId(null)}
+          />
+        );
+      })}
     </div>
   );
 }

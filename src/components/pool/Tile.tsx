@@ -2,40 +2,44 @@
  * @file Tile.tsx
  *
  * A single interactive tile in the jamo pool.
- * Tap behavior depends on the tile's character:
- * - Rotatable single-jamo → CHARACTER_ROTATE_NEXT
- * - Decomposable multi-jamo → CHARACTER_DECOMPOSE
- * - Otherwise → inert (drag only)
+ * Owns pointer/drag mechanics only — all game logic lives in Pool.
  *
  * Drag behavior (UI-04):
- * - Drag to SubmissionSlot → SUBMISSION_SLOT_INSERT
- * - Drag to another Tile → CHARACTER_COMPOSE (shake on invalid)
+ * - Drag to SubmissionSlot → onDropOnSlot(slotIndex)
+ * - Drag to another Tile → onDropOnTile(targetId)
  * A 4px movement threshold distinguishes tap from drag.
  */
 
-import { useState, useRef, type Dispatch } from "react";
+import { useState, useRef } from "react";
 import { resolveCharacter } from "../../lib/character";
-import { getNextRotation } from "../../lib/character/rotation";
-import { decompose, compose } from "../../lib/character/composition";
-import type { Tile, GameAction } from "../../context/game";
+import type { Tile } from "../../context/game";
 import styles from "./Tile.module.css";
 
 export type TileProps = {
   tile: Tile;
-  /** Pool tiles needed to look up the target character during Tile→Tile drag. */
-  pool?: readonly Tile[];
-  dispatch: Dispatch<GameAction>;
+  /** Whether tapping this tile does anything; controls the inert CSS class. */
+  isTappable: boolean;
+  /** Pool sets this when a compose operation fails; Tile renders a shake animation. */
+  isInvalid: boolean;
+  onTap: () => void;
+  onDropOnTile: (targetId: number) => void;
+  onDropOnSlot: (slotIndex: number) => void;
+  /** Called from onAnimationEnd; Pool uses this to clear the invalid state. */
+  onInvalidStateEnd: () => void;
 };
 
 const DRAG_THRESHOLD_PX = 4;
 
-export function Tile({ tile, pool = [], dispatch }: TileProps) {
-  const [isShaking, setIsShaking] = useState(false);
+export function Tile({
+  tile,
+  isTappable,
+  isInvalid,
+  onTap,
+  onDropOnTile,
+  onDropOnSlot,
+  onInvalidStateEnd,
+}: TileProps) {
   const [isDragging, setIsDragging] = useState(false);
-
-  const isRotatable = getNextRotation(tile.character) !== null;
-  const isDecomposable = decompose(tile.character) !== null;
-  const isTappable = isRotatable || isDecomposable;
 
   const buttonRef = useRef<HTMLButtonElement>(null);
   // Refs track mutable drag state without triggering re-renders on every move.
@@ -51,10 +55,8 @@ export function Tile({ tile, pool = [], dispatch }: TileProps) {
       wasDragRef.current = false;
       return;
     }
-    if (isRotatable) {
-      dispatch({ type: "CHARACTER_ROTATE_NEXT", payload: { tileId: tile.id } });
-    } else if (isDecomposable) {
-      dispatch({ type: "CHARACTER_DECOMPOSE", payload: { tileId: tile.id } });
+    if (isTappable) {
+      onTap();
     }
   }
 
@@ -118,24 +120,13 @@ export function Tile({ tile, pool = [], dispatch }: TileProps) {
 
     const slotIndexStr = dropTarget.getAttribute("data-slot-index");
     if (slotIndexStr !== null) {
-      dispatch({
-        type: "SUBMISSION_SLOT_INSERT",
-        payload: { tileId: tile.id, slotIndex: parseInt(slotIndexStr, 10) },
-      });
+      onDropOnSlot(parseInt(slotIndexStr, 10));
       return;
     }
 
     const targetTileIdStr = dropTarget.getAttribute("data-tile-id");
     if (targetTileIdStr !== null) {
-      const targetId = parseInt(targetTileIdStr, 10);
-      const targetTile = pool.find((t) => t.id === targetId);
-      if (targetTile === undefined) return;
-      const combined = compose(targetTile.character, tile.character);
-      if (combined === null) {
-        setIsShaking(true);
-      } else {
-        dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId, incomingId: tile.id } });
-      }
+      onDropOnTile(parseInt(targetTileIdStr, 10));
     }
   }
 
@@ -146,7 +137,7 @@ export function Tile({ tile, pool = [], dispatch }: TileProps) {
   }
 
   function handleAnimationEnd() {
-    setIsShaking(false);
+    onInvalidStateEnd();
   }
 
   function cleanupDrag() {
@@ -162,7 +153,7 @@ export function Tile({ tile, pool = [], dispatch }: TileProps) {
   const className = [
     styles.tile,
     !isTappable ? styles.inert : null,
-    isShaking ? styles.shaking : null,
+    isInvalid ? styles.shaking : null,
     isDragging ? styles.dragging : null,
   ]
     .filter(Boolean)
