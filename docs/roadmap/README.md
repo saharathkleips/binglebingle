@@ -2,8 +2,8 @@
 
 ## Current Status
 
-**Active version:** 1.2.x — Playable Game
-**Next milestone:** `1.x.x/1.2.x/1.2.3-core-ui.md`
+**Active version:** 1.3.x — Full Product Shell
+**Next milestone:** TBD
 
 ## Versions
 
@@ -12,7 +12,7 @@
 | 1.0.x   | Foundation         | Complete    |
 | 1.1.x   | Domain Logic       | Complete    |
 | 1.2.x   | Playable Game      | In progress |
-| 1.3.x   | Full Product Shell | Pending     |
+| 1.3.x   | Full Product Shell | In progress |
 | 2.0.x   | Post-Launch        | Backlog     |
 
 ## Out of Scope
