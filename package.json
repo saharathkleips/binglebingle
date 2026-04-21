@@ -12,7 +12,7 @@
     "test:typecheck": "tsc -b --noEmit",
     "test:component": "vitest run --project component",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --project unit --coverage",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "lint": "oxlint .",
     "format": "oxfmt .",

@@ -13,13 +13,27 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
-      include: ["src/lib/**"],
-      exclude: ["src/lib/**/*.md"],
+      include: ["src/lib/**", "src/components/**", "src/context/**"],
+      exclude: ["src/**/*.md", "src/**/*.css"],
       thresholds: {
-        statements: 98,
-        functions: 100,
-        lines: 99,
-        branches: 95,
+        "src/lib/**": {
+          statements: 98,
+          functions: 100,
+          lines: 99,
+          branches: 95,
+        },
+        "src/components/**": {
+          statements: 65,
+          functions: 70,
+          lines: 65,
+          branches: 70,
+        },
+        "src/context/**": {
+          statements: 90,
+          functions: 95,
+          lines: 90,
+          branches: 85,
+        },
       },
     },
     projects: [
