@@ -1,25 +1,38 @@
 /**
  * @file SubmissionSlot.tsx
  *
- * A single slot in the submission row. Empty slots are drop targets (wired in
- * UI-04). Filled slots display the resolved character, return the tile to the
+ * A single slot in the submission row. Empty slots are drop targets.
+ * Filled slots display the resolved character, return the tile to the
  * pool on tap, and can be dragged to another slot to swap positions.
  */
 
-import { useState, useRef, type Dispatch } from "react";
+import { useState, useRef } from "react";
 import { resolveCharacter } from "../../lib/character";
-import type { SubmissionSlot as SubmissionSlotType, GameAction } from "../../context/game";
+import type { SubmissionSlot as SubmissionSlotType } from "../../context/game";
 import styles from "./SubmissionSlot.module.css";
 
+/**
+ * @property slot - The slot state (empty or filled with a tile).
+ * @property slotIndex - Index of this slot in the submission array.
+ * @property onTap - Called when a filled slot is tapped; parent removes the tile.
+ * @property onDropOnSlot - Called when a drag ends on another slot, with that slot's index.
+ */
 export type SubmissionSlotProps = {
   slot: SubmissionSlotType;
   slotIndex: number;
-  dispatch: Dispatch<GameAction>;
+  onTap: () => void;
+  onDropOnSlot: (toSlotIndex: number) => void;
 };
 
 const DRAG_THRESHOLD_PX = 4;
 
-export function SubmissionSlot({ slot, slotIndex, dispatch }: SubmissionSlotProps) {
+/**
+ * Renders a single submission slot. Empty slots are drop targets; filled slots
+ * show the resolved character and return the tile to the pool on tap.
+ *
+ * @param props - {@link SubmissionSlotProps}
+ */
+export function SubmissionSlot({ slot, slotIndex, onTap, onDropOnSlot }: SubmissionSlotProps) {
   const [isDragging, setIsDragging] = useState(false);
 
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -39,7 +52,7 @@ export function SubmissionSlot({ slot, slotIndex, dispatch }: SubmissionSlotProp
       return;
     }
     if (isFilled) {
-      dispatch({ type: "SUBMISSION_SLOT_REMOVE", payload: { slotIndex } });
+      onTap();
     }
   }
 
@@ -100,10 +113,7 @@ export function SubmissionSlot({ slot, slotIndex, dispatch }: SubmissionSlotProp
 
     const toSlotIndexStr = dropTarget.getAttribute("data-slot-index");
     if (toSlotIndexStr !== null) {
-      dispatch({
-        type: "SUBMISSION_SLOT_MOVE",
-        payload: { fromSlotIndex: slotIndex, toSlotIndex: parseInt(toSlotIndexStr, 10) },
-      });
+      onDropOnSlot(parseInt(toSlotIndexStr, 10));
     }
   }
 

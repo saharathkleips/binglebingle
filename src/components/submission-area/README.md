@@ -1,6 +1,6 @@
 # components/submission-area
 
-Submission area where the player assembles syllable characters and submits guesses. Slots accept tiles from the pool (drag wired in UI-04); filled slots return tiles on tap.
+Submission area where the player assembles syllable characters and submits guesses. Slots accept tiles from the pool; filled slots return tiles on tap.
 
 ## Exports
 

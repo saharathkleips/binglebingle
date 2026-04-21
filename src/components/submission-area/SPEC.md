@@ -1,6 +1,6 @@
 # SPEC: components/submission-area
 
-**Status:** draft
+**Status:** stable
 
 ## Purpose
 
@@ -46,6 +46,6 @@ Calls `canSubmit(submission)` to determine validity. Disabled when invalid; disp
 
 ## Key Decisions
 
-**Dispatch passed as prop.** Same rationale as Tile — keeps sub-components testable without providers.
+**Callbacks over dispatch in SubmissionSlot.** Mirrors the Tile/Pool boundary — SubmissionSlot owns pointer/drag mechanics and surfaces semantic callbacks (`onTap`, `onDropOnSlot`); SubmissionArea translates those into dispatch calls. Keeps SubmissionSlot testable with plain function spies and free of game-action knowledge.
 
 **canSubmit gates the button, not placement.** Incomplete characters can be placed in slots per the game spec; validation only happens at submit time.
