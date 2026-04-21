@@ -76,6 +76,10 @@ Empty slots always produce `{ result: 'ABSENT' }` with no `character` property.
 
 **Empty slot `character` is `''`.** UI can distinguish empty-slot absent from wrong-character absent by checking `character === ''` if different visual treatment is needed.
 
+### `isWon(history: readonly GuessRecord[]) => boolean`
+
+Returns `true` when the last `GuessRecord` in `history` exists and every `EvaluatedCharacter` in it has `result === 'CORRECT'`. Returns `false` for an empty history or any non-winning last guess. Derived value — never stored in state.
+
 ### `calculateScore(guesses: readonly GuessRecord[]) => ScoringResult`
 
 MVP: `{ guessCount: guesses.length }`. `ScoringResult` is typed for extensibility.

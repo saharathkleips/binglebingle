@@ -69,15 +69,6 @@ export type GameAction =
   | { type: "ROUND_RESET" };
 ```
 
-`won` is derived, never stored:
-
-```typescript
-function isWon(state: GameState): boolean {
-  const last = state.history.at(-1);
-  return last !== undefined && last.every((e) => e.result === "correct");
-}
-```
-
 No `status` field, no `'idle'` state. The application layer controls whether a game is active by deciding whether to render the game component.
 
 ## Functions
