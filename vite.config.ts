@@ -23,10 +23,10 @@ export default defineConfig({
           branches: 95,
         },
         "src/components/**": {
-          statements: 65,
-          functions: 70,
-          lines: 65,
-          branches: 70,
+          statements: 90,
+          functions: 83,
+          lines: 90,
+          branches: 85,
         },
         "src/context/**": {
           statements: 90,
