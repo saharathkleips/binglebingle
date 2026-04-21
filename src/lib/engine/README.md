@@ -13,4 +13,5 @@ The game rules. Given a submission and a target word, answers: can this be submi
 - `ScoringResult` — `{ guessCount: number }`; scoring output for a completed game
 - `canSubmit(submission) => ValidationResult` — gates submission on at least one filled, complete character; does not validate word membership
 - `evaluateGuess(submission, word) => GuessRecord` — two-pass Wordle duplicate semantics (correct / present / absent)
+- `isWon(history) => boolean` — true when the last guess record exists and all characters are CORRECT
 - `calculateScore(guesses) => ScoringResult` — returns score based on guess count

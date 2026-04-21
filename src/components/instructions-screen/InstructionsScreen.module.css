@@ -1,0 +1,147 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 0.75rem);
+  padding: var(--space-lg, 2rem);
+  max-width: 22rem;
+  width: calc(100% - 2rem);
+  max-height: 90dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg, 2rem);
+}
+
+.heading {
+  font-size: 1.25rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Phase ── */
+
+.phase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.label {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #888);
+  text-align: center;
+}
+
+/* ── Pool ── */
+
+.pool {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.poolTile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm, 0.25rem);
+  background: var(--color-surface-active, #e8e8e8);
+}
+
+/* ── Rotate example ── */
+
+.rotateExample {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.arrow {
+  font-size: 1rem;
+  color: var(--color-text-muted, #888);
+}
+
+/* ── Slots ── */
+
+.slotRow {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.emptySlot {
+  display: inline-block;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm, 0.25rem);
+}
+
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: var(--radius-sm, 0.25rem);
+  border: 2px solid transparent;
+}
+
+.correct {
+  background: var(--color-correct, #538d4e);
+  color: #fff;
+}
+
+.present {
+  background: var(--color-present, #b59f3b);
+  color: #fff;
+}
+
+.absent {
+  background: var(--color-absent, #3a3a3c);
+  color: #fff;
+}
+
+/* ── Dismiss ── */
+
+.dismissButton {
+  align-self: center;
+  padding: 0.5rem 2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  background: var(--color-surface-active, #e0e0e0);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 0.375rem);
+  cursor: pointer;
+}
+
+.dismissButton:hover {
+  background: var(--color-border);
+}
