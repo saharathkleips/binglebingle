@@ -1,0 +1,57 @@
+.tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-tile);
+  height: var(--size-tile);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-tile);
+  cursor: pointer;
+  user-select: none;
+  /* touch-action:none allows pointer capture for drag on touch devices */
+  touch-action: none;
+  background: var(--color-surface);
+}
+
+.tile:active {
+  background: var(--color-surface-active);
+}
+
+.inert {
+  cursor: default;
+}
+
+.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+/* Drop target highlight set imperatively by Tile during drag */
+.tile[data-drag-over="true"] {
+  border-color: var(--color-drag-border);
+  background: var(--color-drag-bg);
+}
+
+.shaking {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}

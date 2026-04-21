@@ -1,0 +1,12 @@
+.submissionArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+}
+
+.slots {
+  display: flex;
+  gap: var(--space-sm);
+}

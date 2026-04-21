@@ -42,7 +42,7 @@ query($owner: String!, $repo: String!, $pr: Int!) {
   }
 }' -f owner="$OWNER" -f repo="$REPO" -F pr=$PR_NUM \
 | jq -r '.data.repository.pullRequest.reviewThreads.nodes
-    | map(select(.isResolved == false and .isOutdated == false))
+    | map(select(.isResolved == false))
     | group_by(.path)
     | map(
         "## File: " + .[0].path + "\n" +

@@ -1,0 +1,30 @@
+.tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-tile);
+  height: var(--size-tile);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-tile);
+  font-weight: bold;
+  user-select: none;
+}
+
+.correct {
+  background: var(--color-correct);
+  color: var(--color-state-text);
+  border-color: var(--color-correct);
+}
+
+.present {
+  background: var(--color-present);
+  color: var(--color-state-text);
+  border-color: var(--color-present);
+}
+
+.absent {
+  background: var(--color-absent);
+  color: var(--color-state-text);
+  border-color: var(--color-absent);
+}

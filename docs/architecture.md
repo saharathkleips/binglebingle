@@ -7,7 +7,7 @@ Fully client-side, statically-hosted single-page PWA. No backend. No authenticat
 ```mermaid
 flowchart TD
     subgraph UI["UI — src/components/"]
-        ui["Token pool · Submission slots · Guess board · Modals"]
+        ui["Tile pool · Submission slots · Guess history · Modals"]
     end
 
     subgraph State["Context — src/context/"]
@@ -41,7 +41,7 @@ flowchart TD
 | Concern            | Choice                    | Rationale                                                                                |
 | ------------------ | ------------------------- | ---------------------------------------------------------------------------------------- |
 | UI framework       | React 19 + React Compiler | Compiler handles memoization automatically — no speculative `useMemo`/`useCallback`      |
-| Styling            | Tailwind CSS v4           | Utility-first, co-located with markup; v4 config-free setup                              |
+| Styling            | CSS Modules + native CSS  | Scoped component styles via `.module.css`; global tokens and resets in `src/index.css`   |
 | Build + dev server | Vite                      | Fast HMR; `vite-plugin-pwa` handles service worker generation                            |
 | Language           | TypeScript strict         | Catches invalid jamo/slot combinations at compile time                                   |
 | Unit tests         | Vitest                    | Co-located with source; compatible with Vite config                                      |

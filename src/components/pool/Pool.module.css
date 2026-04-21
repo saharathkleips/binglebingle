@@ -1,0 +1,6 @@
+.pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+}

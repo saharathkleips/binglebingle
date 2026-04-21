@@ -1,1 +1,32 @@
-@import "tailwindcss";
+:root {
+  /* Tile / slot dimensions */
+  --size-tile: 3rem;
+
+  /* Spacing */
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+
+  /* Shape */
+  --radius-md: 0.5rem;
+
+  /* Typography */
+  --font-size-tile: 1.5rem;
+
+  /* Surface colors */
+  --color-surface: #fff;
+  --color-surface-active: #f0f0f0;
+  --color-surface-empty: #fafafa;
+
+  /* Border */
+  --color-border: #ccc;
+
+  /* Drag interaction */
+  --color-drag-border: #4a90e2;
+  --color-drag-bg: #e8f0fe;
+
+  /* Game state */
+  --color-correct: #6aaa64;
+  --color-present: #c9b458;
+  --color-absent: #787c7e;
+  --color-state-text: #fff;
+}

@@ -1,0 +1,38 @@
+.slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-tile);
+  height: var(--size-tile);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-tile);
+  user-select: none;
+}
+
+.empty {
+  border-style: dashed;
+  background: var(--color-surface-empty);
+}
+
+.filled {
+  cursor: pointer;
+  background: var(--color-surface);
+  /* touch-action:none allows pointer capture for drag on touch devices */
+  touch-action: none;
+}
+
+.filled:active {
+  background: var(--color-surface-active);
+}
+
+.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+/* Drop target highlight set imperatively by Tile during drag */
+.slot[data-drag-over="true"] {
+  border-color: var(--color-drag-border);
+  background: var(--color-drag-bg);
+}
