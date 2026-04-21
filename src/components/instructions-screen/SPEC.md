@@ -36,14 +36,15 @@ type InstructionsScreenProps = {
 
 ### InstructionsScreen({ isOpen, onClose })
 
-Renders a full-viewport overlay with two phases, each showing 3 slots:
+Renders a full-viewport overlay with three phases, each showing 3 slots. The
+example word is **왜가리** (pool: ㅇ ㄱ ㄹ ㅏ ㅏ ㅏ ㅣ ㅣ).
 
-1. **Pool phase:** Displays the pool of jamo tiles. Copy: "Use the pool of jamo
-   to guess the word." / "Drag and drop to combine." Three empty slots shown
-   below to illustrate the submission area.
-2. **Rotate phase:** Shows ㅏ → ㅗ rotation inline. Copy: "Tap to rotate." Three
-   result tiles (오 absent, 가 correct, 로 absent) demonstrate a submitted guess.
-   "Guesses don't need to be real words." note follows.
+1. **Compose phase:** Pool tiles shown at top. Inline example: ㄱ + ㅏ = 가.
+   Copy: "Drag and drop to combine." Slots: [가 present] [empty] [empty].
+2. **Rotate phase:** Inline example: ㅏ → ㅗ. Copy: "Tap to rotate." Slots:
+   [오 absent] [가 correct] [로 absent]. Note: "Guesses don't need to be real words."
+3. **Deconstruct phase:** Copy: "Tap to deconstruct." Slots: [왜 correct]
+   [가 correct] [리 correct] — the final winning answer.
 
 When `isOpen` is `false` the overlay renders nothing (returns `null`).
 
@@ -55,12 +56,13 @@ The overlay uses `role="dialog"` and `aria-modal="true"` for accessibility.
 
 ## Key Decisions
 
-- **Two phases, always 3 slots:** Each phase mirrors the actual game layout
-  (3-character words) so the player immediately recognises the submission area.
-  Empty slots in phase 1 introduce the concept; filled result tiles in phase 2
-  show what feedback looks like.
-- **Short imperative copy:** "Drag and drop to combine." / "Tap to rotate." —
-  game-appropriate tone, no paragraph explanations.
+- **Three phases, always 3 slots:** Each phase mirrors the actual submission row
+  so the player immediately recognises the layout. The narrative arc is:
+  compose → rotate → deconstruct → win.
+- **왜가리 as example word:** Its jamo decompose cleanly from the basic pool
+  (ㅏ×3, ㅣ×2) — one ㅏ rotates to ㅗ for guess 2, the rest build 왜 and 가/리.
+- **Short imperative copy:** "Drag and drop to combine." / "Tap to rotate." /
+  "Tap to deconstruct." — game-appropriate tone, no paragraph explanations.
 - **Returns `null` when closed** rather than using CSS visibility/display, so the
   DOM is clean and focus management is trivial (no hidden focusable elements).
 - **Backdrop click dismisses**: standard overlay UX; avoids requiring players to

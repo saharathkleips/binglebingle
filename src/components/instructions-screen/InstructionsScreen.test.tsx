@@ -13,22 +13,31 @@ describe("InstructionsScreen", () => {
     await expect.element(screen.getByTestId("instructions-screen")).toBeInTheDocument();
   });
 
-  it("renders the pool phase with jamo tiles", async () => {
+  it("renders the compose phase with the jamo pool", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    await expect.element(screen.getByTestId("phase-pool")).toBeInTheDocument();
+    await expect.element(screen.getByTestId("phase-compose")).toBeInTheDocument();
   });
 
-  it("renders the rotate phase", async () => {
+  it("renders the compose phase with 가 as present", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    await expect.element(screen.getByTestId("phase-rotate")).toBeInTheDocument();
+    const phase = screen.getByTestId("phase-compose");
+    await expect.element(phase).toHaveTextContent("가");
   });
 
-  it("renders the rotate phase with 오가로 result tiles", async () => {
+  it("renders the rotate phase with 오가로", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    const rotatePhase = screen.getByTestId("phase-rotate");
-    await expect.element(rotatePhase).toHaveTextContent("오");
-    await expect.element(rotatePhase).toHaveTextContent("가");
-    await expect.element(rotatePhase).toHaveTextContent("로");
+    const phase = screen.getByTestId("phase-rotate");
+    await expect.element(phase).toHaveTextContent("오");
+    await expect.element(phase).toHaveTextContent("가");
+    await expect.element(phase).toHaveTextContent("로");
+  });
+
+  it("renders the deconstruct phase with 왜가리 all correct", async () => {
+    const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
+    const phase = screen.getByTestId("phase-deconstruct");
+    await expect.element(phase).toHaveTextContent("왜");
+    await expect.element(phase).toHaveTextContent("가");
+    await expect.element(phase).toHaveTextContent("리");
   });
 
   it("calls onClose when the dismiss button is clicked", async () => {

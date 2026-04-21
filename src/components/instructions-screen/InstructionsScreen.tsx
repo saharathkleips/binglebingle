@@ -12,7 +12,9 @@ type GuessTile = {
   result: GuessResultKind;
 };
 
-const POOL_JAMO = ["ㅇ", "ㄱ", "ㄹ", "ㅏ", "ㅗ", "ㅣ"];
+// Full jamo pool for the example word 왜가리.
+// 왜 = ㅇ + ㅙ (ㅗ+ㅏ+ㅣ), 가 = ㄱ+ㅏ, 리 = ㄹ+ㅣ
+const POOL_JAMO = ["ㅇ", "ㄱ", "ㄹ", "ㅏ", "ㅏ", "ㅏ", "ㅣ", "ㅣ"];
 
 /**
  * Full-screen overlay explaining the game mechanic via a worked example.
@@ -50,23 +52,31 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
       >
         <h2 className={styles.heading}>어떻게 플레이하나요?</h2>
 
-        <section className={styles.phase} data-testid="phase-pool">
+        {/* Phase 1: compose */}
+        <section className={styles.phase} data-testid="phase-compose">
           <div className={styles.pool}>
-            {POOL_JAMO.map((jamo) => (
-              <span key={jamo} className={styles.poolTile}>
+            {POOL_JAMO.map((jamo, index) => (
+              <span key={index} className={styles.poolTile}>
                 {jamo}
               </span>
             ))}
           </div>
-          <p className={styles.label}>Use the pool of jamo to guess the word.</p>
-          <p className={styles.hint}>Drag and drop to combine.</p>
-          <SlotRow tiles={[null, null, null]} />
+          <div className={styles.combineExample}>
+            <span className={styles.poolTile}>ㄱ</span>
+            <span className={styles.operator}>+</span>
+            <span className={styles.poolTile}>ㅏ</span>
+            <span className={styles.operator}>=</span>
+            <span className={styles.poolTile}>가</span>
+          </div>
+          <p className={styles.label}>Drag and drop to combine.</p>
+          <SlotRow tiles={[{ syllable: "가", result: "present" }, null, null]} />
         </section>
 
+        {/* Phase 2: rotate */}
         <section className={styles.phase} data-testid="phase-rotate">
-          <div className={styles.rotateExample}>
+          <div className={styles.combineExample}>
             <span className={styles.poolTile}>ㅏ</span>
-            <span className={styles.arrow}>→</span>
+            <span className={styles.operator}>→</span>
             <span className={styles.poolTile}>ㅗ</span>
           </div>
           <p className={styles.label}>Tap to rotate.</p>
@@ -78,6 +88,18 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
             ]}
           />
           <p className={styles.hint}>Guesses don't need to be real words.</p>
+        </section>
+
+        {/* Phase 3: deconstruct + final answer */}
+        <section className={styles.phase} data-testid="phase-deconstruct">
+          <p className={styles.label}>Tap to deconstruct.</p>
+          <SlotRow
+            tiles={[
+              { syllable: "왜", result: "correct" },
+              { syllable: "가", result: "correct" },
+              { syllable: "리", result: "correct" },
+            ]}
+          />
         </section>
 
         <button
@@ -99,7 +121,7 @@ function SlotRow({ tiles }: { tiles: (GuessTile | null)[] }) {
         tile === null ? (
           <span key={index} className={styles.emptySlot} />
         ) : (
-          <span key={tile.syllable} className={`${styles.tile} ${styles[tile.result]}`}>
+          <span key={index} className={`${styles.tile} ${styles[tile.result]}`}>
             {tile.syllable}
           </span>
         ),
