@@ -7,13 +7,14 @@
 
 ## Versions
 
-| Version | Theme              | Status      |
-| ------- | ------------------ | ----------- |
-| 1.0.x   | Foundation         | Complete    |
-| 1.1.x   | Domain Logic       | Complete    |
-| 1.2.x   | Playable Game      | In progress |
-| 1.3.x   | Full Product Shell | In progress |
-| 2.0.x   | Post-Launch        | Backlog     |
+| Version | Theme              | Status   |
+| ------- | ------------------ | -------- |
+| 1.0.x   | Foundation         | Complete |
+| 1.1.x   | Domain Logic       | Complete |
+| 1.2.x   | Playable Game      | Complete |
+| 1.3.x   | Full Product Shell | Complete |
+| 1.4.x   | TBD                | Pending  |
+| 2.0.x   | Post-Launch        | Backlog  |
 
 ## Out of Scope
 
