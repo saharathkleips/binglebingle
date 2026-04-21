@@ -1,0 +1,115 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 0.75rem);
+  padding: var(--space-lg, 2rem);
+  max-width: 28rem;
+  width: calc(100% - 2rem);
+  max-height: 90dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md, 1.25rem);
+}
+
+.heading {
+  font-size: 1.25rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+}
+
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md, 1.25rem);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stepLabel {
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.stepDescription {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted, #666);
+}
+
+.example {
+  margin: 0.25rem 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.jamo {
+  font-size: 1.25rem;
+  font-weight: bold;
+  display: inline-block;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.syllable {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.arrow {
+  font-size: 0.9rem;
+  color: var(--color-text-muted, #666);
+}
+
+.plus {
+  font-size: 0.9rem;
+  color: var(--color-text-muted, #666);
+}
+
+.separator {
+  font-size: 0.9rem;
+  color: var(--color-text-muted, #666);
+  margin: 0 0.25rem;
+}
+
+.goal {
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--color-text-muted, #666);
+}
+
+.dismissButton {
+  align-self: center;
+  padding: 0.5rem 2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  background: var(--color-surface-active, #e0e0e0);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 0.375rem);
+  cursor: pointer;
+}
+
+.dismissButton:hover {
+  background: var(--color-border);
+}

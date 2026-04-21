@@ -6,6 +6,7 @@ import { Pool } from "../pool/Pool";
 import { SubmissionArea } from "../submission-area/SubmissionArea";
 import { HistoryArea } from "../history-area/HistoryArea";
 import { NavBar } from "../nav-bar/NavBar";
+import { InstructionsScreen } from "../instructions-screen/InstructionsScreen";
 import type { GameState } from "../../context/game";
 
 // Temporary dev wiring — replaced by Game.tsx in milestone 1.3.1
@@ -13,7 +14,7 @@ const DEV_WORD = createWord("고양이")!;
 const DEV_INITIAL_STATE = createInitialGameState(DEV_WORD);
 
 export function App({ initialState = DEV_INITIAL_STATE }: { initialState?: GameState } = {}) {
-  const [isInstructionsOpen, setIsInstructionsOpen] = useState(false);
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState(true);
 
   function handleToggleInstructions() {
     setIsInstructionsOpen((isOpen) => !isOpen);
@@ -25,6 +26,7 @@ export function App({ initialState = DEV_INITIAL_STATE }: { initialState?: GameS
         onToggleInstructions={handleToggleInstructions}
         isInstructionsOpen={isInstructionsOpen}
       />
+      <InstructionsScreen isOpen={isInstructionsOpen} onClose={handleToggleInstructions} />
       <div
         style={{
           display: "flex",
