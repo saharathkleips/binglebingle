@@ -6,7 +6,22 @@
  * All functions are pure. No React. No side effects.
  */
 
-import type { GuessRecord, ScoringResult } from ".";
+import type { EvaluatedCharacter, GuessRecord, ScoringResult } from ".";
+
+/**
+ * Returns true when the player has won: the last guess record exists and
+ * every evaluated character in it is marked CORRECT.
+ *
+ * @param history - The list of guess records for the game so far
+ * @returns Whether the player has won
+ */
+export function isWon(history: readonly GuessRecord[]): boolean {
+  const lastGuess = history[history.length - 1];
+  return (
+    lastGuess !== undefined &&
+    lastGuess.every((entry: EvaluatedCharacter) => entry.result === "CORRECT")
+  );
+}
 
 /**
  * Calculates the score based on the number of guesses made.
