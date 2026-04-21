@@ -36,18 +36,20 @@ type InstructionsScreenProps = {
 
 ### InstructionsScreen({ isOpen, onClose })
 
-Renders a full-viewport overlay explaining the three mechanics in order:
+Renders a full-viewport overlay that walks the player through a worked example of
+guessing the word **왜가리**, layering one concept per step:
 
-1. **Rotate (회전):** A jamo tile can be rotated into a related form.
-   Example: ㄱ → ㄴ → ㄷ
-2. **Combine (결합):** Two jamo of the same type can combine into a compound
-   form. Example: ㄱ + ㄱ = ㄲ, ㅗ + ㅏ = ㅘ
-3. **Compose (조합):** A choseong and jungseong (plus optional jongseong) combine
-   into a syllable block. Example: ㅂ + ㅏ + ㅂ = 밥
+1. **Compose (조합):** ㄱ + ㅏ compose into 가; submitted as a guess — result is
+   absent. Introduces the core compose mechanic.
+2. **Rotate (회전):** ㅏ → ㅗ demonstrates rotation; the guess 오가로 is submitted
+   (가 is correct in position 2). Notes that guesses don't need to be real words.
+3. **Answer:** 왜가리 — all correct, showing the win state.
+4. **Decompose tip:** "if you mess up, tap to decompose" — explains how to undo a
+   composed syllable.
 
 When `isOpen` is `false` the overlay renders nothing (returns `null`).
 
-A "Got it" dismiss button calls `onClose`. Clicking the backdrop (the area
+A "알겠어요!" dismiss button calls `onClose`. Clicking the backdrop (the area
 outside the card) also calls `onClose` so players can tap away.
 
 The overlay uses `role="dialog"` and `aria-modal="true"` for accessibility.
@@ -55,6 +57,10 @@ The overlay uses `role="dialog"` and `aria-modal="true"` for accessibility.
 
 ## Key Decisions
 
+- **Worked example over mechanic list:** The original design listed rotate /
+  combine / compose as three abstract steps. The reviewer requested a narrative
+  that layers concepts through a real guess sequence (왜가리), which is more
+  scannable and immediately grounded in the actual game loop.
 - **Returns `null` when closed** rather than using CSS visibility/display, so the
   DOM is clean and focus management is trivial (no hidden focusable elements).
 - **Backdrop click dismisses**: standard overlay UX; avoids requiring players to

@@ -13,19 +13,28 @@ describe("InstructionsScreen", () => {
     await expect.element(screen.getByTestId("instructions-screen")).toBeInTheDocument();
   });
 
-  it("renders the rotate step", async () => {
-    const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    await expect.element(screen.getByText("1. 회전 (Rotate)")).toBeInTheDocument();
-  });
-
-  it("renders the combine step", async () => {
-    const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    await expect.element(screen.getByText("2. 결합 (Combine)")).toBeInTheDocument();
-  });
-
   it("renders the compose step", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    await expect.element(screen.getByText("3. 조합 (Compose)")).toBeInTheDocument();
+    await expect.element(screen.getByTestId("step-compose")).toBeInTheDocument();
+  });
+
+  it("renders the rotate step", async () => {
+    const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
+    await expect.element(screen.getByTestId("step-rotate")).toBeInTheDocument();
+  });
+
+  it("renders the answer step with 왜가리", async () => {
+    const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
+    const answerStep = screen.getByTestId("step-answer");
+    await expect.element(answerStep).toBeInTheDocument();
+    await expect.element(answerStep).toHaveTextContent("왜");
+    await expect.element(answerStep).toHaveTextContent("가");
+    await expect.element(answerStep).toHaveTextContent("리");
+  });
+
+  it("renders the decompose tip", async () => {
+    const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
+    await expect.element(screen.getByTestId("decompose-tip")).toBeInTheDocument();
   });
 
   it("calls onClose when the dismiss button is clicked", async () => {
