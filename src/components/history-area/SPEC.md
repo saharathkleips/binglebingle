@@ -1,6 +1,6 @@
 # SPEC: components/history-area
 
-**Status:** draft
+**Status:** stable
 
 ## Purpose
 

@@ -5,19 +5,30 @@
  */
 
 import { resolveCharacter } from "../../lib/character";
-import type { EvaluatedCharacter } from "../../lib/engine";
+import type { CharacterResult, EvaluatedCharacter } from "../../lib/engine";
 import styles from "./HistoryTile.module.css";
 
+/**
+ * Props for the `HistoryTile` component.
+ *
+ * @property evaluated - The evaluated character to display, including its result classification.
+ */
 export type HistoryTileProps = {
   evaluated: EvaluatedCharacter;
 };
 
-const RESULT_CLASS: Record<string, string | undefined> = {
+const RESULT_CLASS: Record<CharacterResult, string | undefined> = {
   CORRECT: styles.correct,
   PRESENT: styles.present,
   ABSENT: styles.absent,
 };
 
+/**
+ * Renders a single evaluated tile, displaying the resolved character and applying
+ * a CSS class based on its result.
+ *
+ * @param props - {@link HistoryTileProps}
+ */
 export function HistoryTile({ evaluated }: HistoryTileProps) {
   const display = evaluated.character ? resolveCharacter(evaluated.character) : "";
   const resultClass = RESULT_CLASS[evaluated.result] ?? "";

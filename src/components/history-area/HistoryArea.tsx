@@ -8,6 +8,11 @@ import { useGame } from "../../context/game/GameContext";
 import { HistoryTile } from "./HistoryTile";
 import styles from "./HistoryArea.module.css";
 
+/**
+ * Renders the full guess history as rows of evaluated tiles.
+ *
+ * Returns `null` when no guesses have been made, avoiding empty layout space.
+ */
 export function HistoryArea() {
   const { state } = useGame();
 
