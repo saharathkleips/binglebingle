@@ -15,7 +15,7 @@ type NavBarProps = {
 export function NavBar({ onToggleInstructions, isInstructionsOpen }: NavBarProps) {
   return (
     <nav className={styles.navBar} data-testid="nav-bar">
-      <span className={styles.title}>빙글빙글</span>
+      <h1 className={styles.title}>빙글빙글</h1>
       <button
         className={styles.instructionsButton}
         onClick={onToggleInstructions}
