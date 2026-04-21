@@ -8,9 +8,10 @@ import { character } from "../../lib/character";
 const WORD = createWord("고양이")!;
 
 describe("App", () => {
-  it("renders the game heading", async () => {
+  it("renders the nav bar with the game title", async () => {
     const screen = await render(<App />);
-    await expect.element(screen.getByRole("heading", { level: 1 })).toHaveTextContent("빙글빙글");
+    await expect.element(screen.getByTestId("nav-bar")).toBeInTheDocument();
+    await expect.element(screen.getByText("빙글빙글")).toBeInTheDocument();
   });
 
   it("renders pool and submission area", async () => {
