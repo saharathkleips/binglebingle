@@ -13,28 +13,22 @@ describe("InstructionsScreen", () => {
     await expect.element(screen.getByTestId("instructions-screen")).toBeInTheDocument();
   });
 
-  it("renders the compose step", async () => {
+  it("renders the pool phase with jamo tiles", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    await expect.element(screen.getByTestId("step-compose")).toBeInTheDocument();
+    await expect.element(screen.getByTestId("phase-pool")).toBeInTheDocument();
   });
 
-  it("renders the rotate step", async () => {
+  it("renders the rotate phase", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    await expect.element(screen.getByTestId("step-rotate")).toBeInTheDocument();
+    await expect.element(screen.getByTestId("phase-rotate")).toBeInTheDocument();
   });
 
-  it("renders the answer step with 왜가리", async () => {
+  it("renders the rotate phase with 오가로 result tiles", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    const answerStep = screen.getByTestId("step-answer");
-    await expect.element(answerStep).toBeInTheDocument();
-    await expect.element(answerStep).toHaveTextContent("왜");
-    await expect.element(answerStep).toHaveTextContent("가");
-    await expect.element(answerStep).toHaveTextContent("리");
-  });
-
-  it("renders the decompose tip", async () => {
-    const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    await expect.element(screen.getByTestId("decompose-tip")).toBeInTheDocument();
+    const rotatePhase = screen.getByTestId("phase-rotate");
+    await expect.element(rotatePhase).toHaveTextContent("오");
+    await expect.element(rotatePhase).toHaveTextContent("가");
+    await expect.element(rotatePhase).toHaveTextContent("로");
   });
 
   it("calls onClose when the dismiss button is clicked", async () => {

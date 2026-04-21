@@ -36,16 +36,14 @@ type InstructionsScreenProps = {
 
 ### InstructionsScreen({ isOpen, onClose })
 
-Renders a full-viewport overlay that walks the player through a worked example of
-guessing the word **왜가리**, layering one concept per step:
+Renders a full-viewport overlay with two phases, each showing 3 slots:
 
-1. **Compose (조합):** ㄱ + ㅏ compose into 가; submitted as a guess — result is
-   absent. Introduces the core compose mechanic.
-2. **Rotate (회전):** ㅏ → ㅗ demonstrates rotation; the guess 오가로 is submitted
-   (가 is correct in position 2). Notes that guesses don't need to be real words.
-3. **Answer:** 왜가리 — all correct, showing the win state.
-4. **Decompose tip:** "if you mess up, tap to decompose" — explains how to undo a
-   composed syllable.
+1. **Pool phase:** Displays the pool of jamo tiles. Copy: "Use the pool of jamo
+   to guess the word." / "Drag and drop to combine." Three empty slots shown
+   below to illustrate the submission area.
+2. **Rotate phase:** Shows ㅏ → ㅗ rotation inline. Copy: "Tap to rotate." Three
+   result tiles (오 absent, 가 correct, 로 absent) demonstrate a submitted guess.
+   "Guesses don't need to be real words." note follows.
 
 When `isOpen` is `false` the overlay renders nothing (returns `null`).
 
@@ -57,10 +55,12 @@ The overlay uses `role="dialog"` and `aria-modal="true"` for accessibility.
 
 ## Key Decisions
 
-- **Worked example over mechanic list:** The original design listed rotate /
-  combine / compose as three abstract steps. The reviewer requested a narrative
-  that layers concepts through a real guess sequence (왜가리), which is more
-  scannable and immediately grounded in the actual game loop.
+- **Two phases, always 3 slots:** Each phase mirrors the actual game layout
+  (3-character words) so the player immediately recognises the submission area.
+  Empty slots in phase 1 introduce the concept; filled result tiles in phase 2
+  show what feedback looks like.
+- **Short imperative copy:** "Drag and drop to combine." / "Tap to rotate." —
+  game-appropriate tone, no paragraph explanations.
 - **Returns `null` when closed** rather than using CSS visibility/display, so the
   DOM is clean and focus management is trivial (no hidden focusable elements).
 - **Backdrop click dismisses**: standard overlay UX; avoids requiring players to
