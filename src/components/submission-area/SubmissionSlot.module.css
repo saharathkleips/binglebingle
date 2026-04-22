@@ -2,10 +2,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-tile);
-  height: var(--size-tile);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md);
+  width: var(--size-tile-width);
+  height: var(--size-tile-height);
+  border: 3px solid var(--color-tile-border);
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-tile);
   user-select: none;
 }
@@ -17,7 +17,10 @@
 
 .filled {
   cursor: pointer;
-  background: var(--color-surface);
+  background: var(--color-tile-face);
+  color: var(--color-tile-text);
+  font-weight: bold;
+  box-shadow: 2px 4px 8px var(--color-tile-shadow);
   /* touch-action:none allows pointer capture for drag on touch devices */
   touch-action: none;
 }

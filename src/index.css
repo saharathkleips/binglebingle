@@ -37,8 +37,10 @@
 
   /* ── Semantic: Tile face ─────────────────────────────────────────────── */
   --color-tile-face: var(--palette-obangsaek-white);
-  --color-tile-border: var(--palette-dancheong-blue);
-  --color-tile-shadow: var(--palette-dancheong-blue);
+  --color-tile-text: var(--palette-obangsaek-black);
+  /* Hwatu cards have a distinctive thick red border */
+  --color-tile-border: var(--palette-obangsaek-red);
+  --color-tile-shadow: rgba(195, 41, 27, 0.3);
 
   /* ── Tile dimensions (3:5 hwatu ratio) ──────────────────────────────── */
   --size-tile-width: 3rem;
