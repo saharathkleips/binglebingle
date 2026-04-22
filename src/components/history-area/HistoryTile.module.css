@@ -2,10 +2,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-tile);
-  height: var(--size-tile);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  width: var(--size-tile-width);
+  height: var(--size-tile-height);
+  border: 3px solid var(--color-tile-border);
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-tile);
   font-weight: bold;
   user-select: none;
