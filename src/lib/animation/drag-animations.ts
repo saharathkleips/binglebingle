@@ -46,20 +46,19 @@ export function animatePutDown(element: HTMLElement): gsap.core.Tween {
 }
 
 /**
- * Animates element to the given x/y transform offset, settling nearby
- * rather than snapping back to origin. Also resets scale to 1.
+ * Snaps element back to its origin position (x:0, y:0) after a failed drop.
+ * Clears all inline GSAP props on complete so the tile is fully reset.
  *
  * @param element - The dragged tile element.
- * @param x - Target x transform offset.
- * @param y - Target y transform offset.
- * @returns A GSAP Tween for the reposition animation.
+ * @returns A GSAP Tween for the snap-back animation.
  */
-export function animateReposition(element: HTMLElement, x: number, y: number): gsap.core.Tween {
+export function animateReposition(element: HTMLElement): gsap.core.Tween {
   return gsap.to(element, {
-    x,
-    y,
+    x: 0,
+    y: 0,
     scale: 1,
     duration: REPOSITION_DURATION,
-    ease: "power2.out",
+    ease: "back.out(1.2)",
+    clearProps: "all",
   });
 }

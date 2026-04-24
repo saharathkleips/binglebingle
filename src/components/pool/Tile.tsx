@@ -146,6 +146,9 @@ export function Tile({
         zIndexBoost: true,
         dragClickables: true,
         onDragStart: function onDragStart(this: Draggable) {
+          // Allow the tile to travel outside the pool's scroll boundary during drag.
+          const poolEl = document.querySelector('[data-testid="pool"]') as HTMLElement | null;
+          if (poolEl !== null) poolEl.style.overflow = "visible";
           animatePickUp(this.target as HTMLElement);
         },
         onDrag: function onDrag(this: Draggable) {
@@ -165,6 +168,10 @@ export function Tile({
           lastOverRef.current?.removeAttribute("data-drag-over");
           lastOverRef.current = null;
 
+          // Restore pool overflow so it can scroll again.
+          const poolEl = document.querySelector('[data-testid="pool"]') as HTMLElement | null;
+          if (poolEl !== null) poolEl.style.overflow = "";
+
           const element = this.target as HTMLElement;
           const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
           const dropTarget = findDropTarget(elements, tileIdRef.current);
@@ -181,14 +188,15 @@ export function Tile({
             const targetTileIdStr = dropTarget.getAttribute("data-tile-id");
             if (targetTileIdStr !== null) {
               callbacksRef.current.onDropOnTile(parseInt(targetTileIdStr, 10));
-              // If compose succeeds, tile unmounts and animation is harmless.
-              // If compose fails, tile stays at its dragged position — the
-              // "reposition" behavior from the spec.
+              // Reset position immediately so the CSS shake animation owns the
+              // transform on compose fail; on compose success the tile unmounts.
+              gsap.set(element, { clearProps: "all" });
+              return;
             }
           }
 
-          // Reset scale/shadow; keep current position offset
-          animateReposition(element, this.x, this.y);
+          // No valid drop target — snap tile back to its origin in the pool.
+          animateReposition(element);
         },
         onClick: function onClick() {
           if (callbacksRef.current.isTappable) {

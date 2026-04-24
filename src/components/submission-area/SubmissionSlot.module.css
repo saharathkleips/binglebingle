@@ -39,6 +39,32 @@
     0 0 12px 3px rgba(52, 118, 65, 0.35);
 }
 
+/*
+ * Ghost placeholder that remains at the slot's grid position while its filled
+ * button is being dragged away. Mirrors the empty-slot appearance so there is
+ * always a visible landing indicator.
+ */
+.slotGhost {
+  position: relative;
+  width: var(--size-tile-width);
+  height: var(--size-tile-height);
+  border: 6px dashed var(--color-tile-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-empty);
+}
+
+/*
+ * When the filled button sits inside the ghost it must cover it completely,
+ * including the ghost's 6px border. inset: -6px expands the button outward by
+ * 6px on every side so its border-box coincides with the ghost's border-box.
+ */
+.slotGhost .filled {
+  position: absolute;
+  inset: -6px;
+  width: auto;
+  height: auto;
+}
+
 /* Drop target highlight set imperatively during drag — VIS-29 glow. */
 .slot[data-drag-over="true"] {
   border-color: var(--color-drag-border);

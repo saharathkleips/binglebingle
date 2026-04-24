@@ -40,7 +40,7 @@ describe("animatePutDown", () => {
 
 describe("animateReposition", () => {
   it("returns a GSAP Tween", () => {
-    const tween = animateReposition(mockElement(), 10, 20);
+    const tween = animateReposition(mockElement());
     expect(tween).toBeInstanceOf(gsap.core.Tween);
     tween.kill();
   });

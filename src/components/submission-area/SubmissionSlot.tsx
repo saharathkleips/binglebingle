@@ -106,8 +106,8 @@ export function SubmissionSlot({
             }
           }
 
-          // No valid target — reposition at current location
-          animateReposition(element, this.x, this.y);
+          // No valid slot target — snap back to origin.
+          animateReposition(element);
         },
         onClick: function onClick() {
           callbacksRef.current.onTap();
@@ -117,6 +117,16 @@ export function SubmissionSlot({
     // Recreate Draggable (and replay entrance animation) when fill state or occupying tile changes.
     { scope: buttonRef, dependencies: [isFilled, filledTileId], revertOnUpdate: true },
   );
+
+  // Clear any stale GSAP transforms when the slot becomes empty.
+  // gsap.from() inside useGSAP sets scale: 0.6 synchronously as its "from" value.
+  // revertOnUpdate can record that 0.6 as the pre-animation state and restore it,
+  // leaving the empty slot visually shrunk. Running clearProps here (after useGSAP's
+  // revert) ensures the element is clean before the next fill.
+  useLayoutEffect(() => {
+    if (isFilled || !buttonRef.current) return;
+    gsap.set(buttonRef.current, { clearProps: "all" });
+  }, [isFilled]);
 
   // VIS-24: brief scale pulse on all filled slots when a guess is being submitted.
   useLayoutEffect(() => {
@@ -141,7 +151,7 @@ export function SubmissionSlot({
     .filter(Boolean)
     .join(" ");
 
-  return (
+  const button = (
     <button
       ref={buttonRef}
       type="button"
@@ -152,6 +162,19 @@ export function SubmissionSlot({
       {display}
     </button>
   );
+
+  // When filled, wrap in a ghost div that stays at the original slot position
+  // while the button is dragged away. The ghost shows the empty-slot appearance
+  // so there is always a visible indicator of where the slot is.
+  if (isFilled) {
+    return (
+      <div className={styles.slotGhost} data-slot-index={slotIndex}>
+        {button}
+      </div>
+    );
+  }
+
+  return button;
 }
 
 // ---------------------------------------------------------------------------
