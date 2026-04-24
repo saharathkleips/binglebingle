@@ -3,7 +3,7 @@
 ## Current Status
 
 **Active version:** 1.4.x — 단청 (Dancheong)
-**Next milestone:** 1.4.1 — Design Tokens
+**Next milestone:** 1.4.4 — GSAP Drag
 
 ## Versions
 

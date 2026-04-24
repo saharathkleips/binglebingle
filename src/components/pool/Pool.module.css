@@ -1,6 +1,10 @@
 .pool {
+  flex: 1 1 0;
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   gap: var(--space-sm);
   padding: var(--space-sm);
+  overflow-y: auto;
+  min-height: 0;
 }
