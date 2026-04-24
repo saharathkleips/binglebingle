@@ -31,12 +31,7 @@
   background: var(--color-surface-active);
 }
 
-.dragging {
-  opacity: 0.4;
-  cursor: grabbing;
-}
-
-/* Drop target highlight set imperatively by Tile during drag */
+/* Drop target highlight set imperatively during drag */
 .slot[data-drag-over="true"] {
   border-color: var(--color-drag-border);
   background: var(--color-drag-bg);

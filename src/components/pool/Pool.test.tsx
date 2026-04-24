@@ -15,13 +15,17 @@ async function renderPool(word: string) {
   );
 }
 
-/** Dispatch a sequence of pointer events directly on a DOM element. */
-function pointerSequence(
+/**
+ * Dispatch a drag sequence via GSAP Draggable's event model:
+ * pointerdown on the element, pointermove/pointerup on document.
+ */
+function dragSequence(
   element: Element,
   events: Array<{ type: string; clientX: number; clientY: number }>,
 ) {
   for (const { type, clientX, clientY } of events) {
-    element.dispatchEvent(
+    const target = type === "pointerdown" ? element : document;
+    target.dispatchEvent(
       new PointerEvent(type, {
         clientX,
         clientY,
@@ -73,7 +77,7 @@ describe("Pool tap", () => {
     const tile2CenterY = tile2Rect.top + tile2Rect.height / 2;
 
     // Compose: drag tile-0 onto tile-2 (ㄱ+ㄱ→ㄲ)
-    pointerSequence(tile0, [
+    dragSequence(tile0, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: tile2CenterX, clientY: tile2CenterY },
@@ -100,7 +104,7 @@ describe("Pool drag", () => {
     const targetCenterX = targetRect.left + targetRect.width / 2;
     const targetCenterY = targetRect.top + targetRect.height / 2;
 
-    pointerSequence(source, [
+    dragSequence(source, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
@@ -124,7 +128,7 @@ describe("Pool drag", () => {
       const rect = target.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      pointerSequence(source, [
+      dragSequence(source, [
         { type: "pointerdown", clientX: 0, clientY: 0 },
         { type: "pointermove", clientX: 10, clientY: 0 },
         { type: "pointermove", clientX: centerX, clientY: centerY },
@@ -156,7 +160,7 @@ describe("Pool drag", () => {
     const targetCenterX = targetRect.left + targetRect.width / 2;
     const targetCenterY = targetRect.top + targetRect.height / 2;
 
-    pointerSequence(source, [
+    dragSequence(source, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
