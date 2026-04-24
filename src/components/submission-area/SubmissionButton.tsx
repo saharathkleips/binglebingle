@@ -11,10 +11,12 @@ import type { SubmissionSlot, GameAction } from "../../context/game";
 /**
  * @property submission - The current submission slots to validate.
  * @property dispatch - Game dispatch function.
+ * @property onSubmitStart - Optional callback fired just before the submit dispatch; used to trigger slot animations.
  */
 export type SubmissionButtonProps = {
   submission: readonly SubmissionSlot[];
   dispatch: Dispatch<GameAction>;
+  onSubmitStart?: () => void;
 };
 
 /**
@@ -22,11 +24,12 @@ export type SubmissionButtonProps = {
  *
  * @param props - {@link SubmissionButtonProps}
  */
-export function SubmissionButton({ submission, dispatch }: SubmissionButtonProps) {
+export function SubmissionButton({ submission, dispatch, onSubmitStart }: SubmissionButtonProps) {
   const isValid = canSubmit(submission) === "VALID";
 
   function handleClick() {
     if (isValid) {
+      onSubmitStart?.();
       dispatch({ type: "ROUND_SUBMISSION_SUBMIT" });
     }
   }

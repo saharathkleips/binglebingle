@@ -31,8 +31,17 @@
   background: var(--color-surface-active);
 }
 
-/* Drop target highlight set imperatively during drag */
+/* VIS-29: green glow when all slots are filled and the guess is valid. */
+.ready {
+  box-shadow:
+    inset 0 0 0 2px var(--color-tile-text),
+    4px 4px 0 0 var(--color-tile-text),
+    0 0 12px 3px rgba(52, 118, 65, 0.35);
+}
+
+/* Drop target highlight set imperatively during drag — VIS-29 glow. */
 .slot[data-drag-over="true"] {
   border-color: var(--color-drag-border);
   background: var(--color-drag-bg);
+  box-shadow: 0 0 14px 4px rgba(10, 10, 245, 0.28);
 }
