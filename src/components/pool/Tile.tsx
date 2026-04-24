@@ -2,16 +2,18 @@
  * @file Tile.tsx
  *
  * A single interactive tile in the jamo pool.
- * Owns pointer/drag mechanics only — all game logic lives in Pool.
+ * Owns GSAP Draggable mechanics — all game logic lives in Pool.
  *
  * Drag behavior (UI-04):
  * - Drag to SubmissionSlot → onDropOnSlot(slotIndex)
  * - Drag to another Tile → onDropOnTile(targetId)
- * A 4px movement threshold distinguishes tap from drag.
+ * GSAP Draggable handles click-vs-drag differentiation natively.
  */
 
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { resolveCharacter } from "../../lib/character";
+import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
+import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
 import type { Tile } from "../../context/game";
 import styles from "./Tile.module.css";
 
@@ -36,11 +38,9 @@ export type TileProps = {
   onRejectedEnd: () => void;
 };
 
-const DRAG_THRESHOLD_PX = 4;
-
 /**
  * A single interactive tile in the jamo pool.
- * Owns pointer/drag mechanics only — all game logic lives in {@link Pool}.
+ * Owns GSAP Draggable mechanics — all game logic lives in {@link Pool}.
  *
  * @param props - See {@link TileProps}.
  */
@@ -53,114 +53,80 @@ export function Tile({
   onDropOnSlot,
   onRejectedEnd,
 }: TileProps) {
-  const [isDragging, setIsDragging] = useState(false);
-
   const buttonRef = useRef<HTMLButtonElement>(null);
-  // Refs track mutable drag state without triggering re-renders on every move.
-  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
-  const isDraggingRef = useRef(false);
-  const ghostRef = useRef<HTMLDivElement | null>(null);
   const lastOverRef = useRef<Element | null>(null);
-  // Set in pointerup after a drag so the synthetic click event can be suppressed.
-  const wasDragRef = useRef(false);
 
-  function handleClick() {
-    if (wasDragRef.current) {
-      wasDragRef.current = false;
-      return;
-    }
-    if (isTappable) {
-      onTap();
-    }
-  }
+  // Refs hold latest prop values so Draggable callbacks never go stale.
+  const callbacksRef = useRef({ isTappable, onTap, onDropOnTile, onDropOnSlot });
+  callbacksRef.current = { isTappable, onTap, onDropOnTile, onDropOnSlot };
+  const tileIdRef = useRef(tile.id);
+  tileIdRef.current = tile.id;
 
-  function handlePointerDown(event: React.PointerEvent<HTMLButtonElement>) {
-    dragStartRef.current = { x: event.clientX, y: event.clientY };
-  }
+  useGSAP(
+    () => {
+      if (!buttonRef.current) return;
 
-  function handlePointerMove(event: React.PointerEvent<HTMLButtonElement>) {
-    const start = dragStartRef.current;
-    if (start === null) return;
+      Draggable.create(buttonRef.current, {
+        type: "x,y",
+        zIndexBoost: true,
+        dragClickables: true,
+        onDragStart: function onDragStart(this: Draggable) {
+          animatePickUp(this.target as HTMLElement);
+        },
+        onDrag: function onDrag(this: Draggable) {
+          const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
+          const dropTarget = findDropTarget(elements, tileIdRef.current);
 
-    const dx = event.clientX - start.x;
-    const dy = event.clientY - start.y;
+          if (lastOverRef.current !== null && lastOverRef.current !== dropTarget) {
+            lastOverRef.current.removeAttribute("data-drag-over");
+          }
+          if (dropTarget !== null) {
+            dropTarget.setAttribute("data-drag-over", "true");
+          }
+          lastOverRef.current = dropTarget;
+        },
+        onDragEnd: function onDragEnd(this: Draggable) {
+          // Clear any drop target highlighting
+          lastOverRef.current?.removeAttribute("data-drag-over");
+          lastOverRef.current = null;
 
-    if (!isDraggingRef.current) {
-      if (Math.sqrt(dx * dx + dy * dy) < DRAG_THRESHOLD_PX) return;
+          const element = this.target as HTMLElement;
+          const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
+          const dropTarget = findDropTarget(elements, tileIdRef.current);
 
-      isDraggingRef.current = true;
-      setIsDragging(true);
-      // Pointer capture routes all subsequent pointer events to this element.
-      buttonRef.current?.setPointerCapture?.(event.pointerId);
+          if (dropTarget !== null) {
+            const slotIndexStr = dropTarget.getAttribute("data-slot-index");
+            if (slotIndexStr !== null) {
+              callbacksRef.current.onDropOnSlot(parseInt(slotIndexStr, 10));
+              // Tile will unmount (removed from pool) — clear inline styles
+              gsap.set(element, { clearProps: "all" });
+              return;
+            }
 
-      const display = resolveCharacter(tile.character);
-      const ghost = document.createElement("div");
-      ghost.textContent = display;
-      Object.assign(ghost.style, GHOST_STYLES);
-      document.body.appendChild(ghost);
-      ghostRef.current = ghost;
-    }
+            const targetTileIdStr = dropTarget.getAttribute("data-tile-id");
+            if (targetTileIdStr !== null) {
+              callbacksRef.current.onDropOnTile(parseInt(targetTileIdStr, 10));
+              // If compose succeeds, tile unmounts and animation is harmless.
+              // If compose fails, tile stays at its dragged position — the
+              // "reposition" behavior from the spec.
+            }
+          }
 
-    const ghost = ghostRef.current;
-    if (ghost !== null) {
-      ghost.style.left = `${event.clientX - 24}px`;
-      ghost.style.top = `${event.clientY - 24}px`;
-    }
-
-    // ghost has pointer-events:none so elementsFromPoint skips it.
-    // elementsFromPoint is not implemented in all environments (e.g. jsdom).
-    const elements = document.elementsFromPoint?.(event.clientX, event.clientY) ?? [];
-    const dropTarget = findDropTarget(elements, tile.id);
-
-    if (lastOverRef.current !== null && lastOverRef.current !== dropTarget) {
-      lastOverRef.current.removeAttribute("data-drag-over");
-    }
-    if (dropTarget !== null) {
-      dropTarget.setAttribute("data-drag-over", "true");
-    }
-    lastOverRef.current = dropTarget;
-  }
-
-  function handlePointerUp(event: React.PointerEvent<HTMLButtonElement>) {
-    dragStartRef.current = null;
-    if (!isDraggingRef.current) return;
-
-    cleanupDrag();
-    wasDragRef.current = true;
-
-    const elements = document.elementsFromPoint?.(event.clientX, event.clientY) ?? [];
-    const dropTarget = findDropTarget(elements, tile.id);
-    if (dropTarget === null) return;
-
-    const slotIndexStr = dropTarget.getAttribute("data-slot-index");
-    if (slotIndexStr !== null) {
-      onDropOnSlot(parseInt(slotIndexStr, 10));
-      return;
-    }
-
-    const targetTileIdStr = dropTarget.getAttribute("data-tile-id");
-    if (targetTileIdStr !== null) {
-      onDropOnTile(parseInt(targetTileIdStr, 10));
-    }
-  }
-
-  function handlePointerCancel() {
-    dragStartRef.current = null;
-    if (!isDraggingRef.current) return;
-    cleanupDrag();
-  }
+          // Reset scale/shadow; keep current position offset
+          animateReposition(element, this.x, this.y);
+        },
+        onClick: function onClick() {
+          if (callbacksRef.current.isTappable) {
+            callbacksRef.current.onTap();
+          }
+        },
+      });
+    },
+    { scope: buttonRef },
+  );
 
   function handleAnimationEnd() {
     onRejectedEnd();
-  }
-
-  function cleanupDrag() {
-    ghostRef.current?.remove();
-    ghostRef.current = null;
-    lastOverRef.current?.removeAttribute("data-drag-over");
-    lastOverRef.current = null;
-    isDraggingRef.current = false;
-    setIsDragging(false);
   }
 
   const display = resolveCharacter(tile.character);
@@ -168,7 +134,6 @@ export function Tile({
     styles.tile,
     !isTappable ? styles.inert : null,
     isRejected ? styles.shaking : null,
-    isDragging ? styles.dragging : null,
   ]
     .filter(Boolean)
     .join(" ");
@@ -178,11 +143,6 @@ export function Tile({
       ref={buttonRef}
       type="button"
       className={className}
-      onClick={handleClick}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerCancel}
       onAnimationEnd={handleAnimationEnd}
       data-testid={`tile-${tile.id}`}
       data-tile-id={tile.id}
@@ -210,23 +170,3 @@ function findDropTarget(elements: Element[], selfTileId: number): Element | null
   }
   return null;
 }
-
-// Inline styles for the drag ghost so it matches Tile visually without
-// requiring a global CSS class.
-const GHOST_STYLES: Partial<CSSStyleDeclaration> = {
-  position: "fixed",
-  width: "3rem",
-  height: "5rem",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: "1.5rem",
-  border: "4px solid #c3291b",
-  borderRadius: "0.25rem",
-  background: "#fff",
-  boxShadow: "2px 4px 8px rgba(195, 41, 27, 0.3)",
-  pointerEvents: "none",
-  zIndex: "9999",
-  userSelect: "none",
-  opacity: "0.9",
-};

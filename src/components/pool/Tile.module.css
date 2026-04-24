@@ -19,7 +19,7 @@
     4px 4px 0 0 var(--color-tile-text);
 }
 
-.tile:hover:not(.dragging) {
+.tile:hover {
   box-shadow:
     inset 0 0 0 2px var(--color-tile-text),
     6px 6px 0 0 var(--color-tile-text);
@@ -31,11 +31,6 @@
 
 .inert {
   cursor: default;
-}
-
-.dragging {
-  opacity: 0.4;
-  cursor: grabbing;
 }
 
 /* Drop target highlight set imperatively by Tile during drag */
