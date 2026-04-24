@@ -170,4 +170,36 @@ describe("Pool drag", () => {
     // Two tiles compose into one → count decreases by 1
     await expect.poll(() => screen.getByTestId(/^tile-/).elements().length).toBe(tilesBefore - 1);
   });
+
+  it("clears rejected state after CSS shake animation ends (onRejectedEnd callback)", async () => {
+    // 나가 → pool [ㄱ(0), ㅏ(1), ㄱ(2), ㅏ(3)].
+    // Drag ㅏ onto ㅏ → rejected (shakes). Fire animationend → shake class removed.
+    const screen = await renderPool("나가");
+
+    const source = screen.getByTestId("tile-1").element();
+    const target = screen.getByTestId("tile-3").element();
+    const rect = target.getBoundingClientRect();
+
+    dragSequence(source, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      {
+        type: "pointermove",
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+      },
+      {
+        type: "pointerup",
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+      },
+    ]);
+
+    await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
+
+    // Simulate the CSS animation finishing — Pool's onRejectedEnd clears the id from the set.
+    source.dispatchEvent(new Event("animationend", { bubbles: true }));
+
+    await expect.element(screen.getByTestId("tile-1")).not.toHaveClass(styles.shaking!);
+  });
 });

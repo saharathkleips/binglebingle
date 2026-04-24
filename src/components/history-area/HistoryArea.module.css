@@ -7,6 +7,8 @@
   max-height: calc(3 * (var(--size-tile-height) + var(--space-sm)) + var(--space-sm));
   overflow-y: auto;
   flex-shrink: 0;
+  /* VIS-26: smooth scroll as older guesses are pushed up. */
+  scroll-behavior: smooth;
 }
 
 .row {

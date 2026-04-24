@@ -148,6 +148,24 @@ describe("Tile drag", () => {
     expect(onDropOnTile).toHaveBeenCalledWith(1);
   });
 
+  it("does not call onDropOnSlot or onDropOnTile when dropped on empty space", async () => {
+    // Drag a tile and release over empty space (no valid drop target in view).
+    // findDropTarget returns null — neither callback fires.
+    const onDropOnSlot = vi.fn();
+    const onDropOnTile = vi.fn();
+    const screen = await render(<Tile {...tileProps({ onDropOnSlot, onDropOnTile })} />);
+    const tileElement = screen.getByTestId("tile-0").element();
+
+    dragSequence(tileElement, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      { type: "pointerup", clientX: 10, clientY: 0 },
+    ]);
+
+    expect(onDropOnSlot).not.toHaveBeenCalled();
+    expect(onDropOnTile).not.toHaveBeenCalled();
+  });
+
   it("highlights drop target with data-drag-over during drag", async () => {
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>

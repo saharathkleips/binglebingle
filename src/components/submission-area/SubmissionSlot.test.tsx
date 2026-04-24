@@ -114,6 +114,32 @@ describe("SubmissionSlot drag", () => {
     expect(onDropOnSlot0).toHaveBeenCalledWith(1);
   });
 
+  it("highlights a target slot with data-drag-over during drag", async () => {
+    const screen = await render(
+      <div style={{ display: "flex", gap: "100px" }}>
+        <SubmissionSlot slot={FILLED_SLOT} slotIndex={0} onTap={vi.fn()} onDropOnSlot={vi.fn()} />
+        <SubmissionSlot slot={FILLED_SLOT_1} slotIndex={1} onTap={vi.fn()} onDropOnSlot={vi.fn()} />
+      </div>,
+    );
+
+    const button0 = screen.getByTestId("slot-0").element();
+    const button1 = screen.getByTestId("slot-1").element();
+    const rect1 = button1.getBoundingClientRect();
+    const targetX = rect1.left + rect1.width / 2;
+    const targetY = rect1.top + rect1.height / 2;
+
+    // pointerdown starts drag; second pointermove (after drag threshold) triggers onDrag.
+    dragSequence(button0, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      { type: "pointermove", clientX: targetX, clientY: targetY },
+    ]);
+
+    await expect.element(screen.getByTestId("slot-1")).toHaveAttribute("data-drag-over", "true");
+
+    dragSequence(button0, [{ type: "pointerup", clientX: targetX, clientY: targetY }]);
+  });
+
   it("does not call onDropOnSlot when pointer is cancelled during drag", async () => {
     const onDropOnSlot = vi.fn();
     const screen = await render(

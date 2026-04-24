@@ -6,7 +6,7 @@
  * pool on tap, and can be dragged to another slot to swap positions.
  */
 
-import { useRef } from "react";
+import { useRef, useLayoutEffect } from "react";
 import { resolveCharacter } from "../../lib/character";
 import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
 import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
@@ -16,12 +16,16 @@ import styles from "./SubmissionSlot.module.css";
 /**
  * @property slot - The slot state (empty or filled with a tile).
  * @property slotIndex - Index of this slot in the submission array.
+ * @property isSubmitting - SubmissionArea sets this while evaluating a guess; slot plays a pulse.
+ * @property isReady - SubmissionArea sets this when the full submission is valid; adds a glow.
  * @property onTap - Called when a filled slot is tapped; parent removes the tile.
  * @property onDropOnSlot - Called when a drag ends on another slot, with that slot's index.
  */
 export type SubmissionSlotProps = {
   slot: SubmissionSlotType;
   slotIndex: number;
+  isSubmitting?: boolean;
+  isReady?: boolean;
   onTap: () => void;
   onDropOnSlot: (toSlotIndex: number) => void;
 };
@@ -32,12 +36,21 @@ export type SubmissionSlotProps = {
  *
  * @param props - {@link SubmissionSlotProps}
  */
-export function SubmissionSlot({ slot, slotIndex, onTap, onDropOnSlot }: SubmissionSlotProps) {
+export function SubmissionSlot({
+  slot,
+  slotIndex,
+  isSubmitting = false,
+  isReady = false,
+  onTap,
+  onDropOnSlot,
+}: SubmissionSlotProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const lastOverRef = useRef<Element | null>(null);
 
   const isFilled = slot.state === "FILLED";
   const display = isFilled ? resolveCharacter(slot.character) : null;
+  // Stable key for detecting swaps: which tile ID occupies this slot.
+  const filledTileId = slot.state === "FILLED" ? slot.tileId : null;
 
   // Refs hold latest prop values so Draggable callbacks never go stale.
   const callbacksRef = useRef({ onTap, onDropOnSlot });
@@ -48,6 +61,13 @@ export function SubmissionSlot({ slot, slotIndex, onTap, onDropOnSlot }: Submiss
   useGSAP(
     () => {
       if (!buttonRef.current || !isFilled) return;
+
+      // VIS-22/23: entrance animation on fill or swap (filledTileId changed).
+      gsap.from(buttonRef.current, {
+        scale: 0.6,
+        duration: 0.2,
+        ease: "back.out(1.7)",
+      });
 
       Draggable.create(buttonRef.current, {
         type: "x,y",
@@ -94,11 +114,30 @@ export function SubmissionSlot({ slot, slotIndex, onTap, onDropOnSlot }: Submiss
         },
       });
     },
-    // Recreate Draggable when filled state changes
-    { scope: buttonRef, dependencies: [isFilled], revertOnUpdate: true },
+    // Recreate Draggable (and replay entrance animation) when fill state or occupying tile changes.
+    { scope: buttonRef, dependencies: [isFilled, filledTileId], revertOnUpdate: true },
   );
 
-  const className = [styles.slot, isFilled ? styles.filled : styles.empty]
+  // VIS-24: brief scale pulse on all filled slots when a guess is being submitted.
+  useLayoutEffect(() => {
+    if (!isSubmitting || !isFilled || !buttonRef.current) return;
+    const tween = gsap.to(buttonRef.current, {
+      scale: 1.09,
+      duration: 0.1,
+      ease: "power2.out",
+      yoyo: true,
+      repeat: 1,
+    });
+    return () => {
+      tween.kill();
+    };
+  }, [isSubmitting, isFilled]);
+
+  const className = [
+    styles.slot,
+    isFilled ? styles.filled : styles.empty,
+    isFilled && isReady ? styles.ready : null,
+  ]
     .filter(Boolean)
     .join(" ");
 
