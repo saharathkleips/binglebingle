@@ -58,6 +58,18 @@ export function SubmissionSlot({
   const slotIndexRef = useRef(slotIndex);
   slotIndexRef.current = slotIndex;
 
+  // Clear any stale GSAP transforms before the entrance animation captures the element's
+  // natural state as its "to" value. revertOnUpdate can record scale:0.6 (the "from"
+  // value set synchronously by gsap.from) as the pre-animation snapshot and restore it
+  // on a swap (filledTileId changes while isFilled stays true). If the snapshot is 0.6,
+  // the new gsap.from captures 0.6 as its target → animates 0.6→0.6, stuck tiny.
+  // React runs ALL cleanups before ALL setups (declaration order), so this setup fires
+  // before useGSAP's setup, giving gsap.from a clean element to read.
+  useLayoutEffect(() => {
+    if (!isFilled || !buttonRef.current) return;
+    gsap.set(buttonRef.current, { clearProps: "all" });
+  }, [isFilled, filledTileId]);
+
   useGSAP(
     () => {
       if (!buttonRef.current || !isFilled) return;
