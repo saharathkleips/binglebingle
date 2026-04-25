@@ -66,7 +66,7 @@ export function Pool() {
   }
 
   return (
-    <div className={styles.pool} data-testid="pool">
+    <div className={styles.pool} data-testid="pool" data-pool="true">
       {state.pool.map((tile) => {
         const isTappable =
           getNextRotation(tile.character) !== null || decompose(tile.character) !== null;

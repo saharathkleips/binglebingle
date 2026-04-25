@@ -20,6 +20,7 @@ import styles from "./SubmissionSlot.module.css";
  * @property isReady - SubmissionArea sets this when the full submission is valid; adds a glow.
  * @property onTap - Called when a filled slot is tapped; parent removes the tile.
  * @property onDropOnSlot - Called when a drag ends on another slot, with that slot's index.
+ * @property onDropOnPool - Called when a drag ends over the pool; parent returns the tile.
  */
 export type SubmissionSlotProps = {
   slot: SubmissionSlotType;
@@ -28,6 +29,7 @@ export type SubmissionSlotProps = {
   isReady?: boolean;
   onTap: () => void;
   onDropOnSlot: (toSlotIndex: number) => void;
+  onDropOnPool?: () => void;
 };
 
 /**
@@ -43,6 +45,7 @@ export function SubmissionSlot({
   isReady = false,
   onTap,
   onDropOnSlot,
+  onDropOnPool = () => {},
 }: SubmissionSlotProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const lastOverRef = useRef<Element | null>(null);
@@ -53,8 +56,8 @@ export function SubmissionSlot({
   const filledTileId = slot.state === "FILLED" ? slot.tileId : null;
 
   // Refs hold latest prop values so Draggable callbacks never go stale.
-  const callbacksRef = useRef({ onTap, onDropOnSlot });
-  callbacksRef.current = { onTap, onDropOnSlot };
+  const callbacksRef = useRef({ onTap, onDropOnSlot, onDropOnPool });
+  callbacksRef.current = { onTap, onDropOnSlot, onDropOnPool };
   const slotIndexRef = useRef(slotIndex);
   slotIndexRef.current = slotIndex;
 
@@ -90,7 +93,7 @@ export function SubmissionSlot({
         },
         onDrag: function onDrag(this: Draggable) {
           const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
-          const dropTarget = findDropTarget(elements, slotIndexRef.current);
+          const dropTarget = findSlotDropTarget(elements, slotIndexRef.current);
 
           if (lastOverRef.current !== null && lastOverRef.current !== dropTarget) {
             lastOverRef.current.removeAttribute("data-drag-over");
@@ -106,19 +109,23 @@ export function SubmissionSlot({
 
           const element = this.target as HTMLElement;
           const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
-          const dropTarget = findDropTarget(elements, slotIndexRef.current);
-
-          if (dropTarget !== null) {
-            const toSlotIndexStr = dropTarget.getAttribute("data-slot-index");
-            if (toSlotIndexStr !== null) {
-              callbacksRef.current.onDropOnSlot(parseInt(toSlotIndexStr, 10));
-              // Swap dispatched — React re-renders with swapped content
-              gsap.set(element, { clearProps: "all" });
-              return;
-            }
+          const slotTarget = findSlotDropTarget(elements, slotIndexRef.current);
+          if (slotTarget !== null) {
+            callbacksRef.current.onDropOnSlot(
+              parseInt(slotTarget.getAttribute("data-slot-index")!, 10),
+            );
+            // Swap dispatched — React re-renders with swapped content
+            gsap.set(element, { clearProps: "all" });
+            return;
           }
 
-          // No valid slot target — snap back to origin.
+          if (isOverPool(elements)) {
+            callbacksRef.current.onDropOnPool();
+            gsap.set(element, { clearProps: "all" });
+            return;
+          }
+
+          // No valid target — snap back to origin.
           animateReposition(element);
         },
         onClick: function onClick() {
@@ -197,11 +204,20 @@ export function SubmissionSlot({
  * Finds the first slot-eligible drop target from a hit list, skipping the
  * dragging slot itself.
  */
-function findDropTarget(elements: Element[], selfSlotIndex: number): Element | null {
+function findSlotDropTarget(elements: Element[], selfSlotIndex: number): Element | null {
   for (const element of elements) {
     if (!(element instanceof HTMLElement)) continue;
     if (element.getAttribute("data-slot-index") === String(selfSlotIndex)) continue;
     if (element.hasAttribute("data-slot-index")) return element;
   }
   return null;
+}
+
+/**
+ * Returns true if any element in the hit list is the pool container.
+ */
+function isOverPool(elements: Element[]): boolean {
+  return elements.some(
+    (element) => element instanceof HTMLElement && element.hasAttribute("data-pool"),
+  );
 }

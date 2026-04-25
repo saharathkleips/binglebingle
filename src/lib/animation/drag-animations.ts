@@ -50,9 +50,10 @@ export function animatePutDown(element: HTMLElement): gsap.core.Tween {
  * Clears all inline GSAP props on complete so the tile is fully reset.
  *
  * @param element - The dragged tile element.
+ * @param onComplete - Optional callback fired when the animation finishes.
  * @returns A GSAP Tween for the snap-back animation.
  */
-export function animateReposition(element: HTMLElement): gsap.core.Tween {
+export function animateReposition(element: HTMLElement, onComplete?: () => void): gsap.core.Tween {
   return gsap.to(element, {
     x: 0,
     y: 0,
@@ -60,5 +61,6 @@ export function animateReposition(element: HTMLElement): gsap.core.Tween {
     duration: REPOSITION_DURATION,
     ease: "back.out(1.2)",
     clearProps: "all",
+    ...(onComplete !== undefined && { onComplete }),
   });
 }

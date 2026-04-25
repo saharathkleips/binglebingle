@@ -168,9 +168,7 @@ export function Tile({
           lastOverRef.current?.removeAttribute("data-drag-over");
           lastOverRef.current = null;
 
-          // Restore pool overflow so it can scroll again.
           const poolEl = document.querySelector('[data-testid="pool"]') as HTMLElement | null;
-          if (poolEl !== null) poolEl.style.overflow = "";
 
           const element = this.target as HTMLElement;
           const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
@@ -182,6 +180,7 @@ export function Tile({
               callbacksRef.current.onDropOnSlot(parseInt(slotIndexStr, 10));
               // Tile will unmount (removed from pool) — clear inline styles
               gsap.set(element, { clearProps: "all" });
+              if (poolEl !== null) poolEl.style.overflow = "";
               return;
             }
 
@@ -191,12 +190,18 @@ export function Tile({
               // Reset position immediately so the CSS shake animation owns the
               // transform on compose fail; on compose success the tile unmounts.
               gsap.set(element, { clearProps: "all" });
+              if (poolEl !== null) poolEl.style.overflow = "";
               return;
             }
           }
 
           // No valid drop target — snap tile back to its origin in the pool.
-          animateReposition(element);
+          // Restore pool overflow only after the animation completes: restoring it
+          // early (while the tile is still above the submission area) clips the tile
+          // against the pool's overflow-y:auto before it returns to its natural position.
+          animateReposition(element, () => {
+            if (poolEl !== null) poolEl.style.overflow = "";
+          });
         },
         onClick: function onClick() {
           if (callbacksRef.current.isTappable) {

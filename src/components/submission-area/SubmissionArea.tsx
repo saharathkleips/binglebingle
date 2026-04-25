@@ -50,6 +50,9 @@ export function SubmissionArea() {
                 payload: { fromSlotIndex: index, toSlotIndex },
               })
             }
+            onDropOnPool={() =>
+              dispatch({ type: "SUBMISSION_SLOT_REMOVE", payload: { slotIndex: index } })
+            }
           />
         ))}
       </div>
