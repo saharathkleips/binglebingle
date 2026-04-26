@@ -65,6 +65,17 @@ export function Pool() {
     dispatch({ type: "SUBMISSION_SLOT_INSERT", payload: { tileId: sourceTile.id, slotIndex } });
   }
 
+  function canDropOnTarget(sourceTile: TileType, target: Element): boolean {
+    // Slots always accept a tile.
+    if (target.hasAttribute("data-slot-index")) return true;
+    // Tiles only accept if compose() would succeed.
+    const targetIdStr = target.getAttribute("data-tile-id");
+    if (targetIdStr === null) return false;
+    const targetTile = state.pool.find((tile) => tile.id === parseInt(targetIdStr, 10));
+    if (targetTile === undefined) return false;
+    return compose(targetTile.character, sourceTile.character) !== null;
+  }
+
   return (
     <div className={styles.pool} data-testid="pool" data-pool="true">
       {state.pool.map((tile) => {
@@ -82,6 +93,7 @@ export function Pool() {
             onTap={() => handleTap(tile)}
             onDropOnTile={(targetId) => handleDropOnTile(tile, targetId)}
             onDropOnSlot={(slotIndex) => handleDropOnSlot(tile, slotIndex)}
+            canDropOnTarget={(target) => canDropOnTarget(tile, target)}
             onRejectedEnd={() =>
               setRejectedTileIds((prev) => {
                 const next = new Set(prev);

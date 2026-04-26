@@ -35,6 +35,15 @@
   cursor: default;
 }
 
+/* Dragging tile over a valid drop target — warm glow signals the drop is possible. */
+.tile[data-can-drop="true"] {
+  border-color: var(--color-accent-warm, #d4820a);
+  box-shadow:
+    inset 0 0 0 2px var(--color-tile-text),
+    4px 4px 0 0 var(--color-tile-text),
+    0 0 16px 5px rgba(212, 130, 10, 0.55);
+}
+
 /* Drop target highlight set imperatively by Tile during drag — VIS-29 glow. */
 .tile[data-drag-over="true"] {
   border-color: var(--color-drag-border);

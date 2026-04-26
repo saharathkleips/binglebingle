@@ -41,6 +41,7 @@ const NOOP = () => {};
  * @property onTap - Called on click when `isTappable` is true.
  * @property onDropOnTile - Called when a drag ends on another tile, with that tile's id.
  * @property onDropOnSlot - Called when a drag ends on a submission slot, with that slot's index.
+ * @property canDropOnTarget - Optional predicate; returns true if dropping on the given element will actually do something. Used to gate the "can drop" visual on the dragging tile.
  * @property onRejectedEnd - Called from onAnimationEnd; Pool uses this to clear the rejected state.
  * @property onRotatingEnd - Called after the rotate squeeze completes; Pool clears rotatingTileId.
  * @property onComposedEnd - Called after the compose heartbeat completes; Pool clears composedTileId.
@@ -56,6 +57,7 @@ export type TileProps = {
   onTap: () => void;
   onDropOnTile: (targetId: number) => void;
   onDropOnSlot: (slotIndex: number) => void;
+  canDropOnTarget?: (target: Element) => boolean;
   onRejectedEnd: () => void;
   onRotatingEnd?: () => void;
   onComposedEnd?: () => void;
@@ -78,6 +80,7 @@ export function Tile({
   onTap,
   onDropOnTile,
   onDropOnSlot,
+  canDropOnTarget,
   onRejectedEnd,
   onRotatingEnd = NOOP,
   onComposedEnd = NOOP,
@@ -87,8 +90,8 @@ export function Tile({
   const lastOverRef = useRef<Element | null>(null);
 
   // Refs hold latest prop values so Draggable callbacks never go stale.
-  const callbacksRef = useRef({ isTappable, onTap, onDropOnTile, onDropOnSlot });
-  callbacksRef.current = { isTappable, onTap, onDropOnTile, onDropOnSlot };
+  const callbacksRef = useRef({ isTappable, onTap, onDropOnTile, onDropOnSlot, canDropOnTarget });
+  callbacksRef.current = { isTappable, onTap, onDropOnTile, onDropOnSlot, canDropOnTarget };
   const tileIdRef = useRef(tile.id);
   tileIdRef.current = tile.id;
 
@@ -158,8 +161,16 @@ export function Tile({
           if (lastOverRef.current !== null && lastOverRef.current !== dropTarget) {
             lastOverRef.current.removeAttribute("data-drag-over");
           }
-          if (dropTarget !== null) {
-            dropTarget.setAttribute("data-drag-over", "true");
+          const { canDropOnTarget: canDrop } = callbacksRef.current;
+          const isValidDrop =
+            dropTarget !== null && (canDrop === undefined || canDrop(dropTarget));
+          if (isValidDrop) {
+            dropTarget!.setAttribute("data-drag-over", "true");
+          }
+          if (isValidDrop) {
+            (this.target as HTMLElement).setAttribute("data-can-drop", "true");
+          } else {
+            (this.target as HTMLElement).removeAttribute("data-can-drop");
           }
           lastOverRef.current = dropTarget;
         },
@@ -167,6 +178,7 @@ export function Tile({
           // Clear any drop target highlighting
           lastOverRef.current?.removeAttribute("data-drag-over");
           lastOverRef.current = null;
+          (this.target as HTMLElement).removeAttribute("data-can-drop");
 
           const poolEl = document.querySelector('[data-testid="pool"]') as HTMLElement | null;
 
