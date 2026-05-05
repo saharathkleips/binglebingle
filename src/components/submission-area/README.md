@@ -5,5 +5,5 @@ Submission area where the player assembles syllable characters and submits guess
 ## Exports
 
 - `SubmissionArea` — renders submission slots and submit button from `useGame()` state; no props
-- `SubmissionSlot` — single slot; empty = drop target placeholder, filled = shows character and removes on tap
+- `SubmissionSlot` — single slot; empty = drop target placeholder, filled = shows character, removes on tap, draggable to other slots via GSAP Draggable
 - `SubmissionButton` — validates via `canSubmit` and dispatches `ROUND_SUBMISSION_SUBMIT`

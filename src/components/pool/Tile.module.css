@@ -2,16 +2,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-tile);
-  height: var(--size-tile);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  width: var(--size-tile-width);
+  height: var(--size-tile-height);
+  border: 6px solid var(--color-tile-border);
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-tile);
+  font-weight: bold;
   cursor: pointer;
   user-select: none;
   /* touch-action:none allows pointer capture for drag on touch devices */
   touch-action: none;
-  background: var(--color-surface);
+  background: var(--color-tile-face);
+  color: var(--color-tile-text);
+  box-shadow:
+    inset 0 0 0 2px var(--color-tile-text),
+    4px 4px 0 0 var(--color-tile-text);
+}
+
+/* VIS-27: tappable tiles get a warm glow on hover to signal interactivity. */
+.tile:not(.inert):hover {
+  box-shadow:
+    inset 0 0 0 2px var(--color-tile-text),
+    6px 6px 0 0 var(--color-tile-text),
+    0 0 10px 3px rgba(195, 41, 27, 0.22);
 }
 
 .tile:active {
@@ -22,15 +35,14 @@
   cursor: default;
 }
 
-.dragging {
-  opacity: 0.4;
-  cursor: grabbing;
-}
-
-/* Drop target highlight set imperatively by Tile during drag */
+/* Drop target highlight set imperatively by Tile during drag — VIS-29 glow. */
 .tile[data-drag-over="true"] {
   border-color: var(--color-drag-border);
   background: var(--color-drag-bg);
+  box-shadow:
+    inset 0 0 0 2px var(--color-drag-border),
+    4px 4px 0 0 var(--color-tile-text),
+    0 0 14px 4px rgba(10, 10, 245, 0.28);
 }
 
 .shaking {

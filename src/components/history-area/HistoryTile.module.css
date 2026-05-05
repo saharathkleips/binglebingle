@@ -2,10 +2,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-tile);
-  height: var(--size-tile);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  width: var(--size-tile-width);
+  height: var(--size-tile-height);
+  border: 6px solid var(--color-tile-border);
+  box-shadow:
+    inset 0 0 0 2px var(--color-tile-text),
+    4px 4px 0 0 var(--color-tile-text);
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-tile);
   font-weight: bold;
   user-select: none;

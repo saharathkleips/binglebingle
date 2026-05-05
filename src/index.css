@@ -1,32 +1,73 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
 :root {
-  /* Tile / slot dimensions */
-  --size-tile: 3rem;
+  /* ── Palette: Obangsaek (오방색) vivid ────────────────────────────────── */
+  --palette-obangsaek-red: #c3291b;
+  --palette-obangsaek-yellow: #f7ce46;
+  --palette-obangsaek-blue: #0a0af5;
+  --palette-obangsaek-green: #347641;
+  --palette-obangsaek-black: #080808;
+  --palette-obangsaek-white: #ffffff;
 
-  /* Spacing */
-  --space-sm: 0.5rem;
-  --space-md: 0.75rem;
+  /* ── Palette: Dancheong (단청) pastel ────────────────────────────────── */
+  --palette-dancheong-blue: #393f69;
+  --palette-dancheong-green: #4da576;
+  --palette-dancheong-red: #e25749;
+  --palette-dancheong-yellow: #fbe596;
+  --palette-dancheong-pink: #f0aea8;
 
-  /* Shape */
-  --radius-md: 0.5rem;
-
-  /* Typography */
-  --font-size-tile: 1.5rem;
-
-  /* Surface colors */
-  --color-surface: #fff;
-  --color-surface-active: #f0f0f0;
+  /* ── Semantic: Surface ───────────────────────────────────────────────── */
+  --color-surface: var(--palette-obangsaek-white);
+  --color-surface-active: var(--palette-dancheong-yellow);
   --color-surface-empty: #fafafa;
 
-  /* Border */
-  --color-border: #ccc;
+  /* ── Semantic: Border ────────────────────────────────────────────────── */
+  --color-border: var(--palette-dancheong-blue);
 
-  /* Drag interaction */
-  --color-drag-border: #4a90e2;
-  --color-drag-bg: #e8f0fe;
+  /* ── Semantic: Text ──────────────────────────────────────────────────── */
+  --color-text-muted: var(--palette-dancheong-blue);
 
-  /* Game state */
-  --color-correct: #6aaa64;
-  --color-present: #c9b458;
-  --color-absent: #787c7e;
-  --color-state-text: #fff;
+  /* ── Semantic: Drag interaction ──────────────────────────────────────── */
+  --color-drag-border: var(--palette-obangsaek-blue);
+  --color-drag-bg: var(--palette-dancheong-pink);
+
+  /* ── Semantic: Game state ────────────────────────────────────────────── */
+  --color-correct: var(--palette-obangsaek-green);
+  --color-present: var(--palette-obangsaek-yellow);
+  --color-absent: var(--palette-obangsaek-black);
+  --color-state-text: var(--palette-obangsaek-white);
+
+  /* ── Semantic: Tile face ─────────────────────────────────────────────── */
+  --color-tile-face: var(--palette-obangsaek-white);
+  --color-tile-text: var(--palette-obangsaek-black);
+  /* Hwatu cards have a distinctive thick red border */
+  --color-tile-border: var(--palette-obangsaek-red);
+
+  /* ── Tile dimensions (3:5 hwatu ratio) ──────────────────────────────── */
+  --size-tile-width: 3rem;
+  --size-tile-height: 5rem;
+  /* Backward-compat alias — components updated in 1.4.2 */
+  --size-tile: var(--size-tile-width);
+
+  /* ── Spacing ─────────────────────────────────────────────────────────── */
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 2rem;
+
+  /* ── Shape ───────────────────────────────────────────────────────────── */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+
+  /* ── Typography ──────────────────────────────────────────────────────── */
+  --font-family-display: Georgia, "Noto Serif KR", serif;
+  --font-family-ui: system-ui, "Noto Sans KR", sans-serif;
+  --font-size-tile: 1.5rem;
 }

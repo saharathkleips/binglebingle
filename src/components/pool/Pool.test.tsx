@@ -15,13 +15,17 @@ async function renderPool(word: string) {
   );
 }
 
-/** Dispatch a sequence of pointer events directly on a DOM element. */
-function pointerSequence(
+/**
+ * Dispatch a drag sequence via GSAP Draggable's event model:
+ * pointerdown on the element, pointermove/pointerup on document.
+ */
+function dragSequence(
   element: Element,
   events: Array<{ type: string; clientX: number; clientY: number }>,
 ) {
   for (const { type, clientX, clientY } of events) {
-    element.dispatchEvent(
+    const target = type === "pointerdown" ? element : document;
+    target.dispatchEvent(
       new PointerEvent(type, {
         clientX,
         clientY,
@@ -73,7 +77,7 @@ describe("Pool tap", () => {
     const tile2CenterY = tile2Rect.top + tile2Rect.height / 2;
 
     // Compose: drag tile-0 onto tile-2 (ㄱ+ㄱ→ㄲ)
-    pointerSequence(tile0, [
+    dragSequence(tile0, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: tile2CenterX, clientY: tile2CenterY },
@@ -100,7 +104,7 @@ describe("Pool drag", () => {
     const targetCenterX = targetRect.left + targetRect.width / 2;
     const targetCenterY = targetRect.top + targetRect.height / 2;
 
-    pointerSequence(source, [
+    dragSequence(source, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
@@ -124,7 +128,7 @@ describe("Pool drag", () => {
       const rect = target.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      pointerSequence(source, [
+      dragSequence(source, [
         { type: "pointerdown", clientX: 0, clientY: 0 },
         { type: "pointermove", clientX: 10, clientY: 0 },
         { type: "pointermove", clientX: centerX, clientY: centerY },
@@ -156,7 +160,7 @@ describe("Pool drag", () => {
     const targetCenterX = targetRect.left + targetRect.width / 2;
     const targetCenterY = targetRect.top + targetRect.height / 2;
 
-    pointerSequence(source, [
+    dragSequence(source, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
@@ -165,5 +169,37 @@ describe("Pool drag", () => {
 
     // Two tiles compose into one → count decreases by 1
     await expect.poll(() => screen.getByTestId(/^tile-/).elements().length).toBe(tilesBefore - 1);
+  });
+
+  it("clears rejected state after CSS shake animation ends (onRejectedEnd callback)", async () => {
+    // 나가 → pool [ㄱ(0), ㅏ(1), ㄱ(2), ㅏ(3)].
+    // Drag ㅏ onto ㅏ → rejected (shakes). Fire animationend → shake class removed.
+    const screen = await renderPool("나가");
+
+    const source = screen.getByTestId("tile-1").element();
+    const target = screen.getByTestId("tile-3").element();
+    const rect = target.getBoundingClientRect();
+
+    dragSequence(source, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      {
+        type: "pointermove",
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+      },
+      {
+        type: "pointerup",
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+      },
+    ]);
+
+    await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
+
+    // Simulate the CSS animation finishing — Pool's onRejectedEnd clears the id from the set.
+    source.dispatchEvent(new Event("animationend", { bubbles: true }));
+
+    await expect.element(screen.getByTestId("tile-1")).not.toHaveClass(styles.shaking!);
   });
 });

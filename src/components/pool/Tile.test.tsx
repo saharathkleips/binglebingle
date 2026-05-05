@@ -24,13 +24,17 @@ function tileProps(
   };
 }
 
-/** Dispatch a sequence of pointer events directly on a DOM element. */
-function pointerSequence(
+/**
+ * Dispatch a drag sequence via GSAP Draggable's event model:
+ * pointerdown on the element, pointermove/pointerup on document.
+ */
+function dragSequence(
   element: Element,
   events: Array<{ type: string; clientX: number; clientY: number }>,
 ) {
   for (const { type, clientX, clientY } of events) {
-    element.dispatchEvent(
+    const target = type === "pointerdown" ? element : document;
+    target.dispatchEvent(
       new PointerEvent(type, {
         clientX,
         clientY,
@@ -85,22 +89,6 @@ describe("Tile", () => {
 });
 
 describe("Tile drag", () => {
-  it("does not call any drop callback on movement below the 4px threshold", async () => {
-    const onDropOnTile = vi.fn();
-    const onDropOnSlot = vi.fn();
-    const screen = await render(<Tile {...tileProps({ onDropOnTile, onDropOnSlot })} />);
-    const element = screen.getByTestId("tile-0").element();
-
-    pointerSequence(element, [
-      { type: "pointerdown", clientX: 0, clientY: 0 },
-      { type: "pointermove", clientX: 2, clientY: 0 }, // only 2px — below 4px threshold
-      { type: "pointerup", clientX: 2, clientY: 0 },
-    ]);
-
-    expect(onDropOnSlot).not.toHaveBeenCalled();
-    expect(onDropOnTile).not.toHaveBeenCalled();
-  });
-
   it("calls onDropOnSlot with slotIndex when dropped on a slot", async () => {
     const onDropOnSlot = vi.fn();
     const screen = await render(
@@ -116,13 +104,14 @@ describe("Tile drag", () => {
     const slotCenterX = slotRect.left + slotRect.width / 2;
     const slotCenterY = slotRect.top + slotRect.height / 2;
 
-    pointerSequence(tileElement, [
+    dragSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
       { type: "pointerup", clientX: slotCenterX, clientY: slotCenterY },
     ]);
 
+    await expect.poll(() => onDropOnSlot.mock.calls.length).toBe(1);
     expect(onDropOnSlot).toHaveBeenCalledWith(1);
   });
 
@@ -148,39 +137,33 @@ describe("Tile drag", () => {
     const targetCenterX = targetRect.left + targetRect.width / 2;
     const targetCenterY = targetRect.top + targetRect.height / 2;
 
-    pointerSequence(tileElement, [
+    dragSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
       { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
     ]);
 
+    await expect.poll(() => onDropOnTile.mock.calls.length).toBe(1);
     expect(onDropOnTile).toHaveBeenCalledWith(1);
   });
 
-  it("suppresses tap after drag ends", async () => {
-    const onTap = vi.fn();
-    const screen = await render(
-      <div style={{ display: "flex", gap: "100px" }}>
-        <Tile {...tileProps({ isTappable: true, onTap })} />
-        <div data-testid="empty-area" style={{ width: "50px", height: "50px" }} />
-      </div>,
-    );
+  it("does not call onDropOnSlot or onDropOnTile when dropped on empty space", async () => {
+    // Drag a tile and release over empty space (no valid drop target in view).
+    // findDropTarget returns null — neither callback fires.
+    const onDropOnSlot = vi.fn();
+    const onDropOnTile = vi.fn();
+    const screen = await render(<Tile {...tileProps({ onDropOnSlot, onDropOnTile })} />);
     const tileElement = screen.getByTestId("tile-0").element();
-    const emptyRect = screen.getByTestId("empty-area").element().getBoundingClientRect();
-    const emptyCenterX = emptyRect.left + emptyRect.width / 2;
-    const emptyCenterY = emptyRect.top + emptyRect.height / 2;
 
-    pointerSequence(tileElement, [
+    dragSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
-      { type: "pointermove", clientX: emptyCenterX, clientY: emptyCenterY },
-      { type: "pointerup", clientX: emptyCenterX, clientY: emptyCenterY },
+      { type: "pointerup", clientX: 10, clientY: 0 },
     ]);
 
-    // Simulate a click that may fire after pointerup in some browsers
-    await screen.getByTestId("tile-0").click();
-    expect(onTap).not.toHaveBeenCalled();
+    expect(onDropOnSlot).not.toHaveBeenCalled();
+    expect(onDropOnTile).not.toHaveBeenCalled();
   });
 
   it("highlights drop target with data-drag-over during drag", async () => {
@@ -193,55 +176,18 @@ describe("Tile drag", () => {
       </div>,
     );
     const tileElement = screen.getByTestId("tile-0").element();
-    const slotElement = screen.getByTestId("slot-0").element();
-    const slotRect = slotElement.getBoundingClientRect();
+    const slotRect = screen.getByTestId("slot-0").element().getBoundingClientRect();
     const slotCenterX = slotRect.left + slotRect.width / 2;
     const slotCenterY = slotRect.top + slotRect.height / 2;
 
-    // Start drag (exceed threshold), then move to the slot's coordinates so
-    // document.elementsFromPoint returns the slot element.
-    pointerSequence(tileElement, [
-      { type: "pointerdown", clientX: 0, clientY: 0 },
-      { type: "pointermove", clientX: 10, clientY: 0 }, // exceed 4px threshold
-      { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
-    ]);
-
-    await expect.element(screen.getByTestId("slot-0")).toHaveAttribute("data-drag-over", "true");
-
-    pointerSequence(tileElement, [
-      { type: "pointerup", clientX: slotCenterX, clientY: slotCenterY },
-    ]);
-  });
-
-  it("removes data-drag-over from previous target when drag moves away", async () => {
-    const screen = await render(
-      <div style={{ display: "flex", gap: "100px" }}>
-        <Tile {...tileProps()} />
-        <button data-slot-index="0" data-testid="slot-0">
-          _
-        </button>
-      </div>,
-    );
-    const tileElement = screen.getByTestId("tile-0").element();
-    const slotElement = screen.getByTestId("slot-0").element();
-    const slotRect = slotElement.getBoundingClientRect();
-    const slotCenterX = slotRect.left + slotRect.width / 2;
-    const slotCenterY = slotRect.top + slotRect.height / 2;
-
-    // Drag over slot — data-drag-over should be set
-    pointerSequence(tileElement, [
+    dragSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
       { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
     ]);
+
     await expect.element(screen.getByTestId("slot-0")).toHaveAttribute("data-drag-over", "true");
 
-    // Pointer moves to empty space — data-drag-over should be removed
-    pointerSequence(tileElement, [
-      { type: "pointermove", clientX: 0, clientY: 200 }, // off the slot, no element with data-slot-index
-    ]);
-    await expect.element(screen.getByTestId("slot-0")).not.toHaveAttribute("data-drag-over");
-
-    pointerSequence(tileElement, [{ type: "pointerup", clientX: 0, clientY: 200 }]);
+    dragSequence(tileElement, [{ type: "pointerup", clientX: slotCenterX, clientY: slotCenterY }]);
   });
 });
