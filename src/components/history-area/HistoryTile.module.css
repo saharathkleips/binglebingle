@@ -1,3 +1,0 @@
-/* HistoryTile keeps only context-owned hooks here; shared tile visuals live in BaseTile.module.css. */
-.historyTile {
-}

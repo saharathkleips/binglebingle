@@ -10,7 +10,7 @@ Renders the submission row and submit button. Player places tiles into slots, se
 
 - Reads from: `useGame()` (state.submission)
 - Dispatches to: `useGame()` (dispatch)
-- Calls into: `src/lib/character/` for `resolveCharacter`, `src/lib/engine/validate` for `canSubmit`
+- Calls into: `src/components/tile` for shared filled-slot character display, `src/lib/engine/validate` for `canSubmit`
 
 ## File Map
 
@@ -36,7 +36,7 @@ Reads `state.submission` from `useGame()` and renders a `SubmissionSlot` for eac
 
 ### SubmissionSlot
 
-Renders a single slot. Empty slots show a dashed placeholder. Filled slots display `resolveCharacter(slot.character)` and dispatch `SUBMISSION_SLOT_REMOVE` on tap.
+Renders a single slot. Empty slots show a dashed placeholder. Filled slots render `CharacterTile` for shared display and dispatch `SUBMISSION_SLOT_REMOVE` on tap.
 
 Filled slots also act as drag sources: dragging a filled slot onto another slot dispatches `SUBMISSION_SLOT_MOVE`, swapping the two tiles (or moving into an empty slot). A 4px movement threshold distinguishes tap from drag, matching Tile's behavior. Drop targets are identified by `data-slot-index`; the slot never drops onto itself.
 

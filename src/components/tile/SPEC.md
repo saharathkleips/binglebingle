@@ -1,6 +1,6 @@
 # SPEC: components/tile
 
-**Status:** draft
+**Status:** stable
 
 ## Purpose
 
@@ -10,8 +10,9 @@ Provides reusable tile presentation for Binglebingle without coupling visual ide
 
 - Reads from: component props only.
 - Dispatches to: nothing.
-- Calls into: `src/lib/character` only from `CharacterTile` for display resolution.
-- Does not call into: game context, reducers, pool logic, submission logic, history logic, or GSAP from `BaseTile`.
+- Calls into: `src/lib/character` only from `CharacterTile` for display resolution; `src/lib/animation` only from `useTileFeedback`.
+- Does not call into: game context, reducers, pool logic, submission logic, or history logic.
+- `BaseTile` does not call into: GSAP, character resolution, game context, reducers, pool logic, submission logic, or history logic.
 
 The module is intentionally not an interaction layer. Drag/drop, tap, hit testing, reducer dispatches, invalid-drop recovery, submission readiness, history result semantics, and instruction-specific layout remain owned by their feature modules.
 
@@ -21,39 +22,61 @@ The module is intentionally not an interaction layer. Drag/drop, tap, hit testin
 tile/
 ├── BaseTile.tsx             # Shared visual primitive; no game state, no GSAP, no character resolution
 ├── BaseTile.module.css      # Shared tile visual identity and narrow visual variants
+├── BaseTile.test.tsx
 ├── CharacterTile.tsx        # Resolves a game Character and renders BaseTile
+├── CharacterTile.test.tsx
 ├── use-tile-feedback.ts     # Shared GSAP feedback hook for behavior components
 ├── README.md
 └── SPEC.md
 ```
 
-## Types
+## Public API
 
-Planned public types are documented here before implementation so later tasks can keep the API narrow.
+- `BaseTile` renders shared tile visuals for already-renderable content.
+- `BaseTileProps` configures `BaseTile` with visual props, pass-through DOM hooks, and caller-owned class names.
+- `BaseTileElement` is `"button" | "div" | "span"`.
+- `BaseTileSize` is `"standard" | "compact"`.
+- `BaseTileTone` is `"default" | "correct" | "present" | "absent"`.
+- `CharacterTile` resolves a game `Character` and renders the result in `BaseTile`.
+- `CharacterTileProps` is `Omit<BaseTileProps, "children"> & { character: Character }`.
+- `useTileFeedback` plays shared GSAP feedback animations on a caller-owned element ref.
+- `UseTileFeedbackOptions` supplies the element ref, feedback flags, and completion callbacks.
+
+## Types
 
 ```ts
 type BaseTileProps = {
   children: React.ReactNode;
   className?: string;
   dataAttributes?: Record<`data-${string}`, string | number | boolean>;
-  element?: "button" | "div" | "span";
+  element?: BaseTileElement;
   isDisabled?: boolean;
   isHighlighted?: boolean;
   isInteractive?: boolean;
   label?: string;
   onAnimationEnd?: React.AnimationEventHandler<HTMLElement>;
-  size?: "standard" | "compact";
+  size?: BaseTileSize;
   testId?: string;
   tileRef?: React.Ref<HTMLElement>;
-  tone?: "default" | "correct" | "present" | "absent";
+  tone?: BaseTileTone;
 };
 
 type CharacterTileProps = Omit<BaseTileProps, "children"> & {
   character: Character;
 };
+
+type UseTileFeedbackOptions = {
+  elementRef: React.RefObject<HTMLElement | null>;
+  isRotating?: boolean;
+  isJustComposed?: boolean;
+  isNewlyAdded?: boolean;
+  onRotatingEnd?: () => void;
+  onComposedEnd?: () => void;
+  onNewlyAddedEnd?: () => void;
+};
 ```
 
-The exact prop set may shrink during implementation. Add a new prop only when at least one current consumer needs that visual state.
+Add a new prop only when at least one current consumer needs that visual state.
 
 ## Components
 
@@ -92,8 +115,6 @@ Rules:
 
 ## Key Decisions
 
-**Visual primitive before behavior migration.** The first implementation step is documentation only. Code migration should happen after the API boundaries are explicit so pool drag mechanics do not leak into the base visual layer.
-
 **Character resolution is separate from base visuals.** `BaseTile` receives display content and therefore stays reusable for history result markers, instruction examples, empty/future visual states, and any non-character tile-like content. `CharacterTile` is the convenience wrapper for game characters.
 
 **Feature modules own semantics.** Pool tiles can be draggable and tappable, submission slots can swap or return tiles, history tiles can show evaluation tones, and instructions can render examples. Those behaviors are outside this module even when they share the same visual surface.
@@ -102,10 +123,4 @@ Rules:
 
 **Feedback animations are hook-based.** `useTileFeedback` centralizes the shared GSAP feedback setup without making visual components depend on GSAP or creating a generic animated component layer.
 
-**Use visual names, not source-context names.** Shared props should describe appearance (`tone="correct"`, `isHighlighted`) rather than the module that caused it (`isHistoryCorrect`, `isDropTarget`). This keeps the primitive redesignable without importing feature concepts.
-
-## Open Questions
-
-- Which current tile dimensions and state variants should become the initial `BaseTile.module.css` contract during TILE-02?
-- Should `BaseTile` support `button` directly, or should interactive consumers wrap a non-button visual surface when they need complex drag/drop behavior?
-- Whether submission or history interactions should reuse `useTileFeedback` depends on their later migrations and should be decided only if they need the exact same animation contract.
+**Use visual names, not source-context names.** Shared props describe appearance (`tone="correct"`, `isHighlighted`) rather than the module that caused it (`isHistoryCorrect`, `isDropTarget`). This keeps the primitive redesignable without importing feature concepts.

@@ -8,7 +8,6 @@ import { BaseTile } from "../tile/BaseTile";
 import type { BaseTileTone } from "../tile/BaseTile";
 import { CharacterTile } from "../tile/CharacterTile";
 import type { CharacterResult, EvaluatedCharacter } from "../../lib/engine";
-import styles from "./HistoryTile.module.css";
 
 /**
  * Props for the `HistoryTile` component.
@@ -27,7 +26,6 @@ export type HistoryTileProps = {
  */
 export function HistoryTile({ evaluated }: HistoryTileProps) {
   const sharedProps = {
-    className: styles.historyTile ?? "",
     dataAttributes: { "data-result": evaluated.result },
     testId: "history-tile",
     tone: RESULT_TONE[evaluated.result],
