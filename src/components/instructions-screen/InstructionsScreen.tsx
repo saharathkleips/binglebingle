@@ -1,3 +1,5 @@
+import type { Character } from "../../lib/character";
+import { CharacterTile } from "../tile/CharacterTile";
 import styles from "./InstructionsScreen.module.css";
 
 type InstructionsScreenProps = {
@@ -8,13 +10,34 @@ type InstructionsScreenProps = {
 type GuessResultKind = "correct" | "present" | "absent";
 
 type GuessTile = {
-  syllable: string;
+  character: Character;
   result: GuessResultKind;
 };
 
 // Full jamo pool for the example word 왜가리.
 // 왜 = ㅇ + ㅙ (ㅗ+ㅏ+ㅣ), 가 = ㄱ+ㅏ, 리 = ㄹ+ㅣ
-const POOL_JAMO = ["ㅇ", "ㄱ", "ㄹ", "ㅏ", "ㅏ", "ㅏ", "ㅣ", "ㅣ"];
+const POOL_CHARACTERS = [
+  { kind: "CHOSEONG_ONLY", choseong: "ㅇ" },
+  { kind: "CHOSEONG_ONLY", choseong: "ㄱ" },
+  { kind: "CHOSEONG_ONLY", choseong: "ㄹ" },
+  { kind: "JUNGSEONG_ONLY", jungseong: "ㅏ" },
+  { kind: "JUNGSEONG_ONLY", jungseong: "ㅏ" },
+  { kind: "JUNGSEONG_ONLY", jungseong: "ㅏ" },
+  { kind: "JUNGSEONG_ONLY", jungseong: "ㅣ" },
+  { kind: "JUNGSEONG_ONLY", jungseong: "ㅣ" },
+] satisfies readonly Character[];
+
+const EXAMPLE_CHARACTERS = {
+  ㄱ: { kind: "CHOSEONG_ONLY", choseong: "ㄱ" },
+  ㄹ: { kind: "CHOSEONG_ONLY", choseong: "ㄹ" },
+  ㅏ: { kind: "JUNGSEONG_ONLY", jungseong: "ㅏ" },
+  ㅗ: { kind: "JUNGSEONG_ONLY", jungseong: "ㅗ" },
+  가: { kind: "OPEN_SYLLABLE", choseong: "ㄱ", jungseong: "ㅏ" },
+  오: { kind: "OPEN_SYLLABLE", choseong: "ㅇ", jungseong: "ㅗ" },
+  로: { kind: "OPEN_SYLLABLE", choseong: "ㄹ", jungseong: "ㅗ" },
+  왜: { kind: "OPEN_SYLLABLE", choseong: "ㅇ", jungseong: "ㅙ" },
+  리: { kind: "OPEN_SYLLABLE", choseong: "ㄹ", jungseong: "ㅣ" },
+} satisfies Record<string, Character>;
 
 /**
  * Full-screen overlay explaining the game mechanic via a worked example.
@@ -55,36 +78,40 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
         {/* Phase 1: compose */}
         <section className={styles.phase} data-testid="phase-compose">
           <div className={styles.pool}>
-            {POOL_JAMO.map((jamo, index) => (
-              <span key={index} className={styles.poolTile}>
-                {jamo}
-              </span>
+            {POOL_CHARACTERS.map((character, index) => (
+              <CharacterTile
+                key={index}
+                character={character}
+                element="span"
+                size="compact"
+                className={styles.poolTile ?? ""}
+              />
             ))}
           </div>
           <div className={styles.combineExample}>
-            <span className={styles.poolTile}>ㄱ</span>
+            <InstructionCharacterTile character={EXAMPLE_CHARACTERS.ㄱ} />
             <span className={styles.operator}>+</span>
-            <span className={styles.poolTile}>ㅏ</span>
+            <InstructionCharacterTile character={EXAMPLE_CHARACTERS.ㅏ} />
             <span className={styles.operator}>=</span>
-            <span className={styles.poolTile}>가</span>
+            <InstructionCharacterTile character={EXAMPLE_CHARACTERS.가} />
           </div>
           <p className={styles.label}>Drag and drop to combine.</p>
-          <SlotRow tiles={[{ syllable: "가", result: "present" }, null, null]} />
+          <SlotRow tiles={[{ character: EXAMPLE_CHARACTERS.가, result: "present" }, null, null]} />
         </section>
 
         {/* Phase 2: rotate */}
         <section className={styles.phase} data-testid="phase-rotate">
           <div className={styles.combineExample}>
-            <span className={styles.poolTile}>ㅏ</span>
+            <InstructionCharacterTile character={EXAMPLE_CHARACTERS.ㅏ} />
             <span className={styles.operator}>→</span>
-            <span className={styles.poolTile}>ㅗ</span>
+            <InstructionCharacterTile character={EXAMPLE_CHARACTERS.ㅗ} />
           </div>
           <p className={styles.label}>Tap to rotate.</p>
           <SlotRow
             tiles={[
-              { syllable: "오", result: "absent" },
-              { syllable: "가", result: "correct" },
-              { syllable: "로", result: "absent" },
+              { character: EXAMPLE_CHARACTERS.오, result: "absent" },
+              { character: EXAMPLE_CHARACTERS.가, result: "correct" },
+              { character: EXAMPLE_CHARACTERS.로, result: "absent" },
             ]}
           />
           <p className={styles.hint}>Guesses don't need to be real words.</p>
@@ -95,9 +122,9 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
           <p className={styles.label}>Tap to deconstruct.</p>
           <SlotRow
             tiles={[
-              { syllable: "왜", result: "correct" },
-              { syllable: "가", result: "correct" },
-              { syllable: "리", result: "correct" },
+              { character: EXAMPLE_CHARACTERS.왜, result: "correct" },
+              { character: EXAMPLE_CHARACTERS.가, result: "correct" },
+              { character: EXAMPLE_CHARACTERS.리, result: "correct" },
             ]}
           />
         </section>
@@ -114,6 +141,17 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
   );
 }
 
+function InstructionCharacterTile({ character }: { character: Character }) {
+  return (
+    <CharacterTile
+      character={character}
+      element="span"
+      size="compact"
+      className={styles.poolTile ?? ""}
+    />
+  );
+}
+
 function SlotRow({ tiles }: { tiles: (GuessTile | null)[] }) {
   return (
     <div className={styles.slotRow}>
@@ -121,9 +159,13 @@ function SlotRow({ tiles }: { tiles: (GuessTile | null)[] }) {
         tile === null ? (
           <span key={index} className={styles.emptySlot} />
         ) : (
-          <span key={index} className={`${styles.tile} ${styles[tile.result]}`}>
-            {tile.syllable}
-          </span>
+          <CharacterTile
+            key={index}
+            character={tile.character}
+            element="span"
+            tone={tile.result}
+            className={styles.slotTile ?? ""}
+          />
         ),
       )}
     </div>

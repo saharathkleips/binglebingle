@@ -62,27 +62,20 @@
 }
 
 .poolTile {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  font-size: 1rem;
-  font-weight: bold;
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-sm, 0.25rem);
-  background: var(--color-surface-active, #e8e8e8);
+  --size-tile-width: 3.125rem;
+  --size-tile-height: 3.125rem;
+  --font-size-tile: 1.4rem;
 }
 
-/* ── Rotate example ── */
+/* ── Inline examples ── */
 
-.rotateExample {
+.combineExample {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.arrow {
+.operator {
   font-size: 1rem;
   color: var(--color-text-muted, #888);
 }
@@ -102,31 +95,10 @@
   border-radius: var(--radius-sm, 0.25rem);
 }
 
-.tile {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border-radius: var(--radius-sm, 0.25rem);
-  border: 2px solid transparent;
-}
-
-.correct {
-  background: var(--color-correct, #538d4e);
-  color: #fff;
-}
-
-.present {
-  background: var(--color-present, #b59f3b);
-  color: #fff;
-}
-
-.absent {
-  background: var(--color-absent, #3a3a3c);
-  color: #fff;
+.slotTile {
+  --size-tile-width: 2.75rem;
+  --size-tile-height: 2.75rem;
+  --font-size-tile: 1.1rem;
 }
 
 /* ── Dismiss ── */
