@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "ignorePatterns": [".claude/**", ".planning/**"],
+  "ignorePatterns": [".planning/**"],
   "env": {
     "browser": true,
     "es2022": true

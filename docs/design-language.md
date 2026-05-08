@@ -1,8 +1,6 @@
 # 빙글빙글 — Design Language
 
-A reference document for the visual identity of 빙글빙글. Use this as context
-when generating UI in any tool — v0, Claude artifacts, Figma, or as input to
-GSD's UI phase.
+A reference document for the visual identity of 빙글빙글.
 
 ---
 

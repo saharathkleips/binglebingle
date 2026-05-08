@@ -1,33 +1,29 @@
 {
-  "name": "claude-code-dev",
-  "build": {
-    "dockerfile": "Containerfile",
-    "args": {
-      "TZ": "${localEnv:TZ:Asia/Seoul}"
-    }
-  },
+  "name": "binglebingle",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:24-bookworm",
+  "runArgs": ["--userns=keep-id"],
+  "remoteUser": "node",
+  "postCreateCommand": "bash .devcontainer/setup.sh ${containerWorkspaceFolder}",
   "forwardPorts": [5173],
-  "runArgs": ["--userns=keep-id", "--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
-  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh && sudo /usr/local/bin/fix-permissions.sh",
-  "waitFor": "postStartCommand",
-  "remoteUser": "dev",
   "containerEnv": {
-    "CLAUDE_CONFIG_DIR": "/home/dev/.claude",
-    "ANTHROPIC_BASE_URL": "http://host.containers.internal:8080"
+    "TZ": "${localEnv:TZ:UTC}"
+  },
+  "remoteEnv": {
+    "PNPM_HOME": "/home/node/.local/share/pnpm",
+    "PATH": "${containerEnv:PATH}:/home/node/.local/share/pnpm",
+    "npm_config_store_dir": "/home/node/.local/share/pnpm/store",
+    "npm_config_minimum_release_age": "10080",
+    "npm_config_trust_policy_ignore_after": "10080",
+    "npm_config_block_exotic_subdeps": "true",
+    "npm_config_trust_policy": "no-downgrade"
   },
   "mounts": [
     // pnpm mounts
-    "source=pnpm,target=/home/dev/.local/share/pnpm,type=volume",
-    "source=node-modules-${devcontainerId},target=/workspaces/${localWorkspaceFolderBasename}/node_modules,type=volume",
-
-    // claude mounts
-    "source=claude-config-${devcontainerId},target=/home/dev/.claude,type=volume",
-    "source=claude-commandhistory-${devcontainerId},target=/commandhistory,type=volume",
-
-    // git mounts
-    "source=${localEnv:HOME}/.devcontainer/signing_key,target=/home/dev/.ssh/signing_key,type=bind,readonly=true",
-    "source=${localEnv:HOME}/.devcontainer/signing_key.pub,target=/home/dev/.ssh/signing_key.pub,type=bind,readonly=true",
-    "source=${localEnv:HOME}/.devcontainer/gitconfig.container,target=/home/dev/.gitconfig,type=bind,readonly=true",
-    "source=${localEnv:HOME}/.devcontainer/allowed_signers,target=/home/dev/.ssh/allowed_signers,type=bind,readonly=true"
+    "source=pnpm,target=/home/node/.local/share/pnpm,type=volume",
+    "source=node-modules-${devcontainerId},target=${containerWorkspaceFolder}/node_modules,type=volume",
+    // shell mounts
+    "source=shell-history-${devcontainerId},target=/home/node/.shellhistory,type=volume",
+    // personalization mounts
+    "source=${localEnv:HOME}/.local/share/devcontainer,target=/home/node/.local/share/devcontainer,type=bind,readonly"
   ]
 }
