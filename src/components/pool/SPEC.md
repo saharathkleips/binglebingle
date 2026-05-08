@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Renders the jamo pool and handles per-tile interactions. Reads pool state from `useGame()` and dispatches character actions.
+Renders the fixed-layout jamo pool and handles per-tile interactions. Reads pool state from `useGame()` and dispatches character actions. Pool tile coordinates are not persisted; the layout determines each tile's resting position.
 
 **Boundaries:**
 
@@ -60,7 +60,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. O
 - Draggable owns click-vs-drag differentiation and pointer event wiring.
 - `onDragStart`: temporarily allows pool overflow so the tile can travel to slots and plays pickup feedback.
 - `onDrag`: resolves the current target via `document.elementsFromPoint`, sets `data-drag-over="true"` on valid targets, and sets `data-can-drop="true"` on the dragged tile.
-- `onDragEnd`: dispatches slot/tile callbacks for valid drops, clears inline drag styles when React will re-render/unmount the tile, or animates the tile back to its fixed pool layout position when no valid drop occurred.
+- `onDragEnd`: dispatches slot/tile callbacks for valid drops, clears inline drag styles when React will re-render/unmount the tile, or animates the tile back to its fixed pool layout position when no valid drop occurred. Invalid drags never leave tiles at arbitrary canvas coordinates.
 - Drop onto `data-slot-index` element → `onDropOnSlot(slotIndex)`.
 - Drop onto `data-tile-id` element → `onDropOnTile(targetId)`.
 
@@ -73,6 +73,8 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. O
 **`isTappable` computed in Pool and passed as prop.** PoolTile has no knowledge of rotation sets or composition rules; Pool computes the flag once per render using the same lib calls it uses for dispatch.
 
 **Callbacks not context.** PoolTile receives callbacks from Pool rather than calling `useGame()`. This keeps PoolTile testable without wrapping in a provider and avoids redundant context subscriptions per tile.
+
+**Pool positions are fixed by layout.** GSAP Draggable applies temporary transforms during an active drag only. A successful drop dispatches state changes; an invalid drag animates back to `x: 0, y: 0` and clears inline styles so the tile resumes its natural flex-layout position.
 
 **Drag state tracked in refs, not state.** Callback refs, the current tile id, and the last highlighted drop target use refs so Draggable callbacks stay current without re-rendering on every pointer movement.
 
