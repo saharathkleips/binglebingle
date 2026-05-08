@@ -7,8 +7,8 @@
  */
 
 import { useRef, useLayoutEffect } from "react";
-import { resolveCharacter } from "../../lib/character";
 import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
+import { CharacterTile } from "../tile/CharacterTile";
 import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
 import type { SubmissionSlot as SubmissionSlotType } from "../../context/game";
 import styles from "./SubmissionSlot.module.css";
@@ -51,7 +51,6 @@ export function SubmissionSlot({
   const lastOverRef = useRef<Element | null>(null);
 
   const isFilled = slot.state === "FILLED";
-  const display = isFilled ? resolveCharacter(slot.character) : null;
   // Stable key for detecting swaps: which tile ID occupies this slot.
   const filledTileId = slot.state === "FILLED" ? slot.tileId : null;
 
@@ -162,24 +161,26 @@ export function SubmissionSlot({
     };
   }, [isSubmitting, isFilled]);
 
-  const className = [
-    styles.slot,
-    isFilled ? styles.filled : styles.empty,
-    isFilled && isReady ? styles.ready : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const filledClassName = [styles.filled, isReady ? styles.ready : null].filter(Boolean).join(" ");
 
-  const button = (
+  const button = isFilled ? (
+    <CharacterTile
+      character={slot.character}
+      element="button"
+      className={filledClassName}
+      isInteractive
+      tileRef={buttonRef}
+      testId={`slot-${slotIndex}`}
+      dataAttributes={{ "data-slot-index": slotIndex }}
+    />
+  ) : (
     <button
       ref={buttonRef}
       type="button"
-      className={className}
+      className={`${styles.slot} ${styles.empty}`}
       data-testid={`slot-${slotIndex}`}
       data-slot-index={slotIndex}
-    >
-      {display}
-    </button>
+    />
   );
 
   // When filled, wrap in a ghost div that stays at the original slot position

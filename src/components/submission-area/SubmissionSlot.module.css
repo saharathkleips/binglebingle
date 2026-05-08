@@ -16,23 +16,12 @@
 }
 
 .filled {
-  cursor: pointer;
-  background: var(--color-tile-face);
-  color: var(--color-tile-text);
-  font-weight: bold;
-  box-shadow:
-    inset 0 0 0 2px var(--color-tile-text),
-    4px 4px 0 0 var(--color-tile-text);
-  /* touch-action:none allows pointer capture for drag on touch devices */
-  touch-action: none;
-}
-
-.filled:active {
-  background: var(--color-surface-active);
+  /* Marker class for submission-specific positioning inside the ghost placeholder. */
 }
 
 /* VIS-29: green glow when all slots are filled and the guess is valid. */
-.ready {
+.ready,
+.ready:hover {
   box-shadow:
     inset 0 0 0 2px var(--color-tile-text),
     4px 4px 0 0 var(--color-tile-text),
