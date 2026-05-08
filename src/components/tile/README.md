@@ -8,7 +8,7 @@ Shared tile presentation primitives for Binglebingle. This module owns reusable 
 - `BaseTileProps` — props for `BaseTile`; names describe visual concerns rather than pool, submission, or history behavior.
 - `CharacterTile` — character-aware wrapper that accepts a game `Character`, resolves it with `resolveCharacter`, and renders `BaseTile` with the resolved text.
 - `CharacterTileProps` — props for `CharacterTile`; mirrors the allowed visual props from `BaseTile` plus the `character` value.
-- `useTileFeedback` — optional shared hook for tile feedback animations if multiple contexts need the same small animation contract. It must not be required by `BaseTile`.
+- `useTileFeedback` — shared hook for GSAP tile feedback animations (rotate squeeze, compose pulse/particles, entrance scale). It is used by behavior components and is not required by `BaseTile`.
 
 ## Boundaries
 

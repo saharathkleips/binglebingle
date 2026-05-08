@@ -15,19 +15,13 @@
  * - isNewlyAdded: plays an entrance scale animation for newly-appeared tiles
  */
 
-import { useRef, useLayoutEffect } from "react";
+import { useRef } from "react";
 import { CharacterTile } from "../tile/CharacterTile";
+import { useTileFeedback } from "../tile/use-tile-feedback";
 import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
 import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
-import {
-  animateComposePulse,
-  animateEntranceScale,
-  animateParticleBurst,
-} from "../../lib/animation/tile-animations";
 import type { Tile } from "../../context/game";
 import styles from "./PoolTile.module.css";
-
-const NOOP = () => {};
 
 /**
  * Props for the {@link PoolTile} component.
@@ -82,9 +76,9 @@ export function PoolTile({
   onDropOnSlot,
   canDropOnTarget,
   onRejectedEnd,
-  onRotatingEnd = NOOP,
-  onComposedEnd = NOOP,
-  onNewlyAddedEnd = NOOP,
+  onRotatingEnd,
+  onComposedEnd,
+  onNewlyAddedEnd,
 }: PoolTileProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const lastOverRef = useRef<Element | null>(null);
@@ -95,50 +89,15 @@ export function PoolTile({
   const tileIdRef = useRef(tile.id);
   tileIdRef.current = tile.id;
 
-  // Stable refs for animation callbacks — prevent stale closures in GSAP onComplete.
-  const onRotatingEndRef = useRef(onRotatingEnd);
-  onRotatingEndRef.current = onRotatingEnd;
-  const onComposedEndRef = useRef(onComposedEnd);
-  onComposedEndRef.current = onComposedEnd;
-  const onNewlyAddedEndRef = useRef(onNewlyAddedEnd);
-  onNewlyAddedEndRef.current = onNewlyAddedEnd;
-
-  // VIS-21: brief squeeze pulse when the jamo rotates.
-  useLayoutEffect(() => {
-    if (!isRotating || !buttonRef.current) return;
-    const tween = gsap.to(buttonRef.current, {
-      scale: 0.82,
-      duration: 0.08,
-      ease: "power2.in",
-      yoyo: true,
-      repeat: 1,
-      onComplete: () => onRotatingEndRef.current(),
-    });
-    return () => {
-      tween.kill();
-    };
-  }, [isRotating]);
-
-  // VIS-19: scale heartbeat + particle burst on the tile that received a compose.
-  useLayoutEffect(() => {
-    if (!isJustComposed || !buttonRef.current) return;
-    const element = buttonRef.current;
-    const cleanupParticles = animateParticleBurst(element);
-    const tween = animateComposePulse(element, () => onComposedEndRef.current());
-    return () => {
-      tween.kill();
-      cleanupParticles();
-    };
-  }, [isJustComposed]);
-
-  // VIS-20: entrance scale for newly-added tiles (decompose results, etc.).
-  useLayoutEffect(() => {
-    if (!isNewlyAdded || !buttonRef.current) return;
-    const tween = animateEntranceScale(buttonRef.current, () => onNewlyAddedEndRef.current());
-    return () => {
-      tween.kill();
-    };
-  }, [isNewlyAdded]);
+  useTileFeedback({
+    elementRef: buttonRef,
+    isRotating,
+    isJustComposed,
+    isNewlyAdded,
+    onRotatingEnd,
+    onComposedEnd,
+    onNewlyAddedEnd,
+  });
 
   useGSAP(
     () => {

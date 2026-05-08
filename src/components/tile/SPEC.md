@@ -22,7 +22,7 @@ tile/
 ├── BaseTile.tsx             # Shared visual primitive; no game state, no GSAP, no character resolution
 ├── BaseTile.module.css      # Shared tile visual identity and narrow visual variants
 ├── CharacterTile.tsx        # Resolves a game Character and renders BaseTile
-├── use-tile-feedback.ts     # Optional shared feedback hook if multiple contexts share the exact contract
+├── use-tile-feedback.ts     # Shared GSAP feedback hook for behavior components
 ├── README.md
 └── SPEC.md
 ```
@@ -81,12 +81,13 @@ Rules:
 
 ### useTileFeedback
 
-Optional hook for a later task. It may exist only if more than one context needs the same feedback animation contract.
+Small hook that plays tile feedback animations on a caller-owned element ref: rotate squeeze, compose pulse with particle burst, and entrance scale.
 
 Rules:
 
-- Keep GSAP setup outside `BaseTile`.
-- Prefer context-specific animation code when sharing would hide important behavior.
+- Keep GSAP setup outside `BaseTile` and `CharacterTile`.
+- Accept only visual feedback flags, completion callbacks, and the element ref to animate.
+- Do not read game context, dispatch actions, or know about pool/submission/history semantics.
 - Do not introduce a generic `AnimatedTile` layer unless consumers need the exact same contract.
 
 ## Key Decisions
@@ -99,10 +100,12 @@ Rules:
 
 **DOM hooks are pass-through only.** `tileRef`, `dataAttributes`, `testId`, and `onAnimationEnd` exist so feature modules can attach their own semantics to the same visual element. `BaseTile` must not interpret those attributes or callbacks.
 
+**Feedback animations are hook-based.** `useTileFeedback` centralizes the shared GSAP feedback setup without making visual components depend on GSAP or creating a generic animated component layer.
+
 **Use visual names, not source-context names.** Shared props should describe appearance (`tone="correct"`, `isHighlighted`) rather than the module that caused it (`isHistoryCorrect`, `isDropTarget`). This keeps the primitive redesignable without importing feature concepts.
 
 ## Open Questions
 
 - Which current tile dimensions and state variants should become the initial `BaseTile.module.css` contract during TILE-02?
 - Should `BaseTile` support `button` directly, or should interactive consumers wrap a non-button visual surface when they need complex drag/drop behavior?
-- Whether shared feedback belongs in `useTileFeedback` depends on the TILE-05 migration and should not be decided before comparing actual consumers.
+- Whether submission or history interactions should reuse `useTileFeedback` depends on their later migrations and should be decided only if they need the exact same animation contract.

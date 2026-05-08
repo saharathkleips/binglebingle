@@ -41,7 +41,7 @@ Computes `isTappable` per tile and passes it as a prop.
 
 ### PoolTile
 
-Renders a single tile by composing `CharacterTile` from `src/components/tile`. Owns GSAP Draggable mechanics only — no character lib imports, no game logic.
+Renders a single tile by composing `CharacterTile` from `src/components/tile`. Owns GSAP Draggable mechanics and delegates tile feedback animation setup to `useTileFeedback` — no character lib imports, no game logic.
 
 **Props:**
 
@@ -52,7 +52,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. O
 - `onDropOnSlot: (slotIndex: number) => void` — called when a drag ends on a submission slot.
 - `canDropOnTarget?: (target: Element) => boolean` — gates valid-drop highlighting while dragging.
 - `onRejectedEnd: () => void` — called from `onAnimationEnd`; Pool clears `rejectedTileId`.
-- `isRotating`, `isJustComposed`, `isNewlyAdded` — feedback flags owned by Pool and animated by PoolTile.
+- `isRotating`, `isJustComposed`, `isNewlyAdded` — feedback flags owned by Pool and animated through `useTileFeedback`.
 - `onRotatingEnd`, `onComposedEnd`, `onNewlyAddedEnd` — completion callbacks that clear Pool feedback state.
 
 **Drag behavior** (GSAP Draggable):
@@ -78,6 +78,8 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. O
 
 **`touch-action: none` from BaseTile interactive styles.** Required for drag on touch devices; prevents the browser from claiming the gesture for scrolling before the drag can begin.
 
-**Shared visuals stay in `CharacterTile` / `BaseTile`.** PoolTile attaches GSAP, refs, test ids, and drop-target data attributes to the shared tile element without importing `resolveCharacter` or duplicating base tile CSS.
+**Shared visuals stay in `CharacterTile` / `BaseTile`.** PoolTile attaches GSAP Draggable, refs, test ids, and drop-target data attributes to the shared tile element without importing `resolveCharacter` or duplicating base tile CSS.
+
+**Feedback setup is delegated.** PoolTile keeps drag/drop behavior local but calls `useTileFeedback` for rotate, compose, particle, and entrance animations so the feedback contract stays separate from both shared visuals and Draggable setup.
 
 **`document.elementsFromPoint?.()` with optional chaining.** The API is not implemented in jsdom; optional chaining with a `[]` fallback keeps tests clean without needing a global polyfill.
