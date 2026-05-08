@@ -162,8 +162,7 @@ export function Tile({
             lastOverRef.current.removeAttribute("data-drag-over");
           }
           const { canDropOnTarget: canDrop } = callbacksRef.current;
-          const isValidDrop =
-            dropTarget !== null && (canDrop === undefined || canDrop(dropTarget));
+          const isValidDrop = dropTarget !== null && (canDrop === undefined || canDrop(dropTarget));
           if (isValidDrop) {
             dropTarget!.setAttribute("data-drag-over", "true");
           }
