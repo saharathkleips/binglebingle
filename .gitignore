@@ -31,5 +31,5 @@ Thumbs.db
 # pnpm
 .pnpm-store/
 
-# claude
-.claude/worktrees/
+# DevContainer
+.devcontainer/local.setup.sh

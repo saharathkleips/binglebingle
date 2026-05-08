@@ -1,89 +1,50 @@
-# Claude Code devcontainer
+# DevContainer
 
-Local development environment for Claude Code using Podman (rootless) and Zed.
+This folder contains the devcontainer configuration for `binglebingle`.
 
-## Local & Cloud Hybrid LLM
+## Local customization
 
-Authenticate:
+For project-specific customization, create an executable:
 
-```bash
-claude auth login
-```
+- `.devcontainer/local.setup.sh`
 
-Start `llama-swap` on the host machine:
+It is called automatically after the shared setup completes and receives the workspace path as its first argument.
 
-```bash
-ANTHROPIC_OAUTH_TOKEN=$(
-  podman exec \
-    $(podman container ls --format '{{.Names}} {{.Image}}' | awk '/vsc-/{print $1}' | head -n 1) \
-    cat /home/dev/.claude/.credentials.json \
-  | jq -r '.claudeAiOauth.accessToken'
-) llama-swap --config .devcontainer/llama-swap.config.yaml --listen localhost:8080
-```
-
-## Prerequisites
-
-### Podman
+Example:
 
 ```bash
-brew install podman
-podman machine init
-podman machine start
+#!/usr/bin/env bash
+set -euo pipefail
+
+WORKSPACE_DIR="$1"
 ```
 
-### llama-swap
+## Shared host directory
 
-```bash
-brew tap mostlygeek/llama-swap
-brew install llama-swap
+The devcontainer bind-mounts your host directory:
+
+- `~/.local/share/devcontainer/`
+
+into the container at:
+
+- `/home/node/.local/share/devcontainer/`
+
+Use this shared location for personal, machine-specific files such as:
+
+- `.gitconfig`
+- signing keys / key material
+- shell preferences
+- editor preferences
+- local-only tooling
+
+If `~/.local/share/devcontainer/.gitconfig` exists, the setup script automatically adds it via:
+
+```ini
+[include]
+    path = /home/node/.local/share/devcontainer/.gitconfig
 ```
 
-### One-time Initialization
+## Notes
 
-One-time initialization to symlink Podman for Zed and setup signing keys.
-
-```bash
-bash setup.sh
-```
-
-## Architecture
-
-```
-macOS host
-├── ~/.devcontainer/                    ← personal devcontainer credentials
-│   ├── signing_key                     ← container-only SSH signing key (private)
-│   ├── signing_key.pub                 ← container-only SSH signing key (public)
-│   ├── gitconfig.container             ← git config for the container
-│   └── allowed_signers                 ← git SSH signature verification
-│
-├── project repo (.devcontainer/)       ← this directory
-│   ├── Containerfile                   ← container definition file
-│   ├── devcontainer.json               ← devcontainers configuration
-│   ├── init-firewall.sh                ← network isolation setup and firewall
-│   ├── llama-swap.config.yaml          ← llama-swap configuration for local & cloud hybrid
-│   └── setup.sh                        ← one-time setup file ran on the host machine
-│
-└── Podman VM
-    └── container: claude-code-dev
-        ├── /workspaces                 ← mounted project
-        └── named volumes
-            ├── claude-config-*         ← Claude Code sessions, projects, settings (/home/dev/.claude)
-            ├── claude-commandhistory-* ← shell history (/commandhistory)
-            ├── node-modules-*          ← node_modules per project
-            └── pnpm                    ← shared pnpm store across all projects
-```
-
-## Commit signing
-
-Commits made inside the container are signed with the **devcontainer-only signing key** at `/home/dev/.ssh/signing_key`. To rotate, delete `~/.devcontainer/signing_key*`, re-run `setup.sh`, remove the old key from GitHub, add the new one.
-
-## Network isolation
-
-The firewall restricts outbound traffic to only the following services:
-
-- `api.anthropic.com` — Claude API
-- `statsig.anthropic.com`, `statsig.com` — Claude telemetry
-- `sentry.io` — Claude Code error reporting
-- `github.com` — GitHub operations
-- `registry.npmjs.org`, `nodejs.org` — Node.js package registry
-- `host.containers.internal:8080` — llama-swap proxy on the host
+- The container persists pnpm, node_modules, shell history, and Pi state in named volumes.
+- The root `./setup.sh` installs `@mariozechner/pi-coding-agent` and links `extensions/`, `prompts/`, and `skills/` into the Pi agent directory.
