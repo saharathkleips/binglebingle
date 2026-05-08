@@ -1,12 +1,12 @@
 /**
- * @file Tile.tsx
+ * @file PoolTile.tsx
  *
- * A single interactive tile in the jamo pool.
+ * A single interactive pool tile in the jamo pool.
  * Owns GSAP Draggable mechanics — all game logic lives in Pool.
  *
  * Drag behavior (UI-04):
  * - Drag to SubmissionSlot → onDropOnSlot(slotIndex)
- * - Drag to another Tile → onDropOnTile(targetId)
+ * - Drag to another pool tile → onDropOnTile(targetId)
  * GSAP Draggable handles click-vs-drag differentiation natively.
  *
  * Animation props (1.4.5):
@@ -16,7 +16,7 @@
  */
 
 import { useRef, useLayoutEffect } from "react";
-import { resolveCharacter } from "../../lib/character";
+import { CharacterTile } from "../tile/CharacterTile";
 import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
 import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
 import {
@@ -25,19 +25,19 @@ import {
   animateParticleBurst,
 } from "../../lib/animation/tile-animations";
 import type { Tile } from "../../context/game";
-import styles from "./Tile.module.css";
+import styles from "./PoolTile.module.css";
 
 const NOOP = () => {};
 
 /**
- * Props for the {@link Tile} component.
+ * Props for the {@link PoolTile} component.
  *
  * @property tile - The tile data to render.
  * @property isTappable - Whether tapping this tile does anything; controls the inert CSS class.
- * @property isRejected - Pool sets this when a compose operation is rejected; Tile renders shake feedback.
- * @property isRotating - Pool sets this when the tile's jamo was just rotated; Tile plays a brief GSAP squeeze.
- * @property isJustComposed - Pool sets this on the target tile after a successful compose; Tile plays heartbeat + particles.
- * @property isNewlyAdded - Pool sets this when this tile ID first appears in the pool; Tile plays entrance animation.
+ * @property isRejected - Pool sets this when a compose operation is rejected; PoolTile renders shake feedback.
+ * @property isRotating - Pool sets this when the tile's jamo was just rotated; PoolTile plays a brief GSAP squeeze.
+ * @property isJustComposed - Pool sets this on the target tile after a successful compose; PoolTile plays heartbeat + particles.
+ * @property isNewlyAdded - Pool sets this when this tile ID first appears in the pool; PoolTile plays entrance animation.
  * @property onTap - Called on click when `isTappable` is true.
  * @property onDropOnTile - Called when a drag ends on another tile, with that tile's id.
  * @property onDropOnSlot - Called when a drag ends on a submission slot, with that slot's index.
@@ -47,7 +47,7 @@ const NOOP = () => {};
  * @property onComposedEnd - Called after the compose heartbeat completes; Pool clears composedTileId.
  * @property onNewlyAddedEnd - Called after the entrance animation completes; Pool clears the id.
  */
-export type TileProps = {
+export type PoolTileProps = {
   tile: Tile;
   isTappable: boolean;
   isRejected: boolean;
@@ -65,12 +65,12 @@ export type TileProps = {
 };
 
 /**
- * A single interactive tile in the jamo pool.
+ * A single interactive pool tile in the jamo pool.
  * Owns GSAP Draggable mechanics — all game logic lives in {@link Pool}.
  *
- * @param props - See {@link TileProps}.
+ * @param props - See {@link PoolTileProps}.
  */
-export function Tile({
+export function PoolTile({
   tile,
   isTappable,
   isRejected,
@@ -85,7 +85,7 @@ export function Tile({
   onRotatingEnd = NOOP,
   onComposedEnd = NOOP,
   onNewlyAddedEnd = NOOP,
-}: TileProps) {
+}: PoolTileProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const lastOverRef = useRef<Element | null>(null);
 
@@ -163,8 +163,8 @@ export function Tile({
           }
           const { canDropOnTarget: canDrop } = callbacksRef.current;
           const isValidDrop = dropTarget !== null && (canDrop === undefined || canDrop(dropTarget));
-          if (isValidDrop) {
-            dropTarget!.setAttribute("data-drag-over", "true");
+          if (isValidDrop && dropTarget !== null) {
+            dropTarget.setAttribute("data-drag-over", "true");
           }
           if (isValidDrop) {
             (this.target as HTMLElement).setAttribute("data-can-drop", "true");
@@ -189,7 +189,7 @@ export function Tile({
             const slotIndexStr = dropTarget.getAttribute("data-slot-index");
             if (slotIndexStr !== null) {
               callbacksRef.current.onDropOnSlot(parseInt(slotIndexStr, 10));
-              // Tile will unmount (removed from pool) — clear inline styles
+              // PoolTile will unmount (removed from pool) — clear inline styles
               gsap.set(element, { clearProps: "all" });
               if (poolEl !== null) poolEl.style.overflow = "";
               return;
@@ -228,26 +228,21 @@ export function Tile({
     onRejectedEnd();
   }
 
-  const display = resolveCharacter(tile.character);
-  const className = [
-    styles.tile,
-    !isTappable ? styles.inert : null,
-    isRejected ? styles.shaking : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  function handleTileRef(node: HTMLElement | null) {
+    buttonRef.current = node instanceof HTMLButtonElement ? node : null;
+  }
 
   return (
-    <button
-      ref={buttonRef}
-      type="button"
-      className={className}
+    <CharacterTile
+      character={tile.character}
+      className={isRejected ? (styles.shaking ?? "") : ""}
+      dataAttributes={{ "data-tile-id": tile.id }}
+      element="button"
+      isInteractive={isTappable}
       onAnimationEnd={handleAnimationEnd}
-      data-testid={`tile-${tile.id}`}
-      data-tile-id={tile.id}
-    >
-      {display}
-    </button>
+      testId={`tile-${tile.id}`}
+      tileRef={handleTileRef}
+    />
   );
 }
 

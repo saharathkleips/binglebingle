@@ -4,7 +4,7 @@
  * Shared visual primitive for tile-like surfaces.
  */
 
-import type { ReactNode } from "react";
+import type { AnimationEventHandler, ReactNode, Ref } from "react";
 import styles from "./BaseTile.module.css";
 
 export type BaseTileElement = "button" | "div" | "span";
@@ -16,23 +16,31 @@ export type BaseTileTone = "default" | "correct" | "present" | "absent";
  *
  * @property children - Already-renderable tile content.
  * @property className - Optional caller-owned class for layout or context-specific visual additions.
+ * @property dataAttributes - Optional data attributes owned by the consuming feature.
  * @property element - Semantic element to render.
  * @property isDisabled - Whether a button tile should be disabled and visually muted.
  * @property isHighlighted - Whether to show the shared warm highlight treatment.
  * @property isInteractive - Whether the tile should use interactive affordances such as pointer cursor and active feedback.
  * @property label - Accessible label for non-text or abbreviated tile content.
+ * @property onAnimationEnd - Optional animation-end handler for caller-owned CSS feedback.
  * @property size - Shared size variant.
+ * @property testId - Optional test id for observable UI tests.
+ * @property tileRef - Optional ref to the rendered tile element for context-specific behavior.
  * @property tone - Shared result/state tone.
  */
 export type BaseTileProps = {
   children: ReactNode;
   className?: string;
+  dataAttributes?: Record<`data-${string}`, string | number | boolean>;
   element?: BaseTileElement;
   isDisabled?: boolean;
   isHighlighted?: boolean;
   isInteractive?: boolean;
   label?: string;
+  onAnimationEnd?: AnimationEventHandler<HTMLElement>;
   size?: BaseTileSize;
+  testId?: string;
+  tileRef?: Ref<HTMLElement>;
   tone?: BaseTileTone;
 };
 
@@ -45,12 +53,16 @@ export type BaseTileProps = {
 export function BaseTile({
   children,
   className,
+  dataAttributes,
   element = "div",
   isDisabled = false,
   isHighlighted = false,
   isInteractive = false,
   label,
+  onAnimationEnd,
   size = "standard",
+  testId,
+  tileRef,
   tone = "default",
 }: BaseTileProps) {
   const composedClassName = composeClassName([
@@ -64,9 +76,22 @@ export function BaseTile({
     className,
   ]);
 
+  const sharedProps = {
+    ...dataAttributes,
+    "data-testid": testId,
+    "aria-label": label,
+    className: composedClassName,
+    onAnimationEnd,
+  };
+
   if (element === "button") {
     return (
-      <button type="button" className={composedClassName} aria-label={label} disabled={isDisabled}>
+      <button
+        {...sharedProps}
+        ref={(node) => assignRef(tileRef, node)}
+        type="button"
+        disabled={isDisabled}
+      >
         {children}
       </button>
     );
@@ -75,8 +100,8 @@ export function BaseTile({
   if (element === "span") {
     return (
       <span
-        className={composedClassName}
-        aria-label={label}
+        {...sharedProps}
+        ref={(node) => assignRef(tileRef, node)}
         aria-disabled={isDisabled || undefined}
       >
         {children}
@@ -85,7 +110,11 @@ export function BaseTile({
   }
 
   return (
-    <div className={composedClassName} aria-label={label} aria-disabled={isDisabled || undefined}>
+    <div
+      {...sharedProps}
+      ref={(node) => assignRef(tileRef, node)}
+      aria-disabled={isDisabled || undefined}
+    >
       {children}
     </div>
   );
@@ -97,4 +126,13 @@ export function BaseTile({
 
 function composeClassName(classNames: Array<string | null | undefined>): string {
   return classNames.filter(Boolean).join(" ");
+}
+
+function assignRef(ref: Ref<HTMLElement> | undefined, node: HTMLElement | null) {
+  if (ref === undefined || ref === null) return;
+  if (typeof ref === "function") {
+    ref(node);
+    return;
+  }
+  ref.current = node;
 }

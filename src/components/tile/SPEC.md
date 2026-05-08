@@ -35,12 +35,16 @@ Planned public types are documented here before implementation so later tasks ca
 type BaseTileProps = {
   children: React.ReactNode;
   className?: string;
+  dataAttributes?: Record<`data-${string}`, string | number | boolean>;
   element?: "button" | "div" | "span";
   isDisabled?: boolean;
   isHighlighted?: boolean;
   isInteractive?: boolean;
   label?: string;
+  onAnimationEnd?: React.AnimationEventHandler<HTMLElement>;
   size?: "standard" | "compact";
+  testId?: string;
+  tileRef?: React.Ref<HTMLElement>;
   tone?: "default" | "correct" | "present" | "absent";
 };
 
@@ -61,7 +65,7 @@ Rules:
 
 - Accept already-renderable display content via `children`.
 - Do not import GSAP, `useGame`, reducer action types, pool/submission/history components, `resolveCharacter`, or character composition/rotation helpers.
-- Do not know about tile IDs, slot indices, drag targets, submitted guesses, or evaluation logic.
+- Do not know about tile IDs, slot indices, drag targets, submitted guesses, or evaluation logic; it only passes caller-owned `data-*` attributes through to the rendered element.
 - Do not dispatch actions or register global event listeners.
 - Keep variant names visual and reusable across modules.
 
@@ -92,6 +96,8 @@ Rules:
 **Character resolution is separate from base visuals.** `BaseTile` receives display content and therefore stays reusable for history result markers, instruction examples, empty/future visual states, and any non-character tile-like content. `CharacterTile` is the convenience wrapper for game characters.
 
 **Feature modules own semantics.** Pool tiles can be draggable and tappable, submission slots can swap or return tiles, history tiles can show evaluation tones, and instructions can render examples. Those behaviors are outside this module even when they share the same visual surface.
+
+**DOM hooks are pass-through only.** `tileRef`, `dataAttributes`, `testId`, and `onAnimationEnd` exist so feature modules can attach their own semantics to the same visual element. `BaseTile` must not interpret those attributes or callbacks.
 
 **Use visual names, not source-context names.** Shared props should describe appearance (`tone="correct"`, `isHighlighted`) rather than the module that caused it (`isHistoryCorrect`, `isDropTarget`). This keeps the primitive redesignable without importing feature concepts.
 

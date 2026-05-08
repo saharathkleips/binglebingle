@@ -4,7 +4,7 @@ Shared tile presentation primitives for Binglebingle. This module owns reusable 
 
 ## Exports
 
-- `BaseTile` — visual primitive for a tile-like surface. Accepts display content, an optional element kind for semantic rendering, and narrow visual variant props. It does not resolve game characters, dispatch actions, read context, configure GSAP, or implement drag/drop behavior.
+- `BaseTile` — visual primitive for a tile-like surface. Accepts display content, an optional element kind for semantic rendering, safe DOM hooks for consumers (`tileRef`, `dataAttributes`, `testId`, `onAnimationEnd`), and narrow visual variant props. It does not resolve game characters, dispatch actions, read context, configure GSAP, or implement drag/drop behavior.
 - `BaseTileProps` — props for `BaseTile`; names describe visual concerns rather than pool, submission, or history behavior.
 - `CharacterTile` — character-aware wrapper that accepts a game `Character`, resolves it with `resolveCharacter`, and renders `BaseTile` with the resolved text.
 - `CharacterTileProps` — props for `CharacterTile`; mirrors the allowed visual props from `BaseTile` plus the `character` value.

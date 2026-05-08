@@ -1,16 +1,16 @@
 /**
  * @file Pool.tsx
  *
- * Displays the player's jamo pool as a row of interactive Tile tiles.
+ * Displays the player's jamo pool as a row of interactive pool tiles.
  * Owns all interaction logic: tap dispatch, compose validation, slot insertion.
- * Tracks animation state (rotating, composed, newly-added) and forwards it to Tile.
+ * Tracks animation state (rotating, composed, newly-added) and forwards it to PoolTile.
  */
 
 import { useState, useLayoutEffect, useRef } from "react";
 import { useGame } from "../../context/game/GameContext";
 import { getNextRotation } from "../../lib/character/rotation";
 import { decompose, compose } from "../../lib/character/composition";
-import { Tile } from "./Tile";
+import { PoolTile } from "./PoolTile";
 import type { Tile as TileType } from "../../context/game";
 import styles from "./Pool.module.css";
 
@@ -82,7 +82,7 @@ export function Pool() {
         const isTappable =
           getNextRotation(tile.character) !== null || decompose(tile.character) !== null;
         return (
-          <Tile
+          <PoolTile
             key={tile.id}
             tile={tile}
             isTappable={isTappable}

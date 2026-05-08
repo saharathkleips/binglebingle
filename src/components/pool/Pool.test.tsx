@@ -4,7 +4,7 @@ import { Pool } from "./Pool";
 import { GameProvider } from "../../context/game/GameContext";
 import { createInitialGameState } from "../../context/game/game-reducer";
 import { createWord } from "../../lib/word";
-import styles from "./Tile.module.css";
+import styles from "./PoolTile.module.css";
 
 async function renderPool(word: string) {
   const gameState = createInitialGameState(createWord(word)!);
