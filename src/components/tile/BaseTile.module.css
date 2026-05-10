@@ -1,5 +1,6 @@
 .tile {
-  --tile-height: var(--size-tile-height);
+  --tile-current-long-edge: var(--tile-visual-long-edge);
+  --tile-current-short-edge: var(--tile-visual-short-edge);
   --tile-border-gradient-1: var(--palette-najeon-lavender);
   --tile-border-gradient-2: var(--palette-najeon-blue);
   --tile-border-gradient-3: var(--palette-najeon-pink);
@@ -11,19 +12,15 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: calc(var(--tile-height) * var(--size-tile-ratio));
-  height: var(--tile-height);
+  width: var(--tile-current-short-edge);
+  height: var(--tile-current-long-edge);
   overflow: clip;
-  border-radius: var(--radius-md);
+  border-radius: var(--tile-radius);
   background: var(--color-tile-face);
-  box-shadow:
-    1px 1px 0 var(--color-tile-shadow),
-    2px 2px 0 var(--color-tile-shadow),
-    3px 3px 0 var(--color-tile-shadow),
-    6px 6px 0 var(--color-tile-shadow-strong);
+  box-shadow: var(--tile-shadow-stack);
   color: transparent;
   font: inherit;
-  font-size: var(--font-size-tile);
+  font-size: var(--tile-font-size);
   font-weight: bold;
   line-height: 1;
   text-align: center;
@@ -38,18 +35,20 @@
 }
 
 .standard {
-  --tile-height: var(--size-tile-height);
+  --tile-current-long-edge: var(--tile-visual-long-edge);
+  --tile-current-short-edge: var(--tile-visual-short-edge);
 }
 
 .compact {
-  --tile-height: calc(var(--size-tile-height) * var(--scale-tile-compact));
+  --tile-current-long-edge: calc(var(--tile-visual-long-edge) * var(--tile-compact-scale));
+  --tile-current-short-edge: calc(var(--tile-visual-short-edge) * var(--tile-compact-scale));
 }
 
 .text {
   z-index: 1;
   pointer-events: none;
   font-family: var(--font-family-ui);
-  font-size: var(--font-size-tile);
+  font-size: var(--tile-font-size);
   background: conic-gradient(
     from 180deg at 50% 50%,
     var(--palette-najeon-lavender) 0deg,
@@ -68,7 +67,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  padding: calc(var(--tile-height) * var(--ratio-tile-border-padding));
+  padding: var(--tile-border-padding);
   pointer-events: none;
 }
 
@@ -95,11 +94,8 @@
 
 .interactive:not(.disabled):hover {
   box-shadow:
-    1px 1px 0 var(--color-tile-shadow),
-    2px 2px 0 var(--color-tile-shadow),
-    3px 3px 0 var(--color-tile-shadow),
-    6px 6px 0 var(--color-tile-shadow-strong),
-    0 0 10px 3px var(--color-tile-glow);
+    var(--tile-shadow-stack),
+    0 0 var(--tile-glow-size) calc(var(--tile-glow-size) * 0.3) var(--color-tile-glow);
 }
 
 .interactive:not(.disabled):active {
@@ -109,20 +105,15 @@
 .highlighted,
 .tile[data-can-drop="true"] {
   box-shadow:
-    1px 1px 0 var(--color-tile-shadow),
-    2px 2px 0 var(--color-tile-shadow),
-    3px 3px 0 var(--color-tile-shadow),
-    6px 6px 0 var(--color-tile-shadow-strong),
-    0 0 16px 5px var(--color-tile-highlight-glow);
+    var(--tile-shadow-stack),
+    0 0 calc(var(--tile-glow-size) * 1.6) calc(var(--tile-glow-size) * 0.5)
+      var(--color-tile-highlight-glow);
 }
 
 .tile[data-drag-over="true"] {
   box-shadow:
-    1px 1px 0 var(--color-tile-shadow),
-    2px 2px 0 var(--color-tile-shadow),
-    3px 3px 0 var(--color-tile-shadow),
-    6px 6px 0 var(--color-tile-shadow-strong),
-    0 0 14px 4px var(--color-drag-glow);
+    var(--tile-shadow-stack),
+    0 0 calc(var(--tile-glow-size) * 1.4) calc(var(--tile-glow-size) * 0.4) var(--color-drag-glow);
 }
 
 .correct {

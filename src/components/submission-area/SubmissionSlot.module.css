@@ -1,16 +1,27 @@
 .slot {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-tile-width);
-  height: var(--size-tile-height);
-  border: 6px solid var(--color-tile-border);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-tile);
+  width: var(--tile-hitbox-size);
+  height: var(--tile-hitbox-size);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: var(--tile-font-size);
   user-select: none;
 }
 
-.empty {
+.slot::before {
+  content: "";
+  width: var(--tile-visual-short-edge);
+  height: var(--tile-visual-long-edge);
+  border: max(2px, calc(var(--tile-border-padding) * 2)) solid var(--color-border);
+  border-radius: var(--tile-radius);
+}
+
+.empty::before {
   border-style: dashed;
   background: var(--color-surface-empty);
 }
@@ -24,39 +35,43 @@
 .ready:hover {
   box-shadow:
     inset 0 0 0 2px var(--color-tile-text),
-    4px 4px 0 0 var(--color-tile-text),
-    0 0 12px 3px rgba(52, 118, 65, 0.35);
+    var(--tile-shadow-depth) var(--tile-shadow-depth) 0 0 var(--color-tile-text),
+    0 0 calc(var(--tile-glow-size) * 1.2) calc(var(--tile-glow-size) * 0.3) rgba(52, 118, 65, 0.35);
 }
 
 /*
  * Ghost placeholder that remains at the slot's grid position while its filled
- * button is being dragged away. Mirrors the empty-slot appearance so there is
- * always a visible landing indicator.
+ * button is being dragged away. The square hitbox remains stable while the
+ * visible portrait tile stays centered inside it.
  */
 .slotGhost {
   position: relative;
-  width: var(--size-tile-width);
-  height: var(--size-tile-height);
-  border: 6px dashed var(--color-tile-border);
-  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tile-hitbox-size);
+  height: var(--tile-hitbox-size);
+}
+
+.slotGhost::before {
+  content: "";
+  position: absolute;
+  width: var(--tile-visual-short-edge);
+  height: var(--tile-visual-long-edge);
+  border: max(2px, calc(var(--tile-border-padding) * 2)) dashed var(--color-border);
+  border-radius: var(--tile-radius);
   background: var(--color-surface-empty);
 }
 
-/*
- * When the filled button sits inside the ghost it must cover it completely,
- * including the ghost's 6px border. inset: -6px expands the button outward by
- * 6px on every side so its border-box coincides with the ghost's border-box.
- */
 .slotGhost .filled {
-  position: absolute;
-  inset: -6px;
-  width: auto;
-  height: auto;
+  z-index: 1;
 }
 
 /* Drop target highlight set imperatively during drag — VIS-29 glow. */
-.slot[data-drag-over="true"] {
+.slot[data-drag-over="true"]::before,
+.slotGhost[data-drag-over="true"]::before {
   border-color: var(--color-drag-border);
   background: var(--color-drag-bg);
-  box-shadow: 0 0 14px 4px rgba(10, 10, 245, 0.28);
+  box-shadow: 0 0 calc(var(--tile-glow-size) * 1.4) calc(var(--tile-glow-size) * 0.4)
+    var(--color-drag-glow);
 }

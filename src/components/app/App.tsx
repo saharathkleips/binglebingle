@@ -27,15 +27,27 @@ export function App({ initialState = DEV_INITIAL_STATE }: { initialState?: GameS
   return (
     <GameProvider initialState={initialState}>
       <div className={styles.app}>
-        <NavBar
-          onToggleInstructions={handleToggleInstructions}
-          isInstructionsOpen={isInstructionsOpen}
-        />
-        <InstructionsScreen isOpen={isInstructionsOpen} onClose={handleToggleInstructions} />
-        <div className={styles.gameArea}>
-          <HistoryArea />
-          <div className={styles.gameContent}>
-            <GameContent />
+        <div
+          className={styles.unsupportedViewport}
+          data-testid="unsupported-viewport"
+          role="status"
+        >
+          <h1 className={styles.unsupportedTitle}>빙글빙글</h1>
+          <p className={styles.unsupportedMessage}>
+            이 화면 크기는 지원하지 않아요. 375px × 667px 이상의 화면에서 플레이해 주세요.
+          </p>
+        </div>
+        <div className={styles.supportedViewport}>
+          <NavBar
+            onToggleInstructions={handleToggleInstructions}
+            isInstructionsOpen={isInstructionsOpen}
+          />
+          <InstructionsScreen isOpen={isInstructionsOpen} onClose={handleToggleInstructions} />
+          <div className={styles.gameArea}>
+            <HistoryArea />
+            <div className={styles.gameContent}>
+              <GameContent />
+            </div>
           </div>
         </div>
       </div>

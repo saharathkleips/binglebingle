@@ -4,7 +4,7 @@
 
 ## Purpose
 
-`App` is the root component. It owns game initialization, top-level layout, and win state presentation. `GameProvider` wraps the entire tree here — all child components read state via `useGame()`.
+`App` is the root component. It owns game initialization, top-level layout, viewport support messaging, and win state presentation. `GameProvider` wraps the entire tree here — all child components read state via `useGame()`.
 
 **Boundaries:**
 
@@ -28,6 +28,10 @@ app/
 
 Initializes the game via `setupGame()` on mount and renders the full game UI.
 
+**Viewport support:**
+
+Screens below the documented minimum game viewport (`375px × 667px`) show a CSS-only unsupported message. The game shell is hidden with media queries rather than JavaScript measurement so tile tier selection and viewport support remain native CSS concerns.
+
 **Loading / Instructions:**
 
 Shows `InstructionsScreen` while `setupGame()` resolves — game is typically ready by the time the player dismisses it.
@@ -50,6 +54,8 @@ Dev settings live in `App` local state; dev panel accessible via `?dev=1` URL pa
 **`GameProvider` wraps the entire app.** All game state lives in context; child components read via `useGame()`. `App` is the only place `GameProvider` is instantiated.
 
 **`setupGame()` called on mount.** The async puzzle fetch starts immediately; `InstructionsScreen` covers the load time so the player never sees a blank game state.
+
+**Unsupported viewport is CSS-only.** App markup includes both the unsupported message and supported game shell. `App.module.css` switches between them at `375px × 667px`, matching the first tile tier in `src/index.css` and avoiding JavaScript viewport measurement.
 
 ## Open Questions
 

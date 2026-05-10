@@ -2,10 +2,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm);
-  /* Show ~3 rows before scrolling. Each row is tile height + gap, plus padding. */
-  max-height: calc(3 * (var(--size-tile-height) + var(--space-sm)) + var(--space-sm));
+  gap: var(--tile-gap);
+  padding: var(--tile-gap);
+  /* Show ~3 rows before scrolling. Each row uses the shared square hitbox cadence. */
+  max-height: calc(3 * (var(--tile-hitbox-size) + var(--tile-gap)) + var(--tile-gap));
   overflow-y: auto;
   flex-shrink: 0;
   /* VIS-26: smooth scroll as older guesses are pushed up. */
@@ -15,5 +15,5 @@
 .row {
   display: flex;
   justify-content: center;
-  gap: var(--space-sm);
+  gap: var(--tile-gap);
 }

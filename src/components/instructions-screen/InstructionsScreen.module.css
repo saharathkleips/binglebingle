@@ -62,9 +62,9 @@
 }
 
 .poolTile {
-  --size-tile-width: 3.125rem;
-  --size-tile-height: 3.125rem;
-  --font-size-tile: 1.4rem;
+  --tile-visual-long-edge: 3.125rem;
+  --tile-visual-short-edge: calc(3.125rem * 2 / 3);
+  --tile-font-size: 1.4rem;
 }
 
 /* ── Inline examples ── */
@@ -96,9 +96,9 @@
 }
 
 .slotTile {
-  --size-tile-width: 2.75rem;
-  --size-tile-height: 2.75rem;
-  --font-size-tile: 1.1rem;
+  --tile-visual-long-edge: 2.75rem;
+  --tile-visual-short-edge: calc(2.75rem * 2 / 3);
+  --tile-font-size: 1.1rem;
 }
 
 /* ── Dismiss ── */

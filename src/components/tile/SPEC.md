@@ -79,6 +79,21 @@ type UseTileFeedbackOptions = {
 
 Add a new prop only when at least one current consumer needs that visual state.
 
+## Tile Sizing Model
+
+The shared tile foundation is hitbox-first. `src/index.css` owns global tokens because pool, submission, history, instructions, and tile visuals all need the same geometry without depending on a CSS Module from this package.
+
+The square layout unit is `--tile-hitbox-size`. The x-small tier sets it to `44px`, matching the minimum interactive target from `docs/design/layout.md`. The visible portrait tile keeps the physical card ratio inside that cell:
+
+```txt
+width:  var(--tile-visual-short-edge) = hitbox × 2 / 3
+height: var(--tile-visual-long-edge)  = hitbox
+```
+
+The five supported viewport tiers are `x-small`, `small`, `medium`, `large`, and `x-large`. CSS media queries select all five tiers without JavaScript or root data attributes. The `x-small` media query starts at the documented minimum supported viewport (`375px × 667px`); smaller screens are handled by the app-level unsupported viewport message rather than a tile tier. Each tier hand-tunes `--tile-gap`, `--tile-radius`, `--tile-border-padding`, `--tile-font-size`, `--tile-shadow-step`, `--tile-shadow-depth`, and `--tile-glow-size`; these values intentionally are not one fully-fluid formula because the dense tiers need simplified detail. `x-large` is capped at a spacious game-piece size rather than growing indefinitely.
+
+`BaseTile` is the visible card only. Consuming regions own square cells/hitboxes when they need them: pool cells can later rotate landscape tiles inside the square hitbox, while submission and history can remain portrait-only.
+
 ## Components
 
 ### BaseTile
@@ -128,4 +143,6 @@ Rules:
 
 **Import the tile border through SVGR.** The 번개문 path remains in `lightning-border.svg` so vector tools can edit it directly, while `BaseTile` imports it as an inline React SVG with `?react`. `BaseTile` owns per-instance gradient definitions because repeated SVG paint-server IDs collide in the document. Component-local CSS custom properties describe the SVG gradient stop slots, and their values reference root palette tokens where possible.
 
-**Keep reusable tile tokens in `:root`.** Tile dimensions, compact scale, border padding ratio, face colors, glow colors, and shadow colors live in `src/index.css` because other tile consumers may need the same geometry and effects. `BaseTile.module.css` keeps only local state variables such as the currently selected `--tile-height` and SVG gradient stop slots.
+**Keep reusable tile tokens in `:root`.** Hitbox size, visible tile edges, compact scale, gap, radius, border padding, font size, glow size, and shadow depth live in `src/index.css` because pool, submission, history, instructions, and tile visuals need the same geometry and effects. Older `--size-tile-*` and `--font-size-tile` aliases are intentionally not kept; this project is still small enough to migrate consumers directly to the hitbox-first tokens. `BaseTile.module.css` keeps only local state variables such as the currently selected visible edges and SVG gradient stop slots.
+
+**BaseTile is not the hitbox.** The visual card derives from `--tile-visual-short-edge` and `--tile-visual-long-edge`; square `--tile-hitbox-size` wrappers belong to consuming regions that need interaction cells or rotation-safe pool footprints.

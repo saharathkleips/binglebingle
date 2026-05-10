@@ -1,8 +1,41 @@
 .app {
   height: 100dvh;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
+}
+
+.unsupportedViewport {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--palette-obangsaek-red);
+  color: var(--palette-najeon-mint);
+  text-align: center;
+}
+
+.unsupportedTitle {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: 2rem;
+}
+
+.unsupportedMessage {
+  max-width: 22rem;
+  margin: 0;
+  font-family: var(--font-family-ui);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.supportedViewport {
+  display: none;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
 }
 
 .gameArea {
@@ -20,4 +53,14 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+@media (min-width: 375px) and (min-height: 667px) {
+  .unsupportedViewport {
+    display: none;
+  }
+
+  .supportedViewport {
+    display: flex;
+  }
 }

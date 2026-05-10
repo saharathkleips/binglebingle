@@ -68,26 +68,96 @@ body {
   --color-tile-highlight-glow: rgba(224, 255, 255, 0.45);
   --color-tile-face-active: #050505;
 
-  /* ── Tile dimensions (2:3 card ratio) ───────────────────────────────── */
-  --size-tile-height: 5rem;
-  --size-tile-ratio: calc(2 / 3);
-  --size-tile-width: calc(var(--size-tile-height) * var(--size-tile-ratio));
-  --scale-tile-compact: 0.72;
-  --ratio-tile-border-padding: calc(1 / 80);
-  /* Backward-compat alias — components updated in 1.4.2 */
-  --size-tile: var(--size-tile-width);
+  /* ── Tile derived tokens ─────────────────────────────────────────────── */
+  --tile-visual-long-edge: var(--tile-hitbox-size);
+  --tile-visual-short-edge: calc(var(--tile-hitbox-size) * 2 / 3);
+  --tile-compact-scale: 0.72;
+  --tile-shadow-stack:
+    var(--tile-shadow-step) var(--tile-shadow-step) 0 var(--color-tile-shadow),
+    calc(var(--tile-shadow-step) * 2) calc(var(--tile-shadow-step) * 2) 0 var(--color-tile-shadow),
+    calc(var(--tile-shadow-step) * 3) calc(var(--tile-shadow-step) * 3) 0 var(--color-tile-shadow),
+    var(--tile-shadow-depth) var(--tile-shadow-depth) 0 var(--color-tile-shadow-strong);
 
-  /* ── Spacing ─────────────────────────────────────────────────────────── */
+  /* ── General spacing ────────────────────────────────────────────────── */
   --space-sm: 0.5rem;
   --space-md: 0.75rem;
   --space-lg: 2rem;
 
-  /* ── Shape ───────────────────────────────────────────────────────────── */
+  /* ── General shape ──────────────────────────────────────────────────── */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
 
   /* ── Typography ──────────────────────────────────────────────────────── */
   --font-family-display: Georgia, "Noto Serif KR", serif;
   --font-family-ui: system-ui, "Noto Sans KR", sans-serif;
-  --font-size-tile: 1.5rem;
+}
+
+/* Tile tier: x-small, the minimum supported game viewport. */
+@media (min-width: 375px) and (min-height: 667px) {
+  :root {
+    --tile-hitbox-size: 44px;
+    --tile-gap: 4px;
+    --tile-radius: 4px;
+    --tile-border-padding: 1px;
+    --tile-font-size: 1.25rem;
+    --tile-shadow-step: 1px;
+    --tile-shadow-depth: 3px;
+    --tile-glow-size: 10px;
+  }
+}
+
+/* Tile tier: small */
+@media (min-width: 390px) and (min-height: 700px) {
+  :root {
+    --tile-hitbox-size: 48px;
+    --tile-gap: 5px;
+    --tile-radius: 5px;
+    --tile-border-padding: 1px;
+    --tile-font-size: 1.375rem;
+    --tile-shadow-step: 1px;
+    --tile-shadow-depth: 4px;
+    --tile-glow-size: 12px;
+  }
+}
+
+/* Tile tier: medium */
+@media (min-width: 480px) and (min-height: 760px) {
+  :root {
+    --tile-hitbox-size: 56px;
+    --tile-gap: 7px;
+    --tile-radius: 6px;
+    --tile-border-padding: 1.25px;
+    --tile-font-size: 1.625rem;
+    --tile-shadow-step: 1px;
+    --tile-shadow-depth: 5px;
+    --tile-glow-size: 14px;
+  }
+}
+
+/* Tile tier: large */
+@media (min-width: 768px) {
+  :root {
+    --tile-hitbox-size: 64px;
+    --tile-gap: 8px;
+    --tile-radius: 7px;
+    --tile-border-padding: 1.5px;
+    --tile-font-size: 1.875rem;
+    --tile-shadow-step: 1px;
+    --tile-shadow-depth: 6px;
+    --tile-glow-size: 16px;
+  }
+}
+
+/* Tile tier: x-large */
+@media (min-width: 1100px) {
+  :root {
+    --tile-hitbox-size: 72px;
+    --tile-gap: 10px;
+    --tile-radius: 8px;
+    --tile-border-padding: 2px;
+    --tile-font-size: 2.125rem;
+    --tile-shadow-step: 1px;
+    --tile-shadow-depth: 7px;
+    --tile-glow-size: 18px;
+  }
 }
