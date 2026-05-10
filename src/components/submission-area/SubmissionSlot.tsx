@@ -6,6 +6,7 @@
  * pool on tap, and can be dragged to another slot to swap positions.
  */
 
+import { clsx } from "clsx";
 import { useRef, useLayoutEffect } from "react";
 import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
 import { CharacterTile } from "../tile/CharacterTile";
@@ -161,7 +162,7 @@ export function SubmissionSlot({
     };
   }, [isSubmitting, isFilled]);
 
-  const filledClassName = [styles.filled, isReady ? styles.ready : null].filter(Boolean).join(" ");
+  const filledClassName = clsx(styles.filled, isReady && styles.ready);
 
   const button = isFilled ? (
     <CharacterTile

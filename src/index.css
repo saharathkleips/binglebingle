@@ -24,6 +24,19 @@ body {
   --palette-dancheong-yellow: #fbe596;
   --palette-dancheong-pink: #f0aea8;
 
+  /* ── Palette: Najeonchilgi (나전칠기) iridescent ─────────────────────── */
+  --palette-najeon-lavender: #e6e6fa;
+  --palette-najeon-blue: #b0e0e6;
+  --palette-najeon-pink: #fff0f5;
+  --palette-najeon-cyan: #e0ffff;
+  --palette-najeon-mint: #f0fff0;
+
+  /* ── Palette: Neutral ────────────────────────────────────────────────── */
+  --palette-neutral-100: #f2f2f2;
+  --palette-neutral-300: #bdbdbd;
+  --palette-neutral-500: #808080;
+  --palette-neutral-700: #4d4d4d;
+
   /* ── Semantic: Surface ───────────────────────────────────────────────── */
   --color-surface: var(--palette-obangsaek-white);
   --color-surface-active: var(--palette-dancheong-yellow);
@@ -38,6 +51,7 @@ body {
   /* ── Semantic: Drag interaction ──────────────────────────────────────── */
   --color-drag-border: var(--palette-obangsaek-blue);
   --color-drag-bg: var(--palette-dancheong-pink);
+  --color-drag-glow: rgba(10, 10, 245, 0.28);
 
   /* ── Semantic: Game state ────────────────────────────────────────────── */
   --color-correct: var(--palette-obangsaek-green);
@@ -46,14 +60,20 @@ body {
   --color-state-text: var(--palette-obangsaek-white);
 
   /* ── Semantic: Tile face ─────────────────────────────────────────────── */
-  --color-tile-face: var(--palette-obangsaek-white);
+  --color-tile-face: var(--palette-obangsaek-black);
   --color-tile-text: var(--palette-obangsaek-black);
-  /* Hwatu cards have a distinctive thick red border */
-  --color-tile-border: var(--palette-obangsaek-red);
+  --color-tile-shadow: #1a1a1a;
+  --color-tile-shadow-strong: rgba(0, 0, 0, 0.5);
+  --color-tile-glow: rgba(176, 224, 230, 0.28);
+  --color-tile-highlight-glow: rgba(224, 255, 255, 0.45);
+  --color-tile-face-active: #050505;
 
-  /* ── Tile dimensions (3:5 hwatu ratio) ──────────────────────────────── */
-  --size-tile-width: 3rem;
+  /* ── Tile dimensions (2:3 card ratio) ───────────────────────────────── */
   --size-tile-height: 5rem;
+  --size-tile-ratio: calc(2 / 3);
+  --size-tile-width: calc(var(--size-tile-height) * var(--size-tile-ratio));
+  --scale-tile-compact: 0.72;
+  --ratio-tile-border-padding: calc(1 / 80);
   /* Backward-compat alias — components updated in 1.4.2 */
   --size-tile: var(--size-tile-width);
 

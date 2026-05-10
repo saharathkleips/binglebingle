@@ -4,7 +4,10 @@
  * Shared visual primitive for tile-like surfaces.
  */
 
-import type { AnimationEventHandler, ReactNode, Ref } from "react";
+import { clsx } from "clsx";
+import { useId } from "react";
+import type { AnimationEventHandler, CSSProperties, ReactNode, Ref, SVGProps } from "react";
+import LightningBorderSvg from "./lightning-border.svg?react";
 import styles from "./BaseTile.module.css";
 
 export type BaseTileElement = "button" | "div" | "span";
@@ -65,16 +68,16 @@ export function BaseTile({
   tileRef,
   tone = "default",
 }: BaseTileProps) {
-  const composedClassName = composeClassName([
+  const composedClassName = clsx(
     styles.tile,
-    element === "button" ? styles.button : null,
+    element === "button" && styles.button,
     styles[size],
-    tone === "default" ? null : styles[tone],
+    tone !== "default" && styles[tone],
     isInteractive ? styles.interactive : styles.inert,
-    isHighlighted ? styles.highlighted : null,
-    isDisabled ? styles.disabled : null,
+    isHighlighted && styles.highlighted,
+    isDisabled && styles.disabled,
     className,
-  ]);
+  );
 
   const sharedProps = {
     ...dataAttributes,
@@ -84,6 +87,8 @@ export function BaseTile({
     onAnimationEnd,
   };
 
+  const contents = <TileContents>{children}</TileContents>;
+
   if (element === "button") {
     return (
       <button
@@ -92,7 +97,7 @@ export function BaseTile({
         type="button"
         disabled={isDisabled}
       >
-        {children}
+        {contents}
       </button>
     );
   }
@@ -104,7 +109,7 @@ export function BaseTile({
         ref={(node) => assignRef(tileRef, node)}
         aria-disabled={isDisabled || undefined}
       >
-        {children}
+        {contents}
       </span>
     );
   }
@@ -115,7 +120,7 @@ export function BaseTile({
       ref={(node) => assignRef(tileRef, node)}
       aria-disabled={isDisabled || undefined}
     >
-      {children}
+      {contents}
     </div>
   );
 }
@@ -124,8 +129,52 @@ export function BaseTile({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function composeClassName(classNames: Array<string | null | undefined>): string {
-  return classNames.filter(Boolean).join(" ");
+type TileContentsProps = {
+  children: ReactNode;
+};
+
+type LightningBorderStyle = CSSProperties & {
+  "--tile-border-paint": string;
+};
+
+function TileContents({ children }: TileContentsProps) {
+  return (
+    <>
+      <span className={styles.text}>{children}</span>
+      <LightningBorder aria-hidden="true" focusable="false" className={styles.border} />
+    </>
+  );
+}
+
+function LightningBorder(props: SVGProps<SVGSVGElement>) {
+  const gradientId = `tile-gradient-${useId().replace(/:/g, "")}`;
+  const borderStyle: LightningBorderStyle = {
+    "--tile-border-paint": `url(#${gradientId})`,
+  };
+
+  return (
+    <>
+      <svg aria-hidden="true" focusable="false" className={styles.borderDefinitions}>
+        <defs>
+          <linearGradient
+            id={gradientId}
+            x1="25.5"
+            y1="0.5"
+            x2="25.5"
+            y2="77.5001"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="var(--tile-border-gradient-1)" />
+            <stop offset="0.25" stopColor="var(--tile-border-gradient-2)" />
+            <stop offset="0.5" stopColor="var(--tile-border-gradient-3)" />
+            <stop offset="0.75" stopColor="var(--tile-border-gradient-4)" />
+            <stop offset="1" stopColor="var(--tile-border-gradient-5)" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <LightningBorderSvg {...props} style={borderStyle} />
+    </>
+  );
 }
 
 function assignRef(ref: Ref<HTMLElement> | undefined, node: HTMLElement | null) {

@@ -23,6 +23,7 @@ tile/
 ├── BaseTile.tsx             # Shared visual primitive; no game state, no GSAP, no character resolution
 ├── BaseTile.module.css      # Shared tile visual identity and narrow visual variants
 ├── BaseTile.test.tsx
+├── lightning-border.svg     # Editable 번개문 border asset imported through SVGR
 ├── CharacterTile.tsx        # Resolves a game Character and renders BaseTile
 ├── CharacterTile.test.tsx
 ├── use-tile-feedback.ts     # Shared GSAP feedback hook for behavior components
@@ -82,7 +83,7 @@ Add a new prop only when at least one current consumer needs that visual state.
 
 ### BaseTile
 
-Renders tile content with the shared tile surface: dimensions, border, face, shadow, typography, and visual-only variants. It may render as a different element when semantics require it, but it must not own behavior for that element beyond passing safe DOM props needed for presentation and accessibility.
+Renders tile content with the shared tile surface: dimensions, 번개문 lightning-pattern border, face, shadow, typography, and visual-only variants. It may render as a different element when semantics require it, but it must not own behavior for that element beyond passing safe DOM props needed for presentation and accessibility.
 
 Rules:
 
@@ -124,3 +125,7 @@ Rules:
 **Feedback animations are hook-based.** `useTileFeedback` centralizes the shared GSAP feedback setup without making visual components depend on GSAP or creating a generic animated component layer.
 
 **Use visual names, not source-context names.** Shared props describe appearance (`tone="correct"`, `isHighlighted`) rather than the module that caused it (`isHistoryCorrect`, `isDropTarget`). This keeps the primitive redesignable without importing feature concepts.
+
+**Import the tile border through SVGR.** The 번개문 path remains in `lightning-border.svg` so vector tools can edit it directly, while `BaseTile` imports it as an inline React SVG with `?react`. `BaseTile` owns per-instance gradient definitions because repeated SVG paint-server IDs collide in the document. Component-local CSS custom properties describe the SVG gradient stop slots, and their values reference root palette tokens where possible.
+
+**Keep reusable tile tokens in `:root`.** Tile dimensions, compact scale, border padding ratio, face colors, glow colors, and shadow colors live in `src/index.css` because other tile consumers may need the same geometry and effects. `BaseTile.module.css` keeps only local state variables such as the currently selected `--tile-height` and SVG gradient stop slots.
