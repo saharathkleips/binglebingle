@@ -23,7 +23,7 @@ tile/
 ├── BaseTile.tsx             # Shared visual primitive; no game state, no GSAP, no character resolution
 ├── BaseTile.module.css      # Shared tile visual identity and narrow visual variants
 ├── BaseTile.test.tsx
-├── lightning-border.svg     # Editable 번개문 border asset imported through SVGR
+├── lightning-border.svg     # Editable 번개문 border asset used as the CSS mask
 ├── CharacterTile.tsx        # Resolves a game Character and renders BaseTile
 ├── CharacterTile.test.tsx
 ├── use-tile-feedback.ts     # Shared GSAP feedback hook for behavior components
@@ -36,8 +36,6 @@ tile/
 - `BaseTile` renders shared tile visuals for already-renderable content.
 - `BaseTileProps` configures `BaseTile` with visual props, pass-through DOM hooks, and caller-owned class names.
 - `BaseTileElement` is `"button" | "div" | "span"`.
-- `BaseTileSize` is `"standard" | "compact"`.
-- `BaseTileTone` is `"default" | "correct" | "present" | "absent"`.
 - `CharacterTile` resolves a game `Character` and renders the result in `BaseTile`.
 - `CharacterTileProps` is `Omit<BaseTileProps, "children"> & { character: Character }`.
 - `useTileFeedback` plays shared GSAP feedback animations on a caller-owned element ref.
@@ -46,21 +44,22 @@ tile/
 ## Types
 
 ```ts
-type BaseTileProps = {
+type BaseTileSharedProps = {
   children: React.ReactNode;
   className?: string;
   dataAttributes?: Record<`data-${string}`, string | number | boolean>;
-  element?: BaseTileElement;
-  isDisabled?: boolean;
   isHighlighted?: boolean;
   isInteractive?: boolean;
   label?: string;
   onAnimationEnd?: React.AnimationEventHandler<HTMLElement>;
-  size?: BaseTileSize;
+  result?: CharacterResult;
   testId?: string;
-  tileRef?: React.Ref<HTMLElement>;
-  tone?: BaseTileTone;
 };
+
+type BaseTileProps =
+  | (BaseTileSharedProps & { element?: "div"; ref?: React.Ref<HTMLDivElement> })
+  | (BaseTileSharedProps & { element: "button"; ref?: React.Ref<HTMLButtonElement> })
+  | (BaseTileSharedProps & { element: "span"; ref?: React.Ref<HTMLSpanElement> });
 
 type CharacterTileProps = Omit<BaseTileProps, "children"> & {
   character: Character;
@@ -77,7 +76,7 @@ type UseTileFeedbackOptions = {
 };
 ```
 
-Add a new prop only when at least one current consumer needs that visual state.
+Add a new prop only when at least one current consumer needs that visual state. `BaseTile` intentionally does not expose a disabled state until a tile consumer needs the native disabled semantics; current tiles are either interactive or inert.
 
 ## Tile Sizing Model
 
@@ -133,16 +132,18 @@ Rules:
 
 **Character resolution is separate from base visuals.** `BaseTile` receives display content and therefore stays reusable for history result markers, instruction examples, empty/future visual states, and any non-character tile-like content. `CharacterTile` is the convenience wrapper for game characters.
 
-**Feature modules own semantics.** Pool tiles can be draggable and tappable, submission slots can swap or return tiles, history tiles can show evaluation tones, and instructions can render examples. Those behaviors are outside this module even when they share the same visual surface.
+**Feature modules own semantics.** Pool tiles can be draggable and tappable, submission slots can swap or return tiles, history tiles can show evaluation results, and instructions can render examples. Those behaviors are outside this module even when they share the same visual surface.
 
-**DOM hooks are pass-through only.** `tileRef`, `dataAttributes`, `testId`, and `onAnimationEnd` exist so feature modules can attach their own semantics to the same visual element. `BaseTile` must not interpret those attributes or callbacks.
+**DOM hooks are pass-through only.** `ref`, `dataAttributes`, `testId`, and `onAnimationEnd` exist so feature modules can attach their own semantics to the same visual element. `BaseTile` must not interpret those attributes or callbacks.
 
 **Feedback animations are hook-based.** `useTileFeedback` centralizes the shared GSAP feedback setup without making visual components depend on GSAP or creating a generic animated component layer.
 
-**Use visual names, not source-context names.** Shared props describe appearance (`tone="correct"`, `isHighlighted`) rather than the module that caused it (`isHistoryCorrect`, `isDropTarget`). This keeps the primitive redesignable without importing feature concepts.
+**Use engine result names for evaluated tiles.** `BaseTile` accepts an optional `result?: CharacterResult` instead of duplicating evaluation values as visual tone strings. Leaving `result` undefined selects the default tile treatment, while `CORRECT`, `PRESENT`, and `ABSENT` apply evaluated tile gradients.
 
-**Import the tile border through SVGR.** The 번개문 path remains in `lightning-border.svg` so vector tools can edit it directly, while `BaseTile` imports it as an inline React SVG with `?react`. `BaseTile` owns per-instance gradient definitions because repeated SVG paint-server IDs collide in the document. Component-local CSS custom properties describe the SVG gradient stop slots, and their values reference root palette tokens where possible.
+**Use the tile border as a CSS mask.** The 번개문 path remains in `lightning-border.svg` so vector tools can edit it directly, while `BaseTile` imports it as a URL and applies it as the mask for a CSS linear gradient. Masking keeps the editable SVG shape while allowing the border gradient to be configured in CSS alongside the tile variants. Component-local CSS custom properties describe the result gradient stop slots used by both the border and text, and their values reference root palette tokens where possible.
 
-**Keep reusable tile tokens in `:root`.** Hitbox size, visible tile edges, compact scale, pool gap, submission/history gap, radius, border padding, font size, glow size, and shadow depth live in `src/index.css` because pool, submission, history, instructions, and tile visuals need the same geometry and effects. Older `--size-tile-*` and `--font-size-tile` aliases are intentionally not kept; this project is still small enough to migrate consumers directly to the hitbox-first tokens. `BaseTile.module.css` keeps only local state variables such as the currently selected visible edges and SVG gradient stop slots.
+**Keep reusable tile tokens in `:root`.** Hitbox size, visible tile edges, pool gap, submission/history gap, radius, border padding, font size, glow size, and shadow depth live in `src/index.css` because pool, submission, history, instructions, and tile visuals need the same geometry and effects. Older `--size-tile-*` and `--font-size-tile` aliases are intentionally not kept; this project is still small enough to migrate consumers directly to the hitbox-first tokens. `BaseTile.module.css` keeps only local state variables such as the currently selected visible edges and result gradient stop slots.
 
 **BaseTile is not the hitbox.** The visual card derives from `--tile-visual-short-edge` and `--tile-visual-long-edge`; square `--tile-hitbox-size` wrappers belong to consuming regions that need interaction cells or rotation-safe pool footprints.
+
+**CSS classes are reserved for the public styling hook.** `BaseTile` keeps the CSS Module class on the root element so callers can compose layout classes predictably, while internal visual state and child roles use `data-tile-*` attributes. This keeps the stylesheet readable with nested selectors and avoids exporting class names for implementation-only spans or same-element variants.

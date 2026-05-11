@@ -64,7 +64,7 @@ Dev settings live in `App` local state; dev panel accessible via `?dev=1` URL pa
 
 **Always render the game shell.** The app keeps the minimum `44px` tile hitbox as the default token set and relies on flex layout to use whatever viewport space is available. This avoids rejecting narrow-but-tall or short-but-wide screens that can still be playable; if content clips, it clips naturally rather than being blocked by an unsupported screen.
 
-**Tile preview is an iframe, not a fake token override.** The preview screen changes iframe dimensions instead of setting CSS variables or data attributes. This keeps manual iteration honest: the same viewport media queries select tile tiers in preview and in the real game. The iframe content mirrors the full app layout but uses static visual data, including mixed history tones and the maximum pool tile count, to keep the preview deterministic and lightweight.
+**Tile preview is an iframe, not a fake token override.** The preview screen changes iframe dimensions instead of setting CSS variables or data attributes. This keeps manual iteration honest: the same viewport media queries select tile tiers in preview and in the real game. The iframe content mirrors the full app layout but uses static visual data, including mixed history results and the maximum pool tile count, to keep the preview deterministic and lightweight.
 
 ## Open Questions
 

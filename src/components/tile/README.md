@@ -4,11 +4,9 @@ Shared tile presentation primitives for Binglebingle. This module owns reusable 
 
 ## Exports
 
-- `BaseTile` — visual primitive for a tile-like surface with the shared black face, gradient text, shadow, and decorative 번개문 lightning border. Accepts display content, an optional element kind for semantic rendering, safe DOM hooks for consumers (`tileRef`, `dataAttributes`, `testId`, `onAnimationEnd`), and narrow visual variant props. It imports `lightning-border.svg` through SVGR for its decorative border, but does not resolve game characters, dispatch actions, read context, configure GSAP, or implement drag/drop behavior.
+- `BaseTile` — visual primitive for a tile-like surface with the shared black face, gradient text, shadow, and decorative 번개문 lightning border. Accepts display content, an optional element kind for semantic rendering, safe DOM hooks for consumers (`ref`, `dataAttributes`, `testId`, `onAnimationEnd`), and narrow visual variant props. It uses `lightning-border.svg` as a CSS mask for its linear-gradient decorative border, but does not resolve game characters, dispatch actions, read context, configure GSAP, or implement drag/drop behavior.
 - `BaseTileProps` — props for `BaseTile`; names describe visual concerns rather than pool, submission, or history behavior.
 - `BaseTileElement` — supported semantic elements: `"button"`, `"div"`, or `"span"`.
-- `BaseTileSize` — supported visual sizes: `"standard"` or `"compact"`.
-- `BaseTileTone` — supported result/state tones: `"default"`, `"correct"`, `"present"`, or `"absent"`.
 - `CharacterTile` — character-aware wrapper that accepts a game `Character`, resolves it with `resolveCharacter`, and renders `BaseTile` with the resolved text.
 - `CharacterTileProps` — props for `CharacterTile`; mirrors the allowed visual props from `BaseTile` plus the `character` value.
 - `useTileFeedback` — shared hook for GSAP tile feedback animations (rotate squeeze, compose pulse/particles, entrance scale). It is used by behavior components and is not required by `BaseTile`.
@@ -25,7 +23,7 @@ The shared sizing system is hitbox-first. Global tokens in `src/index.css` defin
 - `BaseTile` is presentation-only: no GSAP imports, no game context, no reducer types, no pool/submission/history behavior, no square hitbox ownership, and no character resolution helpers.
 - `CharacterTile` is the only shared tile component that calls `resolveCharacter`.
 - Pool, submission, history, and instructions modules own their own interaction semantics and decide when to render these primitives.
-- Visual variants use reusable names such as `tone`, `size`, `isInteractive`, or `isHighlighted`; avoid context names such as `isPoolTile` or `isSubmissionReady` in the shared API.
+- Visual variants use reusable names such as `result`, `isInteractive`, or `isHighlighted`; avoid context names such as `isPoolTile` or `isSubmissionReady` in the shared API.
 
 ## Naming
 

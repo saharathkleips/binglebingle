@@ -170,7 +170,7 @@ export function SubmissionSlot({
       element="button"
       className={filledClassName}
       isInteractive
-      tileRef={buttonRef}
+      ref={buttonRef}
       testId={`slot-${slotIndex}`}
       dataAttributes={{ "data-slot-index": slotIndex }}
     />

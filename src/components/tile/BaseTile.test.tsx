@@ -15,16 +15,6 @@ describe("BaseTile", () => {
     await expect.element(screen.getByRole("button", { name: "ㅏ" })).toBeInTheDocument();
   });
 
-  it("disables a button when isDisabled is true", async () => {
-    const screen = await render(
-      <BaseTile element="button" isDisabled>
-        ㅗ
-      </BaseTile>,
-    );
-
-    await expect.element(screen.getByRole("button", { name: "ㅗ" })).toBeDisabled();
-  });
-
   it("uses label as the accessible name", async () => {
     const screen = await render(
       <BaseTile element="span" label="기역 타일">

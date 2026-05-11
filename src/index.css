@@ -24,12 +24,33 @@ body {
   --palette-dancheong-yellow: #fbe596;
   --palette-dancheong-pink: #f0aea8;
 
-  /* ── Palette: Najeonchilgi (나전칠기) iridescent ─────────────────────── */
-  --palette-najeon-lavender: #e6e6fa;
-  --palette-najeon-blue: #b0e0e6;
-  --palette-najeon-pink: #fff0f5;
-  --palette-najeon-cyan: #e0ffff;
-  --palette-najeon-mint: #f0fff0;
+  /* ── Palette: Najeon Iridescent ─────────────────────── */
+  --palette-najeon-iridescent-lavender: #e6e6fa;
+  --palette-najeon-iridescent-blue: #b0e0e6;
+  --palette-najeon-iridescent-pink: #fff0f5;
+  --palette-najeon-iridescent-cyan: #e0ffff;
+  --palette-najeon-iridescent-mint: #f0fff0;
+
+  /* ── Palette: Najeon Green ─────────────────────── */
+  --palette-najeon-green-celadon: #e8f5e9;
+  --palette-najeon-green-jade: #b9fbc0;
+  --palette-najeon-green-sage: #c8e6c9;
+  --palette-najeon-green-seafoam: #a8e6cf;
+  --palette-najeon-green-mist: #d0f4de;
+
+  /* ── Palette: Najeon Yellow ─────────────────────── */
+  --palette-najeon-yellow-honey: #ffecb3;
+  --palette-najeon-yellow-ivory: #fff9c4;
+  --palette-najeon-yellow-apricot: #ffcc80;
+  --palette-najeon-yellow-citrine: #fff59d;
+  --palette-najeon-yellow-peach: #ffe0b2;
+
+  /* ── Palette: Najeon Gray ─────────────────────── */
+  --palette-najeon-gray-moonstone: #f8f9fa;
+  --palette-najeon-gray-fog: #e9ecef;
+  --palette-najeon-gray-lavender-mist: #f3e8ff;
+  --palette-najeon-gray-cloud-slate: #e2e8f0;
+  --palette-najeon-gray-silver: #e5e5e5;
 
   /* ── Palette: Neutral ────────────────────────────────────────────────── */
   --palette-neutral-100: #f2f2f2;
@@ -74,7 +95,7 @@ body {
   --tile-submission-history-gap: 6px;
   --tile-radius: 4px;
   --tile-border-padding: 1px;
-  --tile-font-size: 1.25rem;
+  --tile-font-size: 20px;
   --tile-shadow-step: 1px;
   --tile-shadow-depth: 3px;
   --tile-glow-size: 10px;
@@ -84,7 +105,6 @@ body {
   /* ── Tile derived tokens ─────────────────────────────────────────────── */
   --tile-visual-long-edge: var(--tile-hitbox-size);
   --tile-visual-short-edge: calc(var(--tile-hitbox-size) * 2 / 3);
-  --tile-compact-scale: 0.72;
   --tile-shadow-stack:
     var(--tile-shadow-step) var(--tile-shadow-step) 0 var(--color-tile-shadow),
     calc(var(--tile-shadow-step) * 2) calc(var(--tile-shadow-step) * 2) 0 var(--color-tile-shadow),
@@ -113,7 +133,7 @@ body {
     --tile-submission-history-gap: 7px;
     --tile-radius: 5px;
     --tile-border-padding: 1px;
-    --tile-font-size: 1.375rem;
+    --tile-font-size: 22px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 4px;
     --tile-glow-size: 12px;
@@ -129,7 +149,7 @@ body {
     --tile-submission-history-gap: 9px;
     --tile-radius: 6px;
     --tile-border-padding: 1.25px;
-    --tile-font-size: 1.625rem;
+    --tile-font-size: 26px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 5px;
     --tile-glow-size: 14px;
@@ -145,7 +165,7 @@ body {
     --tile-submission-history-gap: 10px;
     --tile-radius: 7px;
     --tile-border-padding: 1.5px;
-    --tile-font-size: 1.875rem;
+    --tile-font-size: 30px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 6px;
     --tile-glow-size: 16px;
@@ -161,7 +181,7 @@ body {
     --tile-submission-history-gap: 12px;
     --tile-radius: 8px;
     --tile-border-padding: 2px;
-    --tile-font-size: 2.125rem;
+    --tile-font-size: 34px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 7px;
     --tile-glow-size: 18px;

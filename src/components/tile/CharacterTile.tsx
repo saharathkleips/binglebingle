@@ -9,7 +9,9 @@ import { resolveCharacter } from "../../lib/character";
 import { BaseTile } from "./BaseTile";
 import type { BaseTileProps } from "./BaseTile";
 
-export type CharacterTileProps = Omit<BaseTileProps, "children"> & {
+type BaseTilePropsWithoutChildren<Props> = Props extends unknown ? Omit<Props, "children"> : never;
+
+export type CharacterTileProps = BaseTilePropsWithoutChildren<BaseTileProps> & {
   character: Character;
 };
 

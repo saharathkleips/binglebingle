@@ -1,4 +1,5 @@
 import type { Character } from "../../lib/character";
+import type { CharacterResult } from "../../lib/engine";
 import { CharacterTile } from "../tile/CharacterTile";
 import styles from "./InstructionsScreen.module.css";
 
@@ -7,11 +8,9 @@ type InstructionsScreenProps = {
   onClose: () => void;
 };
 
-type GuessResultKind = "correct" | "present" | "absent";
-
 type GuessTile = {
   character: Character;
-  result: GuessResultKind;
+  result: CharacterResult;
 };
 
 // Full jamo pool for the example word 왜가리.
@@ -83,7 +82,6 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
                 key={index}
                 character={character}
                 element="span"
-                size="compact"
                 className={styles.poolTile ?? ""}
               />
             ))}
@@ -96,7 +94,7 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
             <InstructionCharacterTile character={EXAMPLE_CHARACTERS.가} />
           </div>
           <p className={styles.label}>Drag and drop to combine.</p>
-          <SlotRow tiles={[{ character: EXAMPLE_CHARACTERS.가, result: "present" }, null, null]} />
+          <SlotRow tiles={[{ character: EXAMPLE_CHARACTERS.가, result: "PRESENT" }, null, null]} />
         </section>
 
         {/* Phase 2: rotate */}
@@ -109,9 +107,9 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
           <p className={styles.label}>Tap to rotate.</p>
           <SlotRow
             tiles={[
-              { character: EXAMPLE_CHARACTERS.오, result: "absent" },
-              { character: EXAMPLE_CHARACTERS.가, result: "correct" },
-              { character: EXAMPLE_CHARACTERS.로, result: "absent" },
+              { character: EXAMPLE_CHARACTERS.오, result: "ABSENT" },
+              { character: EXAMPLE_CHARACTERS.가, result: "CORRECT" },
+              { character: EXAMPLE_CHARACTERS.로, result: "ABSENT" },
             ]}
           />
           <p className={styles.hint}>Guesses don't need to be real words.</p>
@@ -122,9 +120,9 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
           <p className={styles.label}>Tap to deconstruct.</p>
           <SlotRow
             tiles={[
-              { character: EXAMPLE_CHARACTERS.왜, result: "correct" },
-              { character: EXAMPLE_CHARACTERS.가, result: "correct" },
-              { character: EXAMPLE_CHARACTERS.리, result: "correct" },
+              { character: EXAMPLE_CHARACTERS.왜, result: "CORRECT" },
+              { character: EXAMPLE_CHARACTERS.가, result: "CORRECT" },
+              { character: EXAMPLE_CHARACTERS.리, result: "CORRECT" },
             ]}
           />
         </section>
@@ -142,14 +140,7 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
 }
 
 function InstructionCharacterTile({ character }: { character: Character }) {
-  return (
-    <CharacterTile
-      character={character}
-      element="span"
-      size="compact"
-      className={styles.poolTile ?? ""}
-    />
-  );
+  return <CharacterTile character={character} element="span" className={styles.poolTile ?? ""} />;
 }
 
 function SlotRow({ tiles }: { tiles: (GuessTile | null)[] }) {
@@ -163,7 +154,7 @@ function SlotRow({ tiles }: { tiles: (GuessTile | null)[] }) {
             key={index}
             character={tile.character}
             element="span"
-            tone={tile.result}
+            result={tile.result}
             className={styles.slotTile ?? ""}
           />
         ),

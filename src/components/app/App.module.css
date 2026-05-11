@@ -55,7 +55,7 @@
 
 .tilePreviewHelp {
   margin-block-start: var(--space-sm);
-  color: var(--palette-najeon-mint);
+  color: var(--palette-najeon-iridescent-mint);
   line-height: 1.4;
 }
 
@@ -69,10 +69,10 @@
   display: grid;
   gap: 0.125rem;
   padding: var(--space-sm) var(--space-md);
-  border: 2px solid var(--palette-najeon-blue);
+  border: 2px solid var(--palette-najeon-iridescent-blue);
   border-radius: var(--radius-md);
   background: var(--palette-obangsaek-black);
-  color: var(--palette-najeon-mint);
+  color: var(--palette-najeon-iridescent-mint);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -93,7 +93,7 @@
   min-width: 0;
   overflow: auto;
   padding: var(--space-md);
-  border: 2px solid var(--palette-najeon-blue);
+  border: 2px solid var(--palette-najeon-iridescent-blue);
   border-radius: var(--radius-md);
   background: var(--palette-obangsaek-black);
 }

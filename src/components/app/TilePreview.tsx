@@ -1,47 +1,47 @@
 import { useEffect, useRef } from "react";
 import { NavBar } from "../nav-bar/NavBar";
+import type { CharacterResult } from "../../lib/engine";
 import { BaseTile } from "../tile/BaseTile";
-import type { BaseTileTone } from "../tile/BaseTile";
 import styles from "./TilePreview.module.css";
 
 const HISTORY_PREVIEW_ROWS = [
   [
-    { tile: "ㄱ", tone: "correct" },
-    { tile: "ㅏ", tone: "present" },
-    { tile: "ㄴ", tone: "absent" },
-    { tile: "ㄷ", tone: "correct" },
-    { tile: "ㅓ", tone: "present" },
-    { tile: "ㄹ", tone: "absent" },
-    { tile: "ㅁ", tone: "correct" },
+    { tile: "ㄱ", result: "CORRECT" },
+    { tile: "ㅏ", result: "PRESENT" },
+    { tile: "ㄴ", result: "ABSENT" },
+    { tile: "ㄷ", result: "CORRECT" },
+    { tile: "ㅓ", result: "PRESENT" },
+    { tile: "ㄹ", result: "ABSENT" },
+    { tile: "ㅁ", result: "CORRECT" },
   ],
   [
-    { tile: "ㅂ", tone: "present" },
-    { tile: "ㅣ", tone: "absent" },
-    { tile: "ㅅ", tone: "correct" },
-    { tile: "ㅗ", tone: "present" },
-    { tile: "ㅇ", tone: "absent" },
-    { tile: "ㅜ", tone: "correct" },
-    { tile: "ㅈ", tone: "present" },
+    { tile: "ㅂ", result: "PRESENT" },
+    { tile: "ㅣ", result: "ABSENT" },
+    { tile: "ㅅ", result: "CORRECT" },
+    { tile: "ㅗ", result: "PRESENT" },
+    { tile: "ㅇ", result: "ABSENT" },
+    { tile: "ㅜ", result: "CORRECT" },
+    { tile: "ㅈ", result: "PRESENT" },
   ],
   [
-    { tile: "ㅊ", tone: "absent" },
-    { tile: "ㅡ", tone: "correct" },
-    { tile: "ㅋ", tone: "present" },
-    { tile: "ㅌ", tone: "absent" },
-    { tile: "ㅍ", tone: "correct" },
-    { tile: "ㅎ", tone: "present" },
-    { tile: "ㅐ", tone: "absent" },
+    { tile: "ㅊ", result: "ABSENT" },
+    { tile: "ㅡ", result: "CORRECT" },
+    { tile: "ㅋ", result: "PRESENT" },
+    { tile: "ㅌ", result: "ABSENT" },
+    { tile: "ㅍ", result: "CORRECT" },
+    { tile: "ㅎ", result: "PRESENT" },
+    { tile: "ㅐ", result: "ABSENT" },
   ],
   [
-    { tile: "ㄲ", tone: "correct" },
-    { tile: "ㅒ", tone: "correct" },
-    { tile: "ㄸ", tone: "correct" },
-    { tile: "ㅔ", tone: "correct" },
-    { tile: "ㅃ", tone: "correct" },
-    { tile: "ㅖ", tone: "correct" },
-    { tile: "ㅆ", tone: "correct" },
+    { tile: "ㄲ", result: "CORRECT" },
+    { tile: "ㅒ", result: "CORRECT" },
+    { tile: "ㄸ", result: "CORRECT" },
+    { tile: "ㅔ", result: "CORRECT" },
+    { tile: "ㅃ", result: "CORRECT" },
+    { tile: "ㅖ", result: "CORRECT" },
+    { tile: "ㅆ", result: "CORRECT" },
   ],
-] as const satisfies readonly (readonly { tile: string; tone: BaseTileTone }[])[];
+] as const satisfies readonly (readonly { tile: string; result: CharacterResult }[])[];
 
 const SUBMISSION_PREVIEW_TILES = ["ㄱ", "ㅏ", "ㄴ", "ㄷ", "ㅓ", "ㄹ", "ㅁ"] as const;
 
@@ -110,8 +110,8 @@ export function TilePreview() {
         >
           {HISTORY_PREVIEW_ROWS.map((row, rowIndex) => (
             <div className={styles.historyRow} key={`history-${rowIndex}`}>
-              {row.map(({ tile, tone }, tileIndex) => (
-                <BaseTile tone={tone} key={`${tile}-${tileIndex}`}>
+              {row.map(({ tile, result }, tileIndex) => (
+                <BaseTile result={result} key={`${tile}-${tileIndex}`}>
                   {tile}
                 </BaseTile>
               ))}

@@ -5,47 +5,62 @@
  */
 
 import { clsx } from "clsx";
-import { useId } from "react";
-import type { AnimationEventHandler, CSSProperties, ReactNode, Ref, SVGProps } from "react";
-import LightningBorderSvg from "./lightning-border.svg?react";
+import type { AnimationEventHandler, CSSProperties, ReactNode, Ref } from "react";
+import type { CharacterResult } from "../../lib/engine";
+import lightningBorderUrl from "./lightning-border.svg?url";
 import styles from "./BaseTile.module.css";
 
 export type BaseTileElement = "button" | "div" | "span";
-export type BaseTileSize = "standard" | "compact";
-export type BaseTileTone = "default" | "correct" | "present" | "absent";
 
 /**
- * Props for the {@link BaseTile} component.
+ * Props shared by every {@link BaseTile} element variant.
  *
  * @property children - Already-renderable tile content.
  * @property className - Optional caller-owned class for layout or context-specific visual additions.
  * @property dataAttributes - Optional data attributes owned by the consuming feature.
- * @property element - Semantic element to render.
- * @property isDisabled - Whether a button tile should be disabled and visually muted.
  * @property isHighlighted - Whether to show the shared warm highlight treatment.
  * @property isInteractive - Whether the tile should use interactive affordances such as pointer cursor and active feedback.
  * @property label - Accessible label for non-text or abbreviated tile content.
  * @property onAnimationEnd - Optional animation-end handler for caller-owned CSS feedback.
- * @property size - Shared size variant.
  * @property testId - Optional test id for observable UI tests.
- * @property tileRef - Optional ref to the rendered tile element for context-specific behavior.
- * @property tone - Shared result/state tone.
+ * @property result - Optional engine evaluation result for result-colored tiles.
  */
-export type BaseTileProps = {
+type BaseTileSharedProps = {
   children: ReactNode;
   className?: string;
   dataAttributes?: Record<`data-${string}`, string | number | boolean>;
-  element?: BaseTileElement;
-  isDisabled?: boolean;
   isHighlighted?: boolean;
   isInteractive?: boolean;
   label?: string;
   onAnimationEnd?: AnimationEventHandler<HTMLElement>;
-  size?: BaseTileSize;
   testId?: string;
-  tileRef?: Ref<HTMLElement>;
-  tone?: BaseTileTone;
+  result?: CharacterResult;
 };
+
+/** Props for a button-backed {@link BaseTile}. */
+export type BaseTileButtonProps = BaseTileSharedProps & {
+  element: "button";
+  ref?: Ref<HTMLButtonElement>;
+};
+
+/** Props for a div-backed {@link BaseTile}. */
+export type BaseTileDivProps = BaseTileSharedProps & {
+  element?: "div";
+  ref?: Ref<HTMLDivElement>;
+};
+
+/** Props for a span-backed {@link BaseTile}. */
+export type BaseTileSpanProps = BaseTileSharedProps & {
+  element: "span";
+  ref?: Ref<HTMLSpanElement>;
+};
+
+/**
+ * Props for the {@link BaseTile} component.
+ *
+ * @property element - Semantic element to render.
+ */
+export type BaseTileProps = BaseTileButtonProps | BaseTileDivProps | BaseTileSpanProps;
 
 /**
  * Renders the shared tile surface without game state, character resolution,
@@ -53,73 +68,54 @@ export type BaseTileProps = {
  *
  * @param props - See {@link BaseTileProps}.
  */
-export function BaseTile({
-  children,
-  className,
-  dataAttributes,
-  element = "div",
-  isDisabled = false,
-  isHighlighted = false,
-  isInteractive = false,
-  label,
-  onAnimationEnd,
-  size = "standard",
-  testId,
-  tileRef,
-  tone = "default",
-}: BaseTileProps) {
-  const composedClassName = clsx(
-    styles.tile,
-    element === "button" && styles.button,
-    styles[size],
-    tone !== "default" && styles[tone],
-    isInteractive ? styles.interactive : styles.inert,
-    isHighlighted && styles.highlighted,
-    isDisabled && styles.disabled,
+export function BaseTile(props: BaseTileProps) {
+  const {
+    children,
     className,
-  );
-
+    dataAttributes,
+    isHighlighted = false,
+    isInteractive = false,
+    label,
+    onAnimationEnd,
+    result,
+    testId,
+  } = props;
+  const composedClassName = clsx(styles.tile, className);
   const sharedProps = {
     ...dataAttributes,
     "data-testid": testId,
+    "data-tile-highlighted": isHighlighted || undefined,
+    "data-tile-interactive": isInteractive || undefined,
+    "data-tile-result": result,
     "aria-label": label,
     className: composedClassName,
     onAnimationEnd,
   };
+  const contents = (
+    <>
+      <span data-tile-text>{children}</span>
+      <LightningBorder />
+    </>
+  );
 
-  const contents = <TileContents>{children}</TileContents>;
-
-  if (element === "button") {
+  if (props.element === "button") {
     return (
-      <button
-        {...sharedProps}
-        ref={(node) => assignRef(tileRef, node)}
-        type="button"
-        disabled={isDisabled}
-      >
+      <button {...sharedProps} ref={props.ref} type="button">
         {contents}
       </button>
     );
   }
 
-  if (element === "span") {
+  if (props.element === "span") {
     return (
-      <span
-        {...sharedProps}
-        ref={(node) => assignRef(tileRef, node)}
-        aria-disabled={isDisabled || undefined}
-      >
+      <span {...sharedProps} ref={props.ref}>
         {contents}
       </span>
     );
   }
 
   return (
-    <div
-      {...sharedProps}
-      ref={(node) => assignRef(tileRef, node)}
-      aria-disabled={isDisabled || undefined}
-    >
+    <div {...sharedProps} ref={props.ref}>
       {contents}
     </div>
   );
@@ -128,60 +124,14 @@ export function BaseTile({
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-type TileContentsProps = {
-  children: ReactNode;
-};
-
 type LightningBorderStyle = CSSProperties & {
-  "--tile-border-paint": string;
+  "--tile-border-mask-image": string;
 };
 
-function TileContents({ children }: TileContentsProps) {
-  return (
-    <>
-      <span className={styles.text}>{children}</span>
-      <LightningBorder aria-hidden="true" focusable="false" className={styles.border} />
-    </>
-  );
-}
-
-function LightningBorder(props: SVGProps<SVGSVGElement>) {
-  const gradientId = `tile-gradient-${useId().replace(/:/g, "")}`;
+function LightningBorder() {
   const borderStyle: LightningBorderStyle = {
-    "--tile-border-paint": `url(#${gradientId})`,
+    "--tile-border-mask-image": `url("${lightningBorderUrl}")`,
   };
 
-  return (
-    <>
-      <svg aria-hidden="true" focusable="false" className={styles.borderDefinitions}>
-        <defs>
-          <linearGradient
-            id={gradientId}
-            x1="25.5"
-            y1="0.5"
-            x2="25.5"
-            y2="77.5001"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stopColor="var(--tile-border-gradient-1)" />
-            <stop offset="0.25" stopColor="var(--tile-border-gradient-2)" />
-            <stop offset="0.5" stopColor="var(--tile-border-gradient-3)" />
-            <stop offset="0.75" stopColor="var(--tile-border-gradient-4)" />
-            <stop offset="1" stopColor="var(--tile-border-gradient-5)" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <LightningBorderSvg {...props} style={borderStyle} />
-    </>
-  );
-}
-
-function assignRef(ref: Ref<HTMLElement> | undefined, node: HTMLElement | null) {
-  if (ref === undefined || ref === null) return;
-  if (typeof ref === "function") {
-    ref(node);
-    return;
-  }
-  ref.current = node;
+  return <span aria-hidden="true" data-tile-border style={borderStyle} />;
 }

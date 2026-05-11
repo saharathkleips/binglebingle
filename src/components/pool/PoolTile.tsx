@@ -200,7 +200,7 @@ export function PoolTile({
       isInteractive={isTappable}
       onAnimationEnd={handleAnimationEnd}
       testId={`tile-${tile.id}`}
-      tileRef={handleTileRef}
+      ref={handleTileRef}
     />
   );
 }

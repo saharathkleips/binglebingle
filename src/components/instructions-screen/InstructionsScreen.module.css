@@ -62,8 +62,8 @@
 }
 
 .poolTile {
-  --tile-visual-long-edge: 3.125rem;
-  --tile-visual-short-edge: calc(3.125rem * 2 / 3);
+  --tile-visual-long-edge: 2.25rem;
+  --tile-visual-short-edge: calc(2.25rem * 2 / 3);
   --tile-font-size: 1.4rem;
 }
 

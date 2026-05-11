@@ -5,9 +5,8 @@
  */
 
 import { BaseTile } from "../tile/BaseTile";
-import type { BaseTileTone } from "../tile/BaseTile";
 import { CharacterTile } from "../tile/CharacterTile";
-import type { CharacterResult, EvaluatedCharacter } from "../../lib/engine";
+import type { EvaluatedCharacter } from "../../lib/engine";
 
 /**
  * Props for the `HistoryTile` component.
@@ -20,15 +19,15 @@ export type HistoryTileProps = {
 
 /**
  * Renders a single evaluated tile, displaying the resolved character and applying
- * a shared visual tone based on its result.
+ * shared result styling.
  *
  * @param props - {@link HistoryTileProps}
  */
 export function HistoryTile({ evaluated }: HistoryTileProps) {
   const sharedProps = {
     dataAttributes: { "data-result": evaluated.result },
+    result: evaluated.result,
     testId: "history-tile",
-    tone: RESULT_TONE[evaluated.result],
   };
 
   if (evaluated.character === undefined) {
@@ -37,13 +36,3 @@ export function HistoryTile({ evaluated }: HistoryTileProps) {
 
   return <CharacterTile character={evaluated.character} {...sharedProps} />;
 }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-const RESULT_TONE: Record<CharacterResult, BaseTileTone> = {
-  CORRECT: "correct",
-  PRESENT: "present",
-  ABSENT: "absent",
-};
