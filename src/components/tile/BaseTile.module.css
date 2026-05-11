@@ -68,15 +68,15 @@
       0 0 var(--tile-glow-size) calc(var(--tile-glow-size) * 0.3) var(--color-tile-glow);
   }
 
-  &[data-tile-highlighted="true"],
-  &[data-can-drop="true"] {
+  &[data-drop-source-active="true"] {
     box-shadow:
       var(--tile-shadow-stack),
       0 0 calc(var(--tile-glow-size) * 1.6) calc(var(--tile-glow-size) * 0.5)
         var(--color-tile-highlight-glow);
   }
 
-  &[data-drag-over="true"] {
+  &[data-drop-pool-target-active="true"],
+  &[data-drop-slot-target-active="true"][data-slot-state="filled"] {
     box-shadow:
       var(--tile-shadow-stack),
       0 0 calc(var(--tile-glow-size) * 1.4) calc(var(--tile-glow-size) * 0.4) var(--color-drag-glow);

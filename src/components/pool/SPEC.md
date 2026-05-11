@@ -59,7 +59,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. O
 
 - Draggable owns click-vs-drag differentiation and pointer event wiring.
 - `onDragStart`: temporarily allows pool overflow so the tile can travel to slots and plays pickup feedback.
-- `onDrag`: resolves the current target via `document.elementsFromPoint`, sets `data-drag-over="true"` on valid targets, and sets `data-can-drop="true"` on the dragged tile.
+- `onDrag`: resolves the current target via `document.elementsFromPoint`, sets `data-drop-source-active="true"` on the dragged tile when the current target is valid, and sets a target-specific active attribute (`data-drop-pool-target-active` or `data-drop-slot-target-active`) on the current target. Slot CSS combines `data-drop-slot-target-active` with `data-slot-state` to distinguish empty and filled slot treatments.
 - `onDragEnd`: dispatches slot/tile callbacks for valid drops, clears inline drag styles when React will re-render/unmount the tile, or animates the tile back to its fixed pool layout position when no valid drop occurred. Invalid drags never leave tiles at arbitrary canvas coordinates.
 - Drop onto `data-slot-index` element → `onDropOnSlot(slotIndex)`.
 - Drop onto `data-tile-id` element → `onDropOnTile(targetId)`.

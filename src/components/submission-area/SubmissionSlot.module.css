@@ -67,9 +67,17 @@
   z-index: 1;
 }
 
-/* Drop target highlight set imperatively during drag — VIS-29 glow. */
-.slot[data-drag-over="true"]::before,
-.slotGhost[data-drag-over="true"]::before {
+/* Drop target highlights are set imperatively during drag. */
+.slot[data-drop-slot-target-active="true"][data-slot-state="empty"]::before,
+.slotGhost[data-drop-slot-target-active="true"][data-slot-state="empty"]::before {
+  border-color: var(--color-drag-border);
+  background: var(--color-drag-bg);
+  box-shadow: 0 0 calc(var(--tile-glow-size) * 1.4) calc(var(--tile-glow-size) * 0.4)
+    var(--color-drag-glow);
+}
+
+.slot[data-drop-slot-target-active="true"][data-slot-state="filled"]::before,
+.slotGhost[data-drop-slot-target-active="true"][data-slot-state="filled"]::before {
   border-color: var(--color-drag-border);
   background: var(--color-drag-bg);
   box-shadow: 0 0 calc(var(--tile-glow-size) * 1.4) calc(var(--tile-glow-size) * 0.4)

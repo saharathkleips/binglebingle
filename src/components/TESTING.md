@@ -143,7 +143,7 @@ pointerSequence(sourceElement, [
 ]);
 ```
 
-To assert intermediate drag state (e.g. `data-drag-over`), omit `pointerup` and assert before sending it separately.
+To assert intermediate drag state (e.g. `data-drop-source-active`, `data-drop-pool-target-active`, or `data-drop-slot-target-active`), omit `pointerup` and assert before sending it separately.
 
 ### Waiting for Async State
 

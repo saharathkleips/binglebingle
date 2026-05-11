@@ -114,7 +114,7 @@ describe("SubmissionSlot drag", () => {
     expect(onDropOnSlot0).toHaveBeenCalledWith(1);
   });
 
-  it("highlights a target slot with data-drag-over during drag", async () => {
+  it("highlights a filled slot drop target during drag", async () => {
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <SubmissionSlot slot={FILLED_SLOT} slotIndex={0} onTap={vi.fn()} onDropOnSlot={vi.fn()} />
@@ -135,7 +135,9 @@ describe("SubmissionSlot drag", () => {
       { type: "pointermove", clientX: targetX, clientY: targetY },
     ]);
 
-    await expect.element(screen.getByTestId("slot-1")).toHaveAttribute("data-drag-over", "true");
+    await expect
+      .element(screen.getByTestId("slot-1"))
+      .toHaveAttribute("data-drop-slot-target-active", "true");
 
     dragSequence(button0, [{ type: "pointerup", clientX: targetX, clientY: targetY }]);
   });

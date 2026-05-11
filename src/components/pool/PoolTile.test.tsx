@@ -166,7 +166,7 @@ describe("PoolTile drag", () => {
     expect(onDropOnTile).not.toHaveBeenCalled();
   });
 
-  it("highlights drop target with data-drag-over during drag", async () => {
+  it("highlights empty slot drop target during drag", async () => {
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <PoolTile {...tileProps()} />
@@ -186,7 +186,9 @@ describe("PoolTile drag", () => {
       { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
     ]);
 
-    await expect.element(screen.getByTestId("slot-0")).toHaveAttribute("data-drag-over", "true");
+    await expect
+      .element(screen.getByTestId("slot-0"))
+      .toHaveAttribute("data-drop-slot-target-active", "true");
 
     dragSequence(tileElement, [{ type: "pointerup", clientX: slotCenterX, clientY: slotCenterY }]);
   });

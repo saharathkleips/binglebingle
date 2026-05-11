@@ -96,15 +96,16 @@ export function SubmissionSlot({
           const dropTarget = findSlotDropTarget(elements, slotIndexRef.current);
 
           if (lastOverRef.current !== null && lastOverRef.current !== dropTarget) {
-            lastOverRef.current.removeAttribute("data-drag-over");
+            removeSlotDropTargetActiveAttribute(lastOverRef.current);
           }
           if (dropTarget !== null) {
-            dropTarget.setAttribute("data-drag-over", "true");
+            setSlotDropTargetActiveAttribute(dropTarget);
           }
           lastOverRef.current = dropTarget;
         },
         onDragEnd: function onDragEnd(this: Draggable) {
-          lastOverRef.current?.removeAttribute("data-drag-over");
+          if (lastOverRef.current !== null)
+            removeSlotDropTargetActiveAttribute(lastOverRef.current);
           lastOverRef.current = null;
 
           const element = this.target as HTMLElement;
@@ -172,7 +173,7 @@ export function SubmissionSlot({
       isInteractive
       ref={buttonRef}
       testId={`slot-${slotIndex}`}
-      dataAttributes={{ "data-slot-index": slotIndex }}
+      dataAttributes={{ "data-slot-index": slotIndex, "data-slot-state": "filled" }}
     />
   ) : (
     <button
@@ -181,6 +182,7 @@ export function SubmissionSlot({
       className={`${styles.slot} ${styles.empty}`}
       data-testid={`slot-${slotIndex}`}
       data-slot-index={slotIndex}
+      data-slot-state="empty"
     />
   );
 
@@ -189,7 +191,7 @@ export function SubmissionSlot({
   // so there is always a visible indicator of where the slot is.
   if (isFilled) {
     return (
-      <div className={styles.slotGhost} data-slot-index={slotIndex}>
+      <div className={styles.slotGhost} data-slot-index={slotIndex} data-slot-state="filled">
         {button}
       </div>
     );
@@ -223,3 +225,13 @@ function isOverPool(elements: Element[]): boolean {
     (element) => element instanceof HTMLElement && element.hasAttribute("data-pool"),
   );
 }
+
+function setSlotDropTargetActiveAttribute(element: Element) {
+  element.setAttribute("data-drop-slot-target-active", "true");
+}
+
+function removeSlotDropTargetActiveAttribute(element: Element) {
+  SLOT_DROP_TARGET_ACTIVE_ATTRIBUTES.forEach((attribute) => element.removeAttribute(attribute));
+}
+
+const SLOT_DROP_TARGET_ACTIVE_ATTRIBUTES = ["data-drop-slot-target-active"];

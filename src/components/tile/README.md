@@ -23,7 +23,7 @@ The shared sizing system is hitbox-first. Global tokens in `src/index.css` defin
 - `BaseTile` is presentation-only: no GSAP imports, no game context, no reducer types, no pool/submission/history behavior, no square hitbox ownership, and no character resolution helpers.
 - `CharacterTile` is the only shared tile component that calls `resolveCharacter`.
 - Pool, submission, history, and instructions modules own their own interaction semantics and decide when to render these primitives.
-- Visual variants use reusable names such as `result`, `isInteractive`, or `isHighlighted`; avoid context names such as `isPoolTile` or `isSubmissionReady` in the shared API.
+- Visual variants use reusable names such as `result` or `isInteractive`; avoid context names such as `isPoolTile` or `isSubmissionReady` in the shared API.
 
 ## Naming
 

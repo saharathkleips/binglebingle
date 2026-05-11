@@ -118,25 +118,25 @@ export function PoolTile({
           const dropTarget = findDropTarget(elements, tileIdRef.current);
 
           if (lastOverRef.current !== null && lastOverRef.current !== dropTarget) {
-            lastOverRef.current.removeAttribute("data-drag-over");
+            removeDropTargetActiveAttribute(lastOverRef.current);
           }
           const { canDropOnTarget: canDrop } = callbacksRef.current;
           const isValidDrop = dropTarget !== null && (canDrop === undefined || canDrop(dropTarget));
           if (isValidDrop && dropTarget !== null) {
-            dropTarget.setAttribute("data-drag-over", "true");
+            setDropTargetActiveAttribute(dropTarget);
           }
           if (isValidDrop) {
-            (this.target as HTMLElement).setAttribute("data-can-drop", "true");
+            (this.target as HTMLElement).setAttribute("data-drop-source-active", "true");
           } else {
-            (this.target as HTMLElement).removeAttribute("data-can-drop");
+            (this.target as HTMLElement).removeAttribute("data-drop-source-active");
           }
           lastOverRef.current = dropTarget;
         },
         onDragEnd: function onDragEnd(this: Draggable) {
           // Clear any drop target highlighting
-          lastOverRef.current?.removeAttribute("data-drag-over");
+          if (lastOverRef.current !== null) removeDropTargetActiveAttribute(lastOverRef.current);
           lastOverRef.current = null;
-          (this.target as HTMLElement).removeAttribute("data-can-drop");
+          (this.target as HTMLElement).removeAttribute("data-drop-source-active");
 
           const poolEl = document.querySelector('[data-testid="pool"]') as HTMLElement | null;
 
@@ -223,3 +223,22 @@ function findDropTarget(elements: Element[], selfTileId: number): Element | null
   }
   return null;
 }
+
+function setDropTargetActiveAttribute(element: Element) {
+  element.setAttribute(getDropTargetActiveAttribute(element), "true");
+}
+
+function removeDropTargetActiveAttribute(element: Element) {
+  DROP_TARGET_ACTIVE_ATTRIBUTES.forEach((attribute) => element.removeAttribute(attribute));
+}
+
+function getDropTargetActiveAttribute(element: Element) {
+  return element.hasAttribute("data-tile-id")
+    ? "data-drop-pool-target-active"
+    : "data-drop-slot-target-active";
+}
+
+const DROP_TARGET_ACTIVE_ATTRIBUTES = [
+  "data-drop-pool-target-active",
+  "data-drop-slot-target-active",
+];

@@ -48,7 +48,6 @@ type BaseTileSharedProps = {
   children: React.ReactNode;
   className?: string;
   dataAttributes?: Record<`data-${string}`, string | number | boolean>;
-  isHighlighted?: boolean;
   isInteractive?: boolean;
   label?: string;
   onAnimationEnd?: React.AnimationEventHandler<HTMLElement>;

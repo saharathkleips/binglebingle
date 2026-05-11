@@ -18,7 +18,6 @@ export type BaseTileElement = "button" | "div" | "span";
  * @property children - Already-renderable tile content.
  * @property className - Optional caller-owned class for layout or context-specific visual additions.
  * @property dataAttributes - Optional data attributes owned by the consuming feature.
- * @property isHighlighted - Whether to show the shared warm highlight treatment.
  * @property isInteractive - Whether the tile should use interactive affordances such as pointer cursor and active feedback.
  * @property label - Accessible label for non-text or abbreviated tile content.
  * @property onAnimationEnd - Optional animation-end handler for caller-owned CSS feedback.
@@ -29,7 +28,6 @@ type BaseTileSharedProps = {
   children: ReactNode;
   className?: string;
   dataAttributes?: Record<`data-${string}`, string | number | boolean>;
-  isHighlighted?: boolean;
   isInteractive?: boolean;
   label?: string;
   onAnimationEnd?: AnimationEventHandler<HTMLElement>;
@@ -73,7 +71,6 @@ export function BaseTile(props: BaseTileProps) {
     children,
     className,
     dataAttributes,
-    isHighlighted = false,
     isInteractive = false,
     label,
     onAnimationEnd,
@@ -84,7 +81,6 @@ export function BaseTile(props: BaseTileProps) {
   const sharedProps = {
     ...dataAttributes,
     "data-testid": testId,
-    "data-tile-highlighted": isHighlighted || undefined,
     "data-tile-interactive": isInteractive || undefined,
     "data-tile-result": result,
     "aria-label": label,
