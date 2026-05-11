@@ -87,7 +87,6 @@ body {
   --color-tile-shadow-strong: rgba(0, 0, 0, 0.5);
   --color-tile-glow: rgba(176, 224, 230, 0.28);
   --color-tile-highlight-glow: rgba(224, 255, 255, 0.45);
-  --color-tile-face-active: #050505;
 
   /* ── Tile tokens: x-small/minimum interactive tier ───────────────────── */
   --tile-hitbox-size: 44px;

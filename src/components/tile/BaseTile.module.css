@@ -1,6 +1,4 @@
 .tile {
-  --tile-current-long-edge: var(--tile-visual-long-edge);
-  --tile-current-short-edge: var(--tile-visual-short-edge);
   --tile-border-gradient-1: var(--palette-najeon-iridescent-lavender);
   --tile-border-gradient-2: var(--palette-najeon-iridescent-blue);
   --tile-border-gradient-3: var(--palette-najeon-iridescent-pink);
@@ -12,8 +10,8 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: var(--tile-current-short-edge);
-  height: var(--tile-current-long-edge);
+  width: var(--tile-visual-short-edge);
+  height: var(--tile-visual-long-edge);
   overflow: clip;
   border-radius: var(--tile-radius);
   background: var(--color-tile-face);
@@ -68,10 +66,6 @@
     box-shadow:
       var(--tile-shadow-stack),
       0 0 var(--tile-glow-size) calc(var(--tile-glow-size) * 0.3) var(--color-tile-glow);
-  }
-
-  &[data-tile-interactive="true"]:active {
-    background: var(--color-tile-face-active);
   }
 
   &[data-tile-highlighted="true"],
