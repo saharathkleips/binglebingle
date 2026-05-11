@@ -40,6 +40,8 @@ Renders a single slot. Empty slots show a dashed placeholder. Filled slots rende
 
 Filled slots also act as drag sources: dragging a filled slot onto another slot dispatches `SUBMISSION_SLOT_MOVE`, swapping the two tiles (or moving into an empty slot). A 4px movement threshold distinguishes tap from drag, matching Tile's behavior. Drop targets are identified by `data-slot-index`; the slot never drops onto itself.
 
+Submission slots use the visible portrait tile width (`--tile-visual-short-edge`) rather than the square pool hitbox width because submission tiles do not rotate. Their height remains `--tile-hitbox-size`, preserving the minimum vertical interaction size. The row uses `--tile-submission-history-gap` so submission and history visual spacing can stay consistent while remaining independent from the pool's rotation-safe `--tile-gap` cadence.
+
 ### SubmissionButton
 
 Calls `canSubmit(submission)` to determine validity. Disabled when invalid; dispatches `ROUND_SUBMISSION_SUBMIT` on click when valid.

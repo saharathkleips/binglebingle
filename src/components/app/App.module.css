@@ -3,36 +3,8 @@
   overflow: hidden;
 }
 
-.unsupportedViewport {
+.gameShell {
   display: flex;
-  min-height: 100%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
-  padding: var(--space-lg);
-  background: var(--palette-obangsaek-red);
-  color: var(--palette-najeon-mint);
-  text-align: center;
-}
-
-.unsupportedTitle {
-  margin: 0;
-  font-family: var(--font-family-display);
-  font-size: 2rem;
-}
-
-.unsupportedMessage {
-  max-width: 22rem;
-  margin: 0;
-  font-family: var(--font-family-ui);
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.5;
-}
-
-.supportedViewport {
-  display: none;
   height: 100%;
   min-height: 0;
   flex-direction: column;
@@ -52,15 +24,83 @@
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  min-height: 0;
 }
 
-@media (min-width: 375px) and (min-height: 667px) {
-  .unsupportedViewport {
-    display: none;
-  }
+.tilePreviewScreen {
+  min-height: 100dvh;
+  padding: var(--space-md);
+  overflow: auto;
+  background: var(--palette-dancheong-blue);
+  color: var(--palette-obangsaek-white);
+  font-family: var(--font-family-ui);
+}
 
-  .supportedViewport {
-    display: flex;
-  }
+.tilePreviewControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-block-end: var(--space-md);
+}
+
+.tilePreviewTitle,
+.tilePreviewHelp {
+  margin: 0;
+}
+
+.tilePreviewTitle {
+  font-family: var(--font-family-display);
+}
+
+.tilePreviewHelp {
+  margin-block-start: var(--space-sm);
+  color: var(--palette-najeon-mint);
+  line-height: 1.4;
+}
+
+.tilePreviewButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.tilePreviewButton {
+  display: grid;
+  gap: 0.125rem;
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--palette-najeon-blue);
+  border-radius: var(--radius-md);
+  background: var(--palette-obangsaek-black);
+  color: var(--palette-najeon-mint);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tilePreviewButton[aria-pressed="true"] {
+  background: var(--palette-obangsaek-yellow);
+  color: var(--palette-obangsaek-black);
+}
+
+.tilePreviewButtonSize {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tilePreviewStage {
+  display: grid;
+  min-width: 0;
+  overflow: auto;
+  padding: var(--space-md);
+  border: 2px solid var(--palette-najeon-blue);
+  border-radius: var(--radius-md);
+  background: var(--palette-obangsaek-black);
+}
+
+.tilePreviewFrame {
+  max-width: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--palette-obangsaek-white);
 }

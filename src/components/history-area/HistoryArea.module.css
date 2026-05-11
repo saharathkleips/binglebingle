@@ -4,16 +4,25 @@
   align-items: center;
   gap: var(--tile-gap);
   padding: var(--tile-gap);
-  /* Show ~3 rows before scrolling. Each row uses the shared square hitbox cadence. */
-  max-height: calc(3 * (var(--tile-hitbox-size) + var(--tile-gap)) + var(--tile-gap));
+  min-height: calc(
+    var(--history-min-visible-rows) * (var(--tile-hitbox-size) + var(--tile-submission-history-gap))
+  );
   overflow-y: auto;
-  flex-shrink: 0;
+  flex: 1 1 auto;
   /* VIS-26: smooth scroll as older guesses are pushed up. */
   scroll-behavior: smooth;
+  scroll-padding-block: var(--tile-submission-history-gap);
+  scroll-snap-type: y mandatory;
 }
 
 .row {
   display: flex;
   justify-content: center;
-  gap: var(--tile-gap);
+  gap: var(--tile-submission-history-gap);
+  scroll-snap-align: end;
+  scroll-snap-stop: always;
+}
+
+.row:first-child {
+  margin-block-start: auto;
 }

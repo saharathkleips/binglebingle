@@ -68,6 +68,19 @@ body {
   --color-tile-highlight-glow: rgba(224, 255, 255, 0.45);
   --color-tile-face-active: #050505;
 
+  /* ── Tile tokens: x-small/minimum interactive tier ───────────────────── */
+  --tile-hitbox-size: 44px;
+  --tile-gap: 4px;
+  --tile-submission-history-gap: 6px;
+  --tile-radius: 4px;
+  --tile-border-padding: 1px;
+  --tile-font-size: 1.25rem;
+  --tile-shadow-step: 1px;
+  --tile-shadow-depth: 3px;
+  --tile-glow-size: 10px;
+  --history-min-visible-rows: 2.25;
+  --pool-min-visible-rows: 6;
+
   /* ── Tile derived tokens ─────────────────────────────────────────────── */
   --tile-visual-long-edge: var(--tile-hitbox-size);
   --tile-visual-short-edge: calc(var(--tile-hitbox-size) * 2 / 3);
@@ -92,31 +105,19 @@ body {
   --font-family-ui: system-ui, "Noto Sans KR", sans-serif;
 }
 
-/* Tile tier: x-small, the minimum supported game viewport. */
-@media (min-width: 375px) and (min-height: 667px) {
-  :root {
-    --tile-hitbox-size: 44px;
-    --tile-gap: 4px;
-    --tile-radius: 4px;
-    --tile-border-padding: 1px;
-    --tile-font-size: 1.25rem;
-    --tile-shadow-step: 1px;
-    --tile-shadow-depth: 3px;
-    --tile-glow-size: 10px;
-  }
-}
-
 /* Tile tier: small */
 @media (min-width: 390px) and (min-height: 700px) {
   :root {
     --tile-hitbox-size: 48px;
     --tile-gap: 5px;
+    --tile-submission-history-gap: 7px;
     --tile-radius: 5px;
     --tile-border-padding: 1px;
     --tile-font-size: 1.375rem;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 4px;
     --tile-glow-size: 12px;
+    --pool-min-visible-rows: 6;
   }
 }
 
@@ -125,12 +126,14 @@ body {
   :root {
     --tile-hitbox-size: 56px;
     --tile-gap: 7px;
+    --tile-submission-history-gap: 9px;
     --tile-radius: 6px;
     --tile-border-padding: 1.25px;
     --tile-font-size: 1.625rem;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 5px;
     --tile-glow-size: 14px;
+    --pool-min-visible-rows: 5;
   }
 }
 
@@ -139,12 +142,14 @@ body {
   :root {
     --tile-hitbox-size: 64px;
     --tile-gap: 8px;
+    --tile-submission-history-gap: 10px;
     --tile-radius: 7px;
     --tile-border-padding: 1.5px;
     --tile-font-size: 1.875rem;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 6px;
     --tile-glow-size: 16px;
+    --pool-min-visible-rows: 4;
   }
 }
 
@@ -153,11 +158,13 @@ body {
   :root {
     --tile-hitbox-size: 72px;
     --tile-gap: 10px;
+    --tile-submission-history-gap: 12px;
     --tile-radius: 8px;
     --tile-border-padding: 2px;
     --tile-font-size: 2.125rem;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 7px;
     --tile-glow-size: 18px;
+    --pool-min-visible-rows: 4;
   }
 }

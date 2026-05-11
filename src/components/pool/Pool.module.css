@@ -7,5 +7,8 @@
   gap: var(--tile-gap);
   padding: var(--tile-gap);
   overflow-y: auto;
-  min-height: 0;
+  min-height: calc(
+    var(--pool-min-visible-rows) * var(--tile-hitbox-size) + (var(--pool-min-visible-rows) + 1) *
+      var(--tile-gap)
+  );
 }

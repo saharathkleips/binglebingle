@@ -30,7 +30,7 @@ pool/
 
 ### Pool
 
-Reads `state.pool` from `useGame()` and renders a `PoolTile` for each tile. Owns all interaction logic:
+Reads `state.pool` from `useGame()` and renders a `PoolTile` for each tile. The container reserves at least `--pool-min-visible-rows` rows for the current tile tier so history can grow without stealing the pool's expected visual footprint. Owns all interaction logic:
 
 - **`handleTap(tile)`** — checks `getNextRotation` / `decompose` and dispatches `CHARACTER_ROTATE_NEXT` or `CHARACTER_DECOMPOSE`.
 - **`handleDropOnTile(sourceTile, targetId)`** — looks up the target tile, calls `compose()` to validate; dispatches `CHARACTER_COMPOSE` on success or sets `rejectedTileId` on failure.

@@ -4,7 +4,7 @@
 
 ## Purpose
 
-`App` is the root component. It owns game initialization, top-level layout, viewport support messaging, and win state presentation. `GameProvider` wraps the entire tree here — all child components read state via `useGame()`.
+`App` is the root component. It owns game initialization, top-level layout, and win state presentation. `GameProvider` wraps the entire tree here — all child components read state via `useGame()`.
 
 **Boundaries:**
 
@@ -17,7 +17,10 @@
 ```
 app/
 ├── App.tsx
-├── App.test.ts
+├── App.module.css
+├── App.test.tsx
+├── TilePreview.tsx
+├── TilePreview.module.css
 ├── README.md
 └── SPEC.md
 ```
@@ -30,7 +33,7 @@ Initializes the game via `setupGame()` on mount and renders the full game UI.
 
 **Viewport support:**
 
-Screens below the documented minimum game viewport (`375px × 667px`) show a CSS-only unsupported message. The game shell is hidden with media queries rather than JavaScript measurement so tile tier selection and viewport support remain native CSS concerns.
+The game shell always renders. Minimum tile hitbox tokens are defined unconditionally in `src/index.css`; larger viewport media queries progressively enhance the tile scale. Very small or unusual viewports may clip naturally instead of showing a separate unsupported screen.
 
 **Loading / Instructions:**
 
@@ -49,13 +52,19 @@ Shows `InstructionsScreen` while `setupGame()` resolves — game is typically re
 
 Dev settings live in `App` local state; dev panel accessible via `?dev=1` URL param (MVP only).
 
+**Tile preview:**
+
+`?tilePreview=1` renders a manual preview screen instead of the game shell. It uses an iframe whose `width` and `height` attributes are changed by breakpoint buttons, so the existing viewport media queries in `src/index.css` are exercised without resizing the browser. `?tilePreview=frame` renders `TilePreview`, a static full-app mock with four evaluated history rows, seven submission slots, and a worst-case 42-tile pool. The mock avoids `GameProvider` and interaction hooks so visual iteration stays isolated from gameplay behavior.
+
 ## Key Decisions
 
 **`GameProvider` wraps the entire app.** All game state lives in context; child components read via `useGame()`. `App` is the only place `GameProvider` is instantiated.
 
 **`setupGame()` called on mount.** The async puzzle fetch starts immediately; `InstructionsScreen` covers the load time so the player never sees a blank game state.
 
-**Unsupported viewport is CSS-only.** App markup includes both the unsupported message and supported game shell. `App.module.css` switches between them at `375px × 667px`, matching the first tile tier in `src/index.css` and avoiding JavaScript viewport measurement.
+**Always render the game shell.** The app keeps the minimum `44px` tile hitbox as the default token set and relies on flex layout to use whatever viewport space is available. This avoids rejecting narrow-but-tall or short-but-wide screens that can still be playable; if content clips, it clips naturally rather than being blocked by an unsupported screen.
+
+**Tile preview is an iframe, not a fake token override.** The preview screen changes iframe dimensions instead of setting CSS variables or data attributes. This keeps manual iteration honest: the same viewport media queries select tile tiers in preview and in the real game. The iframe content mirrors the full app layout but uses static visual data, including mixed history tones and the maximum pool tile count, to keep the preview deterministic and lightweight.
 
 ## Open Questions
 

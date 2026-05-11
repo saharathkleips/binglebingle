@@ -8,5 +8,5 @@
 
 .slots {
   display: flex;
-  gap: var(--tile-gap);
+  gap: var(--tile-submission-history-gap);
 }
