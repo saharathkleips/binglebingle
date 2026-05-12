@@ -27,7 +27,7 @@ import styles from "./PoolTile.module.css";
  * Props for the {@link PoolTile} component.
  *
  * @property tile - The tile data to render.
- * @property isTappable - Whether tapping this tile does anything; controls the inert CSS class.
+ * @property isTappable - Whether tapping this tile does anything; drag remains available either way.
  * @property isRejected - Pool sets this when a compose operation is rejected; PoolTile renders shake feedback.
  * @property isRotating - Pool sets this when the tile's jamo was just rotated; PoolTile plays a brief GSAP squeeze.
  * @property isJustComposed - Pool sets this on the target tile after a successful compose; PoolTile plays heartbeat + particles.
@@ -197,7 +197,7 @@ export function PoolTile({
       className={isRejected ? (styles.shaking ?? "") : ""}
       dataAttributes={{ "data-tile-id": tile.id }}
       element="button"
-      isInteractive={isTappable}
+      isInteractive
       onAnimationEnd={handleAnimationEnd}
       testId={`tile-${tile.id}`}
       ref={handleTileRef}

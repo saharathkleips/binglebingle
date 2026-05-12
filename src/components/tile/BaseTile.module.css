@@ -1,9 +1,9 @@
 .tile {
-  --tile-border-gradient-1: var(--palette-najeon-iridescent-lavender);
-  --tile-border-gradient-2: var(--palette-najeon-iridescent-blue);
-  --tile-border-gradient-3: var(--palette-najeon-iridescent-pink);
-  --tile-border-gradient-4: var(--palette-najeon-iridescent-cyan);
-  --tile-border-gradient-5: var(--palette-najeon-iridescent-mint);
+  --tile-gradient-1: var(--palette-najeon-iridescent-lavender);
+  --tile-gradient-2: var(--palette-najeon-iridescent-blue);
+  --tile-gradient-3: var(--palette-najeon-iridescent-pink);
+  --tile-gradient-4: var(--palette-najeon-iridescent-cyan);
+  --tile-gradient-5: var(--palette-najeon-iridescent-mint);
 
   position: relative;
   display: flex;
@@ -16,9 +16,9 @@
   border-radius: var(--tile-radius);
   background: var(--color-tile-face);
   box-shadow: var(--tile-shadow-stack);
-  color: transparent;
   cursor: default;
   font: inherit;
+  font-family: var(--font-family-ui);
   font-size: var(--tile-font-size);
   font-weight: bold;
   line-height: 1;
@@ -33,27 +33,27 @@
   }
 
   &[data-tile-result="CORRECT"] {
-    --tile-border-gradient-1: var(--palette-najeon-green-celadon);
-    --tile-border-gradient-2: var(--palette-najeon-green-jade);
-    --tile-border-gradient-3: var(--palette-najeon-green-sage);
-    --tile-border-gradient-4: var(--palette-najeon-green-seafoam);
-    --tile-border-gradient-5: var(--palette-najeon-green-mist);
+    --tile-gradient-1: var(--palette-najeon-green-celadon);
+    --tile-gradient-2: var(--palette-najeon-green-jade);
+    --tile-gradient-3: var(--palette-najeon-green-sage);
+    --tile-gradient-4: var(--palette-najeon-green-seafoam);
+    --tile-gradient-5: var(--palette-najeon-green-mist);
   }
 
   &[data-tile-result="PRESENT"] {
-    --tile-border-gradient-1: var(--palette-najeon-yellow-honey);
-    --tile-border-gradient-2: var(--palette-najeon-yellow-ivory);
-    --tile-border-gradient-3: var(--palette-najeon-yellow-apricot);
-    --tile-border-gradient-4: var(--palette-najeon-yellow-citrine);
-    --tile-border-gradient-5: var(--palette-najeon-yellow-peach);
+    --tile-gradient-1: var(--palette-najeon-yellow-honey);
+    --tile-gradient-2: var(--palette-najeon-yellow-ivory);
+    --tile-gradient-3: var(--palette-najeon-yellow-apricot);
+    --tile-gradient-4: var(--palette-najeon-yellow-citrine);
+    --tile-gradient-5: var(--palette-najeon-yellow-peach);
   }
 
   &[data-tile-result="ABSENT"] {
-    --tile-border-gradient-1: var(--palette-najeon-gray-moonstone);
-    --tile-border-gradient-2: var(--palette-najeon-gray-fog);
-    --tile-border-gradient-3: var(--palette-najeon-gray-lavender-mist);
-    --tile-border-gradient-4: var(--palette-najeon-gray-cloud-slate);
-    --tile-border-gradient-5: var(--palette-najeon-gray-silver);
+    --tile-gradient-1: var(--palette-najeon-gray-moonstone);
+    --tile-gradient-2: var(--palette-najeon-gray-fog);
+    --tile-gradient-3: var(--palette-najeon-gray-lavender-mist);
+    --tile-gradient-4: var(--palette-najeon-gray-cloud-slate);
+    --tile-gradient-5: var(--palette-najeon-gray-silver);
   }
 
   &[data-tile-interactive="true"] {
@@ -62,38 +62,21 @@
     touch-action: none;
   }
 
-  &[data-tile-interactive="true"]:hover {
-    box-shadow:
-      var(--tile-shadow-stack),
-      0 0 var(--tile-glow-size) calc(var(--tile-glow-size) * 0.3) var(--color-tile-glow);
-  }
-
-  &[data-drop-source-active="true"] {
-    box-shadow:
-      var(--tile-shadow-stack),
-      0 0 calc(var(--tile-glow-size) * 1.6) calc(var(--tile-glow-size) * 0.5)
-        var(--color-tile-highlight-glow);
-  }
-
-  &[data-drop-pool-target-active="true"],
-  &[data-drop-slot-target-active="true"][data-slot-state="filled"] {
-    box-shadow:
-      var(--tile-shadow-stack),
-      0 0 calc(var(--tile-glow-size) * 1.4) calc(var(--tile-glow-size) * 0.4) var(--color-drag-glow);
+  &[data-tile-interactive="true"]:hover > [data-tile-border] {
+    animation-play-state: running;
   }
 
   > [data-tile-text] {
     z-index: 1;
     pointer-events: none;
-    font-family: var(--font-family-ui);
-    font-size: var(--tile-font-size);
     background: conic-gradient(
       from 180deg at 50% 50%,
-      var(--tile-border-gradient-1) 0deg,
-      var(--tile-border-gradient-2) 90deg,
-      var(--tile-border-gradient-3) 180deg,
-      var(--tile-border-gradient-4) 270deg,
-      var(--tile-border-gradient-5) 360deg
+      var(--tile-gradient-1) 0deg,
+      var(--tile-gradient-2) 72deg,
+      var(--tile-gradient-3) 144deg,
+      var(--tile-gradient-4) 216deg,
+      var(--tile-gradient-5) 288deg,
+      var(--tile-gradient-1) 360deg
     );
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -103,27 +86,40 @@
   > [data-tile-border] {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    padding: var(--tile-border-padding);
     pointer-events: none;
     background: linear-gradient(
       180deg,
-      var(--tile-border-gradient-1) 0%,
-      var(--tile-border-gradient-2) 25%,
-      var(--tile-border-gradient-3) 50%,
-      var(--tile-border-gradient-4) 75%,
-      var(--tile-border-gradient-5) 100%
+      var(--tile-gradient-1) 0%,
+      var(--tile-gradient-2) 10%,
+      var(--tile-gradient-3) 20%,
+      var(--tile-gradient-4) 30%,
+      var(--tile-gradient-5) 40%,
+      var(--tile-gradient-1) 50%,
+      var(--tile-gradient-2) 60%,
+      var(--tile-gradient-3) 70%,
+      var(--tile-gradient-4) 80%,
+      var(--tile-gradient-5) 90%,
+      var(--tile-gradient-1) 100%
     );
+    background-size: 100% 200%;
+    animation: tile-border-shimmer 1000ms linear infinite paused;
     mask-image: var(--tile-border-mask-image);
     mask-repeat: no-repeat;
     mask-position: center;
-    mask-size: calc(100% - var(--tile-border-padding) * 2)
-      calc(100% - var(--tile-border-padding) * 2);
+    mask-size: calc(100% - var(--tile-border-padding));
     -webkit-mask-image: var(--tile-border-mask-image);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
-    -webkit-mask-size: calc(100% - var(--tile-border-padding) * 2)
-      calc(100% - var(--tile-border-padding) * 2);
+    -webkit-mask-size: calc(100% - var(--tile-border-padding));
+  }
+}
+
+@keyframes tile-border-shimmer {
+  from {
+    background-position: 0% 0%;
+  }
+
+  to {
+    background-position: 0% 100%;
   }
 }

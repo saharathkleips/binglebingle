@@ -67,6 +67,14 @@ describe("PoolTile", () => {
     expect(onTap).not.toHaveBeenCalled();
   });
 
+  it("keeps the interactive affordance when not isTappable because pool tiles are draggable", async () => {
+    const screen = await render(<PoolTile {...tileProps({ isTappable: false })} />);
+
+    await expect
+      .element(screen.getByTestId("tile-0"))
+      .toHaveAttribute("data-tile-interactive", "true");
+  });
+
   it("applies shaking class when isRejected is true", async () => {
     const screen = await render(<PoolTile {...tileProps({ isRejected: true })} />);
     await expect.element(screen.getByTestId("tile-0")).toHaveClass(styles.shaking!);

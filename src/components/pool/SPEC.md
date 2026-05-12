@@ -45,7 +45,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. O
 
 **Props:**
 
-- `isTappable: boolean` — drives the `inert` CSS class; when `true`, tap calls `onTap()`.
+- `isTappable: boolean` — gates tap-only behavior; when `true`, tap calls `onTap()`. Pool tiles remain visually interactive because they are draggable even when tapping is a no-op.
 - `isRejected: boolean` — Pool sets this when a compose operation is rejected; PoolTile renders feedback.
 - `onTap: () => void` — called on click when `isTappable`.
 - `onDropOnTile: (targetId: number) => void` — called when a drag ends on another tile.
@@ -70,7 +70,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. O
 
 **`rejectedTileId` in Pool, not `isShaking` in PoolTile.** Moving shake state to Pool lets it be cleared from outside (via `onRejectedEnd`) and avoids PoolTile needing to know what caused the shake.
 
-**`isTappable` computed in Pool and passed as prop.** PoolTile has no knowledge of rotation sets or composition rules; Pool computes the flag once per render using the same lib calls it uses for dispatch.
+**`isTappable` computed in Pool and passed as prop.** PoolTile has no knowledge of rotation sets or composition rules; Pool computes the flag once per render using the same lib calls it uses for dispatch. This flag is intentionally narrower than `BaseTile`'s `isInteractive` visual affordance: every pool tile can be dragged, so every pool tile remains visually interactive even when tapping is unavailable.
 
 **Callbacks not context.** PoolTile receives callbacks from Pool rather than calling `useGame()`. This keeps PoolTile testable without wrapping in a provider and avoids redundant context subscriptions per tile.
 
