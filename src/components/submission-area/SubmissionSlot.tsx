@@ -18,7 +18,7 @@ import styles from "./SubmissionSlot.module.css";
  * @property slot - The slot state (empty or filled with a tile).
  * @property slotIndex - Index of this slot in the submission array.
  * @property isSubmitting - SubmissionArea sets this while evaluating a guess; slot plays a pulse.
- * @property isReady - SubmissionArea sets this when the full submission is valid; adds a glow.
+ * @property isReady - SubmissionArea sets this when the full submission is valid.
  * @property onTap - Called when a filled slot is tapped; parent removes the tile.
  * @property onDropOnSlot - Called when a drag ends on another slot, with that slot's index.
  * @property onDropOnPool - Called when a drag ends over the pool; parent returns the tile.

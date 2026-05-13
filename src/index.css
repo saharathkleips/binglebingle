@@ -72,7 +72,6 @@ body {
   /* ── Semantic: Drag interaction ──────────────────────────────────────── */
   --color-drag-border: var(--palette-obangsaek-blue);
   --color-drag-bg: var(--palette-dancheong-pink);
-  --color-drag-glow: rgba(10, 10, 245, 0.28);
 
   /* ── Semantic: Game state ────────────────────────────────────────────── */
   --color-correct: var(--palette-obangsaek-green);
@@ -85,8 +84,6 @@ body {
   --color-tile-text: var(--palette-obangsaek-black);
   --color-tile-shadow: #1a1a1a;
   --color-tile-shadow-strong: rgba(0, 0, 0, 0.5);
-  --color-tile-glow: rgba(176, 224, 230, 0.28);
-  --color-tile-highlight-glow: rgba(224, 255, 255, 0.45);
 
   /* ── Tile tokens: x-small/minimum interactive tier ───────────────────── */
   --tile-hitbox-size: 44px;
@@ -97,7 +94,6 @@ body {
   --tile-font-size: 20px;
   --tile-shadow-step: 1px;
   --tile-shadow-depth: 3px;
-  --tile-glow-size: 10px;
   --history-min-visible-rows: 2.25;
   --pool-min-visible-rows: 6;
 
@@ -135,7 +131,6 @@ body {
     --tile-font-size: 22px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 4px;
-    --tile-glow-size: 12px;
     --pool-min-visible-rows: 6;
   }
 }
@@ -151,7 +146,6 @@ body {
     --tile-font-size: 26px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 5px;
-    --tile-glow-size: 14px;
     --pool-min-visible-rows: 5;
   }
 }
@@ -167,7 +161,6 @@ body {
     --tile-font-size: 30px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 6px;
-    --tile-glow-size: 16px;
     --pool-min-visible-rows: 4;
   }
 }
@@ -183,7 +176,6 @@ body {
     --tile-font-size: 34px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 7px;
-    --tile-glow-size: 18px;
     --pool-min-visible-rows: 4;
   }
 }

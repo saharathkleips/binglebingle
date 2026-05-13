@@ -30,13 +30,8 @@
   /* Marker class for submission-specific positioning inside the ghost placeholder. */
 }
 
-/* VIS-29: green glow when all slots are filled and the guess is valid. */
-.ready,
-.ready:hover {
-  box-shadow:
-    inset 0 0 0 2px var(--color-tile-text),
-    var(--tile-shadow-depth) var(--tile-shadow-depth) 0 0 var(--color-tile-text),
-    0 0 calc(var(--tile-glow-size) * 1.2) calc(var(--tile-glow-size) * 0.3) rgba(52, 118, 65, 0.35);
+.ready {
+  /* Marker class for submission readiness; no extra visual treatment. */
 }
 
 /*
@@ -68,18 +63,8 @@
 }
 
 /* Drop target highlights are set imperatively during drag. */
-.slot[data-drop-slot-target-active="true"][data-slot-state="empty"]::before,
-.slotGhost[data-drop-slot-target-active="true"][data-slot-state="empty"]::before {
+.slot[data-drop-slot-target-active="true"]::before,
+.slotGhost[data-drop-slot-target-active="true"]::before {
   border-color: var(--color-drag-border);
   background: var(--color-drag-bg);
-  box-shadow: 0 0 calc(var(--tile-glow-size) * 1.4) calc(var(--tile-glow-size) * 0.4)
-    var(--color-drag-glow);
-}
-
-.slot[data-drop-slot-target-active="true"][data-slot-state="filled"]::before,
-.slotGhost[data-drop-slot-target-active="true"][data-slot-state="filled"]::before {
-  border-color: var(--color-drag-border);
-  background: var(--color-drag-bg);
-  box-shadow: 0 0 calc(var(--tile-glow-size) * 1.4) calc(var(--tile-glow-size) * 0.4)
-    var(--color-drag-glow);
 }
