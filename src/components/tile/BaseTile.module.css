@@ -106,11 +106,12 @@
     mask-image: var(--tile-border-mask-image);
     mask-repeat: no-repeat;
     mask-position: center;
-    mask-size: calc(100% - var(--tile-border-padding));
+    mask-size: 100% 100%;
     -webkit-mask-image: var(--tile-border-mask-image);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
-    -webkit-mask-size: calc(100% - var(--tile-border-padding));
+    -webkit-mask-size: 100% 100%;
+    -webkit-mask-size: calc(100%);
   }
 }
 
