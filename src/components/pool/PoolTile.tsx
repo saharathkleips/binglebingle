@@ -192,16 +192,18 @@ export function PoolTile({
   }
 
   return (
-    <CharacterTile
-      character={tile.character}
-      className={isRejected ? (styles.shaking ?? "") : ""}
-      dataAttributes={{ "data-tile-id": tile.id }}
-      element="button"
-      isInteractive
-      onAnimationEnd={handleAnimationEnd}
-      testId={`tile-${tile.id}`}
-      ref={handleTileRef}
-    />
+    <div className={styles.cell}>
+      <CharacterTile
+        character={tile.character}
+        className={isRejected ? (styles.shaking ?? "") : ""}
+        dataAttributes={{ "data-tile-id": tile.id }}
+        element="button"
+        isInteractive
+        onAnimationEnd={handleAnimationEnd}
+        testId={`tile-${tile.id}`}
+        ref={handleTileRef}
+      />
+    </div>
   );
 }
 

@@ -30,7 +30,7 @@ pool/
 
 ### Pool
 
-Reads `state.pool` from `useGame()` and renders a `PoolTile` for each tile. The container reserves at least `--pool-min-visible-rows` rows for the current tile tier so history can grow without stealing the pool's expected visual footprint. Owns all interaction logic:
+Reads `state.pool` from `useGame()` and renders a `PoolTile` for each tile. The container wraps tiles into the available width and sizes from its actual content; if the viewport is too short after history and submission reserve their minimum space, the pool becomes the fallback scroll region. Owns all interaction logic:
 
 - **`handleTap(tile)`** — checks `getNextRotation` / `decompose` and dispatches `CHARACTER_ROTATE_NEXT` or `CHARACTER_DECOMPOSE`.
 - **`handleDropOnTile(sourceTile, targetId)`** — looks up the target tile, calls `compose()` to validate; dispatches `CHARACTER_COMPOSE` on success or sets `rejectedTileId` on failure.
@@ -75,6 +75,8 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. O
 **Callbacks not context.** PoolTile receives callbacks from Pool rather than calling `useGame()`. This keeps PoolTile testable without wrapping in a provider and avoids redundant context subscriptions per tile.
 
 **Pool positions are fixed by layout.** GSAP Draggable applies temporary transforms during an active drag only. A successful drop dispatches state changes; an invalid drag animates back to `x: 0, y: 0` and clears inline styles so the tile resumes its natural flex-layout position.
+
+**Pool height is content-first with short-height scroll fallback.** The pool does not reserve a configured row count. Width determines the number of wrapped columns, which determines the content height. Pool tiles sit inside square `--tile-hitbox-size` cells so wrapping matches the rotation-safe interaction footprint rather than the narrower visible card. In normal height tiers the game content does not shrink, so the full wrapped pool remains visible and history receives the leftover space. At `600px` height and below, game content and pool may shrink and the pool may scroll; below `600px`, history also drops to its compact minimum.
 
 **Drag state tracked in refs, not state.** Callback refs, the current tile id, and the last highlighted drop target use refs so Draggable callbacks stay current without re-rendering on every pointer movement.
 

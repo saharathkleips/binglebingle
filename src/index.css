@@ -88,14 +88,13 @@ body {
   /* ── Tile tokens: x-small/minimum interactive tier ───────────────────── */
   --tile-hitbox-size: 44px;
   --tile-gap: 4px;
-  --tile-submission-history-gap: 6px;
+  --tile-submission-history-gap: 4px;
   --tile-radius: 4px;
   --tile-border-padding: 1px;
   --tile-font-size: 20px;
   --tile-shadow-step: 1px;
   --tile-shadow-depth: 3px;
   --history-min-visible-rows: 2.25;
-  --pool-min-visible-rows: 6;
 
   /* ── Tile derived tokens ─────────────────────────────────────────────── */
   --tile-visual-long-edge: var(--tile-hitbox-size);
@@ -111,6 +110,9 @@ body {
   --space-md: 0.75rem;
   --space-lg: 2rem;
 
+  /* ── Viewport spacing ───────────────────────────────────────────────── */
+  --app-bottom-padding: max(var(--space-sm), env(safe-area-inset-bottom));
+
   /* ── General shape ──────────────────────────────────────────────────── */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
@@ -121,7 +123,7 @@ body {
 }
 
 /* Tile tier: small */
-@media (min-width: 390px) and (min-height: 700px) {
+@media (min-width: 390px) {
   :root {
     --tile-hitbox-size: 48px;
     --tile-gap: 5px;
@@ -131,12 +133,11 @@ body {
     --tile-font-size: 22px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 4px;
-    --pool-min-visible-rows: 6;
   }
 }
 
 /* Tile tier: medium */
-@media (min-width: 480px) and (min-height: 760px) {
+@media (min-width: 480px) {
   :root {
     --tile-hitbox-size: 56px;
     --tile-gap: 7px;
@@ -146,7 +147,6 @@ body {
     --tile-font-size: 26px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 5px;
-    --pool-min-visible-rows: 5;
   }
 }
 
@@ -161,7 +161,6 @@ body {
     --tile-font-size: 30px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 6px;
-    --pool-min-visible-rows: 4;
   }
 }
 
@@ -176,6 +175,12 @@ body {
     --tile-font-size: 34px;
     --tile-shadow-step: 1px;
     --tile-shadow-depth: 7px;
-    --pool-min-visible-rows: 4;
+  }
+}
+
+/* Height tier: compact */
+@media (max-height: 599px) {
+  :root {
+    --history-min-visible-rows: 1.25;
   }
 }

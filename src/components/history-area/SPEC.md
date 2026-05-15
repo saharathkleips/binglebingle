@@ -29,7 +29,7 @@ history-area/
 
 ### HistoryArea
 
-Reads `state.history` from `useGame()`. Returns `null` when history is empty. Renders one `<div>` row per `GuessRecord`, each containing a `HistoryTile` per `EvaluatedCharacter`. The container reserves at least `--history-min-visible-rows` rows, then flexes to show as much history as available space allows while scrolling overflow.
+Reads `state.history` from `useGame()`. Returns `null` when history is empty. Renders one `<div>` row per `GuessRecord`, each containing a `HistoryTile` per `EvaluatedCharacter`. The container reserves at least `--history-min-visible-rows` rows, then grows with submitted rows until the pool/submission content needs the remaining space; older history scrolls inside the history area after that point.
 
 ### HistoryTile
 
@@ -41,9 +41,9 @@ Receives a single `EvaluatedCharacter`. Renders `CharacterTile` when a character
 
 **HistoryArea returns null, not an empty container.** An empty `<div>` would occupy layout space before any guesses are made. Returning `null` keeps the layout clean on the first turn.
 
-**History has a minimum, not a fixed maximum.** `--history-min-visible-rows` preserves the minimum history affordance, but the area can grow when the pool and submission regions leave extra vertical space.
+**History has a minimum, not a fixed maximum.** `--history-min-visible-rows` preserves the minimum history affordance, but the area can grow with actual submitted rows when vertical space is available. The history flex item uses its content as the basis and may shrink, so the full pool/submission content keeps priority in normal height tiers while older guesses scroll inside history when space runs out. At `600px` height and below, history is capped at its minimum so the pool gets the remaining short-height space before it scrolls.
 
-**Rows anchor to the submission edge.** The first row receives `margin-block-start: auto`, which pushes short history stacks to the bottom of the history area. New guesses therefore appear next to the submission area and visually push older guesses upward; once the area overflows, `HistoryArea` auto-scrolls to the newest row.
+**Rows anchor to the top.** Short history stacks start at the top of the game area. New guesses therefore increase the history area's content height and push submission/pool downward until the layout reaches its available vertical space; after that, the history area scrolls to keep the newest row visible.
 
 **History scrolling snaps by row.** The scroll container uses vertical scroll snap and each row snaps on its block-end edge. This keeps manual review feeling row-by-row instead of free-scrolling between partial guesses while preserving chronological DOM order for accessibility.
 

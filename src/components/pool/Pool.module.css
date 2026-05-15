@@ -1,14 +1,18 @@
 .pool {
-  flex: 1 1 0;
+  flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
   justify-content: center;
   gap: var(--tile-gap);
+  min-height: 0;
   padding: var(--tile-gap);
-  overflow-y: auto;
-  min-height: calc(
-    var(--pool-min-visible-rows) * var(--tile-hitbox-size) + (var(--pool-min-visible-rows) + 1) *
-      var(--tile-gap)
-  );
+  overflow-y: visible;
+}
+
+@media (max-height: 600px) {
+  .pool {
+    flex: 1 1 0;
+    overflow-y: auto;
+  }
 }

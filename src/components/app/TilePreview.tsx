@@ -1,8 +1,16 @@
-import { useEffect, useRef } from "react";
-import { NavBar } from "../nav-bar/NavBar";
+import { GameProvider } from "../../context/game/GameContext";
+import type { GameState } from "../../context/game";
+import { character } from "../../lib/character";
+import type { Character } from "../../lib/character";
+import { CHOSEONG_INDEX, JONGSEONG_INDEX, JUNGSEONG_INDEX } from "../../lib/jamo";
+import type { Jamo } from "../../lib/jamo";
 import type { CharacterResult } from "../../lib/engine";
-import { BaseTile } from "../tile/BaseTile";
-import styles from "./TilePreview.module.css";
+import { createWord } from "../../lib/word";
+import { HistoryArea } from "../history-area/HistoryArea";
+import { NavBar } from "../nav-bar/NavBar";
+import { Pool } from "../pool/Pool";
+import { SubmissionArea } from "../submission-area/SubmissionArea";
+import styles from "./App.module.css";
 
 const HISTORY_PREVIEW_ROWS = [
   [
@@ -41,9 +49,17 @@ const HISTORY_PREVIEW_ROWS = [
     { tile: "ㅖ", result: "CORRECT" },
     { tile: "ㅆ", result: "CORRECT" },
   ],
-] as const satisfies readonly (readonly { tile: string; result: CharacterResult }[])[];
+] as const satisfies readonly (readonly { tile: Jamo; result: CharacterResult }[])[];
 
-const SUBMISSION_PREVIEW_TILES = ["ㄱ", "ㅏ", "ㄴ", "ㄷ", "ㅓ", "ㄹ", "ㅁ"] as const;
+const SUBMISSION_PREVIEW_TILES = [
+  "ㄱ",
+  "ㅏ",
+  "ㄴ",
+  "ㄷ",
+  "ㅓ",
+  "ㄹ",
+  "ㅁ",
+] as const satisfies readonly Jamo[];
 
 const POOL_PREVIEW_TILES = [
   "ㄱ",
@@ -88,64 +104,60 @@ const POOL_PREVIEW_TILES = [
   "ㅢ",
   "ㄳ",
   "ㄵ",
-] as const;
+] as const satisfies readonly Jamo[];
+
+const PREVIEW_TARGET_WORD = createRequiredWord("가나다라마바사");
+const PREVIEW_STATE: GameState = {
+  targetWord: PREVIEW_TARGET_WORD,
+  history: HISTORY_PREVIEW_ROWS.map((row) =>
+    row.map(({ tile, result }) => ({ character: createPreviewCharacter(tile), result })),
+  ),
+  submission: SUBMISSION_PREVIEW_TILES.map((tile, index) => ({
+    state: "FILLED",
+    tileId: index,
+    character: createPreviewCharacter(tile),
+  })),
+  pool: POOL_PREVIEW_TILES.map((tile, index) => ({
+    id: index + SUBMISSION_PREVIEW_TILES.length,
+    character: createPreviewCharacter(tile),
+  })),
+};
 
 export function TilePreview() {
-  const historyAreaRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (historyAreaRef.current !== null) {
-      historyAreaRef.current.scrollTop = historyAreaRef.current.scrollHeight;
-    }
-  }, []);
-
   return (
-    <div className={styles.preview} data-testid="tile-preview-frame">
-      <NavBar onToggleInstructions={handleNoop} isInstructionsOpen={false} />
-      <main className={styles.gameArea}>
-        <section
-          ref={historyAreaRef}
-          className={styles.historyArea}
-          aria-label="Preview history area"
-        >
-          {HISTORY_PREVIEW_ROWS.map((row, rowIndex) => (
-            <div className={styles.historyRow} key={`history-${rowIndex}`}>
-              {row.map(({ tile, result }, tileIndex) => (
-                <BaseTile result={result} key={`${tile}-${tileIndex}`}>
-                  {tile}
-                </BaseTile>
-              ))}
+    <GameProvider initialState={PREVIEW_STATE}>
+      <div className={styles.app} data-testid="tile-preview-frame">
+        <div className={styles.gameShell}>
+          <NavBar onToggleInstructions={handleNoop} isInstructionsOpen={false} />
+          <div className={styles.gameArea}>
+            <HistoryArea />
+            <div className={styles.gameContent}>
+              <SubmissionArea />
+              <Pool />
             </div>
-          ))}
-        </section>
-
-        <div className={styles.gameContent}>
-          <section className={styles.submissionArea} aria-label="Preview submission area">
-            <div className={styles.submissionSlots}>
-              {SUBMISSION_PREVIEW_TILES.map((tile, index) => (
-                <div className={styles.submissionSlot} key={`${tile}-${index}`}>
-                  <BaseTile>{tile}</BaseTile>
-                </div>
-              ))}
-            </div>
-            <button className={styles.submissionButton} type="button">
-              Submit
-            </button>
-          </section>
-
-          <section className={styles.pool} aria-label="Preview pool with maximum tile count">
-            {POOL_PREVIEW_TILES.map((tile, index) => (
-              <div className={styles.poolCell} key={`${tile}-${index}`}>
-                <BaseTile element="button" isInteractive>
-                  {tile}
-                </BaseTile>
-              </div>
-            ))}
-          </section>
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </GameProvider>
   );
+}
+
+function createPreviewCharacter(jamo: Jamo): Character {
+  if (jamo in JUNGSEONG_INDEX) return requireCharacter(character({ jungseong: jamo }));
+  if (jamo in CHOSEONG_INDEX) return requireCharacter(character({ choseong: jamo }));
+  if (jamo in JONGSEONG_INDEX) return requireCharacter(character({ jongseong: jamo }));
+  throw new Error(`Unsupported preview jamo: ${jamo}`);
+}
+
+function requireCharacter(value: Character | null): Character {
+  if (value === null) throw new Error("Invalid preview character");
+  return value;
+}
+
+function createRequiredWord(word: string) {
+  const createdWord = createWord(word);
+  if (createdWord === null) throw new Error(`Invalid preview target word: ${word}`);
+  return createdWord;
 }
 
 function handleNoop() {

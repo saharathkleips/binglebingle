@@ -20,7 +20,6 @@ app/
 ├── App.module.css
 ├── App.test.tsx
 ├── TilePreview.tsx
-├── TilePreview.module.css
 ├── README.md
 └── SPEC.md
 ```
@@ -54,7 +53,7 @@ Dev settings live in `App` local state; dev panel accessible via `?dev=1` URL pa
 
 **Tile preview:**
 
-`?tilePreview=1` renders a manual preview screen instead of the game shell. It uses an iframe whose `width` and `height` attributes are changed by breakpoint buttons, so the existing viewport media queries in `src/index.css` are exercised without resizing the browser. `?tilePreview=frame` renders `TilePreview`, a static full-app mock with four evaluated history rows, seven submission slots, and a worst-case 42-tile pool. The mock avoids `GameProvider` and interaction hooks so visual iteration stays isolated from gameplay behavior.
+`?tilePreview=1` renders a manual preview screen instead of the game shell. It uses an iframe whose `width` and `height` attributes are changed by breakpoint buttons, so the existing viewport media queries in `src/index.css` are exercised without resizing the browser. `?tilePreview=frame` renders `TilePreview`, a deterministic game-context preview with four evaluated history rows, seven submission slots, and a worst-case 42-tile pool. The preview mounts the real game layout and surface components (`HistoryArea`, `SubmissionArea`, and `Pool`) so breakpoint iteration stays aligned with the actual app.
 
 ## Key Decisions
 
@@ -62,9 +61,9 @@ Dev settings live in `App` local state; dev panel accessible via `?dev=1` URL pa
 
 **`setupGame()` called on mount.** The async puzzle fetch starts immediately; `InstructionsScreen` covers the load time so the player never sees a blank game state.
 
-**Always render the game shell.** The app keeps the minimum `44px` tile hitbox as the default token set and relies on flex layout to use whatever viewport space is available. This avoids rejecting narrow-but-tall or short-but-wide screens that can still be playable; if content clips, it clips naturally rather than being blocked by an unsupported screen.
+**Always render the game shell.** The app keeps the minimum `44px` tile hitbox as the default token set and relies on flex layout to use whatever viewport space is available. In normal height tiers, game content is content-sized so submission and the full wrapped pool remain visible while history receives leftover space. At `600px` height and below, game content may shrink and the pool becomes the fallback scroll region; below `600px`, history also drops to its compact minimum. The shell reserves bottom padding with `--app-bottom-padding`, including `env(safe-area-inset-bottom)`, so the pool does not sit flush against mobile browser/system UI. This avoids rejecting narrow-but-tall or short-but-wide screens that can still be playable; if content clips, it clips naturally rather than being blocked by an unsupported screen.
 
-**Tile preview is an iframe, not a fake token override.** The preview screen changes iframe dimensions instead of setting CSS variables or data attributes. This keeps manual iteration honest: the same viewport media queries select tile tiers in preview and in the real game. The iframe content mirrors the full app layout but uses static visual data, including mixed history results and the maximum pool tile count, to keep the preview deterministic and lightweight.
+**Tile preview is an iframe, not a fake token override.** The preview screen changes iframe dimensions instead of setting CSS variables or data attributes. This keeps manual iteration honest: the same viewport media queries select tile tiers in preview and in the real game. The iframe content uses the same app layout classes and mounts real game components with a deterministic preview `GameState`, including mixed history results and the maximum pool tile count.
 
 ## Open Questions
 
