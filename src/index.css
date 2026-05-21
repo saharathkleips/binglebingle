@@ -6,6 +6,7 @@
 
 body {
   margin: 0;
+  background: var(--color-app-background);
 }
 
 :root {
@@ -52,14 +53,20 @@ body {
   --palette-najeon-gray-cloud-slate: #e2e8f0;
   --palette-najeon-gray-silver: #e5e5e5;
 
+  /* ── Palette: Cream backgrounds ──────────────────────────────────────── */
+  --palette-rice-paper: #fbf7ef;
+
   /* ── Palette: Neutral ────────────────────────────────────────────────── */
   --palette-neutral-100: #f2f2f2;
   --palette-neutral-300: #bdbdbd;
   --palette-neutral-500: #808080;
   --palette-neutral-700: #4d4d4d;
 
+  /* ── Semantic: App background ────────────────────────────────────────── */
+  --color-app-background: var(--palette-rice-paper);
+
   /* ── Semantic: Surface ───────────────────────────────────────────────── */
-  --color-surface: var(--palette-obangsaek-white);
+  --color-surface: var(--palette-rice-paper);
   --color-surface-active: var(--palette-dancheong-yellow);
   --color-surface-empty: #fafafa;
 
@@ -82,8 +89,8 @@ body {
   /* ── Semantic: Tile face ─────────────────────────────────────────────── */
   --color-tile-face: var(--palette-obangsaek-black);
   --color-tile-text: var(--palette-obangsaek-black);
-  --color-tile-shadow: #1a1a1a;
-  --color-tile-shadow-strong: rgba(0, 0, 0, 0.5);
+  --color-tile-depth: #1a1a1a;
+  --color-tile-shadow: rgba(0, 0, 0, 0.5);
 
   /* ── Tile tokens: x-small/minimum interactive tier ───────────────────── */
   --tile-hitbox-size: 44px;
@@ -92,18 +99,27 @@ body {
   --tile-radius: 4px;
   --tile-border-padding: 1px;
   --tile-font-size: 20px;
-  --tile-shadow-step: 1px;
-  --tile-shadow-depth: 3px;
+  --tile-depth-step: 1px;
+  --tile-depth: 3px;
   --history-min-visible-rows: 2.25;
 
   /* ── Tile derived tokens ─────────────────────────────────────────────── */
   --tile-visual-long-edge: var(--tile-hitbox-size);
   --tile-visual-short-edge: calc(var(--tile-hitbox-size) * 2 / 3);
-  --tile-shadow-stack:
-    var(--tile-shadow-step) var(--tile-shadow-step) 0 var(--color-tile-shadow),
-    calc(var(--tile-shadow-step) * 2) calc(var(--tile-shadow-step) * 2) 0 var(--color-tile-shadow),
-    calc(var(--tile-shadow-step) * 3) calc(var(--tile-shadow-step) * 3) 0 var(--color-tile-shadow),
-    var(--tile-shadow-depth) var(--tile-shadow-depth) 0 var(--color-tile-shadow-strong);
+  --tile-depth-stack:
+    var(--tile-depth-step) var(--tile-depth-step) 0 var(--color-tile-depth),
+    calc(var(--tile-depth-step) * 2) calc(var(--tile-depth-step) * 2) 0 var(--color-tile-depth),
+    calc(var(--tile-depth-step) * 3) calc(var(--tile-depth-step) * 3) 0 var(--color-tile-depth);
+  --tile-cast-shadow: var(--tile-depth) var(--tile-depth) 0 var(--color-tile-shadow);
+  --tile-lift-distance: calc(var(--tile-depth-step) * 3);
+  --tile-cast-shadow-growth: var(--tile-depth-step);
+  --tile-cast-shadow-lifted: calc(
+      var(--tile-depth) + var(--tile-lift-distance) + var(--tile-cast-shadow-growth)
+    )
+    calc(var(--tile-depth) + var(--tile-lift-distance) + var(--tile-cast-shadow-growth)) 0
+    var(--color-tile-shadow);
+  --tile-shadow-stack: var(--tile-depth-stack), var(--tile-cast-shadow);
+  --tile-shadow-stack-lifted: var(--tile-depth-stack), var(--tile-cast-shadow-lifted);
 
   /* ── General spacing ────────────────────────────────────────────────── */
   --space-sm: 0.5rem;
@@ -131,8 +147,8 @@ body {
     --tile-radius: 5px;
     --tile-border-padding: 1px;
     --tile-font-size: 22px;
-    --tile-shadow-step: 1px;
-    --tile-shadow-depth: 4px;
+    --tile-depth-step: 1px;
+    --tile-depth: 4px;
   }
 }
 
@@ -145,8 +161,8 @@ body {
     --tile-radius: 6px;
     --tile-border-padding: 1.25px;
     --tile-font-size: 26px;
-    --tile-shadow-step: 1px;
-    --tile-shadow-depth: 5px;
+    --tile-depth-step: 1px;
+    --tile-depth: 5px;
   }
 }
 
@@ -159,8 +175,8 @@ body {
     --tile-radius: 7px;
     --tile-border-padding: 1.5px;
     --tile-font-size: 30px;
-    --tile-shadow-step: 1px;
-    --tile-shadow-depth: 6px;
+    --tile-depth-step: 1px;
+    --tile-depth: 6px;
   }
 }
 
@@ -173,8 +189,8 @@ body {
     --tile-radius: 8px;
     --tile-border-padding: 2px;
     --tile-font-size: 34px;
-    --tile-shadow-step: 1px;
-    --tile-shadow-depth: 7px;
+    --tile-depth-step: 1px;
+    --tile-depth: 7px;
   }
 }
 

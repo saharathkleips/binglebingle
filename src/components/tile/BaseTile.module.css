@@ -6,6 +6,8 @@
   --tile-gradient-5: var(--palette-najeon-iridescent-mint);
 
   position: relative;
+  top: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,6 +19,10 @@
   background: var(--color-tile-face);
   box-shadow: var(--tile-shadow-stack);
   cursor: default;
+  transition:
+    box-shadow 140ms ease,
+    top 140ms ease,
+    left 140ms ease;
   font: inherit;
   font-family: var(--font-family-ui);
   font-size: var(--tile-font-size);
@@ -60,6 +66,12 @@
     cursor: pointer;
     /* touch-action:none allows pointer capture for drag on touch devices. */
     touch-action: none;
+  }
+
+  &[data-tile-interactive="true"]:is(:hover, :focus-visible) {
+    top: calc(var(--tile-lift-distance) * -1.25);
+    left: calc(var(--tile-lift-distance) * -1.25);
+    box-shadow: var(--tile-shadow-stack-lifted);
   }
 
   &[data-tile-interactive="true"]:hover > [data-tile-border] {

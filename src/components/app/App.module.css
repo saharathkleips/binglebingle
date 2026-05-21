@@ -1,6 +1,7 @@
 .app {
   height: 100dvh;
   overflow: hidden;
+  background: var(--color-app-background);
 }
 
 .gameShell {
