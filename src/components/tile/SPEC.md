@@ -150,3 +150,5 @@ Rules:
 **CSS classes are reserved for the public styling hook.** `BaseTile` keeps the CSS Module class on the root element so callers can compose layout classes predictably, while internal visual state and child roles use `data-tile-*` attributes. This keeps the stylesheet readable with nested selectors and avoids exporting class names for implementation-only spans or same-element variants.
 
 **Hover lift moves only the visual surface.** The root element remains the stable pointer target, while the internal `data-tile-surface` span receives the hover/focus transform and lifted shadow. Moving the same element that owns `:hover` can make edge hover unstable because the tile leaves and re-enters the pointer hit area during the transition.
+
+**Drop-target feedback reuses tile-owned data attributes.** Feature modules imperatively set `data-drop-pool-target-active` or `data-drop-slot-target-active` during GSAP drag hit-testing, but `BaseTile.module.css` owns the shared target shimmer. This keeps drag semantics in the feature modules while avoiding duplicated target visuals for pool tiles and filled submission slots.
