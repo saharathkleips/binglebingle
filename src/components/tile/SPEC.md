@@ -148,3 +148,5 @@ Rules:
 **BaseTile is not the hitbox.** The visual card derives from `--tile-visual-short-edge` and `--tile-visual-long-edge`; square `--tile-hitbox-size` wrappers belong to consuming regions that need interaction cells or rotation-safe pool footprints.
 
 **CSS classes are reserved for the public styling hook.** `BaseTile` keeps the CSS Module class on the root element so callers can compose layout classes predictably, while internal visual state and child roles use `data-tile-*` attributes. This keeps the stylesheet readable with nested selectors and avoids exporting class names for implementation-only spans or same-element variants.
+
+**Hover lift moves only the visual surface.** The root element remains the stable pointer target, while the internal `data-tile-surface` span receives the hover/focus transform and lifted shadow. Moving the same element that owns `:hover` can make edge hover unstable because the tile leaves and re-enters the pointer hit area during the transition.

@@ -88,10 +88,10 @@ export function BaseTile(props: BaseTileProps) {
     onAnimationEnd,
   };
   const contents = (
-    <>
+    <span data-tile-surface>
       <span data-tile-text>{children}</span>
       <LightningBorder />
-    </>
+    </span>
   );
 
   if (props.element === "button") {
