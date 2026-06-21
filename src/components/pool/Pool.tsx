@@ -8,6 +8,7 @@
 
 import { useState, useLayoutEffect, useRef } from "react";
 import { useGame } from "../../context/game/GameContext";
+import { resolveCharacter } from "../../lib/character";
 import { getNextRotation } from "../../lib/character/rotation";
 import { decompose, compose } from "../../lib/character/composition";
 import { PoolTile } from "./PoolTile";
@@ -69,11 +70,16 @@ export function Pool() {
     // Slots always accept a tile.
     if (target.hasAttribute("data-slot-index")) return true;
     // Tiles only accept if compose() would succeed.
+    return getDropPreview(sourceTile, target) !== null;
+  }
+
+  function getDropPreview(sourceTile: TileType, target: Element): string | null {
     const targetIdStr = target.getAttribute("data-tile-id");
-    if (targetIdStr === null) return false;
+    if (targetIdStr === null) return null;
     const targetTile = state.pool.find((tile) => tile.id === parseInt(targetIdStr, 10));
-    if (targetTile === undefined) return false;
-    return compose(targetTile.character, sourceTile.character) !== null;
+    if (targetTile === undefined) return null;
+    const combined = compose(targetTile.character, sourceTile.character);
+    return combined === null ? null : resolveCharacter(combined);
   }
 
   return (
@@ -94,6 +100,7 @@ export function Pool() {
             onDropOnTile={(targetId) => handleDropOnTile(tile, targetId)}
             onDropOnSlot={(slotIndex) => handleDropOnSlot(tile, slotIndex)}
             canDropOnTarget={(target) => canDropOnTarget(tile, target)}
+            getDropPreview={(target) => getDropPreview(tile, target)}
             onRejectedEnd={() =>
               setRejectedTileIds((prev) => {
                 const next = new Set(prev);

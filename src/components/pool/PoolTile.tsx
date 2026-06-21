@@ -36,6 +36,7 @@ import styles from "./PoolTile.module.css";
  * @property onDropOnTile - Called when a drag ends on another tile, with that tile's id.
  * @property onDropOnSlot - Called when a drag ends on a submission slot, with that slot's index.
  * @property canDropOnTarget - Optional predicate; returns true if dropping on the given element will actually do something. Used to gate the "can drop" visual on the dragging tile.
+ * @property getDropPreview - Optional callback returning preview text for the current valid drop target.
  * @property onRejectedEnd - Called from onAnimationEnd; Pool uses this to clear the rejected state.
  * @property onRotatingEnd - Called after the rotate squeeze completes; Pool clears rotatingTileId.
  * @property onComposedEnd - Called after the compose heartbeat completes; Pool clears composedTileId.
@@ -52,6 +53,7 @@ export type PoolTileProps = {
   onDropOnTile: (targetId: number) => void;
   onDropOnSlot: (slotIndex: number) => void;
   canDropOnTarget?: (target: Element) => boolean;
+  getDropPreview?: (target: Element) => string | null;
   onRejectedEnd: () => void;
   onRotatingEnd?: () => void;
   onComposedEnd?: () => void;
@@ -75,6 +77,7 @@ export function PoolTile({
   onDropOnTile,
   onDropOnSlot,
   canDropOnTarget,
+  getDropPreview,
   onRejectedEnd,
   onRotatingEnd,
   onComposedEnd,
@@ -84,8 +87,22 @@ export function PoolTile({
   const lastOverRef = useRef<Element | null>(null);
 
   // Refs hold latest prop values so Draggable callbacks never go stale.
-  const callbacksRef = useRef({ isTappable, onTap, onDropOnTile, onDropOnSlot, canDropOnTarget });
-  callbacksRef.current = { isTappable, onTap, onDropOnTile, onDropOnSlot, canDropOnTarget };
+  const callbacksRef = useRef({
+    isTappable,
+    onTap,
+    onDropOnTile,
+    onDropOnSlot,
+    canDropOnTarget,
+    getDropPreview,
+  });
+  callbacksRef.current = {
+    isTappable,
+    onTap,
+    onDropOnTile,
+    onDropOnSlot,
+    canDropOnTarget,
+    getDropPreview,
+  };
   const tileIdRef = useRef(tile.id);
   tileIdRef.current = tile.id;
 
@@ -120,15 +137,18 @@ export function PoolTile({
           if (lastOverRef.current !== null && lastOverRef.current !== dropTarget) {
             removeDropTargetActiveAttribute(lastOverRef.current);
           }
-          const { canDropOnTarget: canDrop } = callbacksRef.current;
+          const { canDropOnTarget: canDrop, getDropPreview: getPreview } = callbacksRef.current;
           const isValidDrop = dropTarget !== null && (canDrop === undefined || canDrop(dropTarget));
+          const sourceElement = this.target as HTMLElement;
           if (isValidDrop && dropTarget !== null) {
             setDropTargetActiveAttribute(dropTarget);
+            setDropPreviewAttribute(sourceElement, getPreview?.(dropTarget) ?? null);
           }
           if (isValidDrop) {
-            (this.target as HTMLElement).setAttribute("data-drop-source-active", "true");
+            sourceElement.setAttribute("data-drop-source-active", "true");
           } else {
-            (this.target as HTMLElement).removeAttribute("data-drop-source-active");
+            sourceElement.removeAttribute("data-drop-source-active");
+            clearDropPreviewAttribute(sourceElement);
           }
           lastOverRef.current = dropTarget;
         },
@@ -137,6 +157,7 @@ export function PoolTile({
           if (lastOverRef.current !== null) removeDropTargetActiveAttribute(lastOverRef.current);
           lastOverRef.current = null;
           (this.target as HTMLElement).removeAttribute("data-drop-source-active");
+          clearDropPreviewAttribute(this.target as HTMLElement);
 
           const poolEl = document.querySelector('[data-testid="pool"]') as HTMLElement | null;
 
@@ -232,6 +253,7 @@ function setDropTargetActiveAttribute(element: Element) {
 
 function removeDropTargetActiveAttribute(element: Element) {
   DROP_TARGET_ACTIVE_ATTRIBUTES.forEach((attribute) => element.removeAttribute(attribute));
+  element.removeAttribute("data-drop-preview");
 }
 
 function getDropTargetActiveAttribute(element: Element) {
@@ -244,3 +266,32 @@ const DROP_TARGET_ACTIVE_ATTRIBUTES = [
   "data-drop-pool-target-active",
   "data-drop-slot-target-active",
 ];
+
+function setDropPreviewAttribute(element: Element, preview: string | null) {
+  if (!(element instanceof HTMLElement)) return;
+  const textElement = element.querySelector("[data-tile-text]");
+  if (!(textElement instanceof HTMLElement)) return;
+
+  if (!element.hasAttribute("data-drop-original-text")) {
+    element.setAttribute("data-drop-original-text", textElement.textContent ?? "");
+  }
+
+  if (preview === null) {
+    clearDropPreviewAttribute(element);
+    return;
+  }
+
+  textElement.textContent = preview;
+  element.setAttribute("data-drop-preview", preview);
+}
+
+function clearDropPreviewAttribute(element: Element) {
+  if (!(element instanceof HTMLElement)) return;
+  const originalText = element.getAttribute("data-drop-original-text");
+  const textElement = element.querySelector("[data-tile-text]");
+  if (originalText !== null && textElement instanceof HTMLElement) {
+    textElement.textContent = originalText;
+  }
+  element.removeAttribute("data-drop-preview");
+  element.removeAttribute("data-drop-original-text");
+}

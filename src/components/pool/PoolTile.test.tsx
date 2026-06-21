@@ -174,6 +174,41 @@ describe("PoolTile drag", () => {
     expect(onDropOnTile).not.toHaveBeenCalled();
   });
 
+  it("sets merge preview text on the dragged tile during a valid pool tile hover", async () => {
+    const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
+    const screen = await render(
+      <div style={{ display: "flex", gap: "100px" }}>
+        <PoolTile {...tileProps({ getDropPreview: () => "가" })} />
+        <PoolTile
+          tile={targetTile}
+          isTappable={false}
+          isRejected={false}
+          onTap={vi.fn()}
+          onDropOnTile={vi.fn()}
+          onDropOnSlot={vi.fn()}
+          onRejectedEnd={vi.fn()}
+        />
+      </div>,
+    );
+    const tileElement = screen.getByTestId("tile-0").element();
+    const targetRect = screen.getByTestId("tile-1").element().getBoundingClientRect();
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
+
+    dragSequence(tileElement, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
+    ]);
+
+    await expect.element(screen.getByTestId("tile-0")).toHaveAttribute("data-drop-preview", "가");
+    await expect.element(screen.getByTestId("tile-0")).toHaveTextContent("가");
+
+    dragSequence(tileElement, [{ type: "pointerup", clientX: targetCenterX, clientY: targetCenterY }]);
+    await expect.element(screen.getByTestId("tile-0")).not.toHaveAttribute("data-drop-preview");
+    await expect.element(screen.getByTestId("tile-0")).toHaveTextContent("ㄱ");
+  });
+
   it("highlights empty slot drop target during drag", async () => {
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
