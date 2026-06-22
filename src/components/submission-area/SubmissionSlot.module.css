@@ -9,21 +9,32 @@
   padding: 0;
   border: 0;
   background: transparent;
+  color: var(--color-border);
   font-size: var(--tile-font-size);
   user-select: none;
 }
 
-.slot::before {
-  content: "";
+.slotFrame {
+  --submission-slot-frame-offset-x: calc(var(--tile-depth) * 0.5);
+  --submission-slot-frame-offset-y: calc(var(--tile-depth) * 0.5);
+
+  display: block;
   width: var(--tile-visual-short-edge);
   height: var(--tile-visual-long-edge);
-  border: max(2px, calc(var(--tile-border-padding) * 2)) solid var(--color-border);
-  border-radius: var(--tile-radius);
+  flex: none;
+  pointer-events: none;
+  transform: translate(
+    var(--submission-slot-frame-offset-x),
+    var(--submission-slot-frame-offset-y)
+  );
 }
 
-.empty::before {
-  border-style: dashed;
-  background: var(--color-surface-empty);
+.slotFrame path {
+  stroke: currentColor;
+}
+
+.empty {
+  color: var(--color-border);
 }
 
 .filled {
@@ -46,16 +57,11 @@
   justify-content: center;
   width: var(--tile-visual-short-edge);
   height: var(--tile-hitbox-size);
+  color: var(--color-border);
 }
 
-.slotGhost::before {
-  content: "";
+.slotGhost > .slotFrame {
   position: absolute;
-  width: var(--tile-visual-short-edge);
-  height: var(--tile-visual-long-edge);
-  border: max(2px, calc(var(--tile-border-padding) * 2)) dashed var(--color-border);
-  border-radius: var(--tile-radius);
-  background: var(--color-surface-empty);
 }
 
 .slotGhost .filled {
@@ -63,8 +69,7 @@
 }
 
 /* Drop target highlights are set imperatively during drag. */
-.slot[data-drop-slot-target-active="true"]::before,
-.slotGhost[data-drop-slot-target-active="true"]::before {
-  border-color: var(--color-drag-border);
-  background: var(--color-drag-bg);
+.slot[data-drop-slot-target-active="true"],
+.slotGhost[data-drop-slot-target-active="true"] {
+  color: var(--color-drag-border);
 }

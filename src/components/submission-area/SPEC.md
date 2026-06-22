@@ -19,7 +19,8 @@ submission-area/
 ├── SubmissionArea.tsx              # Container — maps slots + submit button
 ├── SubmissionArea.module.css       # Flex layout for slots row
 ├── SubmissionSlot.tsx              # Single slot — empty or filled
-├── SubmissionSlot.module.css       # Slot styling (dashed empty, solid filled)
+├── SubmissionSlot.module.css       # Slot styling (frame-shaped empty/ghost placeholders, filled positioning)
+├── frame.svg                       # Editable frame asset used as the slot placeholder CSS mask
 ├── SubmissionButton.tsx            # Validates and dispatches submit
 ├── SubmissionArea.test.tsx
 ├── SubmissionSlot.test.tsx
@@ -36,7 +37,7 @@ Reads `state.submission` from `useGame()` and renders a `SubmissionSlot` for eac
 
 ### SubmissionSlot
 
-Renders a single slot. Empty slots show a dashed placeholder. Filled slots render `CharacterTile` for shared display and dispatch `SUBMISSION_SLOT_REMOVE` on tap.
+Renders a single slot. Empty slots show a frame-shaped placeholder from `frame.svg`. Filled slots render `CharacterTile` for shared display and dispatch `SUBMISSION_SLOT_REMOVE` on tap.
 
 Filled slots also act as drag sources: dragging a filled slot onto another slot dispatches `SUBMISSION_SLOT_MOVE`, swapping the two tiles (or moving into an empty slot). A 4px movement threshold distinguishes tap from drag, matching Tile's behavior. Drop targets are identified by `data-slot-index`; the slot never drops onto itself.
 
@@ -51,3 +52,5 @@ Calls `canSubmit(submission)` to determine validity. Disabled when invalid; disp
 **Callbacks over dispatch in SubmissionSlot.** Mirrors the Tile/Pool boundary — SubmissionSlot owns pointer/drag mechanics and surfaces semantic callbacks (`onTap`, `onDropOnSlot`); SubmissionArea translates those into dispatch calls. Keeps SubmissionSlot testable with plain function spies and free of game-action knowledge.
 
 **canSubmit gates the button, not placement.** Incomplete characters can be placed in slots per the game spec; validation only happens at submit time.
+
+**Render the slot frame as inline SVG.** The placeholder frame remains in `frame.svg` so vector tools can edit it directly, while `SubmissionSlot` imports it as an SVG component. The CSS sets the path stroke to `currentColor`, keeping the frame recolorable through design tokens for default and drag-target states without masking artifacts. The frame is offset half the tile depth down and right so the tile face can stay centered while the bottom-right tile depth visually sits on the slot.

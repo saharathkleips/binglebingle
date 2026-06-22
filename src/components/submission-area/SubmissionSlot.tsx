@@ -12,6 +12,7 @@ import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
 import { CharacterTile } from "../tile/CharacterTile";
 import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
 import type { SubmissionSlot as SubmissionSlotType } from "../../context/game";
+import Frame from "./frame.svg?react";
 import styles from "./SubmissionSlot.module.css";
 
 /**
@@ -164,6 +165,7 @@ export function SubmissionSlot({
   }, [isSubmitting, isFilled]);
 
   const filledClassName = clsx(styles.filled, isReady && styles.ready);
+  const slotFrame = <Frame aria-hidden="true" className={styles.slotFrame} />;
 
   const button = isFilled ? (
     <CharacterTile
@@ -183,7 +185,9 @@ export function SubmissionSlot({
       data-testid={`slot-${slotIndex}`}
       data-slot-index={slotIndex}
       data-slot-state="empty"
-    />
+    >
+      {slotFrame}
+    </button>
   );
 
   // When filled, wrap in a ghost div that stays at the original slot position
@@ -191,7 +195,12 @@ export function SubmissionSlot({
   // so there is always a visible indicator of where the slot is.
   if (isFilled) {
     return (
-      <div className={styles.slotGhost} data-slot-index={slotIndex} data-slot-state="filled">
+      <div
+        className={styles.slotGhost}
+        data-slot-index={slotIndex}
+        data-slot-state="filled"
+      >
+        {slotFrame}
         {button}
       </div>
     );
@@ -203,7 +212,6 @@ export function SubmissionSlot({
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
 /**
  * Finds the first slot-eligible drop target from a hit list, skipping the
  * dragging slot itself.
