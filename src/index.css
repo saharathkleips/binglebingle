@@ -71,7 +71,7 @@ body {
   --color-surface-empty: #fafafa;
 
   /* ── Semantic: Border ────────────────────────────────────────────────── */
-  --color-border: var(--palette-dancheong-blue);
+  --color-border: black;
 
   /* ── Semantic: Text ──────────────────────────────────────────────────── */
   --color-text-muted: var(--palette-dancheong-blue);

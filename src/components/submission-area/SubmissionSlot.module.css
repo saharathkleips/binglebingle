@@ -14,22 +14,35 @@
   user-select: none;
 }
 
-.slotFrame {
-  --submission-slot-frame-offset-x: calc(var(--tile-depth) * 0.5);
-  --submission-slot-frame-offset-y: calc(var(--tile-depth) * 0.5);
+.slotPlaceholder {
+  --submission-slot-placeholder-offset-x: calc(var(--tile-depth) * 0.5);
+  --submission-slot-placeholder-offset-y: calc(var(--tile-depth) * 0.5);
 
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   width: var(--tile-visual-short-edge);
   height: var(--tile-visual-long-edge);
   flex: none;
   pointer-events: none;
+  border: max(1px, var(--tile-border-padding)) solid currentColor;
+  border-radius: var(--tile-radius);
   transform: translate(
-    var(--submission-slot-frame-offset-x),
-    var(--submission-slot-frame-offset-y)
+    var(--submission-slot-placeholder-offset-x),
+    var(--submission-slot-placeholder-offset-y)
   );
 }
 
-.slotFrame path {
+.slotFlower {
+  display: block;
+  width: calc(var(--tile-visual-short-edge) * 0.8);
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.slotFlower path {
   stroke: currentColor;
 }
 
@@ -60,7 +73,7 @@
   color: var(--color-border);
 }
 
-.slotGhost > .slotFrame {
+.slotGhost > .slotPlaceholder {
   position: absolute;
 }
 

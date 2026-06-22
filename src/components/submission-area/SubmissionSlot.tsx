@@ -12,7 +12,7 @@ import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
 import { CharacterTile } from "../tile/CharacterTile";
 import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
 import type { SubmissionSlot as SubmissionSlotType } from "../../context/game";
-import Frame from "./frame.svg?react";
+import Flower from "./flower.svg?react";
 import styles from "./SubmissionSlot.module.css";
 
 /**
@@ -165,7 +165,11 @@ export function SubmissionSlot({
   }, [isSubmitting, isFilled]);
 
   const filledClassName = clsx(styles.filled, isReady && styles.ready);
-  const slotFrame = <Frame aria-hidden="true" className={styles.slotFrame} />;
+  const slotPlaceholder = (
+    <span aria-hidden="true" className={styles.slotPlaceholder}>
+      <Flower className={styles.slotFlower} />
+    </span>
+  );
 
   const button = isFilled ? (
     <CharacterTile
@@ -186,7 +190,7 @@ export function SubmissionSlot({
       data-slot-index={slotIndex}
       data-slot-state="empty"
     >
-      {slotFrame}
+      {slotPlaceholder}
     </button>
   );
 
@@ -200,7 +204,7 @@ export function SubmissionSlot({
         data-slot-index={slotIndex}
         data-slot-state="filled"
       >
-        {slotFrame}
+        {slotPlaceholder}
         {button}
       </div>
     );
