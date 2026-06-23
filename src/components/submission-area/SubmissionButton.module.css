@@ -1,15 +1,14 @@
 .button {
   --submission-button-face: #faf3e8;
   --submission-button-hover-offset: calc(var(--tile-lift-distance) * 1.25);
-  --submission-button-shadow-stack-pressed:
-    var(--tile-depth-step) var(--tile-depth-step) 0 var(--color-tile-depth),
-    calc(var(--tile-depth-step) * 2) calc(var(--tile-depth-step) * 2) 0 var(--color-tile-shadow);
+  --submission-button-shadow-stack-pressed: var(--tile-depth-step) var(--tile-depth-step) 0
+    var(--color-tile-depth);
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  margin: 0;
+  margin: 0 0 0 12px;
   padding: var(--submission-button-hover-offset)
     calc(var(--submission-button-hover-offset) + var(--tile-depth) + var(--tile-cast-shadow-growth))
     calc(var(--submission-button-hover-offset) + var(--tile-depth) + var(--tile-cast-shadow-growth))
@@ -39,8 +38,7 @@
   }
 
   &:not(:disabled):active .surface {
-    transform: translate(calc(var(--tile-depth-step) * 2), calc(var(--tile-depth-step) * 2))
-      scaleY(0.94);
+    transform: translate(var(--tile-depth), var(--tile-depth));
     box-shadow: var(--submission-button-shadow-stack-pressed);
   }
 }
