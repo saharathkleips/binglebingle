@@ -22,6 +22,8 @@ submission-area/
 ├── SubmissionSlot.module.css       # Slot styling (bordered flower empty/ghost placeholders, filled positioning)
 ├── flower.svg                      # Editable ornament asset used inside the slot placeholder
 ├── SubmissionButton.tsx            # Validates and dispatches submit
+├── SubmissionButton.module.css     # Neo-brutalist submit button surface, borders, depth, and interaction states
+├── mugunghwa.svg                   # Editable ornament asset used on the submit button
 ├── SubmissionArea.test.tsx
 ├── SubmissionSlot.test.tsx
 ├── SubmissionButton.test.tsx
@@ -45,7 +47,7 @@ Submission slots use the visible portrait tile width (`--tile-visual-short-edge`
 
 ### SubmissionButton
 
-Calls `canSubmit(submission)` to determine validity. Disabled when invalid; dispatches `ROUND_SUBMISSION_SUBMIT` on click when valid.
+Calls `canSubmit(submission)` to determine validity. Disabled when invalid; dispatches `ROUND_SUBMISSION_SUBMIT` on click when valid. The visual surface uses a cream face with double rounded borders, mirrored mugunghwa ornaments around the label, and tile-like faux depth. Hover/focus lifts the surface from the stable button hit area, while press squishes the surface downward.
 
 ## Key Decisions
 
@@ -54,3 +56,5 @@ Calls `canSubmit(submission)` to determine validity. Disabled when invalid; disp
 **canSubmit gates the button, not placement.** Incomplete characters can be placed in slots per the game spec; validation only happens at submit time.
 
 **Use a CSS border with an inline SVG flower placeholder.** The flower ornament remains in `flower.svg` so vector tools can edit it directly, while `SubmissionSlot` imports it as an SVG component. The CSS uses `currentColor`, keeping the border and flower recolorable through design tokens for default and drag-target states. The placeholder is offset half the tile depth down and right so the tile face can stay centered while the bottom-right tile depth visually sits on the slot.
+
+**Keep SubmissionButton depth on an inner surface.** Like `BaseTile`, the button keeps the outer native button as the stable pointer target and moves the visual surface for hover/focus/press feedback. This avoids hover jitter while giving the cream double-bordered face the same tile shadow stack, lifted shadow stack, and hover translation distance as `BaseTile`. The mugunghwa motif lives beside the component as an editable SVG and is recolored through CSS so both ornaments stay synchronized with the button text.

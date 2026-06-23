@@ -7,6 +7,8 @@
 import { type Dispatch } from "react";
 import { canSubmit } from "../../lib/engine/validate";
 import type { SubmissionSlot, GameAction } from "../../context/game";
+import Mugunghwa from "./mugunghwa.svg?react";
+import styles from "./SubmissionButton.module.css";
 
 /**
  * @property submission - The current submission slots to validate.
@@ -35,8 +37,26 @@ export function SubmissionButton({ submission, dispatch, onSubmitStart }: Submis
   }
 
   return (
-    <button type="button" onClick={handleClick} disabled={!isValid} data-testid="submission-button">
-      Submit
+    <button
+      type="button"
+      className={styles.button}
+      onClick={handleClick}
+      disabled={!isValid}
+      data-testid="submission-button"
+    >
+      <span className={styles.surface}>
+        <Mugunghwa
+          className={`${styles.motif} ${styles.motifLeft}`}
+          aria-hidden="true"
+          focusable="false"
+        />
+        <span className={styles.text}>도전</span>
+        <Mugunghwa
+          className={`${styles.motif} ${styles.motifRight}`}
+          aria-hidden="true"
+          focusable="false"
+        />
+      </span>
     </button>
   );
 }
