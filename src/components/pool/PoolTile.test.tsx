@@ -204,7 +204,9 @@ describe("PoolTile drag", () => {
     await expect.element(screen.getByTestId("tile-0")).toHaveAttribute("data-drop-preview", "가");
     await expect.element(screen.getByTestId("tile-0")).toHaveTextContent("가");
 
-    dragSequence(tileElement, [{ type: "pointerup", clientX: targetCenterX, clientY: targetCenterY }]);
+    dragSequence(tileElement, [
+      { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
+    ]);
     await expect.element(screen.getByTestId("tile-0")).not.toHaveAttribute("data-drop-preview");
     await expect.element(screen.getByTestId("tile-0")).toHaveTextContent("ㄱ");
   });

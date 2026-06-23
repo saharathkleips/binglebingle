@@ -121,7 +121,10 @@ export function SubmissionSlot({
             return;
           }
 
-          if (isOverPool(elements)) {
+          if (
+            isOutsideSubmissionArea(this.pointerX, this.pointerY, element) ||
+            isOverPool(elements)
+          ) {
             callbacksRef.current.onDropOnPool();
             gsap.set(element, { clearProps: "all" });
             return;
@@ -199,11 +202,7 @@ export function SubmissionSlot({
   // so there is always a visible indicator of where the slot is.
   if (isFilled) {
     return (
-      <div
-        className={styles.slotGhost}
-        data-slot-index={slotIndex}
-        data-slot-state="filled"
-      >
+      <div className={styles.slotGhost} data-slot-index={slotIndex} data-slot-state="filled">
         {slotPlaceholder}
         {button}
       </div>
@@ -227,6 +226,25 @@ function findSlotDropTarget(elements: Element[], selfSlotIndex: number): Element
     if (element.hasAttribute("data-slot-index")) return element;
   }
   return null;
+}
+
+/**
+ * Returns true when the pointer has left the submission zone. A filled slot remains a
+ * child of the submission area while transformed, so geometry is more reliable than
+ * checking the hit-test ancestry of the dragged element.
+ */
+function isOutsideSubmissionArea(
+  pointerX: number,
+  pointerY: number,
+  element: HTMLElement,
+): boolean {
+  const submissionArea = element.closest("[data-submission-area]");
+  if (!(submissionArea instanceof HTMLElement)) return false;
+
+  const rect = submissionArea.getBoundingClientRect();
+  return (
+    pointerX < rect.left || pointerX > rect.right || pointerY < rect.top || pointerY > rect.bottom
+  );
 }
 
 /**

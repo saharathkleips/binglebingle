@@ -142,6 +142,30 @@ describe("SubmissionSlot drag", () => {
     dragSequence(button0, [{ type: "pointerup", clientX: targetX, clientY: targetY }]);
   });
 
+  it("returns a filled slot to the pool when dropped outside the submission area", async () => {
+    const onDropOnPool = vi.fn();
+    const screen = await render(
+      <div data-submission-area style={{ width: "120px", height: "120px" }}>
+        <SubmissionSlot
+          slot={FILLED_SLOT}
+          slotIndex={0}
+          onTap={vi.fn()}
+          onDropOnSlot={vi.fn()}
+          onDropOnPool={onDropOnPool}
+        />
+      </div>,
+    );
+
+    const button = screen.getByTestId("slot-0").element();
+    dragSequence(button, [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      { type: "pointerup", clientX: 300, clientY: 300 },
+    ]);
+
+    await expect.poll(() => onDropOnPool.mock.calls.length).toBe(1);
+  });
+
   it("does not call onDropOnSlot when pointer is cancelled during drag", async () => {
     const onDropOnSlot = vi.fn();
     const screen = await render(

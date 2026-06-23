@@ -41,7 +41,7 @@ Reads `state.submission` from `useGame()` and renders a `SubmissionSlot` for eac
 
 Renders a single slot. Empty slots show a thin bordered placeholder with a centered flower from `flower.svg`. Filled slots render `CharacterTile` for shared display and dispatch `SUBMISSION_SLOT_REMOVE` on tap.
 
-Filled slots also act as drag sources: dragging a filled slot onto another slot dispatches `SUBMISSION_SLOT_MOVE`, swapping the two tiles (or moving into an empty slot). A 4px movement threshold distinguishes tap from drag, matching Tile's behavior. Drop targets are identified by `data-slot-index`; the slot never drops onto itself.
+Filled slots also act as drag sources: dragging a filled slot onto another slot dispatches `SUBMISSION_SLOT_MOVE`, swapping the two tiles (or moving into an empty slot). Dragging a filled slot outside the `data-submission-area` zone dispatches `SUBMISSION_SLOT_REMOVE`, returning it to the pool without requiring a precise pool drop. A 4px movement threshold distinguishes tap from drag, matching Tile's behavior. Drop targets are identified by `data-slot-index`; the slot never drops onto itself.
 
 Submission slots use the visible portrait tile width (`--tile-visual-short-edge`) rather than the square pool hitbox width because submission tiles do not rotate. Their height remains `--tile-hitbox-size`, preserving the minimum vertical interaction size. The row uses `--tile-submission-history-gap` so submission and history visual spacing can stay consistent while remaining independent from the pool's rotation-safe `--tile-gap` cadence.
 
@@ -51,7 +51,7 @@ Calls `canSubmit(submission)` to determine validity. Disabled when invalid; disp
 
 ## Key Decisions
 
-**Callbacks over dispatch in SubmissionSlot.** Mirrors the Tile/Pool boundary — SubmissionSlot owns pointer/drag mechanics and surfaces semantic callbacks (`onTap`, `onDropOnSlot`); SubmissionArea translates those into dispatch calls. Keeps SubmissionSlot testable with plain function spies and free of game-action knowledge.
+**Callbacks over dispatch in SubmissionSlot.** Mirrors the Tile/Pool boundary — SubmissionSlot owns pointer/drag mechanics and surfaces semantic callbacks (`onTap`, `onDropOnSlot`, `onDropOnPool`); SubmissionArea translates those into dispatch calls. Keeps SubmissionSlot testable with plain function spies and free of game-action knowledge.
 
 **canSubmit gates the button, not placement.** Incomplete characters can be placed in slots per the game spec; validation only happens at submit time.
 
