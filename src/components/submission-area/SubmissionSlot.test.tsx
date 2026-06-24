@@ -142,10 +142,10 @@ describe("SubmissionSlot drag", () => {
     dragSequence(button0, [{ type: "pointerup", clientX: targetX, clientY: targetY }]);
   });
 
-  it("returns a filled slot to the pool when dropped outside the submission area", async () => {
+  it("returns a filled slot to the pool when dropped outside the slot hitboxes", async () => {
     const onDropOnPool = vi.fn();
     const screen = await render(
-      <div data-submission-area style={{ width: "120px", height: "120px" }}>
+      <div data-submission-slots>
         <SubmissionSlot
           slot={FILLED_SLOT}
           slotIndex={0}

@@ -122,7 +122,7 @@ export function SubmissionSlot({
           }
 
           if (
-            isOutsideSubmissionArea(this.pointerX, this.pointerY, element) ||
+            isOutsideSubmissionSlots(this.pointerX, this.pointerY, element) ||
             isOverPool(elements)
           ) {
             callbacksRef.current.onDropOnPool();
@@ -192,6 +192,7 @@ export function SubmissionSlot({
       data-testid={`slot-${slotIndex}`}
       data-slot-index={slotIndex}
       data-slot-state="empty"
+      data-slot-hitbox
     >
       {slotPlaceholder}
     </button>
@@ -202,7 +203,12 @@ export function SubmissionSlot({
   // so there is always a visible indicator of where the slot is.
   if (isFilled) {
     return (
-      <div className={styles.slotGhost} data-slot-index={slotIndex} data-slot-state="filled">
+      <div
+        className={styles.slotGhost}
+        data-slot-index={slotIndex}
+        data-slot-state="filled"
+        data-slot-hitbox
+      >
         {slotPlaceholder}
         {button}
       </div>
@@ -229,22 +235,26 @@ function findSlotDropTarget(elements: Element[], selfSlotIndex: number): Element
 }
 
 /**
- * Returns true when the pointer has left the submission zone. A filled slot remains a
- * child of the submission area while transformed, so geometry is more reliable than
- * checking the hit-test ancestry of the dragged element.
+ * Returns true when the pointer has left every slot hitbox. A filled slot's tile remains
+ * a child of the slots row while transformed, so only the fixed hitbox elements count.
  */
-function isOutsideSubmissionArea(
+function isOutsideSubmissionSlots(
   pointerX: number,
   pointerY: number,
   element: HTMLElement,
 ): boolean {
-  const submissionArea = element.closest("[data-submission-area]");
-  if (!(submissionArea instanceof HTMLElement)) return false;
+  const slotsContainer = element.closest("[data-submission-slots]");
+  if (!(slotsContainer instanceof HTMLElement)) return false;
 
-  const rect = submissionArea.getBoundingClientRect();
-  return (
-    pointerX < rect.left || pointerX > rect.right || pointerY < rect.top || pointerY > rect.bottom
-  );
+  const slotHitboxes = Array.from(slotsContainer.querySelectorAll("[data-slot-hitbox]"));
+  if (slotHitboxes.length === 0) return false;
+
+  return slotHitboxes.every((slotHitbox) => {
+    const rect = slotHitbox.getBoundingClientRect();
+    return (
+      pointerX < rect.left || pointerX > rect.right || pointerY < rect.top || pointerY > rect.bottom
+    );
+  });
 }
 
 /**

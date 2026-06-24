@@ -32,8 +32,8 @@ export function SubmissionArea() {
   const isReady = canSubmit(state.submission) === "VALID";
 
   return (
-    <div className={styles.submissionArea} data-submission-area data-testid="submission-area">
-      <div className={styles.slots}>
+    <div className={styles.submissionArea} data-testid="submission-area">
+      <div className={styles.slots} data-submission-slots>
         {state.submission.map((slot, index) => (
           <SubmissionSlot
             key={index}
