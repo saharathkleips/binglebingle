@@ -47,7 +47,7 @@ Submission slots use the visible portrait tile width (`--tile-visual-short-edge`
 
 ### SubmissionButton
 
-Calls `canSubmit(submission)` to determine validity. Disabled when invalid; dispatches `ROUND_SUBMISSION_SUBMIT` on click when valid. The visual surface uses a cream face with double rounded borders, mirrored mugunghwa ornaments around the label, and tile-like faux depth. Hover/focus lifts the surface from the stable button hit area, while press translates the surface down and right with the transparent cast shadow removed.
+Calls `canSubmit(submission)` to determine validity. Disabled when invalid; dispatches `ROUND_SUBMISSION_SUBMIT` on click when valid. The visual surface uses a cream face with double rounded borders, mirrored mugunghwa ornaments around the label, and tile-like faux depth. The mugunghwa ornaments gain a subtle Dancheong-pink fill when the button is enabled, making readiness visible without changing the text affordance. Hover/focus lifts the surface from the stable button hit area, while press translates the surface down and right with the transparent cast shadow removed.
 
 ## Key Decisions
 

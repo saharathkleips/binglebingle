@@ -83,13 +83,12 @@
 }
 
 .motif {
+  --submission-button-mugunghwa-fill: var(--palette-dancheong-pink);
+  --submission-button-mugunghwa-stroke: currentColor;
+
   width: 1.35rem;
   height: auto;
   flex: 0 0 auto;
-
-  & * {
-    stroke: currentColor;
-  }
 }
 
 .motifLeft {
