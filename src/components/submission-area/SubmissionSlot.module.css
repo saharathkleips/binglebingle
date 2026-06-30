@@ -15,6 +15,8 @@
 }
 
 .slotPlaceholder {
+  --submission-slot-placeholder-border: currentColor;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,22 +25,21 @@
   height: var(--tile-visual-long-edge);
   flex: none;
   pointer-events: none;
-  border: max(1px, var(--tile-border-padding)) solid currentColor;
+  border: max(1px, var(--tile-border-padding)) solid var(--submission-slot-placeholder-border);
   border-radius: var(--tile-radius);
   background: var(--color-app-background);
   box-shadow: var(--tile-depth-stack);
+  transition:
+    border-color 140ms ease,
+    filter 140ms ease;
 }
 
-.slotFlower {
+.slotMotif {
   display: block;
   width: calc(var(--tile-visual-short-edge) * 0.8);
   height: auto;
   overflow: visible;
   pointer-events: none;
-}
-
-.slotFlower path {
-  stroke: currentColor;
 }
 
 .empty {
@@ -76,8 +77,9 @@
   z-index: 1;
 }
 
-/* Drop target highlights are set imperatively during drag. */
-.slot[data-drop-slot-target-active="true"],
-.slotGhost[data-drop-slot-target-active="true"] {
-  color: var(--color-drag-border);
+.slot[data-drop-slot-target-active="true"] .slotPlaceholder,
+.slotGhost[data-drop-slot-target-active="true"] .slotPlaceholder {
+  --submission-slot-placeholder-border: var(--palette-dancheong-red);
+
+  filter: saturate(1.25) brightness(1.04);
 }
