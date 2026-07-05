@@ -136,6 +136,8 @@ body {
   /* ── Typography ──────────────────────────────────────────────────────── */
   --font-family-display: Georgia, "Noto Serif KR", serif;
   --font-family-ui: system-ui, "Noto Sans KR", sans-serif;
+  --font-family-tile: "Noto Sans KR", var(--font-family-ui);
+  --font-weight-tile: 900;
 }
 
 /* Tile tier: small */

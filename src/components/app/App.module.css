@@ -68,6 +68,27 @@
   line-height: 1.4;
 }
 
+.tilePreviewControlGroup {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.tilePreviewSelectLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.tilePreviewSelect {
+  min-width: 14rem;
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--palette-najeon-iridescent-blue);
+  border-radius: var(--radius-md);
+  background: var(--palette-obangsaek-black);
+  color: var(--palette-najeon-iridescent-mint);
+  font: inherit;
+  font-weight: 700;
+}
+
 .tilePreviewButtons {
   display: flex;
   flex-wrap: wrap;

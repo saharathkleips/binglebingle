@@ -15,9 +15,9 @@
   background: transparent;
   cursor: default;
   font: inherit;
-  font-family: var(--font-family-ui);
+  font-family: var(--font-family-tile);
   font-size: var(--tile-font-size);
-  font-weight: bold;
+  font-weight: var(--font-weight-tile);
   line-height: 1;
   text-align: center;
   user-select: none;

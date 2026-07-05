@@ -10,6 +10,7 @@ import { HistoryArea } from "../history-area/HistoryArea";
 import { NavBar } from "../nav-bar/NavBar";
 import { InstructionsScreen } from "../instructions-screen/InstructionsScreen";
 import { TilePreview } from "./TilePreview";
+import type { TilePreviewFontOption } from "./TilePreview";
 import { WinPanel } from "../win-panel/WinPanel";
 import type { GameState } from "../../context/game";
 import styles from "./App.module.css";
@@ -19,6 +20,17 @@ const DEV_WORD = createWord("고양이")!;
 const DEV_INITIAL_STATE = createInitialGameState(DEV_WORD);
 
 const TILE_PREVIEW_QUERY_KEY = "tilePreview";
+const TILE_PREVIEW_FONT_QUERY_KEY = "tilePreviewFont";
+
+const TILE_PREVIEW_FONT_OPTIONS = [
+  {
+    id: "noto-sans-kr-900",
+    label: "Noto Sans KR 900",
+    fontFamily: '"Noto Sans KR", var(--font-family-ui)',
+    fontWeight: 900,
+    fontUrl: "https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@900&display=swap",
+  },
+] as const satisfies readonly TilePreviewFontOption[];
 
 const TILE_PREVIEW_BREAKPOINTS = [
   { name: "z-fold-5", width: 344, height: 882 },
@@ -92,9 +104,11 @@ function TilePreviewScreen() {
   const [selectedBreakpointName, setSelectedBreakpointName] = useState<string>(
     TILE_PREVIEW_BREAKPOINTS[0].name,
   );
+  const [selectedFontId, setSelectedFontId] = useState<string>(TILE_PREVIEW_FONT_OPTIONS[0].id);
   const selectedBreakpoint =
     TILE_PREVIEW_BREAKPOINTS.find((breakpoint) => breakpoint.name === selectedBreakpointName) ??
     TILE_PREVIEW_BREAKPOINTS[0];
+  const selectedFont = getTilePreviewFontOption(selectedFontId);
 
   return (
     <main className={styles.tilePreviewScreen} data-testid="tile-preview-screen">
@@ -104,6 +118,23 @@ function TilePreviewScreen() {
           <p className={styles.tilePreviewHelp}>
             버튼은 브라우저 크기 대신 iframe 뷰포트를 바꿔서 CSS breakpoint를 확인합니다.
           </p>
+        </div>
+        <div className={styles.tilePreviewControlGroup}>
+          <label className={styles.tilePreviewSelectLabel} htmlFor="tile-preview-font">
+            Tile font
+          </label>
+          <select
+            className={styles.tilePreviewSelect}
+            id="tile-preview-font"
+            value={selectedFont.id}
+            onChange={(event) => setSelectedFontId(event.currentTarget.value)}
+          >
+            {TILE_PREVIEW_FONT_OPTIONS.map((fontOption) => (
+              <option key={fontOption.id} value={fontOption.id}>
+                {fontOption.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div className={styles.tilePreviewButtons}>
           {TILE_PREVIEW_BREAKPOINTS.map((breakpoint) => (
@@ -126,7 +157,7 @@ function TilePreviewScreen() {
         <iframe
           className={styles.tilePreviewFrame}
           title={`${selectedBreakpoint.name} tile preview`}
-          src={getTilePreviewFrameSource()}
+          src={getTilePreviewFrameSource(selectedFont.id)}
           width={selectedBreakpoint.width}
           height={selectedBreakpoint.height}
         />
@@ -136,7 +167,12 @@ function TilePreviewScreen() {
 }
 
 function TilePreviewFrame() {
-  return <TilePreview />;
+  const searchParams = new URLSearchParams(window.location.search);
+  return (
+    <TilePreview
+      fontOption={getTilePreviewFontOption(searchParams.get(TILE_PREVIEW_FONT_QUERY_KEY))}
+    />
+  );
 }
 
 function getTilePreviewMode() {
@@ -148,8 +184,16 @@ function getTilePreviewMode() {
   return "off";
 }
 
-function getTilePreviewFrameSource() {
+function getTilePreviewFrameSource(fontOptionId: string) {
   const url = new URL(window.location.href);
   url.searchParams.set(TILE_PREVIEW_QUERY_KEY, "frame");
+  url.searchParams.set(TILE_PREVIEW_FONT_QUERY_KEY, fontOptionId);
   return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function getTilePreviewFontOption(fontOptionId: string | null) {
+  return (
+    TILE_PREVIEW_FONT_OPTIONS.find((fontOption) => fontOption.id === fontOptionId) ??
+    TILE_PREVIEW_FONT_OPTIONS[0]
+  );
 }

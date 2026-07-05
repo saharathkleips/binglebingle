@@ -12,6 +12,21 @@ import { Pool } from "../pool/Pool";
 import { SubmissionArea } from "../submission-area/SubmissionArea";
 import styles from "./App.module.css";
 
+export type TilePreviewFontOption = {
+  id: string;
+  label: string;
+  fontFamily: string;
+  fontWeight: number;
+  fontUrl?: string;
+};
+
+const DEFAULT_TILE_PREVIEW_FONT_OPTION: TilePreviewFontOption = {
+  id: "app-default",
+  label: "App default",
+  fontFamily: "var(--font-family-tile)",
+  fontWeight: 700,
+};
+
 const HISTORY_PREVIEW_ROWS = [
   [
     { tile: "ㄱ", result: "CORRECT" },
@@ -123,9 +138,17 @@ const PREVIEW_STATE: GameState = {
   })),
 };
 
-export function TilePreview() {
+export function TilePreview({
+  fontOption = DEFAULT_TILE_PREVIEW_FONT_OPTION,
+}: {
+  fontOption?: TilePreviewFontOption;
+}) {
   return (
     <GameProvider initialState={PREVIEW_STATE}>
+      {fontOption.fontUrl ? <link rel="stylesheet" href={fontOption.fontUrl} /> : null}
+      <style>
+        {`:root { --font-family-tile: ${fontOption.fontFamily}; --font-weight-tile: ${fontOption.fontWeight}; }`}
+      </style>
       <div className={styles.app} data-testid="tile-preview-frame">
         <div className={styles.gameShell}>
           <NavBar onToggleInstructions={handleNoop} isInstructionsOpen={false} />
