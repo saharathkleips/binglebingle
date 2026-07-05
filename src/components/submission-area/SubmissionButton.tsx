@@ -51,7 +51,17 @@ export function SubmissionButton({ submission, dispatch, onSubmitStart }: Submis
           aria-hidden="true"
           focusable="false"
         />
-        <span className={styles.text}>도전</span>
+        <span className={styles.text} aria-label="도전">
+          <span className={styles.textDepth} aria-hidden="true">
+            도전
+          </span>
+          <span className={styles.textStroke} aria-hidden="true">
+            도전
+          </span>
+          <span className={styles.textLabel} aria-hidden="true">
+            도전
+          </span>
+        </span>
         <Hills2
           className={`${styles.motif} ${styles.motifRight}`}
           aria-hidden="true"

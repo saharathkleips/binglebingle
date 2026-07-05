@@ -3,6 +3,11 @@
   --submission-button-hover-offset: calc(var(--tile-lift-distance) * 1.25);
   --submission-button-shadow-stack-pressed: var(--tile-depth-step) var(--tile-depth-step) 0
     var(--color-tile-depth);
+  --submission-button-text-gradient-1: var(--palette-najeon-iridescent-lavender);
+  --submission-button-text-gradient-2: var(--palette-najeon-iridescent-blue);
+  --submission-button-text-gradient-3: var(--palette-najeon-iridescent-pink);
+  --submission-button-text-gradient-4: var(--palette-najeon-iridescent-cyan);
+  --submission-button-text-gradient-5: var(--palette-najeon-iridescent-mint);
 
   display: inline-flex;
   align-items: center;
@@ -72,6 +77,42 @@
 
 .text {
   position: relative;
+  display: inline-grid;
+}
+
+.textDepth,
+.textStroke,
+.textLabel {
+  grid-area: 1 / 1;
+}
+
+.textDepth {
+  color: var(--color-tile-depth);
+  -webkit-text-fill-color: var(--color-tile-depth);
+  -webkit-text-stroke: 1px var(--color-tile-depth);
+  transform: translateY(1px);
+}
+
+.textStroke {
+  color: var(--palette-obangsaek-black);
+  -webkit-text-fill-color: var(--palette-obangsaek-black);
+  -webkit-text-stroke: 1px var(--palette-obangsaek-black);
+}
+
+.textLabel {
+  position: relative;
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    var(--submission-button-text-gradient-1) 0deg,
+    var(--submission-button-text-gradient-2) 72deg,
+    var(--submission-button-text-gradient-3) 144deg,
+    var(--submission-button-text-gradient-4) 216deg,
+    var(--submission-button-text-gradient-5) 288deg,
+    var(--submission-button-text-gradient-1) 360deg
+  );
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .motif {
@@ -83,12 +124,12 @@
 
 .motifLeft {
   left: 0.4rem;
-  bottom: -0.01rem;
+  bottom: -0.03rem;
   width: 3rem;
 }
 
 .motifRight {
   right: 0.7rem;
-  bottom: -0.01rem;
+  bottom: -0.03rem;
   width: 2.5rem;
 }
