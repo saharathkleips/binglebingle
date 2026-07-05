@@ -23,7 +23,8 @@ submission-area/
 ├── dancheong.svg                   # Editable ornament asset used inside the slot placeholder
 ├── SubmissionButton.tsx            # Validates and dispatches submit
 ├── SubmissionButton.module.css     # Neo-brutalist submit button surface, borders, depth, and interaction states
-├── mugunghwa.svg                   # Editable ornament asset used on the submit button
+├── hills-2.svg                     # Editable right-side hills ornament asset used on the submit button
+├── hills-3.svg                     # Editable left-side hills ornament asset used on the submit button
 ├── SubmissionArea.test.tsx
 ├── SubmissionSlot.test.tsx
 ├── SubmissionButton.test.tsx
@@ -47,7 +48,7 @@ Submission slots use the visible portrait tile width (`--tile-visual-short-edge`
 
 ### SubmissionButton
 
-Calls `canSubmit(submission)` to determine validity. Disabled when invalid; dispatches `ROUND_SUBMISSION_SUBMIT` on click when valid. The visual surface uses a cream face with double rounded borders, mirrored mugunghwa ornaments around the label, and tile-like faux depth. The mugunghwa ornaments gain a subtle Dancheong-pink fill when the button is enabled, making readiness visible without changing the text affordance. Hover/focus lifts the surface from the stable button hit area, while press translates the surface down and right with the transparent cast shadow removed.
+Calls `canSubmit(submission)` to determine validity. Disabled when invalid; dispatches `ROUND_SUBMISSION_SUBMIT` on click when valid. The visual surface uses a cream face with a rounded border, hills-3 on the left, hills-2 on the right, and tile-like faux depth. Hover/focus lifts the surface from the stable button hit area, while press translates the surface down and right with the transparent cast shadow removed.
 
 ## Key Decisions
 
@@ -57,4 +58,4 @@ Calls `canSubmit(submission)` to determine validity. Disabled when invalid; disp
 
 **Use a CSS border with an inline SVG motif placeholder.** The placeholder imports `dancheong.svg` as an SVG component so vector tools can edit it directly. Drop-target emphasis avoids the previous blue-only highlight; the motif and border become warmer and more saturated instead. The placeholder uses the same bottom-right depth distance as tiles, but only with the solid depth color; the transparent cast shadow is intentionally omitted because an empty slot is resting in place rather than hovering.
 
-**Keep SubmissionButton depth on an inner surface.** Like `BaseTile`, the button keeps the outer native button as the stable pointer target and moves the visual surface for hover/focus/press feedback. This avoids hover jitter while giving the cream double-bordered face the same tile shadow stack, lifted shadow stack, and hover translation distance as `BaseTile`. The mugunghwa motif lives beside the component as an editable SVG and is recolored through CSS so both ornaments stay synchronized with the button text.
+**Keep SubmissionButton depth on an inner surface.** Like `BaseTile`, the button keeps the outer native button as the stable pointer target and moves the visual surface for hover/focus/press feedback. This avoids hover jitter while giving the cream bordered face the same tile shadow stack, lifted shadow stack, and hover translation distance as `BaseTile`. The hills motifs live beside the component as editable SVGs and use `currentColor` so both ornaments stay synchronized with the button text.

@@ -7,7 +7,8 @@
 import { type Dispatch } from "react";
 import { canSubmit } from "../../lib/engine/validate";
 import type { SubmissionSlot, GameAction } from "../../context/game";
-import Mugunghwa from "./mugunghwa.svg?react";
+import Hills2 from "./hills-2.svg?react";
+import Hills3 from "./hills-3.svg?react";
 import styles from "./SubmissionButton.module.css";
 
 /**
@@ -45,13 +46,13 @@ export function SubmissionButton({ submission, dispatch, onSubmitStart }: Submis
       data-testid="submission-button"
     >
       <span className={styles.surface}>
-        <Mugunghwa
+        <Hills3
           className={`${styles.motif} ${styles.motifLeft}`}
           aria-hidden="true"
           focusable="false"
         />
         <span className={styles.text}>도전</span>
-        <Mugunghwa
+        <Hills2
           className={`${styles.motif} ${styles.motifRight}`}
           aria-hidden="true"
           focusable="false"

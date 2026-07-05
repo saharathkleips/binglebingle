@@ -46,9 +46,7 @@
 .surface {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(1.35rem, 1fr) auto minmax(1.35rem, 1fr);
-  align-items: center;
-  column-gap: 0.45rem;
+  place-items: center;
   min-width: 10rem;
   min-height: 2.5rem;
   padding: 0.55rem 0.75rem;
@@ -62,15 +60,6 @@
     opacity 140ms ease,
     transform 140ms ease;
 
-  &::after {
-    position: absolute;
-    inset: 4px;
-    pointer-events: none;
-    border: 1px solid currentColor;
-    border-radius: 6px;
-    content: "";
-  }
-
   .button:disabled & {
     opacity: 0.55;
   }
@@ -78,26 +67,28 @@
 
 .text,
 .motif {
-  position: relative;
   z-index: 1;
 }
 
-.motif {
-  --submission-button-mugunghwa-fill: var(--palette-dancheong-pink);
-  --submission-button-mugunghwa-stroke: currentColor;
+.text {
+  position: relative;
+}
 
-  width: 1.35rem;
+.motif {
+  position: absolute;
+  bottom: 0;
   height: auto;
-  flex: 0 0 auto;
+  color: currentColor;
 }
 
 .motifLeft {
-  justify-self: start;
-  margin-left: -0.15rem;
+  left: 0.4rem;
+  bottom: -0.01rem;
+  width: 3rem;
 }
 
 .motifRight {
-  justify-self: end;
-  margin-right: -0.15rem;
-  transform: scaleX(-1);
+  right: 0.7rem;
+  bottom: -0.01rem;
+  width: 2.5rem;
 }
