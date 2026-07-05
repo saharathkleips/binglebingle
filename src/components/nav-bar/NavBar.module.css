@@ -7,9 +7,48 @@
   width: 100%;
 }
 
-.title {
+.logo {
+  --logo-font-family: var(--font-family-tile);
+  --logo-font-weight: 700;
+  --logo-text-gradient: linear-gradient(
+    90deg,
+    var(--palette-najeon-iridescent-pink) 0%,
+    var(--palette-najeon-iridescent-lavender) 40%,
+    var(--palette-najeon-iridescent-cyan) 60%,
+    var(--palette-najeon-iridescent-blue) 100%
+  );
+  --logo-border-gradient: linear-gradient(
+    135deg,
+    var(--palette-najeon-iridescent-lavender) 0%,
+    var(--palette-najeon-iridescent-blue) 25%,
+    var(--palette-najeon-iridescent-pink) 50%,
+    var(--palette-najeon-iridescent-cyan) 75%,
+    var(--palette-najeon-iridescent-mint) 100%
+  );
+
+  margin: 0;
+  width: 6.5rem;
+  padding: 0rem 0rem;
+  border: 1px solid transparent;
+  border-radius: var(--tile-radius);
+  background:
+    linear-gradient(var(--color-tile-face), var(--color-tile-face)) padding-box,
+    var(--logo-border-gradient) border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: var(--tile-shadow-stack);
+  font-family: var(--logo-font-family);
   font-size: 1.25rem;
-  font-weight: bold;
+  font-weight: var(--logo-font-weight);
+  line-height: 1;
+  text-align: center;
+}
+
+.logoText {
+  display: block;
+  background: var(--logo-text-gradient);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .instructionsButton {

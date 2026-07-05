@@ -3,11 +3,18 @@ import { render } from "vitest-browser-react";
 import { NavBar } from "./NavBar";
 
 describe("NavBar", () => {
-  it("renders the game title", async () => {
+  it("renders the abbreviated game logo", async () => {
     const screen = await render(
       <NavBar onToggleInstructions={() => {}} isInstructionsOpen={false} />,
     );
-    await expect.element(screen.getByText("빙글빙글")).toBeInTheDocument();
+    await expect.element(screen.getByText("ㅂㄱㅂㄱ")).toBeInTheDocument();
+  });
+
+  it("uses the full game title as the logo accessible name", async () => {
+    const screen = await render(
+      <NavBar onToggleInstructions={() => {}} isInstructionsOpen={false} />,
+    );
+    await expect.element(screen.getByRole("heading", { name: "빙글빙글" })).toBeInTheDocument();
   });
 
   it("renders the instructions toggle button", async () => {
