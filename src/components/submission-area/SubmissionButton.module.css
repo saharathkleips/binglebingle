@@ -1,5 +1,5 @@
 .button {
-  --submission-button-face: #faf3e8;
+  --submission-button-face: #fbf7f0;
   --submission-button-hover-offset: calc(var(--tile-lift-distance) * 1.25);
   --submission-button-shadow-stack-pressed: var(--tile-depth-step) var(--tile-depth-step) 0
     var(--color-tile-depth);
