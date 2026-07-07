@@ -102,6 +102,28 @@
   color: transparent;
 }
 
+.content svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.content svg path {
+  paint-order: stroke fill;
+  vector-effect: non-scaling-stroke;
+}
+
+.contentDepth svg path {
+  fill: var(--color-system-depth);
+  stroke: var(--color-system-depth);
+  stroke-width: 1px;
+}
+
+.contentStroke svg path {
+  fill: var(--palette-obangsaek-black);
+  stroke: var(--palette-obangsaek-black);
+  stroke-width: 1px;
+}
+
 .contentLabel svg {
   color: var(--nav-action-button-text-gradient-2);
   -webkit-text-fill-color: currentColor;
@@ -109,15 +131,8 @@
 
 .contentLabel svg path {
   fill: url("#gear-iridescent-gradient");
-  stroke: var(--palette-obangsaek-black);
-  stroke-width: 1.25px;
-  paint-order: stroke fill;
-  vector-effect: non-scaling-stroke;
-}
-
-.content svg {
-  width: 1.25rem;
-  height: 1.25rem;
+  stroke: transparent;
+  stroke-width: 0;
 }
 
 @media (max-width: 479px), (max-height: 599px) {

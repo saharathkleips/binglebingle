@@ -58,6 +58,8 @@ assistive technology knows the current overlay state.
   area stays stable while the visual face lifts and presses with the same fixed system shadow stack
   and translations as SubmissionButton. Their labels duplicate the SubmissionButton
   gradient/stroke/depth treatment so future chrome buttons can inherit updates from one component.
+  SVG icon labels receive equivalent layer-specific fill, stroke, and translated depth styles instead
+  of relying on text-only `-webkit-text-stroke` properties.
 - Nav chrome defaults to a 44px button footprint; compact width/height breakpoints tighten the button
   footprint, inner circular faces, logo, and gaps so the bar fits cramped screens without the faces
   feeling visually over-spaced.
