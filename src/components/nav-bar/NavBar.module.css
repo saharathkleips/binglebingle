@@ -1,9 +1,16 @@
 .navBar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: calc(var(--space-sm) * 0.5) var(--space-md);
   width: 100%;
+}
+
+.navContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(100%, 48rem);
 }
 
 .logo {
