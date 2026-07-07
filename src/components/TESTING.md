@@ -110,27 +110,13 @@ expect(dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: "CHARA
 
 ### Drag and Drop (Pointer Events)
 
-Components use pointer-event-based drag (`onPointerDown`/`onPointerMove`/`onPointerUp`) with `setPointerCapture` and `elementsFromPoint`. The locator `dropTo()` method won't work — dispatch synthetic `PointerEvent`s instead via a helper:
+Components use pointer-event-based drag (`onPointerDown`/`onPointerMove`/`onPointerUp`) with `setPointerCapture` and `elementsFromPoint`. The locator `dropTo()` method won't work — dispatch synthetic `PointerEvent`s instead via shared helpers:
 
 ```tsx
-function pointerSequence(
-  element: HTMLElement,
-  events: Array<{ type: string; clientX: number; clientY: number }>,
-) {
-  for (const { type, clientX, clientY } of events) {
-    element.dispatchEvent(
-      new PointerEvent(type, {
-        clientX,
-        clientY,
-        bubbles: true,
-        cancelable: true,
-        pointerId: 1,
-        isPrimary: true,
-      }),
-    );
-  }
-}
+import { pointerSequence } from "../../test-utils/pointer-events";
 ```
+
+Use `dragSequence` from the same file for GSAP Draggable interactions, where `pointerdown` is dispatched on the element and later events are dispatched on `document`.
 
 Typical drag sequence — get the target's center via `getBoundingClientRect()`, then:
 

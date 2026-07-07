@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "vitest-browser-react";
+import { dragSequence } from "../../test-utils/pointer-events";
 import { Pool } from "./Pool";
 import { GameProvider } from "../../context/game/GameContext";
 import { createInitialGameState } from "../../context/game/game-reducer";
@@ -13,29 +14,6 @@ async function renderPool(word: string) {
       <Pool />
     </GameProvider>,
   );
-}
-
-/**
- * Dispatch a drag sequence via GSAP Draggable's event model:
- * pointerdown on the element, pointermove/pointerup on document.
- */
-function dragSequence(
-  element: Element,
-  events: Array<{ type: string; clientX: number; clientY: number }>,
-) {
-  for (const { type, clientX, clientY } of events) {
-    const target = type === "pointerdown" ? element : document;
-    target.dispatchEvent(
-      new PointerEvent(type, {
-        clientX,
-        clientY,
-        bubbles: true,
-        cancelable: true,
-        pointerId: 1,
-        isPrimary: true,
-      }),
-    );
-  }
 }
 
 describe("Pool", () => {

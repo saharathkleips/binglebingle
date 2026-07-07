@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "vitest-browser-react";
+import { pointerSequence } from "../../test-utils/pointer-events";
 import { SubmissionArea } from "./SubmissionArea";
 import { Pool } from "../pool/Pool";
 import { GameProvider } from "../../context/game/GameContext";
@@ -23,25 +24,6 @@ async function renderWithPool(word: string) {
       <SubmissionArea />
     </GameProvider>,
   );
-}
-
-/** Dispatch a sequence of pointer events directly on a DOM element. */
-function pointerSequence(
-  element: Element,
-  events: Array<{ type: string; clientX: number; clientY: number }>,
-) {
-  for (const { type, clientX, clientY } of events) {
-    element.dispatchEvent(
-      new PointerEvent(type, {
-        clientX,
-        clientY,
-        bubbles: true,
-        cancelable: true,
-        pointerId: 1,
-        isPrimary: true,
-      }),
-    );
-  }
 }
 
 describe("SubmissionArea", () => {

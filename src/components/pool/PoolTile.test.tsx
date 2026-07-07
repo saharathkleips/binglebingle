@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "vitest-browser-react";
+import { dragSequence } from "../../test-utils/pointer-events";
 import { PoolTile } from "./PoolTile";
 import { character } from "../../lib/character";
 import type { Tile as TileType } from "../../context/game";
@@ -22,29 +23,6 @@ function tileProps(
     onRejectedEnd: vi.fn(),
     ...overrides,
   };
-}
-
-/**
- * Dispatch a drag sequence via GSAP Draggable's event model:
- * pointerdown on the element, pointermove/pointerup on document.
- */
-function dragSequence(
-  element: Element,
-  events: Array<{ type: string; clientX: number; clientY: number }>,
-) {
-  for (const { type, clientX, clientY } of events) {
-    const target = type === "pointerdown" ? element : document;
-    target.dispatchEvent(
-      new PointerEvent(type, {
-        clientX,
-        clientY,
-        bubbles: true,
-        cancelable: true,
-        pointerId: 1,
-        isPrimary: true,
-      }),
-    );
-  }
 }
 
 describe("PoolTile", () => {

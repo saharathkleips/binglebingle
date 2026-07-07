@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "vitest-browser-react";
+import { pointerSequence } from "../../test-utils/pointer-events";
 import { HistoryArea } from "./HistoryArea";
 import { Pool } from "../pool/Pool";
 import { SubmissionArea } from "../submission-area/SubmissionArea";
@@ -46,25 +47,6 @@ describe("HistoryArea", () => {
     await expect.element(screen.getByTestId("history-row-1")).toBeInTheDocument();
   });
 });
-
-/** Dispatch pointer events on an element; events bubble to document for GSAP Draggable. */
-function pointerSequence(
-  element: Element,
-  events: Array<{ type: string; clientX: number; clientY: number }>,
-) {
-  for (const { type, clientX, clientY } of events) {
-    element.dispatchEvent(
-      new PointerEvent(type, {
-        clientX,
-        clientY,
-        bubbles: true,
-        cancelable: true,
-        pointerId: 1,
-        isPrimary: true,
-      }),
-    );
-  }
-}
 
 describe("HistoryArea reveal animation", () => {
   it("shows history row after a guess is submitted", async () => {
