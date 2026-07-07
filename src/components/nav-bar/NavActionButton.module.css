@@ -119,3 +119,50 @@
   width: 1.25rem;
   height: 1.25rem;
 }
+
+@media (max-width: 479px), (max-height: 599px) {
+  .button {
+    width: 40px;
+    height: 40px;
+    font-size: 0.95rem;
+  }
+
+  .surface {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .content {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .content svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .button {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .surface {
+    width: 1.7rem;
+    height: 1.7rem;
+    border-width: 1.5px;
+  }
+
+  .content {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .content svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+}

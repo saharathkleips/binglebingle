@@ -57,8 +57,9 @@ assistive technology knows the current overlay state.
   area stays stable while the visual face lifts and presses with the same fixed system shadow stack
   and translations as SubmissionButton. Their labels duplicate the SubmissionButton
   gradient/stroke/depth treatment so future chrome buttons can inherit updates from one component.
-- Nav chrome intentionally uses a fixed 44px button footprint and smaller vertical bar padding so the
-  logo and circular faces can grow visually without increasing the navbar's layout height.
+- Nav chrome defaults to a 44px button footprint; compact width/height breakpoints tighten the button
+  footprint, inner circular faces, logo, and gaps so the bar fits cramped screens without the faces
+  feeling visually over-spaced.
 - The nav content is capped and centered inside the full-width bar so logo/actions use edge spacing on
   narrow screens but do not drift to opposite viewport edges on very wide screens.
 - `isInstructionsOpen` kept as a prop (vs. omitting) because `aria-expanded`

@@ -71,3 +71,44 @@
   align-items: center;
   gap: 0.18rem;
 }
+
+@media (max-width: 479px), (max-height: 599px) {
+  .navBar {
+    padding-block: 0.125rem;
+    padding-inline: var(--space-sm);
+  }
+
+  .logo {
+    width: 5.5rem;
+    min-height: 1.875rem;
+    font-size: 1.18rem;
+  }
+
+  .actions {
+    gap: 0.25rem;
+  }
+
+  .actionCluster {
+    gap: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .navBar {
+    padding-inline: calc(var(--space-sm) * 0.5);
+  }
+
+  .logo {
+    width: 4.5rem;
+    min-height: 1.65rem;
+    font-size: 0.98rem;
+  }
+
+  .actions {
+    gap: 0.125rem;
+  }
+
+  .actionCluster {
+    gap: 0;
+  }
+}
