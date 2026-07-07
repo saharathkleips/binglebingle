@@ -37,7 +37,7 @@ export function HistoryArea() {
       const rows = containerRef.current.querySelectorAll('[data-testid^="history-row-"]');
       const lastRow = rows[rows.length - 1];
       if (lastRow instanceof HTMLElement) {
-        revealTimelineRef.current?.kill();
+        finishRevealTimeline(revealTimelineRef.current);
         revealTimelineRef.current = animateHistoryRowReveal(lastRow);
       }
     }
@@ -64,4 +64,10 @@ export function HistoryArea() {
       ))}
     </div>
   );
+}
+
+function finishRevealTimeline(timeline: ReturnType<typeof animateHistoryRowReveal> | null) {
+  // A rapid follow-up submission should not leave the previous row frozen with
+  // GSAP's in-progress `from()` styles; snap it to its finished state first.
+  timeline?.progress(1).kill();
 }

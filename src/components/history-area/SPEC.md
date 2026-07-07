@@ -47,6 +47,8 @@ Receives a single `EvaluatedCharacter`. Renders `CharacterTile` when a character
 
 **History scrolling snaps by row.** The scroll container uses vertical scroll snap and each row snaps on its block-end edge. This keeps manual review feeling row-by-row instead of free-scrolling between partial guesses while preserving chronological DOM order for accessibility.
 
+**Interrupted row reveals finish before the next reveal starts.** Rapid submissions can append a new history row while the previous row's GSAP `from()` timeline still owns inline transform/opacity styles. HistoryArea advances the previous reveal timeline to its end before killing it, so older rows never remain visually half-revealed.
+
 **Engine results pass through directly.** History tiles do not map `CharacterResult` into a separate UI tone type; `BaseTile` owns the visual treatment for each engine result.
 
 **No dispatch or interaction.** HistoryArea is purely display. All state changes originate from Pool and SubmissionArea; HistoryArea only reflects history that has already been committed to state.
