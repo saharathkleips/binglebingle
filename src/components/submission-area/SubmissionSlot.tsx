@@ -90,7 +90,9 @@ export function SubmissionSlot({
         zIndexBoost: true,
         dragClickables: true,
         onDragStart: function onDragStart(this: Draggable) {
-          animatePickUp(this.target as HTMLElement);
+          const element = this.target as HTMLElement;
+          setSlotDraggingAttribute(element);
+          animatePickUp(element);
         },
         onDrag: function onDrag(this: Draggable) {
           const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
@@ -110,6 +112,7 @@ export function SubmissionSlot({
           lastOverRef.current = null;
 
           const element = this.target as HTMLElement;
+          removeSlotDraggingAttribute(element);
           const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
           const slotTarget = findSlotDropTarget(elements, slotIndexRef.current);
           if (slotTarget !== null) {
@@ -209,8 +212,8 @@ export function SubmissionSlot({
         data-slot-state="filled"
         data-slot-hitbox
       >
-        {slotPlaceholder}
         {button}
+        {slotPlaceholder}
       </div>
     );
   }
@@ -272,6 +275,14 @@ function setSlotDropTargetActiveAttribute(element: Element) {
 
 function removeSlotDropTargetActiveAttribute(element: Element) {
   SLOT_DROP_TARGET_ACTIVE_ATTRIBUTES.forEach((attribute) => element.removeAttribute(attribute));
+}
+
+function setSlotDraggingAttribute(element: HTMLElement) {
+  element.parentElement?.setAttribute("data-slot-dragging", "true");
+}
+
+function removeSlotDraggingAttribute(element: HTMLElement) {
+  element.parentElement?.removeAttribute("data-slot-dragging");
 }
 
 const SLOT_DROP_TARGET_ACTIVE_ATTRIBUTES = ["data-drop-slot-target-active"];

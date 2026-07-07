@@ -1,3 +1,5 @@
+import Gear from "../../../gear.svg?react";
+import { NavActionButton } from "./NavActionButton";
 import styles from "./NavBar.module.css";
 
 type NavBarProps = {
@@ -18,15 +20,32 @@ export function NavBar({ onToggleInstructions, isInstructionsOpen }: NavBarProps
       <h1 className={styles.logo} aria-label="빙글빙글">
         <span className={styles.logoText}>ㅂㄱㅂㄱ</span>
       </h1>
-      <button
-        className={styles.instructionsButton}
-        onClick={onToggleInstructions}
-        aria-label="Toggle instructions"
-        aria-expanded={isInstructionsOpen}
-        data-testid="instructions-toggle"
-      >
-        ?
-      </button>
+      <div className={styles.actions} role="group" aria-label="Game actions">
+        <div className={styles.actionCluster}>
+          <NavActionButton ariaLabel="Set difficulty to three" testId="difficulty-three-button">
+            삼
+          </NavActionButton>
+          <NavActionButton ariaLabel="Set difficulty to four" testId="difficulty-four-button">
+            사
+          </NavActionButton>
+          <NavActionButton ariaLabel="Set difficulty to five" testId="difficulty-five-button">
+            오
+          </NavActionButton>
+        </div>
+        <div className={styles.actionCluster}>
+          <NavActionButton
+            ariaLabel="Toggle instructions"
+            isExpanded={isInstructionsOpen}
+            onClick={onToggleInstructions}
+            testId="instructions-toggle"
+          >
+            ?
+          </NavActionButton>
+          <NavActionButton ariaLabel="Open settings" testId="settings-button">
+            <Gear focusable="false" />
+          </NavActionButton>
+        </div>
+      </div>
     </nav>
   );
 }

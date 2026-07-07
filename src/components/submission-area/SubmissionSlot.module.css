@@ -71,6 +71,17 @@
 
 .slotGhost > .slotPlaceholder {
   position: absolute;
+  opacity: 0;
+  box-shadow: none;
+}
+
+.slotGhost[data-slot-dragging="true"] > .slotPlaceholder,
+.slotGhost[data-drop-slot-target-active="true"] > .slotPlaceholder {
+  opacity: 1;
+}
+
+.slotGhost[data-slot-dragging="true"] > .slotPlaceholder {
+  box-shadow: var(--tile-depth-stack);
 }
 
 .slotGhost .filled {

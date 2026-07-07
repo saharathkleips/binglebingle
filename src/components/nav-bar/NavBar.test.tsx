@@ -24,6 +24,16 @@ describe("NavBar", () => {
     await expect.element(screen.getByTestId("instructions-toggle")).toBeInTheDocument();
   });
 
+  it("renders the placeholder action buttons", async () => {
+    const screen = await render(
+      <NavBar onToggleInstructions={() => {}} isInstructionsOpen={false} />,
+    );
+    await expect.element(screen.getByTestId("settings-button")).toBeInTheDocument();
+    await expect.element(screen.getByTestId("difficulty-three-button")).toBeInTheDocument();
+    await expect.element(screen.getByTestId("difficulty-four-button")).toBeInTheDocument();
+    await expect.element(screen.getByTestId("difficulty-five-button")).toBeInTheDocument();
+  });
+
   it("calls onToggleInstructions when button is clicked", async () => {
     const handleToggle = vi.fn();
     const screen = await render(

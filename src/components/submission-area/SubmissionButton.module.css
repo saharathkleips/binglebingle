@@ -1,8 +1,8 @@
 .button {
   --submission-button-face: #fbf7f0;
-  --submission-button-hover-offset: calc(var(--tile-lift-distance) * 1.25);
-  --submission-button-shadow-stack-pressed: var(--tile-depth-step) var(--tile-depth-step) 0
-    var(--color-tile-depth);
+  --submission-button-hover-offset: calc(var(--system-lift-distance) * 1.25);
+  --submission-button-shadow-stack-pressed: var(--system-depth-step) var(--system-depth-step) 0
+    var(--color-system-depth);
   --submission-button-text-gradient-1: var(--palette-najeon-iridescent-lavender);
   --submission-button-text-gradient-2: var(--palette-najeon-iridescent-blue);
   --submission-button-text-gradient-3: var(--palette-najeon-iridescent-pink);
@@ -15,8 +15,8 @@
   min-height: 44px;
   margin: 0 0 0 12px;
   padding: var(--submission-button-hover-offset)
-    calc(var(--submission-button-hover-offset) + var(--tile-depth) + var(--tile-cast-shadow-growth))
-    calc(var(--submission-button-hover-offset) + var(--tile-depth) + var(--tile-cast-shadow-growth))
+    calc(var(--submission-button-hover-offset) + var(--system-depth) + var(--system-cast-shadow-growth))
+    calc(var(--submission-button-hover-offset) + var(--system-depth) + var(--system-cast-shadow-growth))
     var(--submission-button-hover-offset);
   border: 0;
   background: transparent;
@@ -36,14 +36,14 @@
 
   &:not(:disabled):is(:hover, :focus-visible) .surface {
     transform: translate(
-      calc(var(--tile-lift-distance) * -1.25),
-      calc(var(--tile-lift-distance) * -1.25)
+      calc(var(--system-lift-distance) * -1.25),
+      calc(var(--system-lift-distance) * -1.25)
     );
-    box-shadow: var(--tile-shadow-stack-lifted);
+    box-shadow: var(--system-shadow-stack-lifted);
   }
 
   &:not(:disabled):active .surface {
-    transform: translate(var(--tile-depth), var(--tile-depth));
+    transform: translate(var(--system-depth), var(--system-depth));
     box-shadow: var(--submission-button-shadow-stack-pressed);
   }
 }
@@ -58,7 +58,7 @@
   border: 2px solid var(--palette-obangsaek-black);
   border-radius: 8px;
   background: var(--submission-button-face);
-  box-shadow: var(--tile-shadow-stack);
+  box-shadow: var(--system-shadow-stack);
   transform-origin: center bottom;
   transition:
     box-shadow 140ms ease,
@@ -87,9 +87,9 @@
 }
 
 .textDepth {
-  color: var(--color-tile-depth);
-  -webkit-text-fill-color: var(--color-tile-depth);
-  -webkit-text-stroke: 1px var(--color-tile-depth);
+  color: var(--color-system-depth);
+  -webkit-text-fill-color: var(--color-system-depth);
+  -webkit-text-stroke: 1px var(--color-system-depth);
   transform: translateY(1px);
 }
 

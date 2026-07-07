@@ -92,6 +92,36 @@ body {
   --color-tile-depth: #1a1a1a;
   --color-tile-shadow: rgba(0, 0, 0, 0.5);
 
+  /* ── Semantic: System chrome depth ───────────────────────────────────── */
+  --color-system-depth: var(--color-tile-depth);
+  --color-system-shadow: var(--color-tile-shadow);
+
+  /* ── System chrome tokens: fixed, non-responsive controls ────────────── */
+  --system-depth-step: 1px;
+  --system-depth: 3px;
+  --system-depth-stack:
+    var(--system-depth-step) var(--system-depth-step) 0 var(--color-system-depth),
+    calc(var(--system-depth-step) * 2) calc(var(--system-depth-step) * 2) 0
+      var(--color-system-depth),
+    calc(var(--system-depth-step) * 3) calc(var(--system-depth-step) * 3) 0
+      var(--color-system-depth);
+  --system-cast-shadow-distance: calc(var(--system-depth) + var(--system-depth-step) * 2);
+  --system-cast-shadow: var(--system-cast-shadow-distance) var(--system-cast-shadow-distance) 0
+    var(--color-system-shadow);
+  --system-lift-distance: calc(var(--system-depth-step) * 3);
+  --system-cast-shadow-growth: var(--system-depth-step);
+  --system-cast-shadow-lifted: calc(
+      var(--system-cast-shadow-distance) + var(--system-lift-distance) +
+        var(--system-cast-shadow-growth)
+    )
+    calc(
+      var(--system-cast-shadow-distance) + var(--system-lift-distance) +
+        var(--system-cast-shadow-growth)
+    )
+    0 var(--color-system-shadow);
+  --system-shadow-stack: var(--system-depth-stack), var(--system-cast-shadow);
+  --system-shadow-stack-lifted: var(--system-depth-stack), var(--system-cast-shadow-lifted);
+
   /* ── Tile tokens: x-small/minimum interactive tier ───────────────────── */
   --tile-hitbox-size: 44px;
   --tile-gap: 4px;
