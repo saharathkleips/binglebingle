@@ -22,10 +22,10 @@ function wonState(): GameState {
 }
 
 describe("App", () => {
-  it("renders the nav bar with the game title", async () => {
+  it("renders the nav bar with the abbreviated game logo", async () => {
     const screen = await render(<App />);
     await expect.element(screen.getByTestId("nav-bar")).toBeInTheDocument();
-    await expect.element(screen.getByRole("heading", { level: 1 })).toHaveTextContent("빙글빙글");
+    await expect.element(screen.getByRole("heading", { level: 1 })).toHaveTextContent("ㅂㄱㅂㄱ");
   });
 
   it("renders pool and submission area", async () => {
