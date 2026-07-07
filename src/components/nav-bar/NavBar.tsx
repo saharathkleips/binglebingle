@@ -1,4 +1,4 @@
-import Gear from "../../../gear.svg?react";
+import Gear from "./gear.svg?react";
 import { NavActionButton } from "./NavActionButton";
 import styles from "./NavBar.module.css";
 

@@ -17,6 +17,7 @@ nav-bar/
 ├── NavActionButton.tsx           # shared circular action button
 ├── NavActionButton.module.css    # action button surface, depth, and label styles
 ├── NavBar.test.tsx               # unit tests
+├── gear.svg                      # settings button icon
 ├── README.md                     # public API
 └── SPEC.md                       # this file
 ```
@@ -39,7 +40,7 @@ Renders a top bar containing:
 - A heading with the abbreviated `ㅂㄱㅂㄱ` logo
 - Three future difficulty placeholder buttons labeled `삼`, `사`, and `오`
 - A button labeled "?" that calls `onToggleInstructions` on click
-- A settings placeholder button using `gear.svg`
+- A settings placeholder button using colocated `gear.svg`
 
 `isInstructionsOpen` is forwarded to the button's `aria-expanded` attribute so
 assistive technology knows the current overlay state.
