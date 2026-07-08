@@ -12,7 +12,7 @@ import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
 import { CharacterTile } from "../tile/CharacterTile";
 import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
 import type { SubmissionSlot as SubmissionSlotType } from "../../context/game";
-import Dancheong from "./dancheong.svg?react";
+import Lotus from "./lotus.svg?react";
 import styles from "./SubmissionSlot.module.css";
 
 /**
@@ -173,7 +173,7 @@ export function SubmissionSlot({
   const filledClassName = clsx(styles.filled, isReady && styles.ready);
   const slotPlaceholder = (
     <span aria-hidden="true" className={styles.slotPlaceholder}>
-      <Dancheong className={styles.slotMotif} />
+      <Lotus className={styles.slotMotif} />
     </span>
   );
 
