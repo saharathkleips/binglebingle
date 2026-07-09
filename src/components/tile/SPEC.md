@@ -157,4 +157,6 @@ Rules:
 
 **Hover lift moves only the visual surface.** The root element remains the stable pointer target, while the internal `data-tile-surface` span receives the hover/focus transform and lifted shadow. Moving the same element that owns `:hover` can make edge hover unstable because the tile leaves and re-enters the pointer hit area during the transition.
 
+**Tile text keeps Hangul font metrics.** The root tile uses a compact line height for predictable layout, but the internal text span restores enough line-height for Noto Sans KR glyph bounds. This prevents syllable bottoms such as the final `ㅇ` in `양` from being clipped without reducing the shared tile font size.
+
 **Drop-target feedback reuses tile-owned data attributes.** Feature modules imperatively set `data-drop-pool-target-active` or `data-drop-slot-target-active` during GSAP drag hit-testing, but `BaseTile.module.css` owns the shared target shimmer. Dragged pool tiles may also set `data-drop-preview` to let BaseTile CSS render the resolved merge result above the overlapped target. Shared helpers centralize the DOM attribute names, target lookup, active-state toggling, and temporary BaseTile text overrides, while drag semantics remain in the feature modules. This keeps behavior ownership explicit and avoids duplicated target visuals for pool tiles and filled submission slots.
