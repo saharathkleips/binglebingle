@@ -355,6 +355,18 @@ describe("compose", () => {
       character({ choseong: "ㄱ", jungseong: "ㅏ" }),
     ],
     [
+      "jung(ㅣ)+open syllable 야 → 얘 (vowel combines with incoming jungseong)",
+      character({ jungseong: "ㅣ" }),
+      character({ choseong: "ㅇ", jungseong: "ㅑ" }),
+      character({ choseong: "ㅇ", jungseong: "ㅒ" }),
+    ],
+    [
+      "jung(ㅏ)+open syllable 야 → null (incoming jungseong not combinable)",
+      character({ jungseong: "ㅏ" }),
+      character({ choseong: "ㅇ", jungseong: "ㅑ" }),
+      null,
+    ],
+    [
       "jung(ㅏ)+jong(ㄱ) → null (JONGSEONG_ONLY not valid incoming for JUNGSEONG_ONLY)",
       character({ jungseong: "ㅏ" }),
       character({ jongseong: "ㄱ" }),
