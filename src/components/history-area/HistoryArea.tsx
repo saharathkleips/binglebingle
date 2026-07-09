@@ -5,7 +5,7 @@
  * Animates new rows in with a slide + staggered tile flip (VIS-25).
  */
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { useGame } from "../../context/game/GameContext";
 import { animateHistoryRowReveal } from "../../lib/animation/tile-animations";
 import { HistoryTile } from "./HistoryTile";
@@ -24,23 +24,23 @@ export function HistoryArea() {
   const prevLengthRef = useRef(state.history.length);
   const revealTimelineRef = useRef<ReturnType<typeof animateHistoryRowReveal> | null>(null);
 
-  // Keep the newest guess in view as history grows.
-  useEffect(() => {
-    if (containerRef.current !== null) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
-    }
-  }, [state.history.length]);
-
-  // VIS-25: animate the newest row in after each submission.
+  // VIS-25: animate new submissions and keep the newest guess in view.
   useLayoutEffect(() => {
-    if (state.history.length > prevLengthRef.current && containerRef.current !== null) {
-      const rows = containerRef.current.querySelectorAll('[data-testid^="history-row-"]');
-      const lastRow = rows[rows.length - 1];
+    const container = containerRef.current;
+    if (container === null) {
+      prevLengthRef.current = state.history.length;
+      return;
+    }
+
+    if (state.history.length > prevLengthRef.current) {
+      const lastRow = container.lastElementChild;
       if (lastRow instanceof HTMLElement) {
         finishRevealTimeline(revealTimelineRef.current);
         revealTimelineRef.current = animateHistoryRowReveal(lastRow);
       }
     }
+
+    container.scrollTop = container.scrollHeight;
     prevLengthRef.current = state.history.length;
   }, [state.history.length]);
 

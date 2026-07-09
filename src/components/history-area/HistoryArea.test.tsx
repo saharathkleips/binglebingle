@@ -6,7 +6,7 @@ import { Pool } from "../pool/Pool";
 import { SubmissionArea } from "../submission-area/SubmissionArea";
 import { GameProvider } from "../../context/game/GameContext";
 import type { GameState } from "../../context/game";
-import type { GuessRecord } from "../../lib/engine";
+import type { CharacterResult, GuessRecord } from "../../lib/engine";
 import { character } from "../../lib/character";
 import { createWord } from "../../lib/word";
 
@@ -24,6 +24,10 @@ async function renderHistoryArea(history: readonly GuessRecord[]) {
   );
 }
 
+function createGuessRecord(value: string, result: CharacterResult): GuessRecord {
+  return [{ character: character(value)!, result }];
+}
+
 describe("HistoryArea", () => {
   it("renders nothing when history is empty", async () => {
     const screen = await renderHistoryArea([]);
@@ -31,8 +35,7 @@ describe("HistoryArea", () => {
   });
 
   it("renders one row per guess record", async () => {
-    const guess: GuessRecord = [{ character: character("가")!, result: "CORRECT" }];
-    const screen = await renderHistoryArea([guess]);
+    const screen = await renderHistoryArea([createGuessRecord("가", "CORRECT")]);
     await expect.element(screen.getByTestId("history-row-0")).toBeInTheDocument();
     expect(screen.getByTestId("history-row-0").getByTestId("history-tile").elements().length).toBe(
       1,
@@ -40,9 +43,10 @@ describe("HistoryArea", () => {
   });
 
   it("renders multiple rows for multiple guesses", async () => {
-    const guess1: GuessRecord = [{ character: character("나")!, result: "ABSENT" }];
-    const guess2: GuessRecord = [{ character: character("가")!, result: "CORRECT" }];
-    const screen = await renderHistoryArea([guess1, guess2]);
+    const screen = await renderHistoryArea([
+      createGuessRecord("나", "ABSENT"),
+      createGuessRecord("가", "CORRECT"),
+    ]);
     await expect.element(screen.getByTestId("history-row-0")).toBeInTheDocument();
     await expect.element(screen.getByTestId("history-row-1")).toBeInTheDocument();
   });
