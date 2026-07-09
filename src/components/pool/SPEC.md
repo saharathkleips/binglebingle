@@ -18,8 +18,9 @@ Renders the fixed-layout jamo pool and handles per-tile interactions. Reads pool
 pool/
 ├── Pool.tsx             # Interaction coordinator — owns tap/drag logic, dispatches actions
 ├── Pool.module.css      # Flex-wrap layout for pool tiles
-├── PoolTile.tsx         # Single tile — GSAP Draggable mechanics, renders isRejected shake
-├── PoolTile.module.css  # Pool-specific shake keyframes
+├── PoolTile.tsx                 # Single tile — renders shared tile visuals and feedback flags
+├── use-pool-tile-draggable.ts   # Pool-specific GSAP Draggable mechanics
+├── PoolTile.module.css          # Pool-specific shake keyframes
 ├── Pool.test.tsx
 ├── PoolTile.test.tsx
 ├── README.md
@@ -41,7 +42,7 @@ Computes `isTappable` per tile and passes it as a prop.
 
 ### PoolTile
 
-Renders a single tile by composing `CharacterTile` from `src/components/tile`. Owns GSAP Draggable mechanics and delegates tile feedback animation setup to `useTileFeedback` — no character lib imports, no game logic.
+Renders a single tile by composing `CharacterTile` from `src/components/tile`. Delegates GSAP Draggable mechanics to `usePoolTileDraggable` and tile feedback animation setup to `useTileFeedback` — no character lib imports, no game logic.
 
 **Props:**
 
@@ -67,7 +68,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. O
 
 ## Key Decisions
 
-**PoolTile is callback-only; Pool owns all game logic.** PoolTile does not import `compose`, `getNextRotation`, or `decompose`. The reducer already validates and no-ops on invalid actions; centralizing validity checks in Pool is more honest about ownership and leaves PoolTile as a pure "I exist, I can be interacted with, here's what happened" component.
+**PoolTile is callback-only; Pool owns all game logic.** PoolTile and `usePoolTileDraggable` do not import `compose`, `getNextRotation`, or `decompose`. The reducer already validates and no-ops on invalid actions; centralizing validity checks in Pool is more honest about ownership and leaves PoolTile as a pure "I exist, I can be interacted with, here's what happened" component.
 
 **`rejectedTileId` in Pool, not `isShaking` in PoolTile.** Moving shake state to Pool lets it be cleared from outside (via `onRejectedEnd`) and avoids PoolTile needing to know what caused the shake.
 
@@ -79,13 +80,13 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. O
 
 **Pool height is content-first with short-height scroll fallback.** The pool does not reserve a configured row count. Width determines the number of wrapped columns, which determines the content height. Pool tiles sit inside square `--tile-hitbox-size` cells so wrapping matches the rotation-safe interaction footprint rather than the narrower visible card. In normal height tiers the game content does not shrink, so the full wrapped pool remains visible and history receives the leftover space. At `600px` height and below, game content and pool may shrink and the pool may scroll; below `600px`, history also drops to its compact minimum.
 
-**Drag state tracked in refs, not state.** Callback refs, the current tile id, and the last highlighted drop target use refs so Draggable callbacks stay current without re-rendering on every pointer movement.
+**Drag state tracked in refs, not state.** `usePoolTileDraggable` keeps callback refs, the current tile id, and the last highlighted drop target in refs so Draggable callbacks stay current without re-rendering on every pointer movement.
 
 **`touch-action: none` from BaseTile interactive styles.** Required for drag on touch devices; prevents the browser from claiming the gesture for scrolling before the drag can begin.
 
 **Shared visuals stay in `CharacterTile` / `BaseTile`.** PoolTile attaches GSAP Draggable, refs, test ids, and drop-target data attributes to the shared tile element without importing character composition helpers or duplicating base tile CSS.
 
-**Merge preview is text-only at the behavior boundary.** Pool computes the composed `Character` and resolves it to display text, then PoolTile attaches that text to the dragged tile as `data-drop-preview` and temporarily replaces the shared `data-tile-text` content. Composition rules stay out of PoolTile, and the preview lives on the dragged tile because it remains visually above the target during overlap.
+**Merge preview is text-only at the behavior boundary.** Pool computes the composed `Character` and resolves it to display text, then `usePoolTileDraggable` attaches that text to the dragged tile as `data-drop-preview` through the shared tile text override helper. Composition rules stay out of PoolTile, and the preview lives on the dragged tile because it remains visually above the target during overlap.
 
 **Feedback setup is delegated.** PoolTile keeps drag/drop behavior local but calls `useTileFeedback` for rotate, compose, particle, and entrance animations so the feedback contract stays separate from both shared visuals and Draggable setup.
 

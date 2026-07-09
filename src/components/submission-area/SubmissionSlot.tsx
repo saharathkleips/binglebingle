@@ -8,10 +8,11 @@
 
 import { clsx } from "clsx";
 import { useRef, useLayoutEffect } from "react";
-import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
+import { gsap } from "../../lib/animation/register";
 import { CharacterTile } from "../tile/CharacterTile";
-import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
+import { DATA_SLOT_INDEX_ATTRIBUTE } from "../tile/drop-target-helpers";
 import type { SubmissionSlot as SubmissionSlotType } from "../../context/game";
+import { useSubmissionSlotDraggable } from "./use-submission-slot-draggable";
 import Lotus from "./lotus.svg?react";
 import styles from "./SubmissionSlot.module.css";
 
@@ -50,17 +51,9 @@ export function SubmissionSlot({
   onDropOnPool = () => {},
 }: SubmissionSlotProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const lastOverRef = useRef<Element | null>(null);
-
   const isFilled = slot.state === "FILLED";
   // Stable key for detecting swaps: which tile ID occupies this slot.
   const filledTileId = slot.state === "FILLED" ? slot.tileId : null;
-
-  // Refs hold latest prop values so Draggable callbacks never go stale.
-  const callbacksRef = useRef({ onTap, onDropOnSlot, onDropOnPool });
-  callbacksRef.current = { onTap, onDropOnSlot, onDropOnPool };
-  const slotIndexRef = useRef(slotIndex);
-  slotIndexRef.current = slotIndex;
 
   // Clear any stale GSAP transforms before the entrance animation captures the element's
   // natural state as its "to" value. revertOnUpdate can record scale:0.6 (the "from"
@@ -74,76 +67,15 @@ export function SubmissionSlot({
     gsap.set(buttonRef.current, { clearProps: "all" });
   }, [isFilled, filledTileId]);
 
-  useGSAP(
-    () => {
-      if (!buttonRef.current || !isFilled) return;
-
-      // VIS-22/23: entrance animation on fill or swap (filledTileId changed).
-      gsap.from(buttonRef.current, {
-        scale: 0.6,
-        duration: 0.2,
-        ease: "back.out(1.7)",
-      });
-
-      Draggable.create(buttonRef.current, {
-        type: "x,y",
-        zIndexBoost: true,
-        dragClickables: true,
-        onDragStart: function onDragStart(this: Draggable) {
-          const element = this.target as HTMLElement;
-          setSlotDraggingAttribute(element);
-          animatePickUp(element);
-        },
-        onDrag: function onDrag(this: Draggable) {
-          const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
-          const dropTarget = findSlotDropTarget(elements, slotIndexRef.current);
-
-          if (lastOverRef.current !== null && lastOverRef.current !== dropTarget) {
-            removeSlotDropTargetActiveAttribute(lastOverRef.current);
-          }
-          if (dropTarget !== null) {
-            setSlotDropTargetActiveAttribute(dropTarget);
-          }
-          lastOverRef.current = dropTarget;
-        },
-        onDragEnd: function onDragEnd(this: Draggable) {
-          if (lastOverRef.current !== null)
-            removeSlotDropTargetActiveAttribute(lastOverRef.current);
-          lastOverRef.current = null;
-
-          const element = this.target as HTMLElement;
-          removeSlotDraggingAttribute(element);
-          const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
-          const slotTarget = findSlotDropTarget(elements, slotIndexRef.current);
-          if (slotTarget !== null) {
-            callbacksRef.current.onDropOnSlot(
-              parseInt(slotTarget.getAttribute("data-slot-index")!, 10),
-            );
-            // Swap dispatched — React re-renders with swapped content
-            gsap.set(element, { clearProps: "all" });
-            return;
-          }
-
-          if (
-            isOutsideSubmissionSlots(this.pointerX, this.pointerY, element) ||
-            isOverPool(elements)
-          ) {
-            callbacksRef.current.onDropOnPool();
-            gsap.set(element, { clearProps: "all" });
-            return;
-          }
-
-          // No valid target — snap back to origin.
-          animateReposition(element);
-        },
-        onClick: function onClick() {
-          callbacksRef.current.onTap();
-        },
-      });
-    },
-    // Recreate Draggable (and replay entrance animation) when fill state or occupying tile changes.
-    { scope: buttonRef, dependencies: [isFilled, filledTileId], revertOnUpdate: true },
-  );
+  useSubmissionSlotDraggable({
+    buttonRef,
+    isFilled,
+    filledTileId,
+    slotIndex,
+    onTap,
+    onDropOnSlot,
+    onDropOnPool,
+  });
 
   // Clear any stale GSAP transforms when the slot becomes empty.
   // gsap.from() inside useGSAP sets scale: 0.6 synchronously as its "from" value.
@@ -185,7 +117,7 @@ export function SubmissionSlot({
       isInteractive
       ref={buttonRef}
       testId={`slot-${slotIndex}`}
-      dataAttributes={{ "data-slot-index": slotIndex, "data-slot-state": "filled" }}
+      dataAttributes={{ [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex, "data-slot-state": "filled" }}
     />
   ) : (
     <button
@@ -193,7 +125,7 @@ export function SubmissionSlot({
       type="button"
       className={`${styles.slot} ${styles.empty}`}
       data-testid={`slot-${slotIndex}`}
-      data-slot-index={slotIndex}
+      {...{ [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex }}
       data-slot-state="empty"
       data-slot-hitbox
     >
@@ -208,7 +140,7 @@ export function SubmissionSlot({
     return (
       <div
         className={styles.slotGhost}
-        data-slot-index={slotIndex}
+        {...{ [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex }}
         data-slot-state="filled"
         data-slot-hitbox
       >
@@ -220,69 +152,3 @@ export function SubmissionSlot({
 
   return button;
 }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-/**
- * Finds the first slot-eligible drop target from a hit list, skipping the
- * dragging slot itself.
- */
-function findSlotDropTarget(elements: Element[], selfSlotIndex: number): Element | null {
-  for (const element of elements) {
-    if (!(element instanceof HTMLElement)) continue;
-    if (element.getAttribute("data-slot-index") === String(selfSlotIndex)) continue;
-    if (element.hasAttribute("data-slot-index")) return element;
-  }
-  return null;
-}
-
-/**
- * Returns true when the pointer has left every slot hitbox. A filled slot's tile remains
- * a child of the slots row while transformed, so only the fixed hitbox elements count.
- */
-function isOutsideSubmissionSlots(
-  pointerX: number,
-  pointerY: number,
-  element: HTMLElement,
-): boolean {
-  const slotsContainer = element.closest("[data-submission-slots]");
-  if (!(slotsContainer instanceof HTMLElement)) return false;
-
-  const slotHitboxes = Array.from(slotsContainer.querySelectorAll("[data-slot-hitbox]"));
-  if (slotHitboxes.length === 0) return false;
-
-  return slotHitboxes.every((slotHitbox) => {
-    const rect = slotHitbox.getBoundingClientRect();
-    return (
-      pointerX < rect.left || pointerX > rect.right || pointerY < rect.top || pointerY > rect.bottom
-    );
-  });
-}
-
-/**
- * Returns true if any element in the hit list is the pool container.
- */
-function isOverPool(elements: Element[]): boolean {
-  return elements.some(
-    (element) => element instanceof HTMLElement && element.hasAttribute("data-pool"),
-  );
-}
-
-function setSlotDropTargetActiveAttribute(element: Element) {
-  element.setAttribute("data-drop-slot-target-active", "true");
-}
-
-function removeSlotDropTargetActiveAttribute(element: Element) {
-  SLOT_DROP_TARGET_ACTIVE_ATTRIBUTES.forEach((attribute) => element.removeAttribute(attribute));
-}
-
-function setSlotDraggingAttribute(element: HTMLElement) {
-  element.parentElement?.setAttribute("data-slot-dragging", "true");
-}
-
-function removeSlotDraggingAttribute(element: HTMLElement) {
-  element.parentElement?.removeAttribute("data-slot-dragging");
-}
-
-const SLOT_DROP_TARGET_ACTIVE_ATTRIBUTES = ["data-drop-slot-target-active"];

@@ -2,7 +2,7 @@
  * @file PoolTile.tsx
  *
  * A single interactive pool tile in the jamo pool.
- * Owns GSAP Draggable mechanics — all game logic lives in Pool.
+ * Uses pool-specific GSAP Draggable mechanics — all game logic lives in Pool.
  *
  * Drag behavior (UI-04):
  * - Drag to SubmissionSlot → onDropOnSlot(slotIndex)
@@ -17,10 +17,10 @@
 
 import { useRef } from "react";
 import { CharacterTile } from "../tile/CharacterTile";
+import { DATA_TILE_ID_ATTRIBUTE } from "../tile/drop-target-helpers";
 import { useTileFeedback } from "../tile/use-tile-feedback";
-import { Draggable, useGSAP, gsap } from "../../lib/animation/register";
-import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
 import type { Tile } from "../../context/game";
+import { usePoolTileDraggable } from "./use-pool-tile-draggable";
 import styles from "./PoolTile.module.css";
 
 /**
@@ -62,7 +62,7 @@ export type PoolTileProps = {
 
 /**
  * A single interactive pool tile in the jamo pool.
- * Owns GSAP Draggable mechanics — all game logic lives in {@link Pool}.
+ * Uses pool-specific GSAP Draggable mechanics — all game logic lives in {@link Pool}.
  *
  * @param props - See {@link PoolTileProps}.
  */
@@ -84,27 +84,6 @@ export function PoolTile({
   onNewlyAddedEnd,
 }: PoolTileProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const lastOverRef = useRef<Element | null>(null);
-
-  // Refs hold latest prop values so Draggable callbacks never go stale.
-  const callbacksRef = useRef({
-    isTappable,
-    onTap,
-    onDropOnTile,
-    onDropOnSlot,
-    canDropOnTarget,
-    getDropPreview,
-  });
-  callbacksRef.current = {
-    isTappable,
-    onTap,
-    onDropOnTile,
-    onDropOnSlot,
-    canDropOnTarget,
-    getDropPreview,
-  };
-  const tileIdRef = useRef(tile.id);
-  tileIdRef.current = tile.id;
 
   useTileFeedback({
     elementRef: buttonRef,
@@ -116,100 +95,19 @@ export function PoolTile({
     onNewlyAddedEnd,
   });
 
-  useGSAP(
-    () => {
-      if (!buttonRef.current) return;
-
-      Draggable.create(buttonRef.current, {
-        type: "x,y",
-        zIndexBoost: true,
-        dragClickables: true,
-        onDragStart: function onDragStart(this: Draggable) {
-          // Allow the tile to travel outside the pool's scroll boundary during drag.
-          const poolEl = document.querySelector('[data-testid="pool"]') as HTMLElement | null;
-          if (poolEl !== null) poolEl.style.overflow = "visible";
-          animatePickUp(this.target as HTMLElement);
-        },
-        onDrag: function onDrag(this: Draggable) {
-          const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
-          const dropTarget = findDropTarget(elements, tileIdRef.current);
-
-          if (lastOverRef.current !== null && lastOverRef.current !== dropTarget) {
-            removeDropTargetActiveAttribute(lastOverRef.current);
-          }
-          const { canDropOnTarget: canDrop, getDropPreview: getPreview } = callbacksRef.current;
-          const isValidDrop = dropTarget !== null && (canDrop === undefined || canDrop(dropTarget));
-          const sourceElement = this.target as HTMLElement;
-          if (isValidDrop && dropTarget !== null) {
-            setDropTargetActiveAttribute(dropTarget);
-            setDropPreviewAttribute(sourceElement, getPreview?.(dropTarget) ?? null);
-          }
-          if (isValidDrop) {
-            sourceElement.setAttribute("data-drop-source-active", "true");
-          } else {
-            sourceElement.removeAttribute("data-drop-source-active");
-            clearDropPreviewAttribute(sourceElement);
-          }
-          lastOverRef.current = dropTarget;
-        },
-        onDragEnd: function onDragEnd(this: Draggable) {
-          // Clear any drop target highlighting
-          if (lastOverRef.current !== null) removeDropTargetActiveAttribute(lastOverRef.current);
-          lastOverRef.current = null;
-          (this.target as HTMLElement).removeAttribute("data-drop-source-active");
-          clearDropPreviewAttribute(this.target as HTMLElement);
-
-          const poolEl = document.querySelector('[data-testid="pool"]') as HTMLElement | null;
-
-          const element = this.target as HTMLElement;
-          const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
-          const dropTarget = findDropTarget(elements, tileIdRef.current);
-
-          if (dropTarget !== null) {
-            const slotIndexStr = dropTarget.getAttribute("data-slot-index");
-            if (slotIndexStr !== null) {
-              callbacksRef.current.onDropOnSlot(parseInt(slotIndexStr, 10));
-              // PoolTile will unmount (removed from pool) — clear inline styles
-              gsap.set(element, { clearProps: "all" });
-              if (poolEl !== null) poolEl.style.overflow = "";
-              return;
-            }
-
-            const targetTileIdStr = dropTarget.getAttribute("data-tile-id");
-            if (targetTileIdStr !== null) {
-              callbacksRef.current.onDropOnTile(parseInt(targetTileIdStr, 10));
-              // Reset position immediately so the CSS shake animation owns the
-              // transform on compose fail; on compose success the tile unmounts.
-              gsap.set(element, { clearProps: "all" });
-              if (poolEl !== null) poolEl.style.overflow = "";
-              return;
-            }
-          }
-
-          // No valid drop target — snap tile back to its origin in the pool.
-          // Restore pool overflow only after the animation completes: restoring it
-          // early (while the tile is still above the submission area) clips the tile
-          // against the pool's overflow-y:auto before it returns to its natural position.
-          animateReposition(element, () => {
-            if (poolEl !== null) poolEl.style.overflow = "";
-          });
-        },
-        onClick: function onClick() {
-          if (callbacksRef.current.isTappable) {
-            callbacksRef.current.onTap();
-          }
-        },
-      });
-    },
-    { scope: buttonRef },
-  );
+  usePoolTileDraggable({
+    buttonRef,
+    tileId: tile.id,
+    isTappable,
+    onTap,
+    onDropOnTile,
+    onDropOnSlot,
+    canDropOnTarget,
+    getDropPreview,
+  });
 
   function handleAnimationEnd() {
-    onRejectedEnd();
-  }
-
-  function handleTileRef(node: HTMLElement | null) {
-    buttonRef.current = node instanceof HTMLButtonElement ? node : null;
+    if (isRejected) onRejectedEnd();
   }
 
   return (
@@ -217,81 +115,13 @@ export function PoolTile({
       <CharacterTile
         character={tile.character}
         className={isRejected ? (styles.shaking ?? "") : ""}
-        dataAttributes={{ "data-tile-id": tile.id }}
+        dataAttributes={{ [DATA_TILE_ID_ATTRIBUTE]: tile.id }}
         element="button"
         isInteractive
         onAnimationEnd={handleAnimationEnd}
         testId={`tile-${tile.id}`}
-        ref={handleTileRef}
+        ref={buttonRef}
       />
     </div>
   );
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Finds the first drop-eligible element from a hit list, skipping the
- * dragging tile itself.
- */
-function findDropTarget(elements: Element[], selfTileId: number): Element | null {
-  for (const element of elements) {
-    if (!(element instanceof HTMLElement)) continue;
-    if (element.getAttribute("data-tile-id") === String(selfTileId)) continue;
-    if (element.hasAttribute("data-slot-index") || element.hasAttribute("data-tile-id")) {
-      return element;
-    }
-  }
-  return null;
-}
-
-function setDropTargetActiveAttribute(element: Element) {
-  element.setAttribute(getDropTargetActiveAttribute(element), "true");
-}
-
-function removeDropTargetActiveAttribute(element: Element) {
-  DROP_TARGET_ACTIVE_ATTRIBUTES.forEach((attribute) => element.removeAttribute(attribute));
-  element.removeAttribute("data-drop-preview");
-}
-
-function getDropTargetActiveAttribute(element: Element) {
-  return element.hasAttribute("data-tile-id")
-    ? "data-drop-pool-target-active"
-    : "data-drop-slot-target-active";
-}
-
-const DROP_TARGET_ACTIVE_ATTRIBUTES = [
-  "data-drop-pool-target-active",
-  "data-drop-slot-target-active",
-];
-
-function setDropPreviewAttribute(element: Element, preview: string | null) {
-  if (!(element instanceof HTMLElement)) return;
-  const textElement = element.querySelector("[data-tile-text]");
-  if (!(textElement instanceof HTMLElement)) return;
-
-  if (!element.hasAttribute("data-drop-original-text")) {
-    element.setAttribute("data-drop-original-text", textElement.textContent ?? "");
-  }
-
-  if (preview === null) {
-    clearDropPreviewAttribute(element);
-    return;
-  }
-
-  textElement.textContent = preview;
-  element.setAttribute("data-drop-preview", preview);
-}
-
-function clearDropPreviewAttribute(element: Element) {
-  if (!(element instanceof HTMLElement)) return;
-  const originalText = element.getAttribute("data-drop-original-text");
-  const textElement = element.querySelector("[data-tile-text]");
-  if (originalText !== null && textElement instanceof HTMLElement) {
-    textElement.textContent = originalText;
-  }
-  element.removeAttribute("data-drop-preview");
-  element.removeAttribute("data-drop-original-text");
 }

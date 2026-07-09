@@ -18,7 +18,8 @@ Renders the submission row and submit button. Player places tiles into slots, se
 submission-area/
 ├── SubmissionArea.tsx              # Container — maps slots + submit button
 ├── SubmissionArea.module.css       # Flex layout for slots row
-├── SubmissionSlot.tsx              # Single slot — empty or filled
+├── SubmissionSlot.tsx              # Single slot — empty/filled rendering and slot animations
+├── use-submission-slot-draggable.ts # Filled-slot GSAP Draggable mechanics
 ├── SubmissionSlot.module.css       # Slot styling (bordered motif empty/ghost placeholders, filled positioning)
 ├── dancheong.svg                   # Editable ornament asset used inside the slot placeholder
 ├── SubmissionButton.tsx            # Validates and dispatches submit
@@ -42,7 +43,7 @@ Reads `state.submission` from `useGame()` and renders a `SubmissionSlot` for eac
 
 Renders a single slot. Empty slots show a thin bordered placeholder with a centered dancheong motif from `dancheong.svg`. Filled slots render `CharacterTile` for shared display and dispatch `SUBMISSION_SLOT_REMOVE` on tap.
 
-Filled slots also act as drag sources: dragging a filled slot onto another slot dispatches `SUBMISSION_SLOT_MOVE`, swapping the two tiles (or moving into an empty slot). Dragging a filled slot outside all `data-slot-hitbox` elements in the `data-submission-slots` row dispatches `SUBMISSION_SLOT_REMOVE`, returning it to the pool without requiring a precise pool drop. A 4px movement threshold distinguishes tap from drag, matching Tile's behavior. Drop targets are identified by `data-slot-index`; the slot never drops onto itself.
+Filled slots also act as drag sources through `useSubmissionSlotDraggable`: dragging a filled slot onto another slot dispatches `SUBMISSION_SLOT_MOVE`, swapping the two tiles (or moving into an empty slot). Dragging a filled slot outside all `data-slot-hitbox` elements in the `data-submission-slots` row dispatches `SUBMISSION_SLOT_REMOVE`, returning it to the pool without requiring a precise pool drop. A 4px movement threshold distinguishes tap from drag, matching Tile's behavior. Drop targets are identified by `data-slot-index`; the slot never drops onto itself.
 
 Submission slots use the visible portrait tile width (`--tile-visual-short-edge`) rather than the square pool hitbox width because submission tiles do not rotate. Their height remains `--tile-hitbox-size`, preserving the minimum vertical interaction size. The row uses `--tile-submission-history-gap` so submission and history visual spacing can stay consistent while remaining independent from the pool's rotation-safe `--tile-gap` cadence. Filled slot ghosts keep the placeholder available behind the tile for drag-away orientation, but hide the placeholder while the filled tile is resting in the slot so its border and depth cannot visually merge with the tile's own lifted shadow stack on hover. The placeholder reappears during drag/drop feedback, and its depth returns only while dragging, when the placeholder is exposed as the original slot position.
 
@@ -52,7 +53,7 @@ Calls `canSubmit(submission)` to determine validity. Disabled when invalid; disp
 
 ## Key Decisions
 
-**Callbacks over dispatch in SubmissionSlot.** Mirrors the Tile/Pool boundary — SubmissionSlot owns pointer/drag mechanics and surfaces semantic callbacks (`onTap`, `onDropOnSlot`, `onDropOnPool`); SubmissionArea translates those into dispatch calls. Keeps SubmissionSlot testable with plain function spies and free of game-action knowledge.
+**Callbacks over dispatch in SubmissionSlot.** Mirrors the Tile/Pool boundary — SubmissionSlot delegates pointer/drag mechanics to `useSubmissionSlotDraggable` and surfaces semantic callbacks (`onTap`, `onDropOnSlot`, `onDropOnPool`); SubmissionArea translates those into dispatch calls. Keeps SubmissionSlot testable with plain function spies and free of game-action knowledge.
 
 **canSubmit gates the button, not placement.** Incomplete characters can be placed in slots per the game spec; validation only happens at submit time.
 

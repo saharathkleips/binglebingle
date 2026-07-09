@@ -5,7 +5,8 @@ Displays the player's jamo pool as interactive fixed-layout tiles. Tap to rotate
 ## Exports
 
 - `Pool` — renders all pool tiles from `useGame()` state; no props
-- `PoolTile` — single pool tile; owns GSAP Draggable mechanics and composes shared tile visuals; all game logic lives in Pool
+- `PoolTile` — single pool tile; composes shared tile visuals and pool-specific drag behavior; all game logic lives in Pool
+- `usePoolTileDraggable` — hook that owns GSAP Draggable setup, drop-target feedback, merge-preview text override, and pool overflow handling for `PoolTile`
 
 ## Behavior Notes
 
@@ -13,4 +14,4 @@ Pool tile positions are owned by the pool layout, not by persisted drag coordina
 
 When a dragged pool tile hovers over a valid pool tile target, Pool computes the merge result and PoolTile exposes it as `data-drop-preview` on the dragged tile so the shared tile CSS can preview the resulting character above the target.
 
-Pool drag behavior uses GSAP Draggable directly on the tile element. This module should not reintroduce raw Pointer Events drag handlers or detached manual ghost elements.
+Pool drag behavior uses GSAP Draggable directly on the tile element through `usePoolTileDraggable`. This module should not reintroduce raw Pointer Events drag handlers or detached manual ghost elements.
