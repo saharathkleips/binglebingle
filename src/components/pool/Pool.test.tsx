@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "vitest-browser-react";
-import { dragSequence } from "../../test-utils/pointer-events";
+import { dragToElementCenter } from "../../test-utils/pointer-events";
 import { Pool } from "./Pool";
 import { GameProvider } from "../../context/game/GameContext";
 import { createInitialGameState } from "../../context/game/game-reducer";
@@ -50,17 +50,8 @@ describe("Pool tap", () => {
 
     const tile0 = screen.getByTestId("tile-0").element();
     const tile2 = screen.getByTestId("tile-2").element();
-    const tile2Rect = tile2.getBoundingClientRect();
-    const tile2CenterX = tile2Rect.left + tile2Rect.width / 2;
-    const tile2CenterY = tile2Rect.top + tile2Rect.height / 2;
-
     // Compose: drag tile-0 onto tile-2 (ㄱ+ㄱ→ㄲ)
-    dragSequence(tile0, [
-      { type: "pointerdown", clientX: 0, clientY: 0 },
-      { type: "pointermove", clientX: 10, clientY: 0 },
-      { type: "pointermove", clientX: tile2CenterX, clientY: tile2CenterY },
-      { type: "pointerup", clientX: tile2CenterX, clientY: tile2CenterY },
-    ]);
+    dragToElementCenter(tile0, tile2);
 
     await expect.poll(() => screen.getByTestId(/^tile-/).elements().length).toBe(3);
 
@@ -78,16 +69,7 @@ describe("Pool drag", () => {
 
     const source = screen.getByTestId("tile-1").element();
     const target = screen.getByTestId("tile-3").element();
-    const targetRect = target.getBoundingClientRect();
-    const targetCenterX = targetRect.left + targetRect.width / 2;
-    const targetCenterY = targetRect.top + targetRect.height / 2;
-
-    dragSequence(source, [
-      { type: "pointerdown", clientX: 0, clientY: 0 },
-      { type: "pointermove", clientX: 10, clientY: 0 },
-      { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
-      { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
-    ]);
+    dragToElementCenter(source, target);
 
     await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
   });
@@ -102,22 +84,10 @@ describe("Pool drag", () => {
     const tile1 = screen.getByTestId("tile-1").element();
     const tile3 = screen.getByTestId("tile-3").element();
 
-    function dragOnto(source: Element, target: Element) {
-      const rect = target.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      dragSequence(source, [
-        { type: "pointerdown", clientX: 0, clientY: 0 },
-        { type: "pointermove", clientX: 10, clientY: 0 },
-        { type: "pointermove", clientX: centerX, clientY: centerY },
-        { type: "pointerup", clientX: centerX, clientY: centerY },
-      ]);
-    }
-
-    dragOnto(tile1, tile3);
+    dragToElementCenter(tile1, tile3);
     await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
 
-    dragOnto(tile3, tile1);
+    dragToElementCenter(tile3, tile1);
     await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
     await expect.element(screen.getByTestId("tile-3")).toHaveClass(styles.shaking!);
   });
@@ -134,16 +104,7 @@ describe("Pool drag", () => {
       .getByTestId(/^tile-/)
       .elements()
       .find((tile) => tile.textContent === "ㅏ")!;
-    const targetRect = target.getBoundingClientRect();
-    const targetCenterX = targetRect.left + targetRect.width / 2;
-    const targetCenterY = targetRect.top + targetRect.height / 2;
-
-    dragSequence(source, [
-      { type: "pointerdown", clientX: 0, clientY: 0 },
-      { type: "pointermove", clientX: 10, clientY: 0 },
-      { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
-      { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
-    ]);
+    dragToElementCenter(source, target);
 
     // Two tiles compose into one → count decreases by 1
     await expect.poll(() => screen.getByTestId(/^tile-/).elements().length).toBe(tilesBefore - 1);
@@ -156,22 +117,7 @@ describe("Pool drag", () => {
 
     const source = screen.getByTestId("tile-1").element();
     const target = screen.getByTestId("tile-3").element();
-    const rect = target.getBoundingClientRect();
-
-    dragSequence(source, [
-      { type: "pointerdown", clientX: 0, clientY: 0 },
-      { type: "pointermove", clientX: 10, clientY: 0 },
-      {
-        type: "pointermove",
-        clientX: rect.left + rect.width / 2,
-        clientY: rect.top + rect.height / 2,
-      },
-      {
-        type: "pointerup",
-        clientX: rect.left + rect.width / 2,
-        clientY: rect.top + rect.height / 2,
-      },
-    ]);
+    dragToElementCenter(source, target);
 
     await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
 

@@ -34,9 +34,9 @@ pool/
 Reads `state.pool` from `useGame()` and renders a `PoolTile` for each tile. The container wraps tiles into the available width and sizes from its actual content; if the viewport is too short after history and submission reserve their minimum space, the pool becomes the fallback scroll region. Owns all interaction logic:
 
 - **`handleTap(tile)`** — checks `getNextRotation` / `decompose` and dispatches `CHARACTER_ROTATE_NEXT` or `CHARACTER_DECOMPOSE`.
-- **`handleDropOnTile(sourceTile, targetId)`** — looks up the target tile, calls `compose()` to validate; dispatches `CHARACTER_COMPOSE` on success or sets `rejectedTileId` on failure.
+- **`handleDropOnTile(sourceTile, targetId)`** — looks up the target tile, calls `compose()` to validate; dispatches `CHARACTER_COMPOSE` on success or adds the source id to `rejectedTileIds` on failure.
 - **`handleDropOnSlot(sourceTile, slotIndex)`** — dispatches `SUBMISSION_SLOT_INSERT`.
-- **`rejectedTileId`** local state — tracks which tile should shake; cleared via `onRejectedEnd` callback.
+- **`rejectedTileIds`** local state — tracks which tiles should shake; cleared per tile via `onRejectedEnd` callback.
 
 Computes `isTappable` per tile and passes it as a prop.
 
@@ -62,7 +62,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. D
 - Draggable owns click-vs-drag differentiation and pointer event wiring.
 - `onDragStart`: temporarily allows pool overflow so the tile can travel to slots and plays pickup feedback.
 - `onDrag`: resolves the current target via `document.elementsFromPoint`, sets `data-drop-source-active="true"` on the dragged tile when the current target is valid, and sets a target-specific active attribute (`data-drop-pool-target-active` or `data-drop-slot-target-active`) on the current target. The dragged tile also receives `data-drop-preview` when a pool-tile merge result can be displayed. Slot CSS combines `data-drop-slot-target-active` with `data-slot-state` to distinguish empty and filled slot treatments.
-- `onDragEnd`: dispatches slot/tile callbacks for valid drops, clears inline drag styles when React will re-render/unmount the tile, or animates the tile back to its fixed pool layout position when no valid drop occurred. Invalid drags never leave tiles at arbitrary canvas coordinates.
+- `onDragEnd`: dispatches slot/tile callbacks for valid drops, clears inline drag styles when React will re-render/unmount the tile, or animates the tile back to its fixed pool layout position when no valid drop target was emitted. Invalid compose attempts on a tile target are still emitted so Pool can show rejection feedback, then inline drag styles are cleared. Invalid drags never leave tiles at arbitrary canvas coordinates.
 - Drop onto `data-slot-index` element → `onDropOnSlot(slotIndex)`.
 - Drop onto `data-tile-id` element → `onDropOnTile(targetId)`.
 
@@ -70,7 +70,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. D
 
 **PoolTile is callback-only; Pool owns all game logic.** PoolTile and `usePoolTileDraggable` do not import `compose`, `getNextRotation`, or `decompose`. The reducer already validates and no-ops on invalid actions; centralizing validity checks in Pool is more honest about ownership and leaves PoolTile as a pure "I exist, I can be interacted with, here's what happened" component.
 
-**`rejectedTileId` in Pool, not `isShaking` in PoolTile.** Moving shake state to Pool lets it be cleared from outside (via `onRejectedEnd`) and avoids PoolTile needing to know what caused the shake.
+**`rejectedTileIds` in Pool, not `isShaking` in PoolTile.** Moving shake state to Pool lets it be cleared from outside (via `onRejectedEnd`) and avoids PoolTile needing to know what caused the shake. A set allows overlapping rejected drops to shake independently.
 
 **`isTappable` computed in Pool and passed as prop.** PoolTile has no knowledge of rotation sets or composition rules; Pool computes the flag once per render using the same lib calls it uses for dispatch. This flag is intentionally narrower than `BaseTile`'s `isInteractive` visual affordance: every pool tile can be dragged, so every pool tile remains visually interactive even when tapping is unavailable.
 

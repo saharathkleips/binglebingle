@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "vitest-browser-react";
-import { dragSequence } from "../../test-utils/pointer-events";
+import { dragSequence, dragToElementCenter } from "../../test-utils/pointer-events";
 import { PoolTile } from "./PoolTile";
 import { character } from "../../lib/character";
 import type { Tile as TileType } from "../../context/game";
@@ -86,16 +86,9 @@ describe("PoolTile drag", () => {
       </div>,
     );
     const tileElement = screen.getByTestId("tile-0").element();
-    const slotRect = screen.getByTestId("slot-1").element().getBoundingClientRect();
-    const slotCenterX = slotRect.left + slotRect.width / 2;
-    const slotCenterY = slotRect.top + slotRect.height / 2;
+    const slotElement = screen.getByTestId("slot-1").element();
 
-    dragSequence(tileElement, [
-      { type: "pointerdown", clientX: 0, clientY: 0 },
-      { type: "pointermove", clientX: 10, clientY: 0 },
-      { type: "pointermove", clientX: slotCenterX, clientY: slotCenterY },
-      { type: "pointerup", clientX: slotCenterX, clientY: slotCenterY },
-    ]);
+    dragToElementCenter(tileElement, slotElement);
 
     await expect.poll(() => onDropOnSlot.mock.calls.length).toBe(1);
     expect(onDropOnSlot).toHaveBeenCalledWith(1);
@@ -119,16 +112,9 @@ describe("PoolTile drag", () => {
       </div>,
     );
     const tileElement = screen.getByTestId("tile-0").element();
-    const targetRect = screen.getByTestId("tile-1").element().getBoundingClientRect();
-    const targetCenterX = targetRect.left + targetRect.width / 2;
-    const targetCenterY = targetRect.top + targetRect.height / 2;
+    const targetElement = screen.getByTestId("tile-1").element();
 
-    dragSequence(tileElement, [
-      { type: "pointerdown", clientX: 0, clientY: 0 },
-      { type: "pointermove", clientX: 10, clientY: 0 },
-      { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
-      { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
-    ]);
+    dragToElementCenter(tileElement, targetElement);
 
     await expect.poll(() => onDropOnTile.mock.calls.length).toBe(1);
     expect(onDropOnTile).toHaveBeenCalledWith(1);

@@ -6,12 +6,13 @@
  * Tracks animation state (rotating, composed, newly-added) and forwards it to PoolTile.
  */
 
-import { useState, useLayoutEffect, useRef } from "react";
+import { useState, useLayoutEffect, useMemo, useRef } from "react";
 import { useGame } from "../../context/game/GameContext";
 import { resolveCharacter } from "../../lib/character";
 import { getNextRotation } from "../../lib/character/rotation";
 import { decompose, compose } from "../../lib/character/composition";
 import { PoolTile } from "./PoolTile";
+import { DATA_SLOT_INDEX_ATTRIBUTE, DATA_TILE_ID_ATTRIBUTE } from "../tile/drop-target-helpers";
 import type { Tile as TileType } from "../../context/game";
 import styles from "./Pool.module.css";
 
@@ -25,6 +26,10 @@ export function Pool() {
   const [rotatingTileId, setRotatingTileId] = useState<number | null>(null);
   const [composedTileId, setComposedTileId] = useState<number | null>(null);
   const [newlyAddedTileIds, setNewlyAddedTileIds] = useState<Set<number>>(new Set());
+  const poolTilesById = useMemo(
+    () => new Map(state.pool.map((tile) => [tile.id, tile])),
+    [state.pool],
+  );
 
   // Detect newly-added tiles by comparing pool IDs between renders.
   const prevPoolIdsRef = useRef<Set<number>>(new Set(state.pool.map((tile) => tile.id)));
@@ -51,9 +56,7 @@ export function Pool() {
   }
 
   function handleDropOnTile(sourceTile: TileType, targetId: number) {
-    const targetTile = state.pool.find((tile) => tile.id === targetId);
-    if (targetTile === undefined) return;
-    const combined = compose(targetTile.character, sourceTile.character);
+    const combined = getComposedCharacter(sourceTile, targetId);
     if (combined === null) {
       setRejectedTileIds((prev) => new Set(prev).add(sourceTile.id));
     } else {
@@ -68,18 +71,21 @@ export function Pool() {
 
   function canDropOnTarget(sourceTile: TileType, target: Element): boolean {
     // Slots always accept a tile.
-    if (target.hasAttribute("data-slot-index")) return true;
+    if (target.hasAttribute(DATA_SLOT_INDEX_ATTRIBUTE)) return true;
     // Tiles only accept if compose() would succeed.
     return getDropPreview(sourceTile, target) !== null;
   }
 
   function getDropPreview(sourceTile: TileType, target: Element): string | null {
-    const targetIdStr = target.getAttribute("data-tile-id");
-    if (targetIdStr === null) return null;
-    const targetTile = state.pool.find((tile) => tile.id === parseInt(targetIdStr, 10));
-    if (targetTile === undefined) return null;
-    const combined = compose(targetTile.character, sourceTile.character);
+    const targetId = parseTileId(target);
+    if (targetId === null) return null;
+    const combined = getComposedCharacter(sourceTile, targetId);
     return combined === null ? null : resolveCharacter(combined);
+  }
+
+  function getComposedCharacter(sourceTile: TileType, targetId: number) {
+    const targetTile = poolTilesById.get(targetId);
+    return targetTile === undefined ? null : compose(targetTile.character, sourceTile.character);
   }
 
   return (
@@ -122,4 +128,9 @@ export function Pool() {
       })}
     </div>
   );
+}
+
+function parseTileId(element: Element): number | null {
+  const value = element.getAttribute(DATA_TILE_ID_ATTRIBUTE);
+  return value === null ? null : parseInt(value, 10);
 }

@@ -53,7 +53,8 @@ export function usePoolTileDraggable({
     () => {
       if (!buttonRef.current) return;
 
-      Draggable.create(buttonRef.current, {
+      const sourceElement = buttonRef.current;
+      const draggableInstances = Draggable.create(sourceElement, {
         type: "x,y",
         zIndexBoost: true,
         dragClickables: true,
@@ -103,6 +104,12 @@ export function usePoolTileDraggable({
           }
         },
       });
+
+      return () => {
+        clearDragFeedback(lastOverRef, sourceElement);
+        draggableInstances.forEach((draggableInstance) => draggableInstance.kill());
+        restorePoolDragOverflow();
+      };
     },
     { scope: buttonRef },
   );
@@ -115,7 +122,7 @@ export function usePoolTileDraggable({
 type PoolTileCallbacks = Pick<UsePoolTileDraggableOptions, "onDropOnSlot" | "onDropOnTile">;
 
 const DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE = "data-drop-source-active";
-const POOL_SELECTOR = '[data-testid="pool"]';
+const POOL_SELECTOR = '[data-pool="true"]';
 
 function findPoolDropTarget(elements: Element[], selfTileId: number): Element | null {
   return findDataAttributeDropTarget(elements, {

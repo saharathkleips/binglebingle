@@ -4,6 +4,10 @@ export type PointerSequenceEvent = {
   clientY: number;
 };
 
+export type DragToElementCenterOptions = {
+  activationOffset?: number;
+};
+
 /** Dispatch a sequence of pointer events directly on a DOM element. */
 export function pointerSequence(element: Element, events: readonly PointerSequenceEvent[]) {
   events.forEach(({ type, clientX, clientY }) => {
@@ -20,6 +24,24 @@ export function dragSequence(element: Element, events: readonly PointerSequenceE
     const target = type === "pointerdown" ? element : document;
     target.dispatchEvent(createPointerEvent(type, clientX, clientY));
   });
+}
+
+/** Drag an element to the center point of another element and release it. */
+export function dragToElementCenter(
+  sourceElement: Element,
+  targetElement: Element,
+  { activationOffset = 10 }: DragToElementCenterOptions = {},
+) {
+  const targetRectangle = targetElement.getBoundingClientRect();
+  const targetCenterX = targetRectangle.left + targetRectangle.width / 2;
+  const targetCenterY = targetRectangle.top + targetRectangle.height / 2;
+
+  dragSequence(sourceElement, [
+    { type: "pointerdown", clientX: 0, clientY: 0 },
+    { type: "pointermove", clientX: activationOffset, clientY: 0 },
+    { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
+    { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
+  ]);
 }
 
 function createPointerEvent(type: string, clientX: number, clientY: number) {
