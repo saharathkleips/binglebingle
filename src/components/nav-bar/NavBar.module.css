@@ -35,7 +35,7 @@
   margin: 0;
   width: 7.5rem;
   min-height: 2.15rem;
-  padding: 0rem 0rem;
+  padding: 0;
   border: 1px solid transparent;
   border-radius: var(--tile-radius);
   background:

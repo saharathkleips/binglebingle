@@ -21,17 +21,25 @@ describe("NavBar", () => {
     const screen = await render(
       <NavBar onToggleInstructions={() => {}} isInstructionsOpen={false} />,
     );
-    await expect.element(screen.getByTestId("instructions-toggle")).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: "Toggle instructions" }))
+      .toBeInTheDocument();
   });
 
   it("renders the placeholder action buttons", async () => {
     const screen = await render(
       <NavBar onToggleInstructions={() => {}} isInstructionsOpen={false} />,
     );
-    await expect.element(screen.getByTestId("settings-button")).toBeInTheDocument();
-    await expect.element(screen.getByTestId("difficulty-three-button")).toBeInTheDocument();
-    await expect.element(screen.getByTestId("difficulty-four-button")).toBeInTheDocument();
-    await expect.element(screen.getByTestId("difficulty-five-button")).toBeInTheDocument();
+    await expect.element(screen.getByRole("button", { name: "Open settings" })).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: "Set difficulty to three" }))
+      .toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: "Set difficulty to four" }))
+      .toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: "Set difficulty to five" }))
+      .toBeInTheDocument();
   });
 
   it("calls onToggleInstructions when button is clicked", async () => {
@@ -39,7 +47,7 @@ describe("NavBar", () => {
     const screen = await render(
       <NavBar onToggleInstructions={handleToggle} isInstructionsOpen={false} />,
     );
-    await screen.getByTestId("instructions-toggle").click();
+    await screen.getByRole("button", { name: "Toggle instructions" }).click();
     expect(handleToggle).toHaveBeenCalledOnce();
   });
 
@@ -48,7 +56,7 @@ describe("NavBar", () => {
       <NavBar onToggleInstructions={() => {}} isInstructionsOpen={false} />,
     );
     await expect
-      .element(screen.getByTestId("instructions-toggle"))
+      .element(screen.getByRole("button", { name: "Toggle instructions" }))
       .toHaveAttribute("aria-expanded", "false");
   });
 
@@ -57,7 +65,7 @@ describe("NavBar", () => {
       <NavBar onToggleInstructions={() => {}} isInstructionsOpen={true} />,
     );
     await expect
-      .element(screen.getByTestId("instructions-toggle"))
+      .element(screen.getByRole("button", { name: "Toggle instructions" }))
       .toHaveAttribute("aria-expanded", "true");
   });
 });

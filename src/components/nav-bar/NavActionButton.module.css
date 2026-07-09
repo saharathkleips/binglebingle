@@ -29,8 +29,8 @@
 
   &:is(:hover, :focus-visible) .surface {
     transform: translate(
-      calc(var(--system-lift-distance) * -1.25),
-      calc(var(--system-lift-distance) * -1.25)
+      calc(var(--nav-action-button-hover-offset) * -1),
+      calc(var(--nav-action-button-hover-offset) * -1)
     );
     box-shadow: var(--system-shadow-stack-lifted);
   }
@@ -57,7 +57,8 @@
     transform 140ms ease;
 }
 
-.content {
+.content,
+.contentIcon {
   position: relative;
   display: inline-grid;
   place-items: center;
@@ -102,37 +103,20 @@
   color: transparent;
 }
 
-.content svg {
+.contentIcon svg {
   width: 1.25rem;
   height: 1.25rem;
-}
-
-.content svg path {
-  paint-order: stroke fill;
-  vector-effect: non-scaling-stroke;
-}
-
-.contentDepth svg path {
-  fill: var(--color-system-depth);
-  stroke: var(--color-system-depth);
-  stroke-width: 1px;
-}
-
-.contentStroke svg path {
-  fill: var(--palette-obangsaek-black);
-  stroke: var(--palette-obangsaek-black);
-  stroke-width: 1px;
-}
-
-.contentLabel svg {
   color: var(--nav-action-button-text-gradient-2);
   -webkit-text-fill-color: currentColor;
+  filter: drop-shadow(0 1px 0 var(--color-system-depth));
 }
 
-.contentLabel svg path {
+.contentIcon svg path {
   fill: url("#gear-iridescent-gradient");
-  stroke: transparent;
-  stroke-width: 0;
+  paint-order: stroke fill;
+  stroke: var(--palette-obangsaek-black);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
 }
 
 @media (max-width: 479px), (max-height: 599px) {
@@ -147,12 +131,13 @@
     height: 1.9rem;
   }
 
-  .content {
+  .content,
+  .contentIcon {
     width: 1.15rem;
     height: 1.15rem;
   }
 
-  .content svg {
+  .contentIcon svg {
     width: 1.05rem;
     height: 1.05rem;
   }
@@ -171,12 +156,13 @@
     border-width: 1.5px;
   }
 
-  .content {
+  .content,
+  .contentIcon {
     width: 1rem;
     height: 1rem;
   }
 
-  .content svg {
+  .contentIcon svg {
     width: 0.95rem;
     height: 0.95rem;
   }

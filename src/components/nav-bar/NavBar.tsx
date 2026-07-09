@@ -23,28 +23,22 @@ export function NavBar({ onToggleInstructions, isInstructionsOpen }: NavBarProps
         </h1>
         <div className={styles.actions} role="group" aria-label="Game actions">
           <div className={styles.actionCluster}>
-            <NavActionButton ariaLabel="Set difficulty to three" testId="difficulty-three-button">
-              삼
-            </NavActionButton>
-            <NavActionButton ariaLabel="Set difficulty to four" testId="difficulty-four-button">
-              사
-            </NavActionButton>
-            <NavActionButton ariaLabel="Set difficulty to five" testId="difficulty-five-button">
-              오
-            </NavActionButton>
+            <NavActionButton ariaLabel="Set difficulty to three" label="삼" />
+            <NavActionButton ariaLabel="Set difficulty to four" label="사" />
+            <NavActionButton ariaLabel="Set difficulty to five" label="오" />
           </div>
           <div className={styles.actionCluster}>
             <NavActionButton
               ariaLabel="Toggle instructions"
               isExpanded={isInstructionsOpen}
               onClick={onToggleInstructions}
-              testId="instructions-toggle"
-            >
-              ?
-            </NavActionButton>
-            <NavActionButton ariaLabel="Open settings" testId="settings-button">
-              <Gear focusable="false" />
-            </NavActionButton>
+              label="?"
+            />
+            <NavActionButton
+              ariaLabel="Open settings"
+              icon={<Gear focusable="false" />}
+              kind="icon"
+            />
           </div>
         </div>
       </div>
