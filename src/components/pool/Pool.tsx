@@ -12,7 +12,11 @@ import { resolveCharacter } from "../../lib/character";
 import { getNextRotation } from "../../lib/character/rotation";
 import { decompose, compose } from "../../lib/character/composition";
 import { PoolTile } from "./PoolTile";
-import { DATA_SLOT_INDEX_ATTRIBUTE, DATA_TILE_ID_ATTRIBUTE } from "../tile/drop-target-helpers";
+import {
+  DATA_SLOT_INDEX_ATTRIBUTE,
+  DATA_TILE_ID_ATTRIBUTE,
+  parseDropTargetNumber,
+} from "../tile/drop-target-helpers";
 import type { Tile as TileType } from "../../context/game";
 import styles from "./Pool.module.css";
 
@@ -35,13 +39,15 @@ export function Pool() {
   useLayoutEffect(() => {
     const currentIds = new Set(state.pool.map((tile) => tile.id));
     const addedIds = [...currentIds].filter((id) => !prevPoolIdsRef.current.has(id));
-    if (addedIds.length > 0) {
-      setNewlyAddedTileIds((prev) => {
-        const next = new Set(prev);
-        addedIds.forEach((id) => next.add(id));
-        return next;
-      });
-    }
+    setNewlyAddedTileIds((prev) => {
+      const retainedIds = [...prev].filter((id) => currentIds.has(id));
+      const hasPrunedIds = retainedIds.length !== prev.size;
+      if (addedIds.length === 0 && !hasPrunedIds) return prev;
+
+      const next = new Set(retainedIds);
+      addedIds.forEach((id) => next.add(id));
+      return next;
+    });
     prevPoolIdsRef.current = currentIds;
   }, [state.pool]);
 
@@ -68,18 +74,16 @@ export function Pool() {
     return true;
   }
 
-  function canDropOnTarget(sourceTile: TileType, target: Element): boolean {
-    // Slots always accept a tile.
-    if (target.hasAttribute(DATA_SLOT_INDEX_ATTRIBUTE)) return true;
-    // Tiles only accept if compose() would succeed.
-    return getDropPreview(sourceTile, target) !== null;
-  }
+  function getDropTargetFeedback(sourceTile: TileType, target: Element) {
+    if (target.hasAttribute(DATA_SLOT_INDEX_ATTRIBUTE)) return { canDrop: true, preview: null };
 
-  function getDropPreview(sourceTile: TileType, target: Element): string | null {
     const targetId = parseTileId(target);
-    if (targetId === null) return null;
+    if (targetId === null) return { canDrop: false, preview: null };
+
     const combined = getComposedCharacter(sourceTile, targetId);
-    return combined === null ? null : resolveCharacter(combined);
+    return combined === null
+      ? { canDrop: false, preview: null }
+      : { canDrop: true, preview: resolveCharacter(combined) };
   }
 
   function getComposedCharacter(sourceTile: TileType, targetId: number) {
@@ -103,8 +107,7 @@ export function Pool() {
             onTap={() => handleTap(tile)}
             onDropOnTile={(targetId) => handleDropOnTile(tile, targetId)}
             onDropOnSlot={(slotIndex) => handleDropOnSlot(tile, slotIndex)}
-            canDropOnTarget={(target) => canDropOnTarget(tile, target)}
-            getDropPreview={(target) => getDropPreview(tile, target)}
+            getDropTargetFeedback={(target) => getDropTargetFeedback(tile, target)}
             onRotatingEnd={() => setRotatingTileId(null)}
             onComposedEnd={() => setComposedTileId(null)}
             onNewlyAddedEnd={() =>
@@ -122,6 +125,5 @@ export function Pool() {
 }
 
 function parseTileId(element: Element): number | null {
-  const value = element.getAttribute(DATA_TILE_ID_ATTRIBUTE);
-  return value === null ? null : parseInt(value, 10);
+  return parseDropTargetNumber(element, DATA_TILE_ID_ATTRIBUTE);
 }

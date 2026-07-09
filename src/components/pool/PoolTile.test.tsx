@@ -49,7 +49,6 @@ describe("PoolTile", () => {
       .element(screen.getByTestId("tile-0"))
       .toHaveAttribute("data-tile-interactive", "true");
   });
-
 });
 
 describe("PoolTile drag", () => {
@@ -118,7 +117,9 @@ describe("PoolTile drag", () => {
     const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
-        <PoolTile {...tileProps({ getDropPreview: () => "가" })} />
+        <PoolTile
+          {...tileProps({ getDropTargetFeedback: () => ({ canDrop: true, preview: "가" }) })}
+        />
         <PoolTile
           tile={targetTile}
           isTappable={false}

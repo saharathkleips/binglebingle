@@ -34,8 +34,7 @@ import styles from "./PoolTile.module.css";
  * @property onTap - Called on click when `isTappable` is true.
  * @property onDropOnTile - Called when a drag ends on another tile, with that tile's id. Returns whether the drop was accepted.
  * @property onDropOnSlot - Called when a drag ends on a submission slot, with that slot's index. Returns whether the drop was accepted.
- * @property canDropOnTarget - Optional predicate; returns true if dropping on the given element will actually do something. Used to gate the "can drop" visual on the dragging tile.
- * @property getDropPreview - Optional callback returning preview text for the current valid drop target.
+ * @property getDropTargetFeedback - Optional callback returning whether the current target accepts the drop and any preview text to show.
  * @property onRotatingEnd - Called after the rotate squeeze completes; Pool clears rotatingTileId.
  * @property onComposedEnd - Called after the compose heartbeat completes; Pool clears composedTileId.
  * @property onNewlyAddedEnd - Called after the entrance animation completes; Pool clears the id.
@@ -49,8 +48,7 @@ export type PoolTileProps = {
   onTap: () => void;
   onDropOnTile: (targetId: number) => boolean;
   onDropOnSlot: (slotIndex: number) => boolean;
-  canDropOnTarget?: (target: Element) => boolean;
-  getDropPreview?: (target: Element) => string | null;
+  getDropTargetFeedback?: (target: Element) => { canDrop: boolean; preview: string | null };
   onRotatingEnd?: () => void;
   onComposedEnd?: () => void;
   onNewlyAddedEnd?: () => void;
@@ -71,8 +69,7 @@ export function PoolTile({
   onTap,
   onDropOnTile,
   onDropOnSlot,
-  canDropOnTarget,
-  getDropPreview,
+  getDropTargetFeedback,
   onRotatingEnd,
   onComposedEnd,
   onNewlyAddedEnd,
@@ -96,8 +93,7 @@ export function PoolTile({
     onTap,
     onDropOnTile,
     onDropOnSlot,
-    canDropOnTarget,
-    getDropPreview,
+    getDropTargetFeedback,
   });
 
   return (

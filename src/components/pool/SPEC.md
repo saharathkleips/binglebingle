@@ -49,8 +49,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. D
 - `onTap: () => void` — called on click when `isTappable`.
 - `onDropOnTile: (targetId: number) => boolean` — called when a drag ends on another tile; returns whether the drop was accepted.
 - `onDropOnSlot: (slotIndex: number) => boolean` — called when a drag ends on a submission slot; returns whether the drop was accepted.
-- `canDropOnTarget?: (target: Element) => boolean` — gates valid-drop highlighting while dragging.
-- `getDropPreview?: (target: Element) => string | null` — returns preview text for the current valid target; PoolTile attaches it to the dragged tile as `data-drop-preview` for shared tile CSS.
+- `getDropTargetFeedback?: (target: Element) => { canDrop: boolean; preview: string | null }` — computes target validity and optional preview text in one pass; PoolTile attaches valid pool-tile merge previews to the dragged tile as `data-drop-preview` for shared tile CSS.
 - `isRotating`, `isJustComposed`, `isNewlyAdded` — feedback flags owned by Pool and animated through `useTileFeedback`.
 - `onRotatingEnd`, `onComposedEnd`, `onNewlyAddedEnd` — completion callbacks that clear Pool feedback state.
 
@@ -58,7 +57,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. D
 
 - Draggable owns click-vs-drag differentiation and pointer event wiring.
 - `onDragStart`: temporarily allows pool overflow so the tile can travel to slots and plays pickup feedback.
-- `onDrag`: resolves the current target via `document.elementsFromPoint`, sets `data-drop-source-active="true"` on the dragged tile when the current target is valid, and sets a target-specific active attribute (`data-drop-pool-target-active` or `data-drop-slot-target-active`) on the current target. The dragged tile also receives `data-drop-preview` when a pool-tile merge result can be displayed. Slot CSS combines `data-drop-slot-target-active` with `data-slot-state` to distinguish empty and filled slot treatments.
+- `onDrag`: resolves the current target via `document.elementsFromPoint`, computes target feedback once, sets `data-drop-source-active="true"` on the dragged tile when the current target is valid, and sets a target-specific active attribute (`data-drop-pool-target-active` or `data-drop-slot-target-active`) on the current target. The dragged tile also receives `data-drop-preview` when a pool-tile merge result can be displayed. Slot CSS combines `data-drop-slot-target-active` with `data-slot-state` to distinguish empty and filled slot treatments.
 - `onDragEnd`: calls slot/tile callbacks for detected drop targets. If the callback accepts the drop, inline drag styles are cleared because React will re-render/unmount the tile. If no target exists or the callback rejects the drop, the tile animates back to its fixed pool layout position. Invalid compose attempts still notify Pool so it can show rejection feedback before the source tile snaps back.
 - Drop onto `data-slot-index` element → `onDropOnSlot(slotIndex)`.
 - Drop onto `data-tile-id` element → `onDropOnTile(targetId)`.
@@ -81,7 +80,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. D
 
 **Shared visuals stay in `CharacterTile` / `BaseTile`.** PoolTile attaches GSAP Draggable, refs, test ids, and drop-target data attributes to the shared tile element without importing character composition helpers or duplicating base tile CSS.
 
-**Merge preview is text-only at the behavior boundary.** Pool computes the composed `Character` and resolves it to display text, then `usePoolTileDraggable` attaches that text to the dragged tile as `data-drop-preview` through the shared tile text override helper. Composition rules stay out of PoolTile, and the preview lives on the dragged tile because it remains visually above the target during overlap.
+**Merge preview is text-only at the behavior boundary.** Pool computes drop-target feedback in one pass: slot validity, pool-tile compose validity, and any resolved preview text. `usePoolTileDraggable` attaches that text to the dragged tile as `data-drop-preview` through the shared tile text override helper. Composition rules stay out of PoolTile, and the preview lives on the dragged tile because it remains visually above the target during overlap.
 
 **Feedback setup is delegated.** PoolTile keeps drag/drop behavior local but calls `useTileFeedback` for rotate, compose, particle, and entrance animations so the feedback contract stays separate from both shared visuals and Draggable setup.
 

@@ -11,6 +11,7 @@ import {
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_TILE_ID_ATTRIBUTE,
   findDropTarget as findDataAttributeDropTarget,
+  parseDropTargetNumber,
   removeDropTargetActiveAttributes,
   updateDropTargetHighlight,
 } from "../tile/drop-target-helpers";
@@ -24,8 +25,9 @@ export type UsePoolTileDraggableOptions = {
   onTap: () => void;
   onDropOnTile: (targetId: number) => boolean;
   onDropOnSlot: (slotIndex: number) => boolean;
-  canDropOnTarget: ((target: Element) => boolean) | undefined;
-  getDropPreview: ((target: Element) => string | null) | undefined;
+  getDropTargetFeedback:
+    | ((target: Element) => { canDrop: boolean; preview: string | null })
+    | undefined;
 };
 
 export function usePoolTileDraggable({
@@ -35,8 +37,7 @@ export function usePoolTileDraggable({
   onTap,
   onDropOnTile,
   onDropOnSlot,
-  canDropOnTarget,
-  getDropPreview,
+  getDropTargetFeedback,
 }: UsePoolTileDraggableOptions) {
   const lastOverRef = useRef<Element | null>(null);
   const tileIdRef = useLatestRef(tileId);
@@ -45,8 +46,7 @@ export function usePoolTileDraggable({
     onTap,
     onDropOnTile,
     onDropOnSlot,
-    canDropOnTarget,
-    getDropPreview,
+    getDropTargetFeedback,
   });
 
   useGSAP(
@@ -65,8 +65,14 @@ export function usePoolTileDraggable({
         onDrag: function onDrag(this: Draggable) {
           const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
           const dropTarget = findPoolDropTarget(elements, tileIdRef.current);
-          const { canDropOnTarget: canDrop, getDropPreview: getPreview } = callbacksRef.current;
-          const isValidDrop = dropTarget !== null && (canDrop === undefined || canDrop(dropTarget));
+          const dropTargetFeedback =
+            dropTarget === null
+              ? null
+              : (callbacksRef.current.getDropTargetFeedback?.(dropTarget) ?? {
+                  canDrop: true,
+                  preview: null,
+                });
+          const isValidDrop = dropTargetFeedback?.canDrop === true;
           const sourceElement = this.target as HTMLElement;
 
           updateDropTargetHighlight({
@@ -75,7 +81,7 @@ export function usePoolTileDraggable({
           });
 
           if (isValidDrop && dropTarget !== null) {
-            setTileTextOverride(sourceElement, getPreview?.(dropTarget) ?? null);
+            setTileTextOverride(sourceElement, dropTargetFeedback.preview);
             sourceElement.setAttribute(DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE, "true");
           } else {
             sourceElement.removeAttribute(DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE);
@@ -154,11 +160,6 @@ function acceptDrop(dropTarget: Element, callbacks: PoolTileCallbacks): boolean 
   }
 
   return false;
-}
-
-function parseDropTargetNumber(element: Element, attribute: string): number | null {
-  const value = element.getAttribute(attribute);
-  return value === null ? null : parseInt(value, 10);
 }
 
 function allowPoolDragOverflow() {

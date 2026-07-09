@@ -49,6 +49,14 @@ export function removeDropTargetActiveAttributes(element: Element) {
   DROP_TARGET_ACTIVE_ATTRIBUTES.forEach((attribute) => element.removeAttribute(attribute));
 }
 
+export function parseDropTargetNumber(element: Element, attribute: string): number | null {
+  const value = element.getAttribute(attribute);
+  if (value === null) return null;
+
+  const parsedValue = Number(value);
+  return Number.isInteger(parsedValue) ? parsedValue : null;
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
