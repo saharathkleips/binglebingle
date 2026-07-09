@@ -5,7 +5,6 @@ import { Pool } from "./Pool";
 import { GameProvider } from "../../context/game/GameContext";
 import { createInitialGameState } from "../../context/game/game-reducer";
 import { createWord } from "../../lib/word";
-import styles from "./PoolTile.module.css";
 
 async function renderPool(word: string) {
   const gameState = createInitialGameState(createWord(word)!);
@@ -62,34 +61,17 @@ describe("Pool tap", () => {
 });
 
 describe("Pool drag", () => {
-  it("shows shake on source tile when compose is invalid", async () => {
+  it("keeps pool unchanged when compose is invalid", async () => {
     // 나가 → pool [ㄱ(0), ㅏ(1), ㄱ(2), ㅏ(3)].
-    // Drag tile-1 (ㅏ) onto tile-3 (ㅏ): compose(ㅏ, ㅏ)=null → tile-1 shakes.
+    // Drag tile-1 (ㅏ) onto tile-3 (ㅏ): compose(ㅏ, ㅏ)=null.
     const screen = await renderPool("나가");
+    const tilesBefore = screen.getByTestId(/^tile-/).elements().length;
 
     const source = screen.getByTestId("tile-1").element();
     const target = screen.getByTestId("tile-3").element();
     dragToElementCenter(source, target);
 
-    await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
-  });
-
-  it("shakes both tiles independently when two compose attempts are rejected in quick succession", async () => {
-    // 나가 → pool [ㄱ(0), ㅏ(1), ㄱ(2), ㅏ(3)].
-    // Drag tile-1 (ㅏ) onto tile-3 (ㅏ) → rejected, tile-1 shakes.
-    // Before animation ends, drag tile-3 (ㅏ) onto tile-1 (ㅏ) → rejected, tile-3 also shakes.
-    // Both tiles should be shaking simultaneously.
-    const screen = await renderPool("나가");
-
-    const tile1 = screen.getByTestId("tile-1").element();
-    const tile3 = screen.getByTestId("tile-3").element();
-
-    dragToElementCenter(tile1, tile3);
-    await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
-
-    dragToElementCenter(tile3, tile1);
-    await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
-    await expect.element(screen.getByTestId("tile-3")).toHaveClass(styles.shaking!);
+    expect(screen.getByTestId(/^tile-/).elements().length).toBe(tilesBefore);
   });
 
   it("composes tiles and reduces pool count when compose is valid", async () => {
@@ -108,22 +90,5 @@ describe("Pool drag", () => {
 
     // Two tiles compose into one → count decreases by 1
     await expect.poll(() => screen.getByTestId(/^tile-/).elements().length).toBe(tilesBefore - 1);
-  });
-
-  it("clears rejected state after CSS shake animation ends (onRejectedEnd callback)", async () => {
-    // 나가 → pool [ㄱ(0), ㅏ(1), ㄱ(2), ㅏ(3)].
-    // Drag ㅏ onto ㅏ → rejected (shakes). Fire animationend → shake class removed.
-    const screen = await renderPool("나가");
-
-    const source = screen.getByTestId("tile-1").element();
-    const target = screen.getByTestId("tile-3").element();
-    dragToElementCenter(source, target);
-
-    await expect.element(screen.getByTestId("tile-1")).toHaveClass(styles.shaking!);
-
-    // Simulate the CSS animation finishing — Pool's onRejectedEnd clears the id from the set.
-    source.dispatchEvent(new Event("animationend", { bubbles: true }));
-
-    await expect.element(screen.getByTestId("tile-1")).not.toHaveClass(styles.shaking!);
   });
 });

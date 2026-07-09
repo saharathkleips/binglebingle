@@ -22,8 +22,8 @@ export type UsePoolTileDraggableOptions = {
   tileId: number;
   isTappable: boolean;
   onTap: () => void;
-  onDropOnTile: (targetId: number) => void;
-  onDropOnSlot: (slotIndex: number) => void;
+  onDropOnTile: (targetId: number) => boolean;
+  onDropOnSlot: (slotIndex: number) => boolean;
   canDropOnTarget: ((target: Element) => boolean) | undefined;
   getDropPreview: ((target: Element) => string | null) | undefined;
 };
@@ -90,7 +90,7 @@ export function usePoolTileDraggable({
           const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
           const dropTarget = findPoolDropTarget(elements, tileIdRef.current);
 
-          if (dropTarget !== null && dispatchDrop(dropTarget, callbacksRef.current)) {
+          if (dropTarget !== null && acceptDrop(dropTarget, callbacksRef.current)) {
             gsap.set(element, { clearProps: "all" });
             restorePoolDragOverflow();
             return;
@@ -142,17 +142,15 @@ function clearDragFeedback(
   clearTileTextOverride(sourceElement);
 }
 
-function dispatchDrop(dropTarget: Element, callbacks: PoolTileCallbacks): boolean {
+function acceptDrop(dropTarget: Element, callbacks: PoolTileCallbacks): boolean {
   const slotIndex = parseDropTargetNumber(dropTarget, DATA_SLOT_INDEX_ATTRIBUTE);
   if (slotIndex !== null) {
-    callbacks.onDropOnSlot(slotIndex);
-    return true;
+    return callbacks.onDropOnSlot(slotIndex);
   }
 
   const targetTileId = parseDropTargetNumber(dropTarget, DATA_TILE_ID_ATTRIBUTE);
   if (targetTileId !== null) {
-    callbacks.onDropOnTile(targetTileId);
-    return true;
+    return callbacks.onDropOnTile(targetTileId);
   }
 
   return false;

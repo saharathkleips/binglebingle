@@ -22,7 +22,6 @@ import styles from "./Pool.module.css";
  */
 export function Pool() {
   const { state, dispatch } = useGame();
-  const [rejectedTileIds, setRejectedTileIds] = useState<Set<number>>(new Set());
   const [rotatingTileId, setRotatingTileId] = useState<number | null>(null);
   const [composedTileId, setComposedTileId] = useState<number | null>(null);
   const [newlyAddedTileIds, setNewlyAddedTileIds] = useState<Set<number>>(new Set());
@@ -55,18 +54,18 @@ export function Pool() {
     }
   }
 
-  function handleDropOnTile(sourceTile: TileType, targetId: number) {
+  function handleDropOnTile(sourceTile: TileType, targetId: number): boolean {
     const combined = getComposedCharacter(sourceTile, targetId);
-    if (combined === null) {
-      setRejectedTileIds((prev) => new Set(prev).add(sourceTile.id));
-    } else {
-      setComposedTileId(targetId);
-      dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId, incomingId: sourceTile.id } });
-    }
+    if (combined === null) return false;
+
+    setComposedTileId(targetId);
+    dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId, incomingId: sourceTile.id } });
+    return true;
   }
 
-  function handleDropOnSlot(sourceTile: TileType, slotIndex: number) {
+  function handleDropOnSlot(sourceTile: TileType, slotIndex: number): boolean {
     dispatch({ type: "SUBMISSION_SLOT_INSERT", payload: { tileId: sourceTile.id, slotIndex } });
+    return true;
   }
 
   function canDropOnTarget(sourceTile: TileType, target: Element): boolean {
@@ -98,7 +97,6 @@ export function Pool() {
             key={tile.id}
             tile={tile}
             isTappable={isTappable}
-            isRejected={rejectedTileIds.has(tile.id)}
             isRotating={rotatingTileId === tile.id}
             isJustComposed={composedTileId === tile.id}
             isNewlyAdded={newlyAddedTileIds.has(tile.id)}
@@ -107,13 +105,6 @@ export function Pool() {
             onDropOnSlot={(slotIndex) => handleDropOnSlot(tile, slotIndex)}
             canDropOnTarget={(target) => canDropOnTarget(tile, target)}
             getDropPreview={(target) => getDropPreview(tile, target)}
-            onRejectedEnd={() =>
-              setRejectedTileIds((prev) => {
-                const next = new Set(prev);
-                next.delete(tile.id);
-                return next;
-              })
-            }
             onRotatingEnd={() => setRotatingTileId(null)}
             onComposedEnd={() => setComposedTileId(null)}
             onNewlyAddedEnd={() =>

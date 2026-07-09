@@ -28,16 +28,14 @@ import styles from "./PoolTile.module.css";
  *
  * @property tile - The tile data to render.
  * @property isTappable - Whether tapping this tile does anything; drag remains available either way.
- * @property isRejected - Pool sets this when a compose operation is rejected; PoolTile renders shake feedback.
  * @property isRotating - Pool sets this when the tile's jamo was just rotated; PoolTile plays a brief GSAP squeeze.
  * @property isJustComposed - Pool sets this on the target tile after a successful compose; PoolTile plays heartbeat + particles.
  * @property isNewlyAdded - Pool sets this when this tile ID first appears in the pool; PoolTile plays entrance animation.
  * @property onTap - Called on click when `isTappable` is true.
- * @property onDropOnTile - Called when a drag ends on another tile, with that tile's id.
- * @property onDropOnSlot - Called when a drag ends on a submission slot, with that slot's index.
+ * @property onDropOnTile - Called when a drag ends on another tile, with that tile's id. Returns whether the drop was accepted.
+ * @property onDropOnSlot - Called when a drag ends on a submission slot, with that slot's index. Returns whether the drop was accepted.
  * @property canDropOnTarget - Optional predicate; returns true if dropping on the given element will actually do something. Used to gate the "can drop" visual on the dragging tile.
  * @property getDropPreview - Optional callback returning preview text for the current valid drop target.
- * @property onRejectedEnd - Called from onAnimationEnd; Pool uses this to clear the rejected state.
  * @property onRotatingEnd - Called after the rotate squeeze completes; Pool clears rotatingTileId.
  * @property onComposedEnd - Called after the compose heartbeat completes; Pool clears composedTileId.
  * @property onNewlyAddedEnd - Called after the entrance animation completes; Pool clears the id.
@@ -45,16 +43,14 @@ import styles from "./PoolTile.module.css";
 export type PoolTileProps = {
   tile: Tile;
   isTappable: boolean;
-  isRejected: boolean;
   isRotating?: boolean;
   isJustComposed?: boolean;
   isNewlyAdded?: boolean;
   onTap: () => void;
-  onDropOnTile: (targetId: number) => void;
-  onDropOnSlot: (slotIndex: number) => void;
+  onDropOnTile: (targetId: number) => boolean;
+  onDropOnSlot: (slotIndex: number) => boolean;
   canDropOnTarget?: (target: Element) => boolean;
   getDropPreview?: (target: Element) => string | null;
-  onRejectedEnd: () => void;
   onRotatingEnd?: () => void;
   onComposedEnd?: () => void;
   onNewlyAddedEnd?: () => void;
@@ -69,7 +65,6 @@ export type PoolTileProps = {
 export function PoolTile({
   tile,
   isTappable,
-  isRejected,
   isRotating = false,
   isJustComposed = false,
   isNewlyAdded = false,
@@ -78,7 +73,6 @@ export function PoolTile({
   onDropOnSlot,
   canDropOnTarget,
   getDropPreview,
-  onRejectedEnd,
   onRotatingEnd,
   onComposedEnd,
   onNewlyAddedEnd,
@@ -106,19 +100,13 @@ export function PoolTile({
     getDropPreview,
   });
 
-  function handleAnimationEnd() {
-    if (isRejected) onRejectedEnd();
-  }
-
   return (
     <div className={styles.cell}>
       <CharacterTile
         character={tile.character}
-        className={isRejected ? (styles.shaking ?? "") : ""}
         dataAttributes={{ [DATA_TILE_ID_ATTRIBUTE]: tile.id }}
         element="button"
         isInteractive
-        onAnimationEnd={handleAnimationEnd}
         testId={`tile-${tile.id}`}
         ref={buttonRef}
       />

@@ -33,7 +33,7 @@ Scales element back to 1 with resting box-shadow over 0.2s (ease: power2.out). O
 
 ### animateReposition(element, x, y) => gsap.core.Tween
 
-Animates element to the given x/y transform offset over 0.3s (ease: power2.out). Used when a drop has no valid target or a compose is rejected — the tile settles near where it was dropped rather than snapping back to origin. Designed to be reusable for decomposition spread in 1.4.5.
+Animates element back to its origin over 1.2s (ease: back.out(1.2)). Used when a drop has no valid target or a compose is rejected. The intentionally slow duration makes rejection snap-back feedback visible while tuning the interaction.
 
 ## Key Decisions
 

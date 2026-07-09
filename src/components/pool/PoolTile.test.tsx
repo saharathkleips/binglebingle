@@ -4,7 +4,6 @@ import { dragSequence, dragToElementCenter } from "../../test-utils/pointer-even
 import { PoolTile } from "./PoolTile";
 import { character } from "../../lib/character";
 import type { Tile as TileType } from "../../context/game";
-import styles from "./PoolTile.module.css";
 
 function tile(id: number, char: ReturnType<typeof character>): TileType {
   return { id, character: char! };
@@ -16,11 +15,9 @@ function tileProps(
   return {
     tile: tile(0, character({ choseong: "ㄱ" })),
     isTappable: false,
-    isRejected: false,
     onTap: vi.fn(),
-    onDropOnTile: vi.fn(),
-    onDropOnSlot: vi.fn(),
-    onRejectedEnd: vi.fn(),
+    onDropOnTile: vi.fn(() => true),
+    onDropOnSlot: vi.fn(() => true),
     ...overrides,
   };
 }
@@ -53,30 +50,11 @@ describe("PoolTile", () => {
       .toHaveAttribute("data-tile-interactive", "true");
   });
 
-  it("applies shaking class when isRejected is true", async () => {
-    const screen = await render(<PoolTile {...tileProps({ isRejected: true })} />);
-    await expect.element(screen.getByTestId("tile-0")).toHaveClass(styles.shaking!);
-  });
-
-  it("does not apply shaking class when isRejected is false", async () => {
-    const screen = await render(<PoolTile {...tileProps({ isRejected: false })} />);
-    await expect.element(screen.getByTestId("tile-0")).not.toHaveClass(styles.shaking!);
-  });
-
-  it("calls onRejectedEnd after animation ends", async () => {
-    const onRejectedEnd = vi.fn();
-    const screen = await render(<PoolTile {...tileProps({ isRejected: true, onRejectedEnd })} />);
-    screen
-      .getByTestId("tile-0")
-      .element()
-      .dispatchEvent(new Event("animationend", { bubbles: true }));
-    expect(onRejectedEnd).toHaveBeenCalledOnce();
-  });
 });
 
 describe("PoolTile drag", () => {
   it("calls onDropOnSlot with slotIndex when dropped on a slot", async () => {
-    const onDropOnSlot = vi.fn();
+    const onDropOnSlot = vi.fn(() => true);
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <PoolTile {...tileProps({ onDropOnSlot })} />
@@ -95,7 +73,7 @@ describe("PoolTile drag", () => {
   });
 
   it("calls onDropOnTile with targetId when dropped on another tile", async () => {
-    const onDropOnTile = vi.fn();
+    const onDropOnTile = vi.fn(() => true);
     const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
@@ -103,11 +81,9 @@ describe("PoolTile drag", () => {
         <PoolTile
           tile={targetTile}
           isTappable={false}
-          isRejected={false}
           onTap={vi.fn()}
-          onDropOnTile={vi.fn()}
-          onDropOnSlot={vi.fn()}
-          onRejectedEnd={vi.fn()}
+          onDropOnTile={vi.fn(() => true)}
+          onDropOnSlot={vi.fn(() => true)}
         />
       </div>,
     );
@@ -123,8 +99,8 @@ describe("PoolTile drag", () => {
   it("does not call onDropOnSlot or onDropOnTile when dropped on empty space", async () => {
     // Drag a tile and release over empty space (no valid drop target in view).
     // findDropTarget returns null — neither callback fires.
-    const onDropOnSlot = vi.fn();
-    const onDropOnTile = vi.fn();
+    const onDropOnSlot = vi.fn(() => true);
+    const onDropOnTile = vi.fn(() => true);
     const screen = await render(<PoolTile {...tileProps({ onDropOnSlot, onDropOnTile })} />);
     const tileElement = screen.getByTestId("tile-0").element();
 
@@ -146,11 +122,9 @@ describe("PoolTile drag", () => {
         <PoolTile
           tile={targetTile}
           isTappable={false}
-          isRejected={false}
           onTap={vi.fn()}
-          onDropOnTile={vi.fn()}
-          onDropOnSlot={vi.fn()}
-          onRejectedEnd={vi.fn()}
+          onDropOnTile={vi.fn(() => true)}
+          onDropOnSlot={vi.fn(() => true)}
         />
       </div>,
     );
