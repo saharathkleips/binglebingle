@@ -27,7 +27,7 @@ export type DropTargetTile = {
   tileId: number;
 };
 
-export function findDropTarget(elements: Element[], query: DropTargetQuery): Element | null {
+export function findDropTarget(elements: readonly Element[], query: DropTargetQuery): Element | null {
   return elements.find((element) => isDropTarget(element, query)) ?? null;
 }
 

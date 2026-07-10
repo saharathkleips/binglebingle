@@ -4,7 +4,7 @@
  * Shared GSAP feedback animations for tile-like elements.
  */
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect } from "react";
 import type { RefObject } from "react";
 import { gsap } from "../../lib/animation/register";
 import {
@@ -12,6 +12,7 @@ import {
   animateEntranceScale,
   animateParticleBurst,
 } from "../../lib/animation/tile-animations";
+import { useLatestRef } from "./use-latest-ref";
 
 export type UseTileFeedbackOptions = {
   elementRef: RefObject<HTMLElement | null>;
@@ -37,12 +38,9 @@ export function useTileFeedback({
   onComposedEnd = NOOP,
   onNewlyAddedEnd = NOOP,
 }: UseTileFeedbackOptions) {
-  const onRotatingEndRef = useRef(onRotatingEnd);
-  onRotatingEndRef.current = onRotatingEnd;
-  const onComposedEndRef = useRef(onComposedEnd);
-  onComposedEndRef.current = onComposedEnd;
-  const onNewlyAddedEndRef = useRef(onNewlyAddedEnd);
-  onNewlyAddedEndRef.current = onNewlyAddedEnd;
+  const onRotatingEndRef = useLatestRef(onRotatingEnd);
+  const onComposedEndRef = useLatestRef(onComposedEnd);
+  const onNewlyAddedEndRef = useLatestRef(onNewlyAddedEnd);
 
   // VIS-21: brief squeeze pulse when the jamo rotates.
   useLayoutEffect(() => {
@@ -58,7 +56,7 @@ export function useTileFeedback({
     return () => {
       tween.kill();
     };
-  }, [elementRef, isRotating]);
+  }, [elementRef, isRotating, onRotatingEndRef]);
 
   // VIS-19: scale heartbeat + particle burst on the tile that received a compose.
   useLayoutEffect(() => {
@@ -70,7 +68,7 @@ export function useTileFeedback({
       tween.kill();
       cleanupParticles();
     };
-  }, [elementRef, isJustComposed]);
+  }, [elementRef, isJustComposed, onComposedEndRef]);
 
   // VIS-20: entrance scale for newly-added tiles (decompose results, etc.).
   useLayoutEffect(() => {
@@ -79,7 +77,7 @@ export function useTileFeedback({
     return () => {
       tween.kill();
     };
-  }, [elementRef, isNewlyAdded]);
+  }, [elementRef, isNewlyAdded, onNewlyAddedEndRef]);
 }
 
 // ---------------------------------------------------------------------------

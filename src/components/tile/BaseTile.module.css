@@ -142,7 +142,6 @@
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
     -webkit-mask-size: 100% 100%;
-    -webkit-mask-size: calc(100%);
   }
 }
 
