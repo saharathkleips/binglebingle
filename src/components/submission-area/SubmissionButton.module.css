@@ -2,8 +2,8 @@
   min-height: 44px;
   margin: 0 0 0 12px;
   padding: var(--button-hover-offset)
-    calc(var(--button-hover-offset) + var(--system-depth) + var(--system-cast-shadow-growth))
-    calc(var(--button-hover-offset) + var(--system-depth) + var(--system-cast-shadow-growth))
+    calc(var(--button-hover-offset) + var(--button-depth) + var(--button-cast-shadow-growth))
+    calc(var(--button-hover-offset) + var(--button-depth) + var(--button-cast-shadow-growth))
     var(--button-hover-offset);
   font-size: 1rem;
 }

@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { gsap } from "./register";
-import { animateComposePulse } from "./tile-animations";
+import { animateComposePulse, animateRotateSqueeze } from "./tile-animations";
 
 /**
  * GSAP can animate plain objects in Node — we use a proxy that
@@ -34,6 +34,21 @@ function mockElement(): HTMLElement {
 // Kill all GSAP tweens after each test to prevent async ticker errors.
 afterEach(() => {
   gsap.globalTimeline.clear();
+});
+
+describe("animateRotateSqueeze", () => {
+  it("returns a GSAP Tween", () => {
+    const tween = animateRotateSqueeze(mockElement());
+    expect(tween).toBeInstanceOf(gsap.core.Tween);
+    tween.kill();
+  });
+
+  it("accepts an optional onComplete callback without error", () => {
+    const onComplete = vi.fn();
+    const tween = animateRotateSqueeze(mockElement(), onComplete);
+    expect(tween).toBeInstanceOf(gsap.core.Tween);
+    tween.kill();
+  });
 });
 
 describe("animateComposePulse", () => {

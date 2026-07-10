@@ -13,6 +13,7 @@ import {
   popPendingTileSnapBack,
   recordTileSnapBack,
 } from "../../lib/animation/drag-animations";
+import { MOTION_DURATION_SLOT_ENTRANCE } from "../../lib/animation/motion-tokens";
 import { animateEntranceScale } from "../../lib/animation/tile-animations";
 import type { TileSnapBackSnapshot } from "../../lib/animation/drag-animations";
 import {
@@ -76,7 +77,10 @@ export function useSubmissionSlotDraggable({
             });
           });
         } else {
-          animateEntranceScale(buttonRef.current, undefined, { fromScale: 0.6, duration: 0.2 });
+          animateEntranceScale(buttonRef.current, undefined, {
+            fromScale: 0.6,
+            duration: MOTION_DURATION_SLOT_ENTRANCE,
+          });
         }
       }
 

@@ -96,6 +96,13 @@ body {
   --color-system-depth: var(--color-tile-depth);
   --color-system-shadow: var(--color-tile-shadow);
 
+  /* ── Motion tokens ───────────────────────────────────────────────────── */
+  --motion-duration-instant: 80ms;
+  --motion-duration-fast: 140ms;
+  --motion-duration-medium: 220ms;
+  --motion-duration-snap: 300ms;
+  --motion-ease-standard: ease;
+
   /* ── System chrome tokens: fixed, non-responsive controls ────────────── */
   --system-depth-step: 1px;
   --system-depth: 3px;

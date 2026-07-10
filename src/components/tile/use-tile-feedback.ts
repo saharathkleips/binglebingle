@@ -6,11 +6,11 @@
 
 import { useLayoutEffect } from "react";
 import type { RefObject } from "react";
-import { gsap } from "../../lib/animation/register";
 import {
   animateComposePulse,
   animateEntranceScale,
   animateParticleBurst,
+  animateRotateSqueeze,
 } from "../../lib/animation/tile-animations";
 import { useLatestRef } from "./use-latest-ref";
 
@@ -45,14 +45,7 @@ export function useTileFeedback({
   // VIS-21: brief squeeze pulse when the jamo rotates.
   useLayoutEffect(() => {
     if (!isRotating || !elementRef.current) return;
-    const tween = gsap.to(elementRef.current, {
-      scale: 0.82,
-      duration: 0.08,
-      ease: "power2.in",
-      yoyo: true,
-      repeat: 1,
-      onComplete: () => onRotatingEndRef.current(),
-    });
+    const tween = animateRotateSqueeze(elementRef.current, () => onRotatingEndRef.current());
     return () => {
       tween.kill();
     };

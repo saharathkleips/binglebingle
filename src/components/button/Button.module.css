@@ -1,8 +1,13 @@
 .button {
   --button-face: #fbf7f0;
-  --button-hover-offset: calc(var(--system-lift-distance) * 1.25);
-  --button-shadow-stack-pressed: var(--system-depth-step) var(--system-depth-step) 0
-    var(--color-system-depth);
+  --button-depth: var(--tile-depth);
+  --button-depth-step: var(--tile-depth-step);
+  --button-cast-shadow-growth: var(--tile-cast-shadow-growth);
+  --button-hover-offset: calc(var(--tile-lift-distance) * 1.25);
+  --button-shadow-stack: var(--tile-shadow-stack);
+  --button-shadow-stack-lifted: var(--tile-shadow-stack-lifted);
+  --button-shadow-stack-pressed: var(--button-depth-step) var(--button-depth-step) 0
+    var(--color-tile-depth);
   --button-text-gradient-1: var(--palette-najeon-iridescent-lavender);
   --button-text-gradient-2: var(--palette-najeon-iridescent-blue);
   --button-text-gradient-3: var(--palette-najeon-iridescent-pink);
@@ -32,11 +37,11 @@
       calc(var(--button-hover-offset) * -1),
       calc(var(--button-hover-offset) * -1)
     );
-    box-shadow: var(--system-shadow-stack-lifted);
+    box-shadow: var(--button-shadow-stack-lifted);
   }
 
   &:not(:disabled):active .surface {
-    transform: translate(var(--system-depth), var(--system-depth));
+    transform: translate(var(--button-depth), var(--button-depth));
     box-shadow: var(--button-shadow-stack-pressed);
   }
 }
@@ -47,12 +52,12 @@
   place-items: center;
   border: 2px solid var(--palette-obangsaek-black);
   background: var(--button-face);
-  box-shadow: var(--system-shadow-stack);
+  box-shadow: var(--button-shadow-stack);
   transform-origin: center bottom;
   transition:
-    box-shadow 140ms ease,
-    opacity 140ms ease,
-    transform 140ms ease;
+    box-shadow var(--motion-duration-fast) var(--motion-ease-standard),
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
 
   .button:disabled & {
     opacity: 0.55;
@@ -72,9 +77,9 @@
 }
 
 .textDepth {
-  color: var(--color-system-depth);
-  -webkit-text-fill-color: var(--color-system-depth);
-  -webkit-text-stroke: 1px var(--color-system-depth);
+  color: var(--color-tile-depth);
+  -webkit-text-fill-color: var(--color-tile-depth);
+  -webkit-text-stroke: 1px var(--color-tile-depth);
   transform: translateY(1px);
 }
 

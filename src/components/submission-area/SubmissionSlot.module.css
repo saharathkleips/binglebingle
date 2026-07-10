@@ -29,7 +29,7 @@
   border-radius: var(--tile-radius);
   background-color: var(--submission-slot-placeholder-background);
   box-shadow: var(--tile-depth-stack);
-  transition: background-color 140ms ease;
+  transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .slotMotif {

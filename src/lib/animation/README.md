@@ -1,6 +1,6 @@
 # animation
 
-GSAP animation utilities for tile interactions. Registers GSAP plugins once at import time and exports typed helpers for drag lifecycle, tile feedback, history reveal, and particle animations.
+GSAP animation utilities for tile interactions. Registers GSAP plugins once at import time and exports typed helpers for drag lifecycle, tile feedback, history reveal, particle animations, and shared motion tokens.
 
 ## Exports
 
@@ -12,6 +12,8 @@ GSAP animation utilities for tile interactions. Registers GSAP plugins once at i
 - `recordTileSnapBack(tileId, element, options?)`, `hasPendingTileSnapBack(tileId)`, `popPendingTileSnapBack(tileId)`, `discardPendingTileSnapBack(tileId)` — capture, consume, or discard release snapshots when React moves a tile between owners
 - `shouldSuppressTileEntranceForSnapBack(tileId)`, `clearTileEntranceSnapBackSuppressions(tileIds)` — prevent generic entrance animations from competing with snap-back clones
 - `animateSnapBackFromRect(element, snapshot, onComplete?) => gsap.core.Tween` — animates a captured tile clone into a newly-rendered destination tile's layout position using the shared snap-back timing
+- `motion-tokens.ts` — shared GSAP timing, easing, and particle palette constants
+- `animateRotateSqueeze(element, onComplete?) => gsap.core.Tween` — plays rotate feedback on a tile
 - `animateComposePulse(element, onComplete?) => gsap.core.Tween` — plays compose feedback on a tile
 - `animateEntranceScale(element, onComplete?, options?) => gsap.core.Tween` — scales a newly-rendered tile in from a configurable starting scale
 - `animateHistoryRowReveal(rowElement) => gsap.core.Timeline` — reveals a submitted history row and staggers its tiles

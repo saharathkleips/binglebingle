@@ -5,14 +5,19 @@
  * and reposition. Each returns a GSAP Tween so callers can chain or kill.
  */
 
+import {
+  MOTION_DURATION_PICK_UP,
+  MOTION_DURATION_SNAP,
+  MOTION_EASE_SNAP,
+  MOTION_EASE_STANDARD_OUT,
+} from "./motion-tokens";
 import { gsap } from "./register";
 
 const PICK_UP_SCALE = 1.08;
-const PICK_UP_DURATION = 0.15;
 
 const SNAP_BACK_ANIMATION = {
-  duration: 0.3,
-  ease: "back.out(1.2)",
+  duration: MOTION_DURATION_SNAP,
+  ease: MOTION_EASE_SNAP,
 } as const;
 const ARRIVAL_LIFT_TRANSFORM =
   "translate(calc(var(--tile-lift-distance) * var(--tile-hover-lift-multiplier) * -1), calc(var(--tile-lift-distance) * var(--tile-hover-lift-multiplier) * -1))";
@@ -48,8 +53,8 @@ const snapBackEntranceSuppressedTileIds = new Set<number>();
 export function animatePickUp(element: HTMLElement): gsap.core.Tween {
   return gsap.to(element, {
     scale: PICK_UP_SCALE,
-    duration: PICK_UP_DURATION,
-    ease: "power2.out",
+    duration: MOTION_DURATION_PICK_UP,
+    ease: MOTION_EASE_STANDARD_OUT,
   });
 }
 

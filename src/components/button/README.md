@@ -1,6 +1,6 @@
 # components/button
 
-Shared game button primitives for fixed system controls. The button keeps the native hitbox stable while moving an inner surface for hover/focus/press feedback, using the shared fixed system depth tokens.
+Shared game button primitives for fixed system controls. The button keeps the native hitbox stable while moving an inner surface for hover/focus/press feedback, using the same depth and shadow stack as tiles so physical controls feel consistent.
 
 ## Exports
 

@@ -6,19 +6,22 @@
  * All helpers return either a Tween/Timeline or a cleanup function.
  */
 
+import {
+  MOTION_DURATION_FAST,
+  MOTION_DURATION_INSTANT,
+  MOTION_DURATION_MEDIUM,
+  MOTION_DURATION_PARTICLE_BURST,
+  MOTION_DURATION_SLOT_ENTRANCE,
+  MOTION_EASE_DECISIVE_IN_OUT,
+  MOTION_EASE_DECISIVE_OUT,
+  MOTION_EASE_ENTRANCE,
+  MOTION_EASE_STANDARD_IN,
+  MOTION_EASE_STANDARD_OUT,
+  MOTION_OVERLAP_HISTORY_TILE,
+  MOTION_STAGGER_HISTORY_TILE,
+  PARTICLE_BURST_COLORS,
+} from "./motion-tokens";
 import { gsap } from "./register";
-
-/** 오방색/단청 palette used for particle bursts. */
-const PARTICLE_COLORS = [
-  "#c3291b", // obangsaek-red
-  "#f7ce46", // obangsaek-yellow
-  "#0a0af5", // obangsaek-blue
-  "#347641", // obangsaek-green
-  "#e25749", // dancheong-red
-  "#4da576", // dancheong-green
-  "#393f69", // dancheong-blue
-  "#fbe596", // dancheong-yellow
-];
 
 const PARTICLE_COUNT = 8;
 
@@ -26,6 +29,27 @@ export type EntranceScaleOptions = {
   fromScale?: number;
   duration?: number;
 };
+
+/**
+ * Plays a brief squeeze pulse when a tile's jamo rotates.
+ *
+ * @param element - The tile element whose character changed.
+ * @param onComplete - Optional callback invoked when the animation finishes.
+ * @returns A GSAP Tween — kill it if the component unmounts early.
+ */
+export function animateRotateSqueeze(
+  element: HTMLElement,
+  onComplete?: () => void,
+): gsap.core.Tween {
+  return gsap.to(element, {
+    scale: 0.82,
+    duration: MOTION_DURATION_INSTANT,
+    ease: MOTION_EASE_STANDARD_IN,
+    yoyo: true,
+    repeat: 1,
+    ...(onComplete !== undefined && { onComplete }),
+  });
+}
 
 /**
  * Plays a scale "heartbeat" on the tile that absorbed a compose.
@@ -41,8 +65,8 @@ export function animateComposePulse(
 ): gsap.core.Tween {
   return gsap.to(element, {
     scale: 1.22,
-    duration: 0.13,
-    ease: "power3.out",
+    duration: MOTION_DURATION_FAST,
+    ease: MOTION_EASE_DECISIVE_OUT,
     yoyo: true,
     repeat: 1,
     ...(onComplete !== undefined && { onComplete }),
@@ -66,8 +90,8 @@ export function animateEntranceScale(
 ): gsap.core.Tween {
   return gsap.from(element, {
     scale: options.fromScale ?? 0,
-    duration: options.duration ?? 0.22,
-    ease: "back.out(1.7)",
+    duration: options.duration ?? MOTION_DURATION_MEDIUM,
+    ease: MOTION_EASE_ENTRANCE,
     clearProps: "scale",
     ...(onComplete !== undefined && { onComplete }),
   });
@@ -88,8 +112,8 @@ export function animateHistoryRowReveal(rowElement: HTMLElement): gsap.core.Time
   timeline.from(rowElement, {
     y: 20,
     opacity: 0,
-    duration: 0.22,
-    ease: "power2.out",
+    duration: MOTION_DURATION_MEDIUM,
+    ease: MOTION_EASE_STANDARD_OUT,
   });
 
   // Tiles flip in one-by-one, left to right.
@@ -97,11 +121,11 @@ export function animateHistoryRowReveal(rowElement: HTMLElement): gsap.core.Time
     tiles,
     {
       scaleX: 0,
-      duration: 0.2,
-      ease: "power3.inOut",
-      stagger: 0.12,
+      duration: MOTION_DURATION_SLOT_ENTRANCE,
+      ease: MOTION_EASE_DECISIVE_IN_OUT,
+      stagger: MOTION_STAGGER_HISTORY_TILE,
     },
-    "-=0.06",
+    MOTION_OVERLAP_HISTORY_TILE,
   );
 
   return timeline;
@@ -129,7 +153,7 @@ export function animateParticleBurst(element: HTMLElement): () => void {
       "width:6px",
       "height:6px",
       "border-radius:50%",
-      `background:${PARTICLE_COLORS[index % PARTICLE_COLORS.length]}`,
+      `background:${PARTICLE_BURST_COLORS[index % PARTICLE_BURST_COLORS.length]}`,
       "pointer-events:none",
       "z-index:9999",
       "transform:translate(-50%,-50%)",
@@ -160,8 +184,8 @@ export function animateParticleBurst(element: HTMLElement): () => void {
         y: Math.sin(angle) * distance,
         opacity: 0,
         scale: 0.3,
-        duration: 0.42,
-        ease: "power2.out",
+        duration: MOTION_DURATION_PARTICLE_BURST,
+        ease: MOTION_EASE_STANDARD_OUT,
       },
       0,
     );
