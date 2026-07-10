@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Centralizes GSAP plugin registration and provides typed animation helpers for tile drag interactions. Components import from this module to get a ready-to-use GSAP instance with Draggable registered, plus helper functions that encode animation parameters (duration, easing, scale) without knowing about game logic.
+Centralizes GSAP plugin registration and provides typed animation helpers for tile drag interactions, tile feedback, history reveals, and particle effects. Components import from this module to get a ready-to-use GSAP instance with Draggable registered, plus helper functions that encode animation parameters (duration, easing, scale) without knowing about game logic.
 
 ## File Map
 
@@ -13,19 +13,25 @@ animation/
 ├── README.md
 ├── SPEC.md
 ├── register.ts           # GSAP plugin registration + re-exports
-├── drag-animations.ts    # animatePickUp, animatePutDown, animateReposition
-└── drag-animations.test.ts
+├── drag-animations.ts    # drag lifecycle and cross-owner snap-back helpers
+├── drag-animations.test.ts
+├── tile-animations.ts    # compose pulse, entrance, history reveal, particle burst
+├── tile-animations.test.ts
+└── tile-animations.test.tsx
 ```
 
 ## Types
 
-No custom types exported. Functions accept `HTMLElement` targets and return `gsap.core.Tween`.
+- `TileSnapBackOptions` — caller hint for destination snap-back presentation.
+- `TileSnapBackSnapshot` — captured clone, cleanup timer, and arrival-lift hint consumed by cross-owner snap-back.
+
+Most functions accept `HTMLElement` targets and return a `gsap.core.Tween`; history reveal returns a `gsap.core.Timeline`, and particle burst returns a cleanup function.
 
 ## Functions
 
 ### animatePickUp(element) => gsap.core.Tween
 
-Scales element to 1.08 with an enhanced box-shadow over 0.15s. Called from GSAP Draggable's `onDragStart`. Does not clear transforms — Draggable manages position transforms during drag.
+Scales element to 1.08 over 0.15s. Called from GSAP Draggable's `onDragStart`. Does not clear transforms — Draggable manages position transforms during drag, and CSS owns tile shadows.
 
 ### animatePutDown(element) => gsap.core.Tween
 
@@ -47,7 +53,7 @@ Hides the newly-rendered destination element, animates the captured clone into i
 
 - Plugin registration runs once at module load time via top-level `gsap.registerPlugin(Draggable, useGSAP)` in `register.ts`. Components that need Draggable import from `register.ts` to guarantee registration order.
 - `useGSAP` from `@gsap/react` wraps `useLayoutEffect` and creates a `gsap.Context` scoped to a container ref. All GSAP objects created inside the callback are auto-reverted on unmount. Animations created in event callbacks (Draggable's `onDragStart`, `onDragEnd`) must be wrapped with `contextSafe` to be tracked for cleanup.
-- Animation helpers are thin wrappers over GSAP tweens — they encode timing and easing parameters but receive targets from callers. All failed-drop and cross-owner snap-back tweens spread `SNAP_BACK_ANIMATION` so duration/ease stay defined in one place. No game logic awareness.
+- Animation helpers are thin wrappers over GSAP tweens — they encode timing and easing parameters but receive targets from callers. All failed-drop and cross-owner snap-back tweens spread `SNAP_BACK_ANIMATION` so duration/ease stay defined in one place. No game logic awareness. Snapshot replacement and discard paths share one clone-removal helper so pending timers and detached clone nodes are cleaned up consistently.
 - Cross-owner snap-back is keyed by stable tile ID, not component identity, because React unmounts/remounts or reuses slot DOM nodes when tiles move between submission slots and the pool.
 - `animatePutDown` uses `clearProps: "all"` on complete so React's next render starts from a clean slate.
 

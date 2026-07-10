@@ -104,10 +104,7 @@ export function recordTileSnapBack(
   options: TileSnapBackOptions = {},
 ): void {
   const previousSnapshot = pendingTileSnapBacks.get(tileId);
-  if (previousSnapshot !== undefined) {
-    clearTimeout(previousSnapshot.cleanupTimer);
-    previousSnapshot.clone.remove();
-  }
+  if (previousSnapshot !== undefined) removeTileSnapBackSnapshot(previousSnapshot);
 
   const fromRect = element.getBoundingClientRect();
   const clone = element.cloneNode(true) as HTMLElement; // DOM clone preserves the rendered tile surface.
@@ -172,10 +169,9 @@ export function discardPendingTileSnapBack(tileId: number): void {
   const snapshot = pendingTileSnapBacks.get(tileId);
   if (snapshot === undefined) return;
 
-  clearTimeout(snapshot.cleanupTimer);
+  removeTileSnapBackSnapshot(snapshot);
   pendingTileSnapBacks.delete(tileId);
   snapBackEntranceSuppressedTileIds.delete(tileId);
-  snapshot.clone.remove();
 }
 
 /**
@@ -243,6 +239,11 @@ export function animateSnapBackFromRect(
     },
     onInterrupt: cleanup,
   });
+}
+
+function removeTileSnapBackSnapshot(snapshot: TileSnapBackSnapshot): void {
+  clearTimeout(snapshot.cleanupTimer);
+  snapshot.clone.remove();
 }
 
 function applyArrivalLift(element: HTMLElement): void {
