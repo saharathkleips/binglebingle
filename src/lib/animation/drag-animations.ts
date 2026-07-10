@@ -10,8 +10,6 @@ import { gsap } from "./register";
 const PICK_UP_SCALE = 1.08;
 const PICK_UP_DURATION = 0.15;
 
-const PUT_DOWN_DURATION = 0.2;
-
 const SNAP_BACK_ANIMATION = {
   duration: 0.3,
   ease: "back.out(1.2)",
@@ -52,22 +50,6 @@ export function animatePickUp(element: HTMLElement): gsap.core.Tween {
     scale: PICK_UP_SCALE,
     duration: PICK_UP_DURATION,
     ease: "power2.out",
-  });
-}
-
-/**
- * Scales element back to rest and clears all inline GSAP styles on complete.
- * Use on successful drops where a React state change will re-render.
- *
- * @param element - The dragged tile element.
- * @returns A GSAP Tween for the put-down animation.
- */
-export function animatePutDown(element: HTMLElement): gsap.core.Tween {
-  return gsap.to(element, {
-    scale: 1,
-    duration: PUT_DOWN_DURATION,
-    ease: "power2.out",
-    clearProps: "all",
   });
 }
 

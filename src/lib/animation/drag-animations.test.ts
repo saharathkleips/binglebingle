@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { gsap } from "./register";
 import {
   animatePickUp,
-  animatePutDown,
   animateReposition,
   animateSnapBackFromRect,
   clearTileEntranceSnapBackSuppressions,
@@ -40,14 +39,6 @@ function mockElement(): HTMLElement {
 describe("animatePickUp", () => {
   it("returns a GSAP Tween", () => {
     const tween = animatePickUp(mockElement());
-    expect(tween).toBeInstanceOf(gsap.core.Tween);
-    tween.kill();
-  });
-});
-
-describe("animatePutDown", () => {
-  it("returns a GSAP Tween", () => {
-    const tween = animatePutDown(mockElement());
     expect(tween).toBeInstanceOf(gsap.core.Tween);
     tween.kill();
   });

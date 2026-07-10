@@ -22,6 +22,11 @@ const PARTICLE_COLORS = [
 
 const PARTICLE_COUNT = 8;
 
+export type EntranceScaleOptions = {
+  fromScale?: number;
+  duration?: number;
+};
+
 /**
  * Plays a scale "heartbeat" on the tile that absorbed a compose.
  * Call on the target tile element immediately after the compose dispatch.
@@ -46,20 +51,22 @@ export function animateComposePulse(
 
 /**
  * Entrance animation for a newly-appeared tile.
- * Animates FROM scale 0 TO the element's natural scale with a back-ease overshoot.
- * Used for decompose results and other tile appearances.
+ * Animates FROM a configured scale TO the element's natural scale with a back-ease overshoot.
+ * Used for decompose results, filled submission slots, and other tile appearances.
  *
  * @param element - The element to animate in.
  * @param onComplete - Optional callback invoked when the animation finishes.
+ * @param options - Optional entrance scale and timing overrides.
  * @returns A GSAP Tween — kill it if the component unmounts early.
  */
 export function animateEntranceScale(
   element: HTMLElement,
   onComplete?: () => void,
+  options: EntranceScaleOptions = {},
 ): gsap.core.Tween {
   return gsap.from(element, {
-    scale: 0,
-    duration: 0.22,
+    scale: options.fromScale ?? 0,
+    duration: options.duration ?? 0.22,
     ease: "back.out(1.7)",
     clearProps: "scale",
     ...(onComplete !== undefined && { onComplete }),

@@ -1,112 +1,32 @@
 .button {
-  --nav-action-button-face: #fbf7f0;
-  --nav-action-button-hover-offset: calc(var(--system-lift-distance) * 1.25);
-  --nav-action-button-shadow-stack-pressed: var(--system-depth-step) var(--system-depth-step) 0
-    var(--color-system-depth);
-  --nav-action-button-text-gradient-1: var(--palette-najeon-iridescent-lavender);
-  --nav-action-button-text-gradient-2: var(--palette-najeon-iridescent-blue);
-  --nav-action-button-text-gradient-3: var(--palette-najeon-iridescent-pink);
-  --nav-action-button-text-gradient-4: var(--palette-najeon-iridescent-cyan);
-  --nav-action-button-text-gradient-5: var(--palette-najeon-iridescent-mint);
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 44px;
   height: 44px;
   padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--palette-obangsaek-black);
-  cursor: pointer;
-  font: inherit;
-  font-family: var(--font-family-ui);
   font-size: 1.12rem;
-  font-weight: 800;
-  line-height: 1;
-  touch-action: manipulation;
-  appearance: none;
-
-  &:is(:hover, :focus-visible) .surface {
-    transform: translate(
-      calc(var(--nav-action-button-hover-offset) * -1),
-      calc(var(--nav-action-button-hover-offset) * -1)
-    );
-    box-shadow: var(--system-shadow-stack-lifted);
-  }
-
-  &:active .surface {
-    transform: translate(var(--system-depth), var(--system-depth));
-    box-shadow: var(--nav-action-button-shadow-stack-pressed);
-  }
 }
 
 .surface {
-  position: relative;
-  display: grid;
-  place-items: center;
   width: 2.35rem;
   height: 2.35rem;
-  border: 2px solid var(--palette-obangsaek-black);
   border-radius: 50%;
-  background: var(--nav-action-button-face);
-  box-shadow: var(--system-shadow-stack);
-  transform-origin: center bottom;
-  transition:
-    box-shadow 140ms ease,
-    transform 140ms ease;
 }
 
 .content,
 .contentIcon {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
   width: 1.35rem;
   height: 1.35rem;
 }
 
-.contentDepth,
-.contentStroke,
-.contentLabel {
-  grid-area: 1 / 1;
-  display: grid;
-  place-items: center;
-}
-
-.contentDepth {
-  color: var(--color-system-depth);
-  -webkit-text-fill-color: var(--color-system-depth);
-  -webkit-text-stroke: 1px var(--color-system-depth);
-  transform: translateY(1px);
-}
-
-.contentStroke {
-  color: var(--palette-obangsaek-black);
-  -webkit-text-fill-color: var(--palette-obangsaek-black);
-  -webkit-text-stroke: 1px var(--palette-obangsaek-black);
-}
-
-.contentLabel {
+.contentIcon {
   position: relative;
-  background: conic-gradient(
-    from 180deg at 50% 50%,
-    var(--nav-action-button-text-gradient-1) 0deg,
-    var(--nav-action-button-text-gradient-2) 72deg,
-    var(--nav-action-button-text-gradient-3) 144deg,
-    var(--nav-action-button-text-gradient-4) 216deg,
-    var(--nav-action-button-text-gradient-5) 288deg,
-    var(--nav-action-button-text-gradient-1) 360deg
-  );
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  display: inline-grid;
+  place-items: center;
 }
 
 .contentIcon svg {
   width: 1.25rem;
   height: 1.25rem;
-  color: var(--nav-action-button-text-gradient-2);
+  color: var(--button-text-gradient-2);
   -webkit-text-fill-color: currentColor;
   filter: drop-shadow(0 1px 0 var(--color-system-depth));
 }

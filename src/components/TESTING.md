@@ -153,16 +153,16 @@ expect(computedStyles.opacity).toBe("0.5");
 
 #### CSS Modules class names
 
-CSS Modules mangles class names at build time, so never match against raw strings like `"shaking"`. Import the module and use its values:
+CSS Modules mangles class names at build time, so never match against raw strings like `"active"`. Import the module and use its values:
 
 ```tsx
-import styles from "./Token.module.css";
+import styles from "./Widget.module.css";
 
 // ✅ matches the mangled class name
-await expect.element(screen.getByTestId("token-0")).toHaveClass(styles.shaking);
+await expect.element(screen.getByTestId("widget")).toHaveClass(styles.active);
 
 // ❌ will never match — raw name doesn't exist at runtime
-expect(element.className).toContain("shaking");
+expect(element.className).toContain("active");
 ```
 
 Use `expect.element().toHaveClass()` rather than synchronous `className` checks — it auto-retries, which handles React state updates that add the class after a re-render.

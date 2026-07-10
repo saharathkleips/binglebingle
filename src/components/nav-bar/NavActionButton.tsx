@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { Button, ButtonText } from "../button/Button";
 import styles from "./NavActionButton.module.css";
 
 type NavActionButtonBaseProps = {
@@ -28,27 +29,23 @@ type NavActionButtonProps = NavActionButtonBaseProps &
  */
 export function NavActionButton(props: NavActionButtonProps) {
   return (
-    <button
-      type="button"
+    <Button
       className={styles.button}
+      surfaceClassName={styles.surface}
       onClick={props.onClick}
-      aria-label={props.ariaLabel}
-      aria-expanded={props.isExpanded}
-      data-testid={props.testId}
+      ariaLabel={props.ariaLabel}
+      ariaExpanded={props.isExpanded}
+      testId={props.testId}
     >
-      <span className={styles.surface}>
-        {props.kind === "icon" ? (
-          <span className={styles.contentIcon} aria-hidden="true">
-            {props.icon}
-          </span>
-        ) : (
-          <span className={styles.content} aria-hidden="true">
-            <span className={styles.contentDepth}>{props.label}</span>
-            <span className={styles.contentStroke}>{props.label}</span>
-            <span className={styles.contentLabel}>{props.label}</span>
-          </span>
-        )}
-      </span>
-    </button>
+      {props.kind === "icon" ? (
+        <span className={styles.contentIcon} aria-hidden="true">
+          {props.icon}
+        </span>
+      ) : (
+        <ButtonText className={styles.content} isHidden>
+          {props.label}
+        </ButtonText>
+      )}
+    </Button>
   );
 }

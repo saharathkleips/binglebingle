@@ -15,7 +15,7 @@ nav-bar/
 ├── NavBar.tsx                    # component
 ├── NavBar.module.css             # layout styles
 ├── NavActionButton.tsx           # shared circular action button
-├── NavActionButton.module.css    # action button surface, depth, and label styles
+├── NavActionButton.module.css    # action button shape/layout styles for the shared Button
 ├── NavBar.test.tsx               # unit tests
 ├── gear.svg                      # settings button icon
 ├── README.md                     # public API
@@ -56,12 +56,12 @@ assistive technology knows the current overlay state.
 - Nav action buttons are ordered as difficulty controls first (`삼`, `사`, `오`), then a visual gap,
   then instructions and settings. Each button uses an inner circular surface so the native button hit
   area stays stable while the visual face lifts and presses with the same fixed system shadow stack
-  and translations as SubmissionButton. Their labels duplicate the SubmissionButton
-  gradient/stroke/depth treatment so future chrome buttons can inherit updates from one component.
+  and translations as SubmissionButton. Their labels use the shared ButtonText
+  gradient/stroke/depth treatment so future buttons can inherit updates from one component.
   Text labels use duplicated depth/stroke/fill layers. SVG icon labels render once and receive their
   stroke, gradient fill, and subtle depth through CSS so colocated SVG definition IDs are not
   duplicated in the DOM.
-- Nav chrome defaults to a 44px button footprint; compact width/height breakpoints tighten the button
+- Nav controls default to a 44px button footprint; compact width/height breakpoints tighten the button
   footprint, inner circular faces, logo, and gaps so the bar fits cramped screens without the faces
   feeling visually over-spaced.
 - The nav content is capped and centered inside the full-width bar so logo/actions use edge spacing on

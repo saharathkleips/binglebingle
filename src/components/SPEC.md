@@ -11,7 +11,7 @@ Component structure, interaction model, and data flow for the game UI.
 - Calls into: `src/lib/engine/` for `canSubmit`, `evaluateGuess`; `src/lib/character/` for `resolveCharacter`; `src/lib/jamo/` for `getNextRotation`
 - No direct state mutation
 
-Visual design and styling are deferred — components render functionally correct with minimal styling for MVP. Exception: tile shake animation is required for MVP to confirm invalid combine attempts.
+Visual design uses shared tile, button, and animation primitives rather than one-off component effects. Invalid combine attempts use the shared drag snap-back motion; there is no separate tile shake animation.
 
 ## Conventions
 
@@ -21,4 +21,4 @@ Visual design and styling are deferred — components render functionally correc
 
 **Memoization:** React 19 + React Compiler handles this automatically — no speculative `useMemo` or `useCallback`.
 
-**Styling:** CSS Modules only — each component has a colocated `ComponentName.module.css` file. Global design tokens (colors, spacing, font sizes) and base resets live in `src/index.css` as CSS custom properties. Tile tokens can scale with viewport tiers; system chrome depth tokens stay fixed so navigation and submit controls do not inherit larger game-piece shadows. No inline `style` props except for values that must be computed at runtime (e.g. dynamic widths). Apply conditional classes with `clsx`.
+**Styling:** CSS Modules only — each component has a colocated `ComponentName.module.css` file. Global design tokens (colors, spacing, font sizes) and base resets live in `src/index.css` as CSS custom properties. Tile tokens can scale with viewport tiers; shared button depth tokens stay fixed so navigation and submit controls do not inherit larger game-piece shadows. No inline `style` props except for values that must be computed at runtime (e.g. dynamic widths). Apply conditional classes with `clsx`.

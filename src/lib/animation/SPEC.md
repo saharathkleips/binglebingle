@@ -15,7 +15,7 @@ animation/
 ├── register.ts           # GSAP plugin registration + re-exports
 ├── drag-animations.ts    # drag lifecycle and cross-owner snap-back helpers
 ├── drag-animations.test.ts
-├── tile-animations.ts    # compose pulse, entrance, history reveal, particle burst
+├── tile-animations.ts    # compose pulse, configurable entrance, history reveal, particle burst
 ├── tile-animations.test.ts
 └── tile-animations.test.tsx
 ```
@@ -33,10 +33,6 @@ Most functions accept `HTMLElement` targets and return a `gsap.core.Tween`; hist
 
 Scales element to 1.08 over 0.15s. Called from GSAP Draggable's `onDragStart`. Does not clear transforms — Draggable manages position transforms during drag, and CSS owns tile shadows.
 
-### animatePutDown(element) => gsap.core.Tween
-
-Scales element back to 1 with resting box-shadow over 0.2s (ease: power2.out). On complete, clears all inline GSAP styles (`clearProps: "all"`). Used on successful drops where React state changes will re-render the element.
-
 ### animateReposition(element, onComplete?) => gsap.core.Tween
 
 Animates element back to its origin using `SNAP_BACK_ANIMATION`, the single timing/ease definition shared by all snap-back motion. Used when a drop has no valid target or a compose is rejected.
@@ -49,13 +45,16 @@ Stores a dragged tile's release snapshot by stable tile ID before a reducer disp
 
 Hides the newly-rendered destination element, animates the captured clone into its natural layout position with `SNAP_BACK_ANIMATION`, then removes the clone and reveals the real element. If the snapshot requests arrival lift, the clone uses the destination tile's lift multiplier and both surfaces are pre-lifted without CSS transition before the snap begins, then the destination is handed back to CSS on the next frame. Used for submission-to-pool returns and submission-slot moves/swaps so they share the same visual language as failed-drop snap-back without pop/teleport artifacts.
 
+### animateEntranceScale(element, onComplete?, options?) => gsap.core.Tween
+
+Animates a newly rendered tile-like element from a configurable starting scale to its natural scale with `back.out(1.7)`. Pool tiles use the default full pop-in from scale 0; filled submission slots use a milder scale 0.6 entrance so they feel placed into an existing compartment.
+
 ## Key Decisions
 
 - Plugin registration runs once at module load time via top-level `gsap.registerPlugin(Draggable, useGSAP)` in `register.ts`. Components that need Draggable import from `register.ts` to guarantee registration order.
 - `useGSAP` from `@gsap/react` wraps `useLayoutEffect` and creates a `gsap.Context` scoped to a container ref. All GSAP objects created inside the callback are auto-reverted on unmount. Animations created in event callbacks (Draggable's `onDragStart`, `onDragEnd`) must be wrapped with `contextSafe` to be tracked for cleanup.
 - Animation helpers are thin wrappers over GSAP tweens — they encode timing and easing parameters but receive targets from callers. All failed-drop and cross-owner snap-back tweens spread `SNAP_BACK_ANIMATION` so duration/ease stay defined in one place. No game logic awareness. Snapshot replacement and discard paths share one clone-removal helper so pending timers and detached clone nodes are cleaned up consistently.
 - Cross-owner snap-back is keyed by stable tile ID, not component identity, because React unmounts/remounts or reuses slot DOM nodes when tiles move between submission slots and the pool.
-- `animatePutDown` uses `clearProps: "all"` on complete so React's next render starts from a clean slate.
 
 ---
 

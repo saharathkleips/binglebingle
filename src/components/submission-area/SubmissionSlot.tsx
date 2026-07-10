@@ -18,7 +18,6 @@ import styles from "./SubmissionSlot.module.css";
 /**
  * @property slot - The slot state (empty or filled with a tile).
  * @property slotIndex - Index of this slot in the submission array.
- * @property isSubmitting - SubmissionArea sets this while evaluating a guess; slot plays a pulse.
  * @property onTap - Called when a filled slot is tapped; parent removes the tile.
  * @property onDropOnSlot - Called when a drag ends on another slot, with that slot's index.
  * @property onDropOnPool - Called when a drag ends over the pool; parent returns the tile.
@@ -26,7 +25,6 @@ import styles from "./SubmissionSlot.module.css";
 export type SubmissionSlotProps = {
   slot: SubmissionSlotType;
   slotIndex: number;
-  isSubmitting?: boolean;
   onTap: () => void;
   onDropOnSlot: (toSlotIndex: number) => void;
   onDropOnPool?: () => void;
@@ -41,7 +39,6 @@ export type SubmissionSlotProps = {
 export function SubmissionSlot({
   slot,
   slotIndex,
-  isSubmitting = false,
   onTap,
   onDropOnSlot,
   onDropOnPool = () => {},
@@ -51,13 +48,11 @@ export function SubmissionSlot({
   // Stable key for detecting swaps: which tile ID occupies this slot.
   const filledTileId = slot.state === "FILLED" ? slot.tileId : null;
 
-  // Clear any stale GSAP transforms before the entrance animation captures the element's
-  // natural state as its "to" value. revertOnUpdate can record scale:0.6 (the "from"
-  // value set synchronously by gsap.from) as the pre-animation snapshot and restore it
-  // on a swap (filledTileId changes while isFilled stays true). If the snapshot is 0.6,
-  // the new gsap.from captures 0.6 as its target → animates 0.6→0.6, stuck tiny.
-  // React runs ALL cleanups before ALL setups (declaration order), so this setup fires
-  // before useGSAP's setup, giving gsap.from a clean element to read.
+  // Clear stale transforms before the entrance helper captures the element's natural
+  // state as its "to" value. GSAP from-tweens set their starting scale synchronously;
+  // if revertOnUpdate restores that scale on a swap, the next entrance can capture the
+  // old start scale as its target and stay tiny. React runs ALL cleanups before ALL
+  // setups (declaration order), so this setup fires before useGSAP's setup.
   useLayoutEffect(() => {
     if (!isFilled || !buttonRef.current) return;
     gsap.set(buttonRef.current, { clearProps: "all" });
@@ -74,29 +69,14 @@ export function SubmissionSlot({
   });
 
   // Clear any stale GSAP transforms when the slot becomes empty.
-  // gsap.from() inside useGSAP sets scale: 0.6 synchronously as its "from" value.
-  // revertOnUpdate can record that 0.6 as the pre-animation state and restore it,
+  // The entrance from-tween inside useGSAP sets its starting scale synchronously.
+  // revertOnUpdate can record that as the pre-animation state and restore it,
   // leaving the empty slot visually shrunk. Running clearProps here (after useGSAP's
   // revert) ensures the element is clean before the next fill.
   useLayoutEffect(() => {
     if (isFilled || !buttonRef.current) return;
     gsap.set(buttonRef.current, { clearProps: "all" });
   }, [isFilled]);
-
-  // VIS-24: brief scale pulse on all filled slots when a guess is being submitted.
-  useLayoutEffect(() => {
-    if (!isSubmitting || !isFilled || !buttonRef.current) return;
-    const tween = gsap.to(buttonRef.current, {
-      scale: 1.09,
-      duration: 0.1,
-      ease: "power2.out",
-      yoyo: true,
-      repeat: 1,
-    });
-    return () => {
-      tween.kill();
-    };
-  }, [isSubmitting, isFilled]);
 
   const slotPlaceholder = (
     <span aria-hidden="true" className={styles.slotPlaceholder}>

@@ -13,6 +13,7 @@ import {
   popPendingTileSnapBack,
   recordTileSnapBack,
 } from "../../lib/animation/drag-animations";
+import { animateEntranceScale } from "../../lib/animation/tile-animations";
 import type { TileSnapBackSnapshot } from "../../lib/animation/drag-animations";
 import {
   DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE,
@@ -75,11 +76,7 @@ export function useSubmissionSlotDraggable({
             });
           });
         } else {
-          gsap.from(buttonRef.current, {
-            scale: 0.6,
-            duration: 0.2,
-            ease: "back.out(1.7)",
-          });
+          animateEntranceScale(buttonRef.current, undefined, { fromScale: 0.6, duration: 0.2 });
         }
       }
 

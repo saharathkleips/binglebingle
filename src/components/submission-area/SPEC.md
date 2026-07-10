@@ -10,7 +10,7 @@ Renders the submission row and submit button. Player places tiles into slots, se
 
 - Reads from: `useGame()` (state.submission)
 - Dispatches to: `useGame()` (dispatch)
-- Calls into: `src/components/tile` for shared filled-slot character display, `src/lib/engine/validate` for `canSubmit`
+- Calls into: `src/components/tile` for shared filled-slot character display, `src/components/button` for fixed-depth button structure and styling, `src/lib/engine/validate` for `canSubmit`
 
 ## File Map
 
@@ -23,7 +23,7 @@ submission-area/
 ├── SubmissionSlot.module.css       # Slot styling (bordered motif empty/ghost placeholders, filled positioning)
 ├── lotus.svg                       # Editable ornament asset used inside the slot placeholder
 ├── SubmissionButton.tsx            # Validates and dispatches submit
-├── SubmissionButton.module.css     # Neo-brutalist submit button surface, borders, depth, and interaction states
+├── SubmissionButton.module.css     # Submit button layout and ornaments for the shared Button
 ├── hills-2.svg                     # Editable right-side hills ornament asset used on the submit button
 ├── hills-3.svg                     # Editable left-side hills ornament asset used on the submit button
 ├── SubmissionArea.test.tsx
@@ -61,6 +61,6 @@ Calls `canSubmit(submission)` to determine validity. Disabled when invalid; disp
 
 **Use a CSS border with an inline SVG motif placeholder.** The placeholder imports `lotus.svg` as an SVG component so vector tools can edit it directly. Drop-target emphasis preserves the normal border and motif treatment, changing only the placeholder background to a muted green so the SVG does not saturate or desaturate during drag feedback. The placeholder uses the same bottom-right depth distance as tiles, but only with the solid depth color; the transparent cast shadow is intentionally omitted because an empty slot is resting in place rather than hovering.
 
-**Keep SubmissionButton depth on an inner surface.** Like `BaseTile`, the button keeps the outer native button as the stable pointer target and moves the visual surface for hover/focus/press feedback. This avoids hover jitter while giving the cream bordered face a fixed system shadow stack, lifted shadow stack, and hover translation distance that do not scale with responsive game tiles. The hills motifs live beside the component as editable SVGs and use `currentColor` so both ornaments stay synchronized with the button stroke color.
+**Keep SubmissionButton depth on an inner surface.** Like `BaseTile`, the shared `Button` keeps the outer native button as the stable pointer target and moves the visual surface for hover/focus/press feedback. `Button` owns the fixed shadow stack, lifted/pressed translations, and layered text treatment used by both nav actions and the submission button. The hills motifs live beside the component as editable SVGs and use `currentColor` so both ornaments stay synchronized with the button stroke color.
 
 **Use tile text treatment for the SubmissionButton label.** The label reuses a tile-like conic najeon gradient with separate backing layers for a 1px black stroke and subtle stroked text depth. The depth is a single duplicated label translated 1px along the Y axis because `text-shadow` with transparent, background-clipped Hangul glyphs can produce distracting artifacts inside the visible gradient fill.

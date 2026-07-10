@@ -1,122 +1,23 @@
 .button {
-  --submission-button-face: #fbf7f0;
-  --submission-button-hover-offset: calc(var(--system-lift-distance) * 1.25);
-  --submission-button-shadow-stack-pressed: var(--system-depth-step) var(--system-depth-step) 0
-    var(--color-system-depth);
-  --submission-button-text-gradient-1: var(--palette-najeon-iridescent-lavender);
-  --submission-button-text-gradient-2: var(--palette-najeon-iridescent-blue);
-  --submission-button-text-gradient-3: var(--palette-najeon-iridescent-pink);
-  --submission-button-text-gradient-4: var(--palette-najeon-iridescent-cyan);
-  --submission-button-text-gradient-5: var(--palette-najeon-iridescent-mint);
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   min-height: 44px;
   margin: 0 0 0 12px;
-  padding: var(--submission-button-hover-offset)
-    calc(
-      var(--submission-button-hover-offset) + var(--system-depth) + var(--system-cast-shadow-growth)
-    )
-    calc(
-      var(--submission-button-hover-offset) + var(--system-depth) + var(--system-cast-shadow-growth)
-    )
-    var(--submission-button-hover-offset);
-  border: 0;
-  background: transparent;
-  color: var(--palette-obangsaek-black);
-  cursor: pointer;
-  font: inherit;
-  font-family: var(--font-family-ui);
+  padding: var(--button-hover-offset)
+    calc(var(--button-hover-offset) + var(--system-depth) + var(--system-cast-shadow-growth))
+    calc(var(--button-hover-offset) + var(--system-depth) + var(--system-cast-shadow-growth))
+    var(--button-hover-offset);
   font-size: 1rem;
-  font-weight: 800;
-  line-height: 1;
-  touch-action: manipulation;
-  appearance: none;
-
-  &:disabled {
-    cursor: not-allowed;
-  }
-
-  &:not(:disabled):is(:hover, :focus-visible) .surface {
-    transform: translate(
-      calc(var(--system-lift-distance) * -1.25),
-      calc(var(--system-lift-distance) * -1.25)
-    );
-    box-shadow: var(--system-shadow-stack-lifted);
-  }
-
-  &:not(:disabled):active .surface {
-    transform: translate(var(--system-depth), var(--system-depth));
-    box-shadow: var(--submission-button-shadow-stack-pressed);
-  }
 }
 
 .surface {
-  position: relative;
-  display: grid;
-  place-items: center;
   min-width: 10rem;
   min-height: 2.5rem;
   padding: 0.55rem 0.75rem;
-  border: 2px solid var(--palette-obangsaek-black);
   border-radius: 8px;
-  background: var(--submission-button-face);
-  box-shadow: var(--system-shadow-stack);
-  transform-origin: center bottom;
-  transition:
-    box-shadow 140ms ease,
-    opacity 140ms ease,
-    transform 140ms ease;
-
-  .button:disabled & {
-    opacity: 0.55;
-  }
 }
 
 .text,
 .motif {
   z-index: 1;
-}
-
-.text {
-  position: relative;
-  display: inline-grid;
-}
-
-.textDepth,
-.textStroke,
-.textLabel {
-  grid-area: 1 / 1;
-}
-
-.textDepth {
-  color: var(--color-system-depth);
-  -webkit-text-fill-color: var(--color-system-depth);
-  -webkit-text-stroke: 1px var(--color-system-depth);
-  transform: translateY(1px);
-}
-
-.textStroke {
-  color: var(--palette-obangsaek-black);
-  -webkit-text-fill-color: var(--palette-obangsaek-black);
-  -webkit-text-stroke: 1px var(--palette-obangsaek-black);
-}
-
-.textLabel {
-  position: relative;
-  background: conic-gradient(
-    from 180deg at 50% 50%,
-    var(--submission-button-text-gradient-1) 0deg,
-    var(--submission-button-text-gradient-2) 72deg,
-    var(--submission-button-text-gradient-3) 144deg,
-    var(--submission-button-text-gradient-4) 216deg,
-    var(--submission-button-text-gradient-5) 288deg,
-    var(--submission-button-text-gradient-1) 360deg
-  );
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
 }
 
 .motif {
