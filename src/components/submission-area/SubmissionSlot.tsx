@@ -6,7 +6,6 @@
  * pool on tap, and can be dragged to another slot to swap positions.
  */
 
-import { clsx } from "clsx";
 import { useRef, useLayoutEffect } from "react";
 import { gsap } from "../../lib/animation/register";
 import { CharacterTile } from "../tile/CharacterTile";
@@ -20,7 +19,6 @@ import styles from "./SubmissionSlot.module.css";
  * @property slot - The slot state (empty or filled with a tile).
  * @property slotIndex - Index of this slot in the submission array.
  * @property isSubmitting - SubmissionArea sets this while evaluating a guess; slot plays a pulse.
- * @property isReady - SubmissionArea sets this when the full submission is valid.
  * @property onTap - Called when a filled slot is tapped; parent removes the tile.
  * @property onDropOnSlot - Called when a drag ends on another slot, with that slot's index.
  * @property onDropOnPool - Called when a drag ends over the pool; parent returns the tile.
@@ -29,7 +27,6 @@ export type SubmissionSlotProps = {
   slot: SubmissionSlotType;
   slotIndex: number;
   isSubmitting?: boolean;
-  isReady?: boolean;
   onTap: () => void;
   onDropOnSlot: (toSlotIndex: number) => void;
   onDropOnPool?: () => void;
@@ -45,7 +42,6 @@ export function SubmissionSlot({
   slot,
   slotIndex,
   isSubmitting = false,
-  isReady = false,
   onTap,
   onDropOnSlot,
   onDropOnPool = () => {},
@@ -102,7 +98,6 @@ export function SubmissionSlot({
     };
   }, [isSubmitting, isFilled]);
 
-  const filledClassName = clsx(styles.filled, isReady && styles.ready);
   const slotPlaceholder = (
     <span aria-hidden="true" className={styles.slotPlaceholder}>
       <Lotus className={styles.slotMotif} />
@@ -113,7 +108,7 @@ export function SubmissionSlot({
     <CharacterTile
       character={slot.character}
       element="button"
-      className={filledClassName}
+      className={styles.filled ?? ""}
       isInteractive
       ref={buttonRef}
       testId={`slot-${slotIndex}`}

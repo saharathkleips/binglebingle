@@ -49,10 +49,6 @@
   /* Marker class for submission-specific positioning inside the ghost placeholder. */
 }
 
-.ready {
-  /* Marker class for submission readiness; no extra visual treatment. */
-}
-
 /*
  * Ghost placeholder that remains at the slot's grid position while its filled
  * button is being dragged away. The square hitbox remains stable while the

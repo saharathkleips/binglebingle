@@ -7,7 +7,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useGame } from "../../context/game/GameContext";
-import { canSubmit } from "../../lib/engine/validate";
 import { SubmissionSlot } from "./SubmissionSlot";
 import { SubmissionButton } from "./SubmissionButton";
 import styles from "./SubmissionArea.module.css";
@@ -29,8 +28,6 @@ export function SubmissionArea() {
     prevHistoryLengthRef.current = state.history.length;
   }, [state.history.length]);
 
-  const isReady = canSubmit(state.submission) === "VALID";
-
   return (
     <div className={styles.submissionArea} data-testid="submission-area">
       <div className={styles.slots} data-submission-slots>
@@ -40,7 +37,6 @@ export function SubmissionArea() {
             slot={slot}
             slotIndex={index}
             isSubmitting={isSubmitting}
-            isReady={isReady}
             onTap={() =>
               dispatch({ type: "SUBMISSION_SLOT_REMOVE", payload: { slotIndex: index } })
             }

@@ -127,8 +127,7 @@ export function useSubmissionSlotDraggable({
             }
             recordDisplacedTileSnapBack(slotTarget);
             callbacksRef.current.onDropOnSlot(parseSlotIndex(slotTarget));
-            gsap.set(element, { clearProps: "all" });
-            resetDragClickGuardAfterClick();
+            finishCompletedDrop(element);
             return;
           }
 
@@ -138,8 +137,7 @@ export function useSubmissionSlotDraggable({
           ) {
             if (filledTileId !== null) recordTileSnapBack(filledTileId, element);
             callbacksRef.current.onDropOnPool();
-            gsap.set(element, { clearProps: "all" });
-            resetDragClickGuardAfterClick();
+            finishCompletedDrop(element);
             return;
           }
 
@@ -169,6 +167,11 @@ export function useSubmissionSlotDraggable({
     },
     { scope: buttonRef, dependencies: [isFilled, filledTileId], revertOnUpdate: true },
   );
+
+  function finishCompletedDrop(element: HTMLElement) {
+    gsap.set(element, { clearProps: "all" });
+    resetDragClickGuardAfterClick();
+  }
 
   function resetDragClickGuardAfterClick() {
     window.setTimeout(() => {
