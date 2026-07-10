@@ -35,7 +35,7 @@ Reads `state.pool` from `useGame()` and renders a `PoolTile` for each tile. The 
 
 - **`handleTap(tile)`** — checks `getNextRotation` / `decompose` and dispatches `CHARACTER_ROTATE_NEXT` or `CHARACTER_DECOMPOSE`.
 - **`handleDropOnTile(sourceTile, targetId)`** — looks up the target tile, calls `compose()` to validate; dispatches `CHARACTER_COMPOSE` and returns `true` on success, or returns `false` so the dragged tile snaps back on failure.
-- **`handleDropOnSlot(sourceTile, slotIndex)`** — dispatches `SUBMISSION_SLOT_INSERT` and returns `true`.
+- **`handleDropOnSlot(sourceTile, slotIndex)`** — dispatches `SUBMISSION_SLOT_INSERT` and returns `true`; the draggable hook records the dragged pool tile so the destination slot animates it from the release point, and if the slot is filled, records the displaced submitted tile so it can snap back into the pool.
 
 Computes `isTappable` per tile and passes it as a prop.
 
@@ -59,7 +59,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. D
 - `onDragStart`: temporarily allows pool overflow so the tile can travel to slots and plays pickup feedback.
 - `onDrag`: resolves the current target via `document.elementsFromPoint`, computes target feedback once, sets `data-drop-source-active="true"` on the dragged tile when the current target is valid, and sets a target-specific active attribute (`data-drop-pool-target-active` or `data-drop-slot-target-active`) on the current target. The dragged tile also receives `data-drop-preview` when a pool-tile merge result can be displayed. Slot CSS combines `data-drop-slot-target-active` with `data-slot-state` to distinguish empty and filled slot treatments.
 - `onDragEnd`: calls slot/tile callbacks for detected drop targets. If the callback accepts the drop, inline drag styles are cleared because React will re-render/unmount the tile. If no target exists or the callback rejects the drop, the tile animates back to its fixed pool layout position. Invalid compose attempts still notify Pool so it can show rejection feedback before the source tile snaps back.
-- Drop onto `data-slot-index` element → `onDropOnSlot(slotIndex)`.
+- Drop onto `data-slot-index` element → record the dragged source tile and any displaced filled-slot tile, then `onDropOnSlot(slotIndex)`.
 - Drop onto `data-tile-id` element → `onDropOnTile(targetId)`.
 
 ## Key Decisions
@@ -82,6 +82,6 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. D
 
 **Merge preview is text-only at the behavior boundary.** Pool computes drop-target feedback in one pass: slot validity, pool-tile compose validity, and any resolved preview text. `usePoolTileDraggable` attaches that text to the dragged tile as `data-drop-preview` through the shared tile text override helper. Composition rules stay out of PoolTile, and the preview lives on the dragged tile because it remains visually above the target during overlap.
 
-**Feedback setup is delegated.** PoolTile keeps drag/drop behavior local but calls `useTileFeedback` for rotate, compose, particle, and entrance animations so the feedback contract stays separate from both shared visuals and Draggable setup.
+**Feedback setup is delegated.** PoolTile keeps drag/drop behavior local but calls `useTileFeedback` for rotate, compose, particle, and entrance animations so the feedback contract stays separate from both shared visuals and Draggable setup. Tiles moved between the pool and submission consume pending snap-back release rects instead of playing generic newly-added or pop-in entrance animations.
 
 **`document.elementsFromPoint?.()` with optional chaining.** The API is not implemented in jsdom; optional chaining with a `[]` fallback keeps tests clean without needing a global polyfill.

@@ -4,6 +4,7 @@
   --tile-gradient-3: var(--palette-najeon-iridescent-pink);
   --tile-gradient-4: var(--palette-najeon-iridescent-cyan);
   --tile-gradient-5: var(--palette-najeon-iridescent-mint);
+  --tile-hover-lift-multiplier: 1.25;
 
   position: relative;
   display: flex;
@@ -61,8 +62,8 @@
 
   &[data-tile-interactive="true"]:is(:hover, :focus-visible) > [data-tile-surface] {
     transform: translate(
-      calc(var(--tile-lift-distance) * -1.25),
-      calc(var(--tile-lift-distance) * -1.25)
+      calc(var(--tile-lift-distance) * var(--tile-hover-lift-multiplier) * -1),
+      calc(var(--tile-lift-distance) * var(--tile-hover-lift-multiplier) * -1)
     );
     box-shadow: var(--tile-shadow-stack-lifted);
   }

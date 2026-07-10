@@ -11,7 +11,7 @@ Shared tile presentation primitives for Binglebingle. This module owns reusable 
 - `CharacterTileProps` — props for `CharacterTile`; mirrors the allowed visual props from `BaseTile` plus the `character` value.
 - `useTileFeedback` — shared hook for GSAP tile feedback animations (rotate squeeze, compose pulse/particles, entrance scale). It is used by behavior components and is not required by `BaseTile`.
 - `UseTileFeedbackOptions` — options for `useTileFeedback`, including the element ref, feedback flags, and completion callbacks.
-- `drop-target-helpers` — shared DOM/data-attribute helpers for feature-owned drag target discovery and highlighting.
+- `drop-target-helpers` — shared DOM/data-attribute helpers for feature-owned drag target discovery, tile lookup, and highlighting.
 - `tile-text-overrides` — shared helpers for temporary BaseTile text overrides used by merge previews, keeping callers decoupled from BaseTile's internal text span.
 - `useLatestRef` — tiny helper for imperative animation/drag callbacks that need the latest React props without recreating handlers.
 

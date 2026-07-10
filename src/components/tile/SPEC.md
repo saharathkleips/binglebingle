@@ -27,7 +27,7 @@ tile/
 ├── CharacterTile.tsx        # Resolves a game Character and renders BaseTile
 ├── CharacterTile.test.tsx
 ├── use-tile-feedback.ts     # Shared GSAP feedback hook for behavior components
-├── drop-target-helpers.ts   # Shared data-attribute drop-target DOM helpers
+├── drop-target-helpers.ts   # Shared data-attribute drop-target DOM/tile lookup helpers
 ├── tile-text-overrides.ts   # BaseTile text override helpers for drag previews
 ├── use-latest-ref.ts        # Stable latest-value refs for imperative callbacks
 ├── README.md
@@ -43,7 +43,7 @@ tile/
 - `CharacterTileProps` is `Omit<BaseTileProps, "children"> & { character: Character }`.
 - `useTileFeedback` plays shared GSAP feedback animations on a caller-owned element ref.
 - `UseTileFeedbackOptions` supplies the element ref, feedback flags, and completion callbacks.
-- `drop-target-helpers` centralizes shared drop-target data attribute names, discovery, and active-state toggling for feature modules.
+- `drop-target-helpers` centralizes shared drop-target data attribute names, discovery, tile lookup, and active-state toggling for feature modules.
 - `tile-text-overrides` owns temporary text replacement for BaseTile merge previews so feature modules do not query BaseTile internals directly.
 - `useLatestRef` stores the latest props/callbacks for imperative animation handlers without forcing handler recreation.
 

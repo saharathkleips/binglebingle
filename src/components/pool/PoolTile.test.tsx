@@ -3,6 +3,11 @@ import { render } from "vitest-browser-react";
 import { dragSequence, dragToElementCenter } from "../../test-utils/pointer-events";
 import { PoolTile } from "./PoolTile";
 import { character } from "../../lib/character";
+import {
+  clearTileEntranceSnapBackSuppressions,
+  hasPendingTileSnapBack,
+  popPendingTileSnapBack,
+} from "../../lib/animation/drag-animations";
 import type { Tile as TileType } from "../../context/game";
 
 function tile(id: number, char: ReturnType<typeof character>): TileType {
@@ -52,7 +57,7 @@ describe("PoolTile", () => {
 });
 
 describe("PoolTile drag", () => {
-  it("calls onDropOnSlot with slotIndex when dropped on a slot", async () => {
+  it("calls onDropOnSlot with slotIndex and records source snap-back when dropped on a slot", async () => {
     const onDropOnSlot = vi.fn(() => true);
     const screen = await render(
       <div style={{ display: "flex", gap: "100px" }}>
@@ -67,6 +72,9 @@ describe("PoolTile drag", () => {
 
     dragToElementCenter(tileElement, slotElement);
 
+    expect(hasPendingTileSnapBack(0)).toBe(true);
+    popPendingTileSnapBack(0)?.clone.remove();
+    clearTileEntranceSnapBackSuppressions([0]);
     await expect.poll(() => onDropOnSlot.mock.calls.length).toBe(1);
     expect(onDropOnSlot).toHaveBeenCalledWith(1);
   });

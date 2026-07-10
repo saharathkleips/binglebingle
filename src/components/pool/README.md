@@ -10,7 +10,7 @@ Displays the player's jamo pool as interactive fixed-layout tiles. Tap to rotate
 
 ## Behavior Notes
 
-Pool tile positions are owned by the pool layout, not by persisted drag coordinates. GSAP Draggable moves the rendered tile during an active gesture only. Valid drops dispatch reducer actions and React renders the resulting pool/submission state; invalid drags, including rejected compose attempts, animate back to the tile's fixed layout position and clear inline drag styles.
+Pool tile positions are owned by the pool layout, not by persisted drag coordinates. GSAP Draggable moves the rendered tile during an active gesture only. Valid drops dispatch reducer actions and React renders the resulting pool/submission state; pool-to-slot drops record the release position so the destination slot uses the shared snap-back motion instead of popping in. Invalid drags, including rejected compose attempts, animate back to the tile's fixed layout position and clear inline drag styles.
 
 When a dragged pool tile hovers over a target, Pool computes target feedback once: whether the drop is valid and, for valid pool-tile merges, the preview text. PoolTile exposes that preview as `data-drop-preview` on the dragged tile so the shared tile CSS can preview the resulting character above the target.
 

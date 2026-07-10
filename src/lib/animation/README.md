@@ -9,4 +9,7 @@ GSAP animation utilities for tile drag interactions. Registers GSAP plugins once
 - `useGSAP` — re-exported `@gsap/react` hook for scoped animation cleanup in React components
 - `animatePickUp(element) => gsap.core.Tween` — scales tile up with enhanced shadow on drag start
 - `animatePutDown(element) => gsap.core.Tween` — scales tile back to rest and clears transforms on complete
-- `animateReposition(element, onComplete?) => gsap.core.Tween` — slowly snaps a dragged tile back to its origin
+- `animateReposition(element, onComplete?) => gsap.core.Tween` — snaps a dragged tile back to its origin
+- `recordTileSnapBack(tileId, element, options?)`, `hasPendingTileSnapBack(tileId)`, `popPendingTileSnapBack(tileId)`, `discardPendingTileSnapBack(tileId)` — capture, consume, or discard release snapshots when React moves a tile between owners
+- `shouldSuppressTileEntranceForSnapBack(tileId)`, `clearTileEntranceSnapBackSuppressions(tileIds)` — prevent generic entrance animations from competing with snap-back clones
+- `animateSnapBackFromRect(element, snapshot, onComplete?) => gsap.core.Tween` — animates a captured tile clone into a newly-rendered destination tile's layout position using the shared snap-back timing

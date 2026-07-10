@@ -15,7 +15,11 @@
  * - isNewlyAdded: plays an entrance scale animation for newly-appeared tiles
  */
 
-import { useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
+import {
+  animateSnapBackFromRect,
+  popPendingTileSnapBack,
+} from "../../lib/animation/drag-animations";
 import { CharacterTile } from "../tile/CharacterTile";
 import { DATA_TILE_ID_ATTRIBUTE } from "../tile/drop-target-helpers";
 import { useTileFeedback } from "../tile/use-tile-feedback";
@@ -75,6 +79,13 @@ export function PoolTile({
   onNewlyAddedEnd,
 }: PoolTileProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useLayoutEffect(() => {
+    const pendingSnapshot = popPendingTileSnapBack(tile.id);
+    if (pendingSnapshot === null || !buttonRef.current) return;
+
+    animateSnapBackFromRect(buttonRef.current, pendingSnapshot);
+  }, [tile.id]);
 
   useTileFeedback({
     elementRef: buttonRef,

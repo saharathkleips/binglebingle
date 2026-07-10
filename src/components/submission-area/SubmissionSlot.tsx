@@ -10,7 +10,7 @@ import { clsx } from "clsx";
 import { useRef, useLayoutEffect } from "react";
 import { gsap } from "../../lib/animation/register";
 import { CharacterTile } from "../tile/CharacterTile";
-import { DATA_SLOT_INDEX_ATTRIBUTE } from "../tile/drop-target-helpers";
+import { DATA_SLOT_INDEX_ATTRIBUTE, DATA_TILE_ID_ATTRIBUTE } from "../tile/drop-target-helpers";
 import type { SubmissionSlot as SubmissionSlotType } from "../../context/game";
 import { useSubmissionSlotDraggable } from "./use-submission-slot-draggable";
 import Lotus from "./lotus.svg?react";
@@ -117,7 +117,11 @@ export function SubmissionSlot({
       isInteractive
       ref={buttonRef}
       testId={`slot-${slotIndex}`}
-      dataAttributes={{ [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex, "data-slot-state": "filled" }}
+      dataAttributes={{
+        [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex,
+        [DATA_TILE_ID_ATTRIBUTE]: slot.tileId,
+        "data-slot-state": "filled",
+      }}
     />
   ) : (
     <button

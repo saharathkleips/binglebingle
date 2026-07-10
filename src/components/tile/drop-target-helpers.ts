@@ -22,6 +22,11 @@ export type DropTargetHighlightOptions = {
   removeActiveAttribute?: (element: Element) => void;
 };
 
+export type DropTargetTile = {
+  element: HTMLElement;
+  tileId: number;
+};
+
 export function findDropTarget(elements: Element[], query: DropTargetQuery): Element | null {
   return elements.find((element) => isDropTarget(element, query)) ?? null;
 }
@@ -57,6 +62,14 @@ export function parseDropTargetNumber(element: Element, attribute: string): numb
   return Number.isInteger(parsedValue) ? parsedValue : null;
 }
 
+export function findDropTargetTile(dropTarget: Element): DropTargetTile | null {
+  const tileElement = findTileElement(dropTarget);
+  if (tileElement === null) return null;
+
+  const tileId = parseDropTargetNumber(tileElement, DATA_TILE_ID_ATTRIBUTE);
+  return tileId === null ? null : { element: tileElement, tileId };
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -65,6 +78,14 @@ const DROP_TARGET_ACTIVE_ATTRIBUTES = [
   DATA_DROP_POOL_TARGET_ACTIVE_ATTRIBUTE,
   DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE,
 ];
+
+function findTileElement(dropTarget: Element): HTMLElement | null {
+  const tileElement = dropTarget.hasAttribute(DATA_TILE_ID_ATTRIBUTE)
+    ? dropTarget
+    : dropTarget.querySelector(`[${DATA_TILE_ID_ATTRIBUTE}]`);
+
+  return tileElement instanceof HTMLElement ? tileElement : null;
+}
 
 function isDropTarget(element: Element, query: DropTargetQuery): boolean {
   if (!(element instanceof HTMLElement)) return false;

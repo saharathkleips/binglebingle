@@ -6,11 +6,17 @@
 
 import { useRef } from "react";
 import { Draggable, gsap, useGSAP } from "../../lib/animation/register";
-import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
+import {
+  animatePickUp,
+  animateReposition,
+  discardPendingTileSnapBack,
+  recordTileSnapBack,
+} from "../../lib/animation/drag-animations";
 import {
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_TILE_ID_ATTRIBUTE,
   findDropTarget as findDataAttributeDropTarget,
+  findDropTargetTile,
   parseDropTargetNumber,
   removeDropTargetActiveAttributes,
   updateDropTargetHighlight,
@@ -96,7 +102,10 @@ export function usePoolTileDraggable({
           const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
           const dropTarget = findPoolDropTarget(elements, tileIdRef.current);
 
-          if (dropTarget !== null && acceptDrop(dropTarget, callbacksRef.current)) {
+          if (
+            dropTarget !== null &&
+            acceptDrop(dropTarget, element, tileIdRef.current, callbacksRef.current)
+          ) {
             gsap.set(element, { clearProps: "all" });
             restorePoolDragOverflow();
             return;
@@ -148,10 +157,22 @@ function clearDragFeedback(
   clearTileTextOverride(sourceElement);
 }
 
-function acceptDrop(dropTarget: Element, callbacks: PoolTileCallbacks): boolean {
+function acceptDrop(
+  dropTarget: Element,
+  sourceElement: HTMLElement,
+  sourceTileId: number,
+  callbacks: PoolTileCallbacks,
+): boolean {
   const slotIndex = parseDropTargetNumber(dropTarget, DATA_SLOT_INDEX_ATTRIBUTE);
   if (slotIndex !== null) {
-    return callbacks.onDropOnSlot(slotIndex);
+    recordTileSnapBack(sourceTileId, sourceElement, { shouldLiftOnArrival: true });
+    const displacedTileId = recordDisplacedTileSnapBack(dropTarget);
+    const isAccepted = callbacks.onDropOnSlot(slotIndex);
+    if (!isAccepted) {
+      discardPendingTileSnapBack(sourceTileId);
+      if (displacedTileId !== null) discardPendingTileSnapBack(displacedTileId);
+    }
+    return isAccepted;
   }
 
   const targetTileId = parseDropTargetNumber(dropTarget, DATA_TILE_ID_ATTRIBUTE);
@@ -160,6 +181,14 @@ function acceptDrop(dropTarget: Element, callbacks: PoolTileCallbacks): boolean 
   }
 
   return false;
+}
+
+function recordDisplacedTileSnapBack(dropTarget: Element): number | null {
+  const displacedTile = findDropTargetTile(dropTarget);
+  if (displacedTile === null) return null;
+
+  recordTileSnapBack(displacedTile.tileId, displacedTile.element);
+  return displacedTile.tileId;
 }
 
 function allowPoolDragOverflow() {

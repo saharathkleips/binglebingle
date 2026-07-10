@@ -8,6 +8,10 @@
 
 import { useState, useLayoutEffect, useMemo, useRef } from "react";
 import { useGame } from "../../context/game/GameContext";
+import {
+  clearTileEntranceSnapBackSuppressions,
+  shouldSuppressTileEntranceForSnapBack,
+} from "../../lib/animation/drag-animations";
 import { resolveCharacter } from "../../lib/character";
 import { getNextRotation } from "../../lib/character/rotation";
 import { decompose, compose } from "../../lib/character/composition";
@@ -38,7 +42,10 @@ export function Pool() {
   const prevPoolIdsRef = useRef<Set<number>>(new Set(state.pool.map((tile) => tile.id)));
   useLayoutEffect(() => {
     const currentIds = new Set(state.pool.map((tile) => tile.id));
-    const addedIds = [...currentIds].filter((id) => !prevPoolIdsRef.current.has(id));
+    const addedIds = [...currentIds].filter(
+      (id) => !prevPoolIdsRef.current.has(id) && !shouldSuppressTileEntranceForSnapBack(id),
+    );
+    clearTileEntranceSnapBackSuppressions(currentIds);
     setNewlyAddedTileIds((prev) => {
       const retainedIds = [...prev].filter((id) => currentIds.has(id));
       const hasPrunedIds = retainedIds.length !== prev.size;
