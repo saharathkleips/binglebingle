@@ -1,25 +1,19 @@
 .button {
-  --button-face: #fbf7f0;
-  --button-depth: var(--tile-depth);
-  --button-depth-step: var(--tile-depth-step);
-  --button-cast-shadow-growth: var(--tile-cast-shadow-growth);
-  --button-hover-offset: calc(var(--tile-lift-distance) * 1.25);
-  --button-shadow-stack: var(--tile-shadow-stack);
-  --button-shadow-stack-lifted: var(--tile-shadow-stack-lifted);
+  --button-face: var(--color-surface);
+  --button-depth: var(--system-depth);
+  --button-depth-step: var(--system-depth-step);
+  --button-cast-shadow-growth: var(--system-cast-shadow-growth);
+  --button-hover-offset: calc(var(--system-lift-distance) * 1.25);
+  --button-shadow-stack: var(--system-shadow-stack);
+  --button-shadow-stack-lifted: var(--system-shadow-stack-lifted);
   --button-shadow-stack-pressed: var(--button-depth-step) var(--button-depth-step) 0
     var(--color-tile-depth);
-  --button-text-gradient-1: var(--palette-najeon-iridescent-lavender);
-  --button-text-gradient-2: var(--palette-najeon-iridescent-blue);
-  --button-text-gradient-3: var(--palette-najeon-iridescent-pink);
-  --button-text-gradient-4: var(--palette-najeon-iridescent-cyan);
-  --button-text-gradient-5: var(--palette-najeon-iridescent-mint);
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 0;
   background: transparent;
-  color: var(--palette-obangsaek-black);
+  color: var(--color-border);
   cursor: pointer;
   font: inherit;
   font-family: var(--font-family-ui);
@@ -50,7 +44,7 @@
   position: relative;
   display: grid;
   place-items: center;
-  border: 2px solid var(--palette-obangsaek-black);
+  border: 2px solid var(--color-border);
   background: var(--button-face);
   box-shadow: var(--button-shadow-stack);
   transform-origin: center bottom;
@@ -77,29 +71,21 @@
 }
 
 .textDepth {
-  color: var(--color-tile-depth);
-  -webkit-text-fill-color: var(--color-tile-depth);
-  -webkit-text-stroke: 1px var(--color-tile-depth);
+  color: var(--color-system-depth);
+  -webkit-text-fill-color: var(--color-system-depth);
+  -webkit-text-stroke: 1px var(--color-system-depth);
   transform: translateY(1px);
 }
 
 .textStroke {
-  color: var(--palette-obangsaek-black);
-  -webkit-text-fill-color: var(--palette-obangsaek-black);
-  -webkit-text-stroke: 1px var(--palette-obangsaek-black);
+  color: var(--color-border);
+  -webkit-text-fill-color: var(--color-border);
+  -webkit-text-stroke: 1px var(--color-border);
 }
 
 .textLabel {
   position: relative;
-  background: conic-gradient(
-    from 180deg at 50% 50%,
-    var(--button-text-gradient-1) 0deg,
-    var(--button-text-gradient-2) 72deg,
-    var(--button-text-gradient-3) 144deg,
-    var(--button-text-gradient-4) 216deg,
-    var(--button-text-gradient-5) 288deg,
-    var(--button-text-gradient-1) 360deg
-  );
+  background: var(--gradient-iridescent-conic);
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;

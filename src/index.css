@@ -11,19 +11,11 @@ body {
 
 :root {
   /* ── Palette: Obangsaek (오방색) vivid ────────────────────────────────── */
-  --palette-obangsaek-red: #c3291b;
-  --palette-obangsaek-yellow: #f7ce46;
-  --palette-obangsaek-blue: #0a0af5;
-  --palette-obangsaek-green: #347641;
   --palette-obangsaek-black: #080808;
-  --palette-obangsaek-white: #ffffff;
 
   /* ── Palette: Dancheong (단청) pastel ────────────────────────────────── */
   --palette-dancheong-blue: #393f69;
-  --palette-dancheong-green: #4da576;
-  --palette-dancheong-red: #e25749;
   --palette-dancheong-yellow: #fbe596;
-  --palette-dancheong-pink: #f0aea8;
 
   /* ── Palette: Najeon Iridescent ─────────────────────── */
   --palette-najeon-iridescent-lavender: #e6e6fa;
@@ -56,39 +48,25 @@ body {
   /* ── Palette: Cream backgrounds ──────────────────────────────────────── */
   --palette-rice-paper: #fbf7ef;
 
-  /* ── Palette: Neutral ────────────────────────────────────────────────── */
-  --palette-neutral-100: #f2f2f2;
-  --palette-neutral-300: #bdbdbd;
-  --palette-neutral-500: #808080;
-  --palette-neutral-700: #4d4d4d;
-
   /* ── Semantic: App background ────────────────────────────────────────── */
   --color-app-background: var(--palette-rice-paper);
 
   /* ── Semantic: Surface ───────────────────────────────────────────────── */
   --color-surface: var(--palette-rice-paper);
   --color-surface-active: var(--palette-dancheong-yellow);
-  --color-surface-empty: #fafafa;
 
   /* ── Semantic: Border ────────────────────────────────────────────────── */
-  --color-border: black;
+  --color-border: var(--palette-obangsaek-black);
+
+  /* ── Semantic: Overlay and drop feedback ─────────────────────────────── */
+  --color-overlay-backdrop: rgba(0, 0, 0, 0.6);
+  --color-drop-target-active: #3b5442;
 
   /* ── Semantic: Text ──────────────────────────────────────────────────── */
   --color-text-muted: var(--palette-dancheong-blue);
 
-  /* ── Semantic: Drag interaction ──────────────────────────────────────── */
-  --color-drag-border: var(--palette-obangsaek-blue);
-  --color-drag-bg: var(--palette-dancheong-pink);
-
-  /* ── Semantic: Game state ────────────────────────────────────────────── */
-  --color-correct: var(--palette-obangsaek-green);
-  --color-present: var(--palette-obangsaek-yellow);
-  --color-absent: var(--palette-obangsaek-black);
-  --color-state-text: var(--palette-obangsaek-white);
-
   /* ── Semantic: Tile face ─────────────────────────────────────────────── */
   --color-tile-face: var(--palette-obangsaek-black);
-  --color-tile-text: var(--palette-obangsaek-black);
   --color-tile-depth: #1a1a1a;
   --color-tile-shadow: rgba(0, 0, 0, 0.5);
 
@@ -96,11 +74,40 @@ body {
   --color-system-depth: var(--color-tile-depth);
   --color-system-shadow: var(--color-tile-shadow);
 
+  /* ── Gradient tokens ─────────────────────────────────────────────────── */
+  --gradient-iridescent-conic-stops:
+    var(--palette-najeon-iridescent-lavender) 0deg, var(--palette-najeon-iridescent-blue) 72deg,
+    var(--palette-najeon-iridescent-pink) 144deg, var(--palette-najeon-iridescent-cyan) 216deg,
+    var(--palette-najeon-iridescent-mint) 288deg, var(--palette-najeon-iridescent-lavender) 360deg;
+  --gradient-iridescent-conic: conic-gradient(
+    from 180deg at 50% 50%,
+    var(--gradient-iridescent-conic-stops)
+  );
+  --gradient-iridescent-linear-stops:
+    var(--palette-najeon-iridescent-lavender) 0%, var(--palette-najeon-iridescent-blue) 10%,
+    var(--palette-najeon-iridescent-pink) 20%, var(--palette-najeon-iridescent-cyan) 30%,
+    var(--palette-najeon-iridescent-mint) 40%, var(--palette-najeon-iridescent-lavender) 50%,
+    var(--palette-najeon-iridescent-blue) 60%, var(--palette-najeon-iridescent-pink) 70%,
+    var(--palette-najeon-iridescent-cyan) 80%, var(--palette-najeon-iridescent-mint) 90%,
+    var(--palette-najeon-iridescent-lavender) 100%;
+  --gradient-logo-text: linear-gradient(
+    90deg,
+    var(--palette-najeon-iridescent-pink) 0%,
+    var(--palette-najeon-iridescent-lavender) 40%,
+    var(--palette-najeon-iridescent-cyan) 60%,
+    var(--palette-najeon-iridescent-blue) 100%
+  );
+  --gradient-logo-border: linear-gradient(
+    135deg,
+    var(--palette-najeon-iridescent-lavender) 0%,
+    var(--palette-najeon-iridescent-blue) 25%,
+    var(--palette-najeon-iridescent-pink) 50%,
+    var(--palette-najeon-iridescent-cyan) 75%,
+    var(--palette-najeon-iridescent-mint) 100%
+  );
+
   /* ── Motion tokens ───────────────────────────────────────────────────── */
-  --motion-duration-instant: 80ms;
   --motion-duration-fast: 140ms;
-  --motion-duration-medium: 220ms;
-  --motion-duration-snap: 300ms;
   --motion-ease-standard: ease;
 
   /* ── System chrome tokens: fixed, non-responsive controls ────────────── */
@@ -118,14 +125,10 @@ body {
   --system-lift-distance: calc(var(--system-depth-step) * 3);
   --system-cast-shadow-growth: var(--system-depth-step);
   --system-cast-shadow-lifted: calc(
-      var(--system-cast-shadow-distance) + var(--system-lift-distance) +
-        var(--system-cast-shadow-growth)
+      var(--system-depth) + var(--system-lift-distance) + var(--system-cast-shadow-growth)
     )
-    calc(
-      var(--system-cast-shadow-distance) + var(--system-lift-distance) +
-        var(--system-cast-shadow-growth)
-    )
-    0 var(--color-system-shadow);
+    calc(var(--system-depth) + var(--system-lift-distance) + var(--system-cast-shadow-growth)) 0
+    var(--color-system-shadow);
   --system-shadow-stack: var(--system-depth-stack), var(--system-cast-shadow);
   --system-shadow-stack-lifted: var(--system-depth-stack), var(--system-cast-shadow-lifted);
 
@@ -171,7 +174,6 @@ body {
   --radius-md: 0.5rem;
 
   /* ── Typography ──────────────────────────────────────────────────────── */
-  --font-family-display: Georgia, "Noto Serif KR", serif;
   --font-family-ui: system-ui, "Noto Sans KR", sans-serif;
   --font-family-tile: "Noto Sans KR", var(--font-family-ui);
   --font-weight-tile: 900;
@@ -234,7 +236,7 @@ body {
 }
 
 /* Height tier: compact */
-@media (max-height: 599px) {
+@media (max-height: 600px) {
   :root {
     --history-min-visible-rows: 1.25;
   }

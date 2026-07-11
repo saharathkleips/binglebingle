@@ -18,5 +18,5 @@
 
 .score {
   font-size: 1rem;
-  color: var(--color-text-muted, #666);
+  color: var(--color-text-muted);
 }

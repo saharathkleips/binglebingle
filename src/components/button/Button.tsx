@@ -21,7 +21,7 @@ export type ButtonTextProps = {
 };
 
 /**
- * Shared game button with a stable hitbox and moving depth surface.
+ * Shared system button with a stable hitbox and moving depth surface.
  *
  * @param props - Button content, DOM hooks, and local class names for sizing/shape.
  * @returns The rendered button element.
@@ -53,7 +53,7 @@ export function Button({
 }
 
 /**
- * Layered gradient text treatment for shared game buttons.
+ * Layered gradient text treatment for shared system buttons.
  *
  * @param props - Text content plus accessibility and local sizing hooks.
  * @returns The rendered layered text span.

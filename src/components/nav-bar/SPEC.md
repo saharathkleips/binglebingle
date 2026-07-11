@@ -63,7 +63,8 @@ assistive technology knows the current overlay state.
   duplicated in the DOM.
 - Nav controls default to a 44px button footprint; compact width/height breakpoints tighten the button
   footprint, inner circular faces, logo, and gaps so the bar fits cramped screens without the faces
-  feeling visually over-spaced.
+  feeling visually over-spaced. The CSS stores tier dimensions in local custom properties so compact
+  breakpoints override sizing decisions without repeating width, height, and icon declarations.
 - The nav content is capped and centered inside the full-width bar so logo/actions use edge spacing on
   narrow screens but do not drift to opposite viewport edges on very wide screens.
 - `isInstructionsOpen` kept as a prop (vs. omitting) because `aria-expanded`
