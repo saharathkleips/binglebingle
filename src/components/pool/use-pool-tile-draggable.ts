@@ -6,12 +6,11 @@
 
 import { useRef } from "react";
 import { Draggable, gsap, useGSAP } from "../../lib/animation/register";
+import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
 import {
-  animatePickUp,
-  animateReposition,
   discardPendingTileSnapBack,
   recordTileSnapBack,
-} from "../../lib/animation/drag-animations";
+} from "../../lib/animation/snap-back-animations";
 import {
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_TILE_ID_ATTRIBUTE,

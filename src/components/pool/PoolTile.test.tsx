@@ -7,7 +7,7 @@ import {
   clearTileEntranceSnapBackSuppressions,
   hasPendingTileSnapBack,
   popPendingTileSnapBack,
-} from "../../lib/animation/drag-animations";
+} from "../../lib/animation/snap-back-animations";
 import type { Tile as TileType } from "../../context/game";
 
 function tile(id: number, char: ReturnType<typeof character>): TileType {

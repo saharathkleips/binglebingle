@@ -11,7 +11,7 @@ import { useGame } from "../../context/game/GameContext";
 import {
   clearTileEntranceSnapBackSuppressions,
   shouldSuppressTileEntranceForSnapBack,
-} from "../../lib/animation/drag-animations";
+} from "../../lib/animation/snap-back-animations";
 import { resolveCharacter } from "../../lib/character";
 import { getNextRotation } from "../../lib/character/rotation";
 import { decompose, compose } from "../../lib/character/composition";

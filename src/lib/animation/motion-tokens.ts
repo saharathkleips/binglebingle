@@ -49,6 +49,12 @@ export const MOTION_EASE_SNAP = "back.out(1.2)";
 /** Larger overshoot for elements entering from a hidden or small state. */
 export const MOTION_EASE_ENTRANCE = "back.out(1.7)";
 
+/** Shared tween options for failed-drop and cross-owner snap-back motion. */
+export const SNAP_BACK_ANIMATION = {
+  duration: MOTION_DURATION_SNAP,
+  ease: MOTION_EASE_SNAP,
+} as const;
+
 /** 오방색/단청 palette used for particle bursts. */
 export const PARTICLE_BURST_COLORS = [
   "#c3291b", // obangsaek-red

@@ -19,7 +19,7 @@ import { useLayoutEffect, useRef } from "react";
 import {
   animateSnapBackFromRect,
   popPendingTileSnapBack,
-} from "../../lib/animation/drag-animations";
+} from "../../lib/animation/snap-back-animations";
 import { CharacterTile } from "../tile/CharacterTile";
 import { DATA_TILE_ID_ATTRIBUTE } from "../tile/drop-target-helpers";
 import { useTileFeedback } from "../tile/use-tile-feedback";

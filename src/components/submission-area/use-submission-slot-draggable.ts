@@ -6,16 +6,15 @@
 
 import { useRef } from "react";
 import { Draggable, gsap, useGSAP } from "../../lib/animation/register";
+import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
+import { MOTION_DURATION_SLOT_ENTRANCE } from "../../lib/animation/motion-tokens";
 import {
-  animatePickUp,
-  animateReposition,
   animateSnapBackFromRect,
   popPendingTileSnapBack,
   recordTileSnapBack,
-} from "../../lib/animation/drag-animations";
-import { MOTION_DURATION_SLOT_ENTRANCE } from "../../lib/animation/motion-tokens";
+} from "../../lib/animation/snap-back-animations";
 import { animateEntranceScale } from "../../lib/animation/tile-animations";
-import type { TileSnapBackSnapshot } from "../../lib/animation/drag-animations";
+import type { TileSnapBackSnapshot } from "../../lib/animation/snap-back-animations";
 import {
   DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE,
   DATA_SLOT_INDEX_ATTRIBUTE,
