@@ -120,13 +120,7 @@ body {
     var(--color-system-shadow);
   --system-lift-distance: calc(var(--system-depth-step) * 3);
   --system-cast-shadow-growth: var(--system-depth-step);
-  --system-cast-shadow-lifted: calc(
-      var(--system-depth) + var(--system-lift-distance) + var(--system-cast-shadow-growth)
-    )
-    calc(var(--system-depth) + var(--system-lift-distance) + var(--system-cast-shadow-growth)) 0
-    var(--color-system-shadow);
   --system-shadow-stack: var(--system-depth-stack), var(--system-cast-shadow);
-  --system-shadow-stack-lifted: var(--system-depth-stack), var(--system-cast-shadow-lifted);
 
   /* ── Tile tokens: x-small/minimum interactive tier ───────────────────── */
   --tile-hitbox-size: 44px;
@@ -148,14 +142,7 @@ body {
     calc(var(--tile-depth-step) * 3) calc(var(--tile-depth-step) * 3) 0 var(--color-tile-depth);
   --tile-cast-shadow: var(--tile-depth) var(--tile-depth) 0 var(--color-tile-shadow);
   --tile-lift-distance: calc(var(--tile-depth-step) * 3);
-  --tile-cast-shadow-growth: var(--tile-depth-step);
-  --tile-cast-shadow-lifted: calc(
-      var(--tile-depth) + var(--tile-lift-distance) + var(--tile-cast-shadow-growth)
-    )
-    calc(var(--tile-depth) + var(--tile-lift-distance) + var(--tile-cast-shadow-growth)) 0
-    var(--color-tile-shadow);
   --tile-shadow-stack: var(--tile-depth-stack), var(--tile-cast-shadow);
-  --tile-shadow-stack-lifted: var(--tile-depth-stack), var(--tile-cast-shadow-lifted);
 
   /* ── General spacing ────────────────────────────────────────────────── */
   --space-sm: 0.5rem;

@@ -155,7 +155,7 @@ Rules:
 
 **CSS classes are reserved for the public styling hook.** `BaseTile` keeps the CSS Module class on the root element so callers can compose layout classes predictably, while internal visual state and child roles use `data-tile-*` attributes. This keeps the stylesheet readable with nested selectors and avoids exporting class names for implementation-only spans or same-element variants.
 
-**Hover lift moves only the visual surface.** The root element remains the stable pointer target, while the internal `data-tile-surface` span receives the hover/focus transform and lifted shadow. Moving the same element that owns `:hover` can make edge hover unstable because the tile leaves and re-enters the pointer hit area during the transition.
+**Hover lift moves only the visual surface.** The root element remains the stable pointer target, while the internal `data-tile-surface` span receives the hover/focus transform and lifted shadow. The lifted cast-shadow offset compensates for the surface transform while the depth stack stays attached to the raised tile face. Moving the same element that owns `:hover` can make edge hover unstable because the tile leaves and re-enters the pointer hit area during the transition.
 
 **Tile text keeps Hangul font metrics.** The root tile uses a compact line height for predictable layout, but the internal text span restores enough line-height for Noto Sans KR glyph bounds. This prevents syllable bottoms such as the final `ㅇ` in `양` from being clipped without reducing the shared tile font size.
 

@@ -20,7 +20,7 @@ const SNAP_BACK_ANIMATION = {
   ease: MOTION_EASE_SNAP,
 } as const;
 const ARRIVAL_LIFT_TRANSFORM =
-  "translate(calc(var(--tile-lift-distance) * var(--tile-hover-lift-multiplier) * -1), calc(var(--tile-lift-distance) * var(--tile-hover-lift-multiplier) * -1))";
+  "translate(calc(var(--tile-hover-offset) * -1), calc(var(--tile-hover-offset) * -1))";
 const ARRIVAL_LIFT_SHADOW = "var(--tile-shadow-stack-lifted)";
 const SNAP_BACK_CLONE_STRIPPED_ATTRIBUTES = [
   "id",
