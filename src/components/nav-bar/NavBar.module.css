@@ -38,6 +38,7 @@
   font-weight: var(--logo-font-weight);
   line-height: 1;
   text-align: center;
+  user-select: none;
   display: grid;
   place-items: center;
 }
