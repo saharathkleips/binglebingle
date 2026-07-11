@@ -47,7 +47,6 @@
 
 @media (max-width: 479px), (max-height: 600px) {
   .button {
-    --nav-action-hitbox-size: 40px;
     --nav-action-font-size: 0.95rem;
     --nav-action-surface-size: 1.9rem;
     --nav-action-content-size: 1.15rem;
@@ -57,7 +56,6 @@
 
 @media (max-width: 360px) {
   .button {
-    --nav-action-hitbox-size: 36px;
     --nav-action-font-size: 0.9rem;
     --nav-action-surface-size: 1.7rem;
     --nav-action-content-size: 1rem;

@@ -7,7 +7,7 @@
   --button-shadow-stack: var(--system-shadow-stack);
   --button-shadow-stack-lifted: var(--system-shadow-stack-lifted);
   --button-shadow-stack-pressed: var(--button-depth-step) var(--button-depth-step) 0
-    var(--color-tile-depth);
+    var(--color-system-depth);
   display: inline-flex;
   align-items: center;
   justify-content: center;

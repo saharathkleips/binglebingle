@@ -52,7 +52,7 @@ tile/
 ```ts
 type BaseTileSharedProps = {
   children: React.ReactNode;
-  className?: string;
+  className?: string | undefined;
   dataAttributes?: Record<`data-${string}`, string | number | boolean>;
   isInteractive?: boolean;
   label?: string;
@@ -147,9 +147,9 @@ Rules:
 
 **Use engine result names for evaluated tiles.** `BaseTile` accepts an optional `result?: CharacterResult` instead of duplicating evaluation values as visual tone strings. Leaving `result` undefined selects the default tile treatment, while `CORRECT`, `PRESENT`, and `ABSENT` apply evaluated tile gradients.
 
-**Use the tile border as a CSS mask.** The 번개문 path remains in `lightning-border.svg` so vector tools can edit it directly, while `BaseTile` imports it as a URL and applies it as the mask for a CSS linear gradient. Masking keeps the editable SVG shape while allowing the border gradient to be configured in CSS alongside the tile variants. The default iridescent gradient stops live in `src/index.css` so tiles, button labels, and brand chrome share the same palette; result variants override tile-local conic and linear stop lists because evaluated states need different palettes with the same geometry.
+**Use the tile border as a CSS mask.** The 번개문 path remains in `lightning-border.svg` so vector tools can edit it directly, while `BaseTile` imports it as a URL and applies it as the mask for a CSS linear gradient. Masking keeps the editable SVG shape while allowing the border gradient to be configured in CSS alongside the tile variants. Tiles build their conic text and linear border stops from five tile-local gradient color slots; result variants override only those color slots so evaluated states keep the same gradient geometry without duplicating stop lists. Button labels and brand chrome continue to use the global iridescent gradient tokens directly.
 
-**Keep reusable tile tokens in `:root`.** Hitbox size, visible tile edges, pool gap, submission/history gap, radius, border padding, font size, and shadow depth live in `src/index.css` because pool, submission, history, instructions, and tile visuals need the same geometry and effects. Older `--size-tile-*` and `--font-size-tile` aliases are intentionally not kept; this project is still small enough to migrate consumers directly to the hitbox-first tokens. `BaseTile.module.css` keeps only local state variables such as the currently selected visible edges and result gradient stop slots.
+**Keep reusable tile tokens in `:root`.** Hitbox size, visible tile edges, pool gap, submission/history gap, radius, border padding, font size, and shadow depth live in `src/index.css` because pool, submission, history, instructions, and tile visuals need the same geometry and effects. Older `--size-tile-*` and `--font-size-tile` aliases are intentionally not kept; this project is still small enough to migrate consumers directly to the hitbox-first tokens. `BaseTile.module.css` keeps only local state variables such as the currently selected visible edges and result gradient color slots.
 
 **BaseTile is not the hitbox.** The visual card derives from `--tile-visual-short-edge` and `--tile-visual-long-edge`; square `--tile-hitbox-size` wrappers belong to consuming regions that need interaction cells or rotation-safe pool footprints.
 

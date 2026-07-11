@@ -20,5 +20,5 @@ button/
 
 - Use a React component rather than CSS-only composition so nav actions and submission controls share the same DOM structure, not just the same declarations.
 - Keep dimensions and shapes out of `Button.module.css`; consumers pass `className` and `surfaceClassName` for local footprint/radius/layout rules.
-- Use fixed system chrome depth tokens for button rest, hover, and focus states so navigation and submit controls do not inherit larger game-piece shadows at wider viewport tiers. Button-local aliases such as `--button-depth` keep consumer spacing readable while preserving a separate control elevation system.
+- Use fixed system chrome depth tokens for button rest, hover, focus, and pressed states so navigation and submit controls do not inherit larger game-piece shadows at wider viewport tiers. Button-local aliases such as `--button-depth` keep consumer spacing readable while preserving a separate control elevation system.
 - `ButtonText` is separate so icon-only buttons can use the same surface without rendering redundant text layers.

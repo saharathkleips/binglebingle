@@ -82,7 +82,7 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
                 key={index}
                 character={character}
                 element="span"
-                className={styles.poolTile ?? ""}
+                className={styles.poolTile}
               />
             ))}
           </div>
@@ -140,7 +140,7 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
 }
 
 function InstructionCharacterTile({ character }: { character: Character }) {
-  return <CharacterTile character={character} element="span" className={styles.poolTile ?? ""} />;
+  return <CharacterTile character={character} element="span" className={styles.poolTile} />;
 }
 
 function SlotRow({ tiles }: { tiles: (GuessTile | null)[] }) {
@@ -155,7 +155,7 @@ function SlotRow({ tiles }: { tiles: (GuessTile | null)[] }) {
             character={tile.character}
             element="span"
             result={tile.result}
-            className={styles.slotTile ?? ""}
+            className={styles.slotTile}
           />
         ),
       )}

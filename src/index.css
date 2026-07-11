@@ -62,6 +62,9 @@ body {
   --color-overlay-backdrop: rgba(0, 0, 0, 0.6);
   --color-drop-target-active: #3b5442;
 
+  /* ── Layers ──────────────────────────────────────────────────────────── */
+  --z-index-popover: 100;
+
   /* ── Semantic: Text ──────────────────────────────────────────────────── */
   --color-text-muted: var(--palette-dancheong-blue);
 
@@ -83,13 +86,6 @@ body {
     from 180deg at 50% 50%,
     var(--gradient-iridescent-conic-stops)
   );
-  --gradient-iridescent-linear-stops:
-    var(--palette-najeon-iridescent-lavender) 0%, var(--palette-najeon-iridescent-blue) 10%,
-    var(--palette-najeon-iridescent-pink) 20%, var(--palette-najeon-iridescent-cyan) 30%,
-    var(--palette-najeon-iridescent-mint) 40%, var(--palette-najeon-iridescent-lavender) 50%,
-    var(--palette-najeon-iridescent-blue) 60%, var(--palette-najeon-iridescent-pink) 70%,
-    var(--palette-najeon-iridescent-cyan) 80%, var(--palette-najeon-iridescent-mint) 90%,
-    var(--palette-najeon-iridescent-lavender) 100%;
   --gradient-logo-text: linear-gradient(
     90deg,
     var(--palette-najeon-iridescent-pink) 0%,

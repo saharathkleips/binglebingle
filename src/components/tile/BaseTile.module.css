@@ -1,6 +1,20 @@
 .tile {
-  --tile-gradient-conic-stops: var(--gradient-iridescent-conic-stops);
-  --tile-gradient-linear-stops: var(--gradient-iridescent-linear-stops);
+  --tile-gradient-color-1: var(--palette-najeon-iridescent-lavender);
+  --tile-gradient-color-2: var(--palette-najeon-iridescent-blue);
+  --tile-gradient-color-3: var(--palette-najeon-iridescent-pink);
+  --tile-gradient-color-4: var(--palette-najeon-iridescent-cyan);
+  --tile-gradient-color-5: var(--palette-najeon-iridescent-mint);
+  --tile-gradient-conic-stops:
+    var(--tile-gradient-color-1) 0deg, var(--tile-gradient-color-2) 72deg,
+    var(--tile-gradient-color-3) 144deg, var(--tile-gradient-color-4) 216deg,
+    var(--tile-gradient-color-5) 288deg, var(--tile-gradient-color-1) 360deg;
+  --tile-gradient-linear-stops:
+    var(--tile-gradient-color-1) 0%, var(--tile-gradient-color-2) 10%,
+    var(--tile-gradient-color-3) 20%, var(--tile-gradient-color-4) 30%,
+    var(--tile-gradient-color-5) 40%, var(--tile-gradient-color-1) 50%,
+    var(--tile-gradient-color-2) 60%, var(--tile-gradient-color-3) 70%,
+    var(--tile-gradient-color-4) 80%, var(--tile-gradient-color-5) 90%,
+    var(--tile-gradient-color-1) 100%;
   --tile-hover-lift-multiplier: 1.25;
 
   position: relative;
@@ -28,46 +42,27 @@
   }
 
   &[data-tile-result="CORRECT"] {
-    --tile-gradient-conic-stops:
-      var(--palette-najeon-green-celadon) 0deg, var(--palette-najeon-green-jade) 72deg,
-      var(--palette-najeon-green-sage) 144deg, var(--palette-najeon-green-seafoam) 216deg,
-      var(--palette-najeon-green-mist) 288deg, var(--palette-najeon-green-celadon) 360deg;
-    --tile-gradient-linear-stops:
-      var(--palette-najeon-green-celadon) 0%, var(--palette-najeon-green-jade) 10%,
-      var(--palette-najeon-green-sage) 20%, var(--palette-najeon-green-seafoam) 30%,
-      var(--palette-najeon-green-mist) 40%, var(--palette-najeon-green-celadon) 50%,
-      var(--palette-najeon-green-jade) 60%, var(--palette-najeon-green-sage) 70%,
-      var(--palette-najeon-green-seafoam) 80%, var(--palette-najeon-green-mist) 90%,
-      var(--palette-najeon-green-celadon) 100%;
+    --tile-gradient-color-1: var(--palette-najeon-green-celadon);
+    --tile-gradient-color-2: var(--palette-najeon-green-jade);
+    --tile-gradient-color-3: var(--palette-najeon-green-sage);
+    --tile-gradient-color-4: var(--palette-najeon-green-seafoam);
+    --tile-gradient-color-5: var(--palette-najeon-green-mist);
   }
 
   &[data-tile-result="PRESENT"] {
-    --tile-gradient-conic-stops:
-      var(--palette-najeon-yellow-honey) 0deg, var(--palette-najeon-yellow-ivory) 72deg,
-      var(--palette-najeon-yellow-apricot) 144deg, var(--palette-najeon-yellow-citrine) 216deg,
-      var(--palette-najeon-yellow-peach) 288deg, var(--palette-najeon-yellow-honey) 360deg;
-    --tile-gradient-linear-stops:
-      var(--palette-najeon-yellow-honey) 0%, var(--palette-najeon-yellow-ivory) 10%,
-      var(--palette-najeon-yellow-apricot) 20%, var(--palette-najeon-yellow-citrine) 30%,
-      var(--palette-najeon-yellow-peach) 40%, var(--palette-najeon-yellow-honey) 50%,
-      var(--palette-najeon-yellow-ivory) 60%, var(--palette-najeon-yellow-apricot) 70%,
-      var(--palette-najeon-yellow-citrine) 80%, var(--palette-najeon-yellow-peach) 90%,
-      var(--palette-najeon-yellow-honey) 100%;
+    --tile-gradient-color-1: var(--palette-najeon-yellow-honey);
+    --tile-gradient-color-2: var(--palette-najeon-yellow-ivory);
+    --tile-gradient-color-3: var(--palette-najeon-yellow-apricot);
+    --tile-gradient-color-4: var(--palette-najeon-yellow-citrine);
+    --tile-gradient-color-5: var(--palette-najeon-yellow-peach);
   }
 
   &[data-tile-result="ABSENT"] {
-    --tile-gradient-conic-stops:
-      var(--palette-najeon-gray-moonstone) 0deg, var(--palette-najeon-gray-fog) 72deg,
-      var(--palette-najeon-gray-lavender-mist) 144deg,
-      var(--palette-najeon-gray-cloud-slate) 216deg, var(--palette-najeon-gray-silver) 288deg,
-      var(--palette-najeon-gray-moonstone) 360deg;
-    --tile-gradient-linear-stops:
-      var(--palette-najeon-gray-moonstone) 0%, var(--palette-najeon-gray-fog) 10%,
-      var(--palette-najeon-gray-lavender-mist) 20%, var(--palette-najeon-gray-cloud-slate) 30%,
-      var(--palette-najeon-gray-silver) 40%, var(--palette-najeon-gray-moonstone) 50%,
-      var(--palette-najeon-gray-fog) 60%, var(--palette-najeon-gray-lavender-mist) 70%,
-      var(--palette-najeon-gray-cloud-slate) 80%, var(--palette-najeon-gray-silver) 90%,
-      var(--palette-najeon-gray-moonstone) 100%;
+    --tile-gradient-color-1: var(--palette-najeon-gray-moonstone);
+    --tile-gradient-color-2: var(--palette-najeon-gray-fog);
+    --tile-gradient-color-3: var(--palette-najeon-gray-lavender-mist);
+    --tile-gradient-color-4: var(--palette-najeon-gray-cloud-slate);
+    --tile-gradient-color-5: var(--palette-najeon-gray-silver);
   }
 
   &[data-tile-interactive="true"] {

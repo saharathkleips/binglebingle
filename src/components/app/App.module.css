@@ -17,7 +17,7 @@
   flex-direction: column;
   min-height: 0;
   /* Isolate the game content stacking context so GSAP-boosted tile z-indices
-     cannot escape above the instructions overlay (z-index: 100, fixed). */
+     cannot escape above fixed popover layers. */
   isolation: isolate;
 }
 

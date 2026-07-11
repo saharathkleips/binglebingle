@@ -26,7 +26,7 @@ export type BaseTileElement = "button" | "div" | "span";
  */
 type BaseTileSharedProps = {
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
   dataAttributes?: Record<`data-${string}`, string | number | boolean>;
   isInteractive?: boolean;
   label?: string;
