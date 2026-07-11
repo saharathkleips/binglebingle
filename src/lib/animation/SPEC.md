@@ -32,7 +32,43 @@ Most functions accept `HTMLElement` targets and return a `gsap.core.Tween`; hist
 
 ### motion-tokens.ts
 
-Exports shared GSAP timing and easing constants. CSS-owned transitions use matching custom properties in `src/index.css` so hover/lift and imperative feedback can be tuned together without hunting for literal durations.
+Exports shared GSAP timing, easing, timeline positioning, and particle palette constants. The tokens keep animation helpers declarative: helpers describe which interaction is happening, while `motion-tokens.ts` owns the actual durations/easings. CSS-owned transitions use matching custom properties in `src/index.css` (`--motion-duration-fast`, `--motion-ease-standard`) so hover/lift and imperative feedback can be tuned together without hunting for literal durations.
+
+#### Duration tokens
+
+| Token | Value | Current usage | Purpose |
+| --- | ---: | --- | --- |
+| `MOTION_DURATION_INSTANT` | `0.08` | `animateRotateSqueeze` squeeze/yoyo leg | Near-immediate tactile feedback for reversible micro-interactions. |
+| `MOTION_DURATION_FAST` | `0.14` | `animateComposePulse` pulse/yoyo leg | Quick emphasis for a successful compose without delaying input flow. |
+| `MOTION_DURATION_PICK_UP` | `0.15` | `animatePickUp` on drag start | Matches the feel of CSS hover/lift transitions while making a dragged tile feel grabbed. |
+| `MOTION_DURATION_SLOT_ENTRANCE` | `0.2` | Filled submission slot entrance, history tile flip reveal | Short placement/reveal timing for tile-sized elements. |
+| `MOTION_DURATION_MEDIUM` | `0.22` | Default `animateEntranceScale`, history row slide-in | Medium-weight UI reveal for newly rendered elements or rows. |
+| `MOTION_DURATION_SNAP` | `0.3` | `SNAP_BACK_ANIMATION` in failed-drop reposition and cross-owner clone snap-back | Longer travel timing for visible repositioning across the board. |
+| `MOTION_DURATION_PARTICLE_BURST` | `0.42` | Particle burst fade/flight | Lets celebration particles read after the tile action completes. |
+
+#### Timeline tokens
+
+| Token | Value | Current usage | Purpose |
+| --- | ---: | --- | --- |
+| `MOTION_STAGGER_HISTORY_TILE` | `0.12` | `animateHistoryRowReveal` tile stagger | Reveals submitted guess tiles left-to-right at a readable cadence. |
+| `MOTION_OVERLAP_HISTORY_TILE` | `"-=0.06"` | `animateHistoryRowReveal` tile animation position | Starts tile flips just before row slide-in finishes so the row feels continuous. |
+
+#### Easing tokens
+
+| Token | Value | Current usage | Purpose |
+| --- | --- | --- | --- |
+| `MOTION_EASE_STANDARD_OUT` | `"power2.out"` | Pick-up, row slide-in, particle burst | Smooth default deceleration for motion that settles into place. |
+| `MOTION_EASE_STANDARD_IN` | `"power2.in"` | Rotate squeeze | Quick acceleration into a compressed state before yoyo recovery. |
+| `MOTION_EASE_DECISIVE_OUT` | `"power3.out"` | Compose pulse | More forceful game-action emphasis than the standard ease. |
+| `MOTION_EASE_DECISIVE_IN_OUT` | `"power3.inOut"` | History tile flip reveal | Balanced in/out easing for transform reveals. |
+| `MOTION_EASE_SNAP` | `"back.out(1.2)"` | Shared snap-back animation | Small overshoot makes returns feel physical without bouncing too much. |
+| `MOTION_EASE_ENTRANCE` | `"back.out(1.7)"` | `animateEntranceScale` | Larger overshoot helps newly appeared tiles read as pop-in feedback. |
+
+#### Palette token
+
+| Token | Value | Current usage | Purpose |
+| --- | --- | --- | --- |
+| `PARTICLE_BURST_COLORS` | 오방색/단청-inspired hex colors | `animateParticleBurst` assigns colors round-robin to eight particles | Keeps celebration effects aligned with the visual theme and deterministic for tests. |
 
 ### animatePickUp(element) => gsap.core.Tween
 
