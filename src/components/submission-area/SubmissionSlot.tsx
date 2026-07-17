@@ -43,7 +43,8 @@ export function SubmissionSlot({
   onDropOnSlot,
   onDropOnPool = () => {},
 }: SubmissionSlotProps) {
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const filledButtonRef = useRef<HTMLButtonElement>(null);
+  const emptySlotRef = useRef<HTMLDivElement>(null);
   const isFilled = slot.state === "FILLED";
   // Stable key for detecting swaps: which tile ID occupies this slot.
   const filledTileId = slot.state === "FILLED" ? slot.tileId : null;
@@ -54,12 +55,12 @@ export function SubmissionSlot({
   // old start scale as its target and stay tiny. React runs ALL cleanups before ALL
   // setups (declaration order), so this setup fires before useGSAP's setup.
   useLayoutEffect(() => {
-    if (!isFilled || !buttonRef.current) return;
-    gsap.set(buttonRef.current, { clearProps: "all" });
+    if (!isFilled || !filledButtonRef.current) return;
+    gsap.set(filledButtonRef.current, { clearProps: "all" });
   }, [isFilled, filledTileId]);
 
   useSubmissionSlotDraggable({
-    buttonRef,
+    buttonRef: filledButtonRef,
     isFilled,
     filledTileId,
     slotIndex,
@@ -74,8 +75,8 @@ export function SubmissionSlot({
   // leaving the empty slot visually shrunk. Running clearProps here (after useGSAP's
   // revert) ensures the element is clean before the next fill.
   useLayoutEffect(() => {
-    if (isFilled || !buttonRef.current) return;
-    gsap.set(buttonRef.current, { clearProps: "all" });
+    if (isFilled || !emptySlotRef.current) return;
+    gsap.set(emptySlotRef.current, { clearProps: "all" });
   }, [isFilled]);
 
   const slotPlaceholder = (
@@ -84,13 +85,13 @@ export function SubmissionSlot({
     </span>
   );
 
-  const button = isFilled ? (
+  const slotElement = isFilled ? (
     <CharacterTile
       character={slot.character}
       element="button"
       className={styles.filled ?? ""}
       isInteractive
-      ref={buttonRef}
+      ref={filledButtonRef}
       dataAttributes={{
         [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex,
         [DATA_TILE_ID_ATTRIBUTE]: slot.tileId,
@@ -98,16 +99,15 @@ export function SubmissionSlot({
       }}
     />
   ) : (
-    <button
-      ref={buttonRef}
-      type="button"
+    <div
+      ref={emptySlotRef}
       className={`${styles.slot} ${styles.empty}`}
       {...{ [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex }}
       data-slot-state="empty"
       data-slot-hitbox
     >
       {slotPlaceholder}
-    </button>
+    </div>
   );
 
   // When filled, wrap in a ghost div that stays at the original slot position
@@ -121,11 +121,11 @@ export function SubmissionSlot({
         data-slot-state="filled"
         data-slot-hitbox
       >
-        {button}
+        {slotElement}
         {slotPlaceholder}
       </div>
     );
   }
 
-  return button;
+  return slotElement;
 }

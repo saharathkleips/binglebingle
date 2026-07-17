@@ -51,7 +51,7 @@ describe("SubmissionSlot", () => {
     expect(onTap).not.toHaveBeenCalled();
   });
 
-  it("exposes data-slot-index attribute on the button element", async () => {
+  it("exposes data-slot-index attribute on the empty slot hitbox", async () => {
     const slot: SlotType = { state: "EMPTY" };
     await render(
       <SubmissionSlot slot={slot} slotIndex={2} onTap={vi.fn()} onDropOnSlot={vi.fn()} />,
