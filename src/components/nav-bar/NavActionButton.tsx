@@ -4,7 +4,6 @@ import styles from "./NavActionButton.module.css";
 
 type NavActionButtonBaseProps = {
   ariaLabel: string;
-  testId?: string;
   isExpanded?: boolean;
   onClick?: () => void;
 };
@@ -35,7 +34,6 @@ export function NavActionButton(props: NavActionButtonProps) {
       onClick={props.onClick}
       ariaLabel={props.ariaLabel}
       ariaExpanded={props.isExpanded}
-      testId={props.testId}
     >
       {props.kind === "icon" ? (
         <span className={styles.contentIcon} aria-hidden="true">
