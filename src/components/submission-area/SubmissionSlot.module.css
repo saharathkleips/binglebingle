@@ -9,7 +9,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--color-border);
+  color: var(--color-chrome-foreground);
   font-size: var(--tile-font-size);
   user-select: none;
 }
@@ -25,7 +25,7 @@
   height: var(--tile-visual-long-edge);
   flex: none;
   pointer-events: none;
-  border: max(1px, var(--tile-border-padding)) solid currentColor;
+  border: max(1px, var(--tile-border-width)) solid currentColor;
   border-radius: var(--tile-radius);
   background-color: var(--submission-slot-placeholder-background);
   box-shadow: var(--tile-depth-stack);
@@ -41,7 +41,7 @@
 }
 
 .empty {
-  color: var(--color-border);
+  color: var(--color-chrome-foreground);
 }
 
 .filled {
@@ -61,7 +61,7 @@
   justify-content: center;
   width: var(--tile-visual-short-edge);
   height: var(--tile-hitbox-size);
-  color: var(--color-border);
+  color: var(--color-chrome-foreground);
 }
 
 .slotGhost > .slotPlaceholder {

@@ -21,7 +21,7 @@
 
 .logo {
   --logo-font-family: var(--font-family-tile);
-  --logo-font-weight: 700;
+  --logo-font-weight: var(--font-weight-bold);
   margin: 0;
   width: var(--nav-logo-width);
   min-height: var(--nav-logo-min-height);

@@ -16,11 +16,11 @@
   justify-content: center;
   border: 0;
   background: transparent;
-  color: var(--color-border);
+  color: var(--color-chrome-foreground);
   cursor: pointer;
   font: inherit;
   font-family: var(--font-family-ui);
-  font-weight: 800;
+  font-weight: var(--font-weight-control);
   line-height: 1;
   touch-action: manipulation;
   appearance: none;
@@ -81,9 +81,9 @@
 }
 
 .textStroke {
-  color: var(--color-border);
-  -webkit-text-fill-color: var(--color-border);
-  -webkit-text-stroke: 1px var(--color-border);
+  color: var(--color-chrome-foreground);
+  -webkit-text-fill-color: var(--color-chrome-foreground);
+  -webkit-text-stroke: 1px var(--color-chrome-foreground);
 }
 
 .textLabel {

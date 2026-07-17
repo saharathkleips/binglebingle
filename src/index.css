@@ -7,6 +7,8 @@
 body {
   margin: 0;
   background: var(--color-app-background);
+  color: var(--color-text);
+  font-family: var(--font-family-ui);
 }
 
 :root {
@@ -53,10 +55,15 @@ body {
 
   /* ── Semantic: Surface ───────────────────────────────────────────────── */
   --color-surface: var(--palette-rice-paper);
-  --color-surface-active: var(--palette-dancheong-yellow);
+  --color-surface-accent: var(--palette-dancheong-yellow);
 
-  /* ── Semantic: Border ────────────────────────────────────────────────── */
+  /* ── Semantic: Text ──────────────────────────────────────────────────── */
+  --color-text: var(--palette-obangsaek-black);
+  --color-text-muted: var(--palette-dancheong-blue);
+
+  /* ── Semantic: Border and chrome ─────────────────────────────────────── */
   --color-border: var(--palette-obangsaek-black);
+  --color-chrome-foreground: var(--palette-obangsaek-black);
 
   /* ── Semantic: Overlay and drop feedback ─────────────────────────────── */
   --color-overlay-backdrop: rgba(0, 0, 0, 0.6);
@@ -64,9 +71,6 @@ body {
 
   /* ── Layers ──────────────────────────────────────────────────────────── */
   --z-index-popover: 100;
-
-  /* ── Semantic: Text ──────────────────────────────────────────────────── */
-  --color-text-muted: var(--palette-dancheong-blue);
 
   /* ── Semantic: Tile face ─────────────────────────────────────────────── */
   --color-tile-face: var(--palette-obangsaek-black);
@@ -106,6 +110,9 @@ body {
   --motion-duration-fast: 140ms;
   --motion-ease-standard: ease;
 
+  /* ── Interaction tokens ──────────────────────────────────────────────── */
+  --interactive-hitbox-min-size: 44px;
+
   /* ── System chrome tokens: fixed, non-responsive controls ────────────── */
   --system-depth-step: 1px;
   --system-depth: 3px;
@@ -123,11 +130,11 @@ body {
   --system-shadow-stack: var(--system-depth-stack), var(--system-cast-shadow);
 
   /* ── Tile tokens: x-small/minimum interactive tier ───────────────────── */
-  --tile-hitbox-size: 44px;
+  --tile-hitbox-size: var(--interactive-hitbox-min-size);
   --tile-gap: 4px;
   --tile-submission-history-gap: 4px;
   --tile-radius: 4px;
-  --tile-border-padding: 1px;
+  --tile-border-width: 1px;
   --tile-font-size: 20px;
   --tile-depth-step: 1px;
   --tile-depth: 3px;
@@ -159,6 +166,8 @@ body {
   /* ── Typography ──────────────────────────────────────────────────────── */
   --font-family-ui: system-ui, "Noto Sans KR", sans-serif;
   --font-family-tile: "Noto Sans KR", var(--font-family-ui);
+  --font-weight-bold: 700;
+  --font-weight-control: 800;
   --font-weight-tile: 900;
 }
 
@@ -169,7 +178,7 @@ body {
     --tile-gap: 5px;
     --tile-submission-history-gap: 7px;
     --tile-radius: 5px;
-    --tile-border-padding: 1px;
+    --tile-border-width: 1px;
     --tile-font-size: 22px;
     --tile-depth-step: 1px;
     --tile-depth: 4px;
@@ -183,7 +192,7 @@ body {
     --tile-gap: 7px;
     --tile-submission-history-gap: 9px;
     --tile-radius: 6px;
-    --tile-border-padding: 1.25px;
+    --tile-border-width: 1.25px;
     --tile-font-size: 26px;
     --tile-depth-step: 1px;
     --tile-depth: 5px;
@@ -197,7 +206,7 @@ body {
     --tile-gap: 8px;
     --tile-submission-history-gap: 10px;
     --tile-radius: 7px;
-    --tile-border-padding: 1.5px;
+    --tile-border-width: 1.5px;
     --tile-font-size: 30px;
     --tile-depth-step: 1px;
     --tile-depth: 6px;
@@ -211,7 +220,7 @@ body {
     --tile-gap: 10px;
     --tile-submission-history-gap: 12px;
     --tile-radius: 8px;
-    --tile-border-padding: 2px;
+    --tile-border-width: 2px;
     --tile-font-size: 34px;
     --tile-depth-step: 1px;
     --tile-depth: 7px;

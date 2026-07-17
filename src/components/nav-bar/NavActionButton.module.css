@@ -1,5 +1,5 @@
 .button {
-  --nav-action-hitbox-size: 44px;
+  --nav-action-hitbox-size: var(--interactive-hitbox-min-size);
   --nav-action-font-size: 1.12rem;
   --nav-action-surface-size: 2.35rem;
   --nav-action-content-size: 1.35rem;
