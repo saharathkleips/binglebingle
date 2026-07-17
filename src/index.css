@@ -166,6 +166,7 @@ body {
   /* ── Typography ──────────────────────────────────────────────────────── */
   --font-family-ui: system-ui, "Noto Sans KR", sans-serif;
   --font-family-tile: "Noto Sans KR", var(--font-family-ui);
+  --font-weight-semibold: 600;
   --font-weight-bold: 700;
   --font-weight-control: 800;
   --font-weight-tile: 900;

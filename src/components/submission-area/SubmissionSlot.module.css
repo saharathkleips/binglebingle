@@ -74,7 +74,9 @@
   z-index: 1;
 }
 
-.slot[data-drop-slot-target-active="true"] .slotPlaceholder,
-.slotGhost[data-drop-slot-target-active="true"] .slotPlaceholder {
-  --submission-slot-placeholder-background: var(--color-drop-target-active);
+.slot,
+.slotGhost {
+  &[data-drop-slot-target-active="true"] .slotPlaceholder {
+    --submission-slot-placeholder-background: var(--color-drop-target-active);
+  }
 }

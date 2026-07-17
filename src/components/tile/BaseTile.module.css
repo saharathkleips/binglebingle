@@ -80,7 +80,7 @@
     box-shadow: var(--tile-shadow-stack-lifted);
   }
 
-  &[data-tile-interactive="true"]:hover [data-tile-border] {
+  &[data-tile-interactive="true"]:is(:hover, :focus-visible) [data-tile-border] {
     animation-play-state: running;
   }
 
