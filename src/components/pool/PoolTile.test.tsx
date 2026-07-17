@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "vitest-browser-react";
 import { dragSequence, dragToElementCenter } from "../../test-utils/pointer-events";
+import { getSubmissionSlot, getTileById } from "../../test-utils/dom-selectors";
 import { PoolTile } from "./PoolTile";
 import { character } from "../../lib/character";
 import {
@@ -29,46 +30,44 @@ function tileProps(
 
 describe("PoolTile", () => {
   it("displays the resolved character", async () => {
-    const screen = await render(<PoolTile {...tileProps()} />);
-    await expect.element(screen.getByTestId("tile-0")).toHaveTextContent("ㄱ");
+    await render(<PoolTile {...tileProps()} />);
+    await expect.element(getTileById(0)).toHaveTextContent("ㄱ");
   });
 
   it("calls onTap on tap when isTappable", async () => {
     const onTap = vi.fn();
     const screen = await render(<PoolTile {...tileProps({ isTappable: true, onTap })} />);
-    await screen.getByTestId("tile-0").click();
+    await screen.getByRole("button", { name: "ㄱ" }).click();
     expect(onTap).toHaveBeenCalledOnce();
   });
 
   it("does not call onTap on tap when not isTappable", async () => {
     const onTap = vi.fn();
     const screen = await render(<PoolTile {...tileProps({ isTappable: false, onTap })} />);
-    await screen.getByTestId("tile-0").click();
+    await screen.getByRole("button", { name: "ㄱ" }).click();
     expect(onTap).not.toHaveBeenCalled();
   });
 
   it("keeps the interactive affordance when not isTappable because pool tiles are draggable", async () => {
-    const screen = await render(<PoolTile {...tileProps({ isTappable: false })} />);
+    await render(<PoolTile {...tileProps({ isTappable: false })} />);
 
-    await expect
-      .element(screen.getByTestId("tile-0"))
-      .toHaveAttribute("data-tile-interactive", "true");
+    await expect.element(getTileById(0)).toHaveAttribute("data-tile-interactive", "true");
   });
 });
 
 describe("PoolTile drag", () => {
   it("calls onDropOnSlot with slotIndex and records source snap-back when dropped on a slot", async () => {
     const onDropOnSlot = vi.fn(() => true);
-    const screen = await render(
+    await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <PoolTile {...tileProps({ onDropOnSlot })} />
-        <button data-slot-index="1" data-testid="slot-1">
+        <button data-slot-index="1" data-slot-hitbox>
           _
         </button>
       </div>,
     );
-    const tileElement = screen.getByTestId("tile-0").element();
-    const slotElement = screen.getByTestId("slot-1").element();
+    const tileElement = getTileById(0);
+    const slotElement = getSubmissionSlot(1);
 
     dragToElementCenter(tileElement, slotElement);
 
@@ -82,7 +81,7 @@ describe("PoolTile drag", () => {
   it("calls onDropOnTile with targetId when dropped on another tile", async () => {
     const onDropOnTile = vi.fn(() => true);
     const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
-    const screen = await render(
+    await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <PoolTile {...tileProps({ onDropOnTile })} />
         <PoolTile
@@ -94,22 +93,18 @@ describe("PoolTile drag", () => {
         />
       </div>,
     );
-    const tileElement = screen.getByTestId("tile-0").element();
-    const targetElement = screen.getByTestId("tile-1").element();
 
-    dragToElementCenter(tileElement, targetElement);
+    dragToElementCenter(getTileById(0), getTileById(1));
 
     await expect.poll(() => onDropOnTile.mock.calls.length).toBe(1);
     expect(onDropOnTile).toHaveBeenCalledWith(1);
   });
 
   it("does not call onDropOnSlot or onDropOnTile when dropped on empty space", async () => {
-    // Drag a tile and release over empty space (no valid drop target in view).
-    // findDropTarget returns null — neither callback fires.
     const onDropOnSlot = vi.fn(() => true);
     const onDropOnTile = vi.fn(() => true);
-    const screen = await render(<PoolTile {...tileProps({ onDropOnSlot, onDropOnTile })} />);
-    const tileElement = screen.getByTestId("tile-0").element();
+    await render(<PoolTile {...tileProps({ onDropOnSlot, onDropOnTile })} />);
+    const tileElement = getTileById(0);
 
     dragSequence(tileElement, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
@@ -123,7 +118,7 @@ describe("PoolTile drag", () => {
 
   it("sets merge preview text on the dragged tile during a valid pool tile hover", async () => {
     const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
-    const screen = await render(
+    await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <PoolTile
           {...tileProps({ getDropTargetFeedback: () => ({ canDrop: true, preview: "가" }) })}
@@ -137,8 +132,8 @@ describe("PoolTile drag", () => {
         />
       </div>,
     );
-    const tileElement = screen.getByTestId("tile-0").element();
-    const targetRect = screen.getByTestId("tile-1").element().getBoundingClientRect();
+    const tileElement = getTileById(0);
+    const targetRect = getTileById(1).getBoundingClientRect();
     const targetCenterX = targetRect.left + targetRect.width / 2;
     const targetCenterY = targetRect.top + targetRect.height / 2;
 
@@ -148,27 +143,27 @@ describe("PoolTile drag", () => {
       { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
     ]);
 
-    await expect.element(screen.getByTestId("tile-0")).toHaveAttribute("data-drop-preview", "가");
-    await expect.element(screen.getByTestId("tile-0")).toHaveTextContent("가");
+    await expect.element(getTileById(0)).toHaveAttribute("data-drop-preview", "가");
+    await expect.element(getTileById(0)).toHaveTextContent("가");
 
     dragSequence(tileElement, [
       { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
     ]);
-    await expect.element(screen.getByTestId("tile-0")).not.toHaveAttribute("data-drop-preview");
-    await expect.element(screen.getByTestId("tile-0")).toHaveTextContent("ㄱ");
+    await expect.element(getTileById(0)).not.toHaveAttribute("data-drop-preview");
+    await expect.element(getTileById(0)).toHaveTextContent("ㄱ");
   });
 
   it("highlights empty slot drop target during drag", async () => {
-    const screen = await render(
+    await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <PoolTile {...tileProps()} />
-        <button data-slot-index="0" data-testid="slot-0">
+        <button data-slot-index="0" data-slot-hitbox>
           _
         </button>
       </div>,
     );
-    const tileElement = screen.getByTestId("tile-0").element();
-    const slotRect = screen.getByTestId("slot-0").element().getBoundingClientRect();
+    const tileElement = getTileById(0);
+    const slotRect = getSubmissionSlot(0).getBoundingClientRect();
     const slotCenterX = slotRect.left + slotRect.width / 2;
     const slotCenterY = slotRect.top + slotRect.height / 2;
 
@@ -179,7 +174,7 @@ describe("PoolTile drag", () => {
     ]);
 
     await expect
-      .element(screen.getByTestId("slot-0"))
+      .element(getSubmissionSlot(0))
       .toHaveAttribute("data-drop-slot-target-active", "true");
 
     dragSequence(tileElement, [{ type: "pointerup", clientX: slotCenterX, clientY: slotCenterY }]);

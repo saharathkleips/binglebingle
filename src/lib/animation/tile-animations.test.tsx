@@ -57,7 +57,7 @@ describe("animateHistoryRowReveal", () => {
   it("includes tile children in the reveal stagger when present", () => {
     const row = document.createElement("div");
     const tile = document.createElement("div");
-    tile.setAttribute("data-testid", "history-tile");
+    tile.setAttribute("data-history-tile", "true");
     row.appendChild(tile);
     document.body.appendChild(row);
 

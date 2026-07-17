@@ -5,22 +5,23 @@
  * Designed to showcase compose, decompose, rotate, PRESENT, and CORRECT states.
  *
  * Tile ID map for the initial pool (고양이 fully decomposed + normalized):
- *   0:ㄱ  1:ㅏ  2:ㅇ  3:ㅏ  4:ㅇ  5:ㅇ  6:ㅣ
+ *   0:ㄱ  1:ㅏ  2:ㅇ  3:ㅑ  4:ㅇ  5:ㅇ  6:ㅣ
  *
  * tile-1 starts as ㅏ — not ㅗ — because normalizeJamo maps ㅗ to the
  * canonical first member of its rotation set ["ㅏ","ㅜ","ㅓ","ㅗ"].
+ * tile-3 stays ㅑ because 양 uses a different rotation set.
  *
- * Guess 1 — 가이아: showcase ABSENT and PRESENT.
- *   Build 가, 이, 아 and deliberately place 이 in the wrong slot.
+ * Guess 1 — 가이야: showcase ABSENT and PRESENT.
+ *   Build 가, 이, 야 and deliberately place 이 in the wrong slot.
  *   Result: ABSENT · PRESENT · ABSENT
- *   Pool after: 0:ㄱ  1:ㅏ  2:ㅇ  3:ㅏ  4:ㅇ   (slot-1 keeps 이 as PRESENT)
+ *   Pool after: 0:ㄱ  1:ㅏ  2:ㅇ  3:ㅑ  4:ㅇ   (slot-1 keeps 이 as PRESENT)
  *
- * Guess 2 — 고아이: showcase compose→decompose→rotate→recompose to build 고.
+ * Guess 2 — 고야이: showcase compose→decompose→rotate→recompose to build 고.
  *   Click the PRESENT 이(5) in slot-1 to return it to the pool.
  *   Compose ㅏ(1)+ㄱ(0)→가, click 가 to decompose back to ㄱ+ㅏ,
  *   rotate ㅏ(1) three times to ㅗ, compose ㅗ(1)+ㄱ(0)→고.
  *   Result: CORRECT · ABSENT · CORRECT
- *   Pool after: 1:ㅏ  2:ㅇ  4:ㅇ   (slot-0 keeps 고, slot-2 keeps 이)
+ *   Pool after: 4:ㅇ  2:ㅇ  1:ㅑ   (slot-0 keeps 고, slot-2 keeps 이)
  *
  * Guess 3 — 고양이: compose 양 from the returned tiles and win.
  *   Result: CORRECT · CORRECT · CORRECT
@@ -63,15 +64,16 @@ async function pause(page: Page, ms = 600) {
   await page.waitForTimeout(ms);
 }
 
-test("demo: guesses 가이아 → 고아이 → 고양이 to win", async ({ page }) => {
+test("demo: guesses 가이야 → 고야이 → 고양이 to win", async ({ page }) => {
   await page.goto("/");
+  await page.getByRole("button", { name: "알겠어요!" }).click();
 
-  const tile = (id: number) => page.getByTestId(`tile-${id}`);
-  const slot = (index: number) => page.getByTestId(`slot-${index}`);
-  const historyTiles = page.getByTestId("history-tile");
+  const tile = (id: number) => page.locator(`[data-pool="true"] [data-tile-id="${id}"]`);
+  const slot = (index: number) => page.locator(`[data-slot-index="${index}"][data-slot-hitbox]`);
+  const historyTiles = page.locator("[data-history-tile]");
 
   // -------------------------------------------------------------------------
-  // GUESS 1 — 가이아  (showcase PRESENT: 이 belongs at position 2, not 1)
+  // GUESS 1 — 가이야  (showcase PRESENT: 이 belongs at position 2, not 1)
   // -------------------------------------------------------------------------
 
   // Build 가: drag ㅏ(1) onto ㄱ(0) → tile-0 becomes 가, tile-1 removed
@@ -80,7 +82,7 @@ test("demo: guesses 가이아 → 고아이 → 고양이 to win", async ({ page
   // Build 이: drag ㅣ(6) onto ㅇ(5) → tile-5 becomes 이, tile-6 removed
   await drag(page, tile(6), tile(5));
   await pause(page);
-  // Build 아: drag ㅏ(3) onto ㅇ(2) → tile-2 becomes 아, tile-3 removed
+  // Build 야: drag ㅑ(3) onto ㅇ(2) → tile-2 becomes 야, tile-3 removed
   await drag(page, tile(3), tile(2));
   await pause(page);
 
@@ -89,21 +91,21 @@ test("demo: guesses 가이아 → 고아이 → 고양이 to win", async ({ page
   await pause(page);
   await drag(page, tile(5), slot(1)); // 이 → slot 1  (이 belongs at position 2 → PRESENT)
   await pause(page);
-  await drag(page, tile(2), slot(2)); // 아 → slot 2  (ABSENT)
+  await drag(page, tile(2), slot(2)); // 야 → slot 2  (ABSENT)
   await pause(page);
 
-  await page.getByTestId("submission-button").click();
+  await page.getByRole("button", { name: "도전" }).click();
   await pause(page, 1000);
 
-  // Board row 0: 가 ABSENT · 이 PRESENT · 아 ABSENT
-  // Pool after (가 and 아 decompose on return): 0:ㄱ  1:ㅏ  2:ㅇ  3:ㅏ  4:ㅇ
+  // Board row 0: 가 ABSENT · 이 PRESENT · 야 ABSENT
+  // Pool after (가 and 야 decompose on return): 0:ㄱ  1:ㅏ  2:ㅇ  3:ㅑ  4:ㅇ
   // Submission: slot-0 EMPTY · slot-1 이(tile-5, PRESENT) · slot-2 EMPTY
   await expect(historyTiles.nth(0)).toHaveAttribute("data-result", "ABSENT");
   await expect(historyTiles.nth(1)).toHaveAttribute("data-result", "PRESENT");
   await expect(historyTiles.nth(2)).toHaveAttribute("data-result", "ABSENT");
 
   // -------------------------------------------------------------------------
-  // GUESS 2 — 고아이  (showcase compose → decompose → rotate → recompose)
+  // GUESS 2 — 고야이  (showcase compose → decompose → rotate → recompose)
   // -------------------------------------------------------------------------
 
   // Return the PRESENT 이(5) from slot-1 to pool so it can be placed in slot-2.
@@ -132,23 +134,23 @@ test("demo: guesses 가이아 → 고아이 → 고양이 to win", async ({ page
   // Build 고: drag ㅗ(1) onto ㄱ(0) → tile-0 becomes 고, tile-1 removed
   await drag(page, tile(1), tile(0));
   await pause(page);
-  // Build 아: drag ㅏ(3) onto ㅇ(2) → tile-2 becomes 아, tile-3 removed
+  // Build 야: drag ㅑ(3) onto ㅇ(2) → tile-2 becomes 야, tile-3 removed
   await drag(page, tile(3), tile(2));
   await pause(page);
 
-  // Place tiles: 고→slot 0, 아→slot 1, 이→slot 2
+  // Place tiles: 고→slot 0, 야→slot 1, 이→slot 2
   await drag(page, tile(0), slot(0)); // 고 → slot 0
   await pause(page);
-  await drag(page, tile(2), slot(1)); // 아 → slot 1
+  await drag(page, tile(2), slot(1)); // 야 → slot 1
   await pause(page);
   await drag(page, tile(5), slot(2)); // 이 → slot 2
   await pause(page);
 
-  await page.getByTestId("submission-button").click();
+  await page.getByRole("button", { name: "도전" }).click();
   await pause(page, 1000);
 
-  // Board row 1: 고 CORRECT · 아 ABSENT · 이 CORRECT
-  // Pool after (아 decomposes on return): 1:ㅏ  2:ㅇ  4:ㅇ
+  // Board row 1: 고 CORRECT · 야 ABSENT · 이 CORRECT
+  // Pool after (야 decomposes on return): 4:ㅇ  2:ㅇ  1:ㅑ
   // Submission: slot-0 고(tile-0) · slot-1 EMPTY · slot-2 이(tile-5)
   await expect(historyTiles.nth(3)).toHaveAttribute("data-result", "CORRECT");
   await expect(historyTiles.nth(4)).toHaveAttribute("data-result", "ABSENT");
@@ -157,19 +159,19 @@ test("demo: guesses 가이아 → 고아이 → 고양이 to win", async ({ page
   // -------------------------------------------------------------------------
   // GUESS 3 — 고양이  (compose 양 and win)
   // -------------------------------------------------------------------------
-  // Pool: 1:ㅏ  2:ㅇ  4:ㅇ
+  // Pool: 4:ㅇ  2:ㅇ  1:ㅑ
 
-  // Build 아: drag ㅏ(1) onto ㅇ(2) → tile-2 becomes 아, tile-1 removed
+  // Build 야: drag ㅑ(1) onto ㅇ(2) → tile-2 becomes 야, tile-1 removed
   await drag(page, tile(1), tile(2));
   await pause(page);
-  // Build 양: drag ㅇ(4) onto 아(2) → tile-2 becomes 양, tile-4 removed
+  // Build 양: drag ㅇ(4) onto 야(2) → tile-2 becomes 양, tile-4 removed
   await drag(page, tile(4), tile(2));
   await pause(page);
   // Place 양 in the only empty slot; slots 0 and 2 are already correct.
   await drag(page, tile(2), slot(1)); // 양 → slot 1
   await pause(page);
 
-  await page.getByTestId("submission-button").click();
+  await page.getByRole("button", { name: "도전" }).click();
   await pause(page, 2000); // hold on the winning state
 
   // Board row 2: all CORRECT

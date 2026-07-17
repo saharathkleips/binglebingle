@@ -24,16 +24,17 @@ Prefer accessible queries. These return **locators** with built-in retry.
 screen.getByRole("button", { name: /submit/i });
 screen.getByText("ㄱ");
 screen.getByLabelText(/email/i);
-screen.getByTestId("token-0");
+document.querySelector('[data-token-id="0"]');
 ```
 
-For regex-based selectors that match multiple elements, use `.elements()` to get the raw array:
+For semantic data hooks that match multiple elements, use `querySelectorAll` and filter to the expected element type:
 
 ```tsx
-expect(screen.getByTestId(/^token-/).elements().length).toBe(3);
+const tokens = Array.from(document.querySelectorAll("[data-token-id]")).filter(
+  (element): element is HTMLElement => element instanceof HTMLElement,
+);
+expect(tokens.length).toBe(3);
 ```
-
-Note: `.elements()` returns synchronously. Ensure the parent container has already rendered (e.g. via a prior `await expect.element()`) before counting.
 
 ### Assertions
 
@@ -95,7 +96,7 @@ Pass a `vi.fn()` dispatch and assert on it after interaction. Type the mock when
 ```tsx
 const dispatch = vi.fn<(action: GameAction) => void>();
 const screen = await render(<Token tile={tile} dispatch={dispatch} />);
-await screen.getByTestId("token-0").click();
+await screen.getByRole("button", { name: "ㄱ" }).click();
 expect(dispatch).toHaveBeenCalledWith({
   type: "CHARACTER_ROTATE_NEXT",
   payload: { tileId: 0 },
@@ -145,7 +146,7 @@ await expect.element(screen.getByText("Success")).toBeVisible();
 Browser mode renders real CSS, so you can assert on computed styles:
 
 ```tsx
-const el = screen.getByTestId("token-0");
+const el = document.querySelector('[data-token-id="0"]');
 const element = el.element();
 const computedStyles = getComputedStyle(element);
 expect(computedStyles.opacity).toBe("0.5");
@@ -159,7 +160,9 @@ CSS Modules mangles class names at build time, so never match against raw string
 import styles from "./Widget.module.css";
 
 // ✅ matches the mangled class name
-await expect.element(screen.getByTestId("widget")).toHaveClass(styles.active);
+await expect
+  .element(screen.getByRole("button", { name: "Open widget" }))
+  .toHaveClass(styles.active);
 
 // ❌ will never match — raw name doesn't exist at runtime
 expect(element.className).toContain("active");

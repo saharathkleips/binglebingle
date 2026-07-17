@@ -58,7 +58,6 @@ type BaseTileSharedProps = {
   label?: string;
   onAnimationEnd?: React.AnimationEventHandler<HTMLElement>;
   result?: CharacterResult;
-  testId?: string;
 };
 
 type BaseTileProps =
@@ -141,7 +140,7 @@ Rules:
 
 **Feature modules own semantics.** Pool tiles can be draggable and tappable, submission slots can swap or return tiles, history tiles can show evaluation results, and instructions can render examples. Those behaviors are outside this module even when they share the same visual surface.
 
-**DOM hooks are pass-through only.** `ref`, `dataAttributes`, `testId`, and `onAnimationEnd` exist so feature modules can attach their own semantics to the same visual element. `BaseTile` must not interpret those attributes or callbacks.
+**DOM hooks are pass-through only.** `ref`, `dataAttributes`, and `onAnimationEnd` exist so feature modules can attach their own semantics to the same visual element. `BaseTile` must not interpret those attributes or callbacks.
 
 **Feedback animations are hook-based.** `useTileFeedback` centralizes the shared GSAP feedback setup without making visual components depend on GSAP or creating a generic animated component layer.
 

@@ -54,15 +54,15 @@ export function HistoryArea() {
   if (state.history.length === 0) return null;
 
   return (
-    <div ref={containerRef} className={styles.historyArea} data-testid="history-area">
+    <section ref={containerRef} className={styles.historyArea} aria-label="Guess history">
       {state.history.map((guess, rowIndex) => (
-        <div key={rowIndex} className={styles.row} data-testid={`history-row-${rowIndex}`}>
+        <div key={rowIndex} className={styles.row} data-history-row-index={rowIndex}>
           {guess.map((evaluated, colIndex) => (
             <HistoryTile key={colIndex} evaluated={evaluated} />
           ))}
         </div>
       ))}
-    </div>
+    </section>
   );
 }
 

@@ -21,7 +21,6 @@ export type BaseTileElement = "button" | "div" | "span";
  * @property isInteractive - Whether the tile should use interactive affordances such as pointer cursor and active feedback.
  * @property label - Accessible label for non-text or abbreviated tile content.
  * @property onAnimationEnd - Optional animation-end handler for caller-owned CSS feedback.
- * @property testId - Optional test id for observable UI tests.
  * @property result - Optional engine evaluation result for result-colored tiles.
  */
 type BaseTileSharedProps = {
@@ -31,7 +30,6 @@ type BaseTileSharedProps = {
   isInteractive?: boolean;
   label?: string;
   onAnimationEnd?: AnimationEventHandler<HTMLElement>;
-  testId?: string;
   result?: CharacterResult;
 };
 
@@ -75,12 +73,10 @@ export function BaseTile(props: BaseTileProps) {
     label,
     onAnimationEnd,
     result,
-    testId,
   } = props;
   const composedClassName = clsx(styles.tile, className);
   const sharedProps = {
     ...dataAttributes,
-    "data-testid": testId,
     "data-tile-interactive": isInteractive || undefined,
     "data-tile-result": result,
     "aria-label": label,

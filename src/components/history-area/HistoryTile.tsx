@@ -25,9 +25,8 @@ export type HistoryTileProps = {
  */
 export function HistoryTile({ evaluated }: HistoryTileProps) {
   const sharedProps = {
-    dataAttributes: { "data-result": evaluated.result },
+    dataAttributes: { "data-result": evaluated.result, "data-history-tile": true },
     result: evaluated.result,
-    testId: "history-tile",
   };
 
   if (evaluated.character === undefined) {

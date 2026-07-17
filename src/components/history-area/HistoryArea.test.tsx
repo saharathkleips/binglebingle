@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { render } from "vitest-browser-react";
 import { pointerSequence } from "../../test-utils/pointer-events";
+import {
+  getHistoryRow,
+  getHistoryTiles,
+  getPoolTile,
+  getSubmissionSlot,
+} from "../../test-utils/dom-selectors";
 import { HistoryArea } from "./HistoryArea";
 import { Pool } from "../pool/Pool";
 import { SubmissionArea } from "../submission-area/SubmissionArea";
@@ -31,31 +37,29 @@ function createGuessRecord(value: string, result: CharacterResult): GuessRecord 
 describe("HistoryArea", () => {
   it("renders nothing when history is empty", async () => {
     const screen = await renderHistoryArea([]);
-    await expect.element(screen.getByTestId("history-area")).not.toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("region", { name: "Guess history" }))
+      .not.toBeInTheDocument();
   });
 
   it("renders one row per guess record", async () => {
-    const screen = await renderHistoryArea([createGuessRecord("가", "CORRECT")]);
-    await expect.element(screen.getByTestId("history-row-0")).toBeInTheDocument();
-    expect(screen.getByTestId("history-row-0").getByTestId("history-tile").elements().length).toBe(
-      1,
-    );
+    await renderHistoryArea([createGuessRecord("가", "CORRECT")]);
+    await expect.element(getHistoryRow(0)).toBeInTheDocument();
+    expect(getHistoryRow(0).querySelectorAll("[data-history-tile]").length).toBe(1);
   });
 
   it("renders multiple rows for multiple guesses", async () => {
-    const screen = await renderHistoryArea([
+    await renderHistoryArea([
       createGuessRecord("나", "ABSENT"),
       createGuessRecord("가", "CORRECT"),
     ]);
-    await expect.element(screen.getByTestId("history-row-0")).toBeInTheDocument();
-    await expect.element(screen.getByTestId("history-row-1")).toBeInTheDocument();
+    await expect.element(getHistoryRow(0)).toBeInTheDocument();
+    await expect.element(getHistoryRow(1)).toBeInTheDocument();
   });
 });
 
 describe("HistoryArea reveal animation", () => {
   it("shows history row after a guess is submitted", async () => {
-    // Start with 가 (a complete syllable) already in the pool so the submit
-    // button enables as soon as the tile lands in slot-0.
     const gameState: GameState = {
       targetWord: createWord("가")!,
       pool: [{ id: 0, character: character("가")! }],
@@ -70,8 +74,8 @@ describe("HistoryArea reveal animation", () => {
       </GameProvider>,
     );
 
-    const tile0 = screen.getByTestId("tile-0").element();
-    const slot0 = screen.getByTestId("slot-0").element();
+    const tile0 = getPoolTile(0);
+    const slot0 = getSubmissionSlot(0);
     const slot0Rect = slot0.getBoundingClientRect();
     pointerSequence(tile0, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
@@ -88,13 +92,12 @@ describe("HistoryArea reveal animation", () => {
       },
     ]);
 
-    // Wait for submit button to enable, then submit
     await expect
-      .poll(() => !screen.getByTestId("submission-button").element().hasAttribute("disabled"))
+      .poll(() => !screen.getByRole("button", { name: "도전" }).element().hasAttribute("disabled"))
       .toBeTruthy();
-    await screen.getByTestId("submission-button").click();
+    await screen.getByRole("button", { name: "도전" }).click();
 
-    // animateHistoryRowReveal fires here; assert the row appears
-    await expect.element(screen.getByTestId("history-row-0")).toBeInTheDocument();
+    await expect.poll(() => getHistoryTiles().length).toBe(1);
+    await expect.element(getHistoryRow(0)).toBeInTheDocument();
   });
 });

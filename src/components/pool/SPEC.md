@@ -78,7 +78,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. D
 
 **`touch-action: none` from BaseTile interactive styles.** Required for drag on touch devices; prevents the browser from claiming the gesture for scrolling before the drag can begin.
 
-**Shared visuals stay in `CharacterTile` / `BaseTile`.** PoolTile attaches GSAP Draggable, refs, test ids, and drop-target data attributes to the shared tile element without importing character composition helpers or duplicating base tile CSS.
+**Shared visuals stay in `CharacterTile` / `BaseTile`.** PoolTile attaches GSAP Draggable, refs, and drop-target data attributes to the shared tile element without importing character composition helpers or duplicating base tile CSS.
 
 **Merge preview is text-only at the behavior boundary.** Pool computes drop-target feedback in one pass: slot validity, pool-tile compose validity, and any resolved preview text. `usePoolTileDraggable` attaches that text to the dragged tile as `data-drop-preview` through the shared tile text override helper. Composition rules stay out of PoolTile, and the preview lives on the dragged tile because it remains visually above the target during overlap.
 

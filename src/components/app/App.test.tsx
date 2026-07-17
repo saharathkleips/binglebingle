@@ -24,14 +24,18 @@ function wonState(): GameState {
 describe("App", () => {
   it("renders the nav bar with the abbreviated game logo", async () => {
     const screen = await render(<App />);
-    await expect.element(screen.getByTestId("nav-bar")).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("navigation", { name: "Primary navigation" }))
+      .toBeInTheDocument();
     await expect.element(screen.getByRole("heading", { level: 1 })).toHaveTextContent("ㅂㄱㅂㄱ");
   });
 
   it("renders pool and submission area", async () => {
     const screen = await render(<App />);
-    await expect.element(screen.getByTestId("pool")).toBeInTheDocument();
-    await expect.element(screen.getByTestId("submission-area")).toBeInTheDocument();
+    await expect.element(screen.getByRole("group", { name: "Jamo pool" })).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("region", { name: "Submission area" }))
+      .toBeInTheDocument();
   });
 
   it("renders history area when initial state has a prior guess", async () => {
@@ -49,28 +53,30 @@ describe("App", () => {
       ],
     };
     const screen = await render(<App initialState={initialState} />);
-    await expect.element(screen.getByTestId("history-area")).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "Guess history" })).toBeInTheDocument();
   });
 });
 
 describe("App win state", () => {
   it("shows win panel when the game is won", async () => {
     const screen = await render(<App initialState={wonState()} />);
-    await expect.element(screen.getByTestId("win-panel")).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "Win summary" })).toBeInTheDocument();
   });
 
   it("hides pool when the game is won", async () => {
     const screen = await render(<App initialState={wonState()} />);
-    await expect.element(screen.getByTestId("pool")).not.toBeInTheDocument();
+    await expect.element(screen.getByRole("group", { name: "Jamo pool" })).not.toBeInTheDocument();
   });
 
   it("hides submission area when the game is won", async () => {
     const screen = await render(<App initialState={wonState()} />);
-    await expect.element(screen.getByTestId("submission-area")).not.toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("region", { name: "Submission area" }))
+      .not.toBeInTheDocument();
   });
 
   it("keeps history area visible when the game is won", async () => {
     const screen = await render(<App initialState={wonState()} />);
-    await expect.element(screen.getByTestId("history-area")).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "Guess history" })).toBeInTheDocument();
   });
 });

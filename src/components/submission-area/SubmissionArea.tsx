@@ -18,7 +18,7 @@ export function SubmissionArea() {
   const { state, dispatch } = useGame();
 
   return (
-    <div className={styles.submissionArea} data-testid="submission-area">
+    <section className={styles.submissionArea} aria-label="Submission area">
       <div className={styles.slots} data-submission-slots>
         {state.submission.map((slot, index) => (
           <SubmissionSlot
@@ -41,6 +41,6 @@ export function SubmissionArea() {
         ))}
       </div>
       <SubmissionButton submission={state.submission} dispatch={dispatch} />
-    </div>
+    </section>
   );
 }

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "vitest-browser-react";
 import { dragSequence } from "../../test-utils/pointer-events";
+import { getSubmissionSlot } from "../../test-utils/dom-selectors";
 import { SubmissionSlot } from "./SubmissionSlot";
 import { character } from "../../lib/character";
 import type { SubmissionSlot as SlotType } from "../../context/game";
@@ -20,17 +21,17 @@ const FILLED_SLOT_1: SlotType = {
 describe("SubmissionSlot", () => {
   it("renders empty slot with no text", async () => {
     const slot: SlotType = { state: "EMPTY" };
-    const screen = await render(
+    await render(
       <SubmissionSlot slot={slot} slotIndex={0} onTap={vi.fn()} onDropOnSlot={vi.fn()} />,
     );
-    await expect.element(screen.getByTestId("slot-0")).toHaveTextContent("");
+    await expect.element(getSubmissionSlot(0)).toHaveTextContent("");
   });
 
   it("renders filled slot with resolved character", async () => {
-    const screen = await render(
+    await render(
       <SubmissionSlot slot={FILLED_SLOT} slotIndex={0} onTap={vi.fn()} onDropOnSlot={vi.fn()} />,
     );
-    await expect.element(screen.getByTestId("slot-0")).toHaveTextContent("ㄱ");
+    await expect.element(getSubmissionSlot(0)).toHaveTextContent("ㄱ");
   });
 
   it("calls onTap when tapped and filled", async () => {
@@ -38,33 +39,31 @@ describe("SubmissionSlot", () => {
     const screen = await render(
       <SubmissionSlot slot={FILLED_SLOT} slotIndex={1} onTap={onTap} onDropOnSlot={vi.fn()} />,
     );
-    await screen.getByTestId("slot-1").click();
+    await screen.getByRole("button", { name: "ㄱ" }).click();
     expect(onTap).toHaveBeenCalled();
   });
 
   it("does not call onTap when tapped and empty", async () => {
     const onTap = vi.fn();
     const slot: SlotType = { state: "EMPTY" };
-    const screen = await render(
-      <SubmissionSlot slot={slot} slotIndex={0} onTap={onTap} onDropOnSlot={vi.fn()} />,
-    );
-    await screen.getByTestId("slot-0").click();
+    await render(<SubmissionSlot slot={slot} slotIndex={0} onTap={onTap} onDropOnSlot={vi.fn()} />);
+    getSubmissionSlot(0).click();
     expect(onTap).not.toHaveBeenCalled();
   });
 
   it("exposes data-slot-index attribute on the button element", async () => {
     const slot: SlotType = { state: "EMPTY" };
-    const screen = await render(
+    await render(
       <SubmissionSlot slot={slot} slotIndex={2} onTap={vi.fn()} onDropOnSlot={vi.fn()} />,
     );
-    await expect.element(screen.getByTestId("slot-2")).toHaveAttribute("data-slot-index", "2");
+    await expect.element(getSubmissionSlot(2)).toHaveAttribute("data-slot-index", "2");
   });
 });
 
 describe("SubmissionSlot drag", () => {
   it("calls onDropOnSlot with target index after drag-and-drop onto another slot", async () => {
     const onDropOnSlot0 = vi.fn();
-    const screen = await render(
+    await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <SubmissionSlot
           slot={FILLED_SLOT}
@@ -76,8 +75,8 @@ describe("SubmissionSlot drag", () => {
       </div>,
     );
 
-    const button0 = screen.getByTestId("slot-0").element();
-    const button1 = screen.getByTestId("slot-1").element();
+    const button0 = getSubmissionSlot(0);
+    const button1 = getSubmissionSlot(1);
     const rect1 = button1.getBoundingClientRect();
     const targetX = rect1.left + rect1.width / 2;
     const targetY = rect1.top + rect1.height / 2;
@@ -93,20 +92,19 @@ describe("SubmissionSlot drag", () => {
   });
 
   it("highlights a filled slot drop target during drag", async () => {
-    const screen = await render(
+    await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <SubmissionSlot slot={FILLED_SLOT} slotIndex={0} onTap={vi.fn()} onDropOnSlot={vi.fn()} />
         <SubmissionSlot slot={FILLED_SLOT_1} slotIndex={1} onTap={vi.fn()} onDropOnSlot={vi.fn()} />
       </div>,
     );
 
-    const button0 = screen.getByTestId("slot-0").element();
-    const button1 = screen.getByTestId("slot-1").element();
+    const button0 = getSubmissionSlot(0);
+    const button1 = getSubmissionSlot(1);
     const rect1 = button1.getBoundingClientRect();
     const targetX = rect1.left + rect1.width / 2;
     const targetY = rect1.top + rect1.height / 2;
 
-    // pointerdown starts drag; second pointermove (after drag threshold) triggers onDrag.
     dragSequence(button0, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
@@ -114,7 +112,7 @@ describe("SubmissionSlot drag", () => {
     ]);
 
     await expect
-      .element(screen.getByTestId("slot-1"))
+      .element(getSubmissionSlot(1))
       .toHaveAttribute("data-drop-slot-target-active", "true");
 
     dragSequence(button0, [{ type: "pointerup", clientX: targetX, clientY: targetY }]);
@@ -122,7 +120,7 @@ describe("SubmissionSlot drag", () => {
 
   it("returns a filled slot to the pool when dropped outside the slot hitboxes", async () => {
     const onDropOnPool = vi.fn();
-    const screen = await render(
+    await render(
       <div data-submission-slots>
         <SubmissionSlot
           slot={FILLED_SLOT}
@@ -134,7 +132,7 @@ describe("SubmissionSlot drag", () => {
       </div>,
     );
 
-    const button = screen.getByTestId("slot-0").element();
+    const button = getSubmissionSlot(0);
     dragSequence(button, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },
@@ -146,7 +144,7 @@ describe("SubmissionSlot drag", () => {
 
   it("does not call onDropOnSlot when pointer is cancelled during drag", async () => {
     const onDropOnSlot = vi.fn();
-    const screen = await render(
+    await render(
       <SubmissionSlot
         slot={FILLED_SLOT}
         slotIndex={0}
@@ -155,7 +153,7 @@ describe("SubmissionSlot drag", () => {
       />,
     );
 
-    const button = screen.getByTestId("slot-0").element();
+    const button = getSubmissionSlot(0);
     dragSequence(button, [
       { type: "pointerdown", clientX: 0, clientY: 0 },
       { type: "pointermove", clientX: 10, clientY: 0 },

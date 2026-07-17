@@ -59,23 +59,18 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
   }
 
   return (
-    <div
-      className={styles.backdrop}
-      onClick={handleBackdropClick}
-      data-testid="instructions-backdrop"
-    >
+    <div className={styles.backdrop} onClick={handleBackdropClick} data-instructions-backdrop>
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Game instructions"
         className={styles.card}
         onClick={handleCardClick}
-        data-testid="instructions-screen"
       >
         <h2 className={styles.heading}>어떻게 플레이하나요?</h2>
 
         {/* Phase 1: compose */}
-        <section className={styles.phase} data-testid="phase-compose">
+        <section className={styles.phase} aria-label="Compose phase">
           <div className={styles.pool}>
             {POOL_CHARACTERS.map((character, index) => (
               <CharacterTile
@@ -98,7 +93,7 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
         </section>
 
         {/* Phase 2: rotate */}
-        <section className={styles.phase} data-testid="phase-rotate">
+        <section className={styles.phase} aria-label="Rotate phase">
           <div className={styles.combineExample}>
             <InstructionCharacterTile character={EXAMPLE_CHARACTERS.ㅏ} />
             <span className={styles.operator}>→</span>
@@ -116,7 +111,7 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
         </section>
 
         {/* Phase 3: deconstruct + final answer */}
-        <section className={styles.phase} data-testid="phase-deconstruct">
+        <section className={styles.phase} aria-label="Deconstruct phase">
           <p className={styles.label}>Tap to deconstruct.</p>
           <SlotRow
             tiles={[
@@ -127,11 +122,7 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
           />
         </section>
 
-        <button
-          className={styles.dismissButton}
-          onClick={onClose}
-          data-testid="instructions-dismiss"
-        >
+        <button className={styles.dismissButton} onClick={onClose}>
           알겠어요!
         </button>
       </div>

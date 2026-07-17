@@ -13,7 +13,6 @@ const ARRIVAL_LIFT_TRANSFORM =
 const ARRIVAL_LIFT_SHADOW = "var(--tile-shadow-stack-lifted)";
 const SNAP_BACK_CLONE_STRIPPED_ATTRIBUTES = [
   "id",
-  "data-testid",
   "data-slot-index",
   "data-slot-state",
   "data-tile-id",

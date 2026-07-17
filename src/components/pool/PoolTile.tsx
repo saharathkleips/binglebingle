@@ -114,7 +114,6 @@ export function PoolTile({
         dataAttributes={{ [DATA_TILE_ID_ATTRIBUTE]: tile.id }}
         element="button"
         isInteractive
-        testId={`tile-${tile.id}`}
         ref={buttonRef}
       />
     </div>

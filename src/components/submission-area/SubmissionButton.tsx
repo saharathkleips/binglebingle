@@ -39,7 +39,6 @@ export function SubmissionButton({ submission, dispatch }: SubmissionButtonProps
       surfaceClassName={styles.surface}
       onClick={handleClick}
       disabled={!isValid}
-      testId="submission-button"
     >
       <Hills3
         className={`${styles.motif} ${styles.motifLeft}`}

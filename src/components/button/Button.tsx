@@ -9,7 +9,6 @@ export type ButtonProps = {
   disabled?: boolean | undefined;
   onClick?: (() => void) | undefined;
   surfaceClassName?: string | undefined;
-  testId?: string | undefined;
   type?: "button" | "submit" | "reset";
 };
 
@@ -34,7 +33,6 @@ export function Button({
   disabled = false,
   onClick,
   surfaceClassName,
-  testId,
   type = "button",
 }: ButtonProps) {
   return (
@@ -45,7 +43,6 @@ export function Button({
       aria-label={ariaLabel}
       aria-expanded={ariaExpanded}
       disabled={disabled}
-      data-testid={testId}
     >
       <span className={joinClassNames(styles.surface, surfaceClassName)}>{children}</span>
     </button>

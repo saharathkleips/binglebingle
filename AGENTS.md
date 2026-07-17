@@ -41,7 +41,7 @@ Running in a locked-down devcontainer (Debian bookworm-slim). If a failure looks
 
 Unit tests colocated with source. Naming: `describe('<fn>')` → `it('<does what> when <condition>')`. Use `it.each` for functions with many input/output cases. Run `pnpm test:coverage` to find gaps.
 
-E2E tests in `tests/**/*.spec.ts`. Test observable UI behavior only; use `data-testid` for selectors.
+E2E tests in `tests/**/*.spec.ts`. Test observable UI behavior only; prefer accessible selectors for normal UI and semantic domain data hooks for game entities.
 
 ## Comments
 

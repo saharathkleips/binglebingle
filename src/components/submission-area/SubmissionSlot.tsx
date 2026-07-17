@@ -91,7 +91,6 @@ export function SubmissionSlot({
       className={styles.filled ?? ""}
       isInteractive
       ref={buttonRef}
-      testId={`slot-${slotIndex}`}
       dataAttributes={{
         [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex,
         [DATA_TILE_ID_ATTRIBUTE]: slot.tileId,
@@ -103,7 +102,6 @@ export function SubmissionSlot({
       ref={buttonRef}
       type="button"
       className={`${styles.slot} ${styles.empty}`}
-      data-testid={`slot-${slotIndex}`}
       {...{ [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex }}
       data-slot-state="empty"
       data-slot-hitbox

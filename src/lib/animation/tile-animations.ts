@@ -106,7 +106,7 @@ export function animateEntranceScale(
  */
 export function animateHistoryRowReveal(rowElement: HTMLElement): gsap.core.Timeline {
   const timeline = gsap.timeline();
-  const tiles = rowElement.querySelectorAll('[data-testid="history-tile"]');
+  const tiles = rowElement.querySelectorAll("[data-history-tile]");
 
   // Row slides up from just below its final position.
   timeline.from(rowElement, {
