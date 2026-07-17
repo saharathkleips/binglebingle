@@ -100,6 +100,34 @@ describe("PoolTile drag", () => {
     expect(onDropOnTile).toHaveBeenCalledWith(1);
   });
 
+  it("calls onDropOnTile for rejected pool tile drops so Pool can handle rejection", async () => {
+    const onDropOnTile = vi.fn(() => false);
+    const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
+    await render(
+      <div style={{ display: "flex", gap: "100px" }}>
+        <PoolTile
+          {...tileProps({
+            onDropOnTile,
+            getDropTargetFeedback: () => ({ canDrop: false, preview: null }),
+          })}
+        />
+        <PoolTile
+          tile={targetTile}
+          isTappable={false}
+          onTap={vi.fn()}
+          onDropOnTile={vi.fn(() => true)}
+          onDropOnSlot={vi.fn(() => true)}
+        />
+      </div>,
+    );
+
+    dragToElementCenter(getTileById(0), getTileById(1));
+
+    await expect.poll(() => onDropOnTile.mock.calls.length).toBe(1);
+    expect(onDropOnTile).toHaveBeenCalledWith(1);
+    await expect.element(getTileById(0)).not.toHaveAttribute("data-drop-source-active");
+  });
+
   it("does not call onDropOnSlot or onDropOnTile when dropped on empty space", async () => {
     const onDropOnSlot = vi.fn(() => true);
     const onDropOnTile = vi.fn(() => true);

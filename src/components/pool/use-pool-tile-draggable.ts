@@ -45,6 +45,7 @@ export function usePoolTileDraggable({
   getDropTargetFeedback,
 }: UsePoolTileDraggableOptions) {
   const lastOverRef = useRef<Element | null>(null);
+  const poolOverflowElementRef = useRef<HTMLElement | null>(null);
   const tileIdRef = useLatestRef(tileId);
   const callbacksRef = useLatestRef({
     isTappable,
@@ -64,53 +65,36 @@ export function usePoolTileDraggable({
         zIndexBoost: true,
         dragClickables: true,
         onDragStart: function onDragStart(this: Draggable) {
-          allowPoolDragOverflow();
-          animatePickUp(this.target as HTMLElement);
+          const draggedElement = this.target as HTMLElement;
+          poolOverflowElementRef.current = allowPoolDragOverflow(draggedElement);
+          animatePickUp(draggedElement);
         },
         onDrag: function onDrag(this: Draggable) {
-          const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
-          const dropTarget = findPoolDropTarget(elements, tileIdRef.current);
-          const dropTargetFeedback =
-            dropTarget === null
-              ? null
-              : (callbacksRef.current.getDropTargetFeedback?.(dropTarget) ?? {
-                  canDrop: true,
-                  preview: null,
-                });
-          const isValidDrop = dropTargetFeedback?.canDrop === true;
-          const sourceElement = this.target as HTMLElement;
-
-          updateDropTargetHighlight({
-            previousTarget: lastOverRef.current,
-            nextTarget: isValidDrop ? dropTarget : null,
+          updatePoolDragFeedback({
+            draggable: this,
+            lastOverRef,
+            sourceTileId: tileIdRef.current,
+            callbacks: callbacksRef.current,
           });
-
-          if (isValidDrop && dropTarget !== null) {
-            setTileTextOverride(sourceElement, dropTargetFeedback.preview);
-            sourceElement.setAttribute(DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE, "true");
-          } else {
-            sourceElement.removeAttribute(DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE);
-            clearTileTextOverride(sourceElement);
-          }
-          lastOverRef.current = isValidDrop ? dropTarget : null;
         },
         onDragEnd: function onDragEnd(this: Draggable) {
-          clearDragFeedback(lastOverRef, this.target as HTMLElement);
+          const draggedElement = this.target as HTMLElement;
+          clearDragFeedback(lastOverRef, draggedElement);
 
-          const element = this.target as HTMLElement;
-          const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
-          const dropTarget = findPoolDropTarget(elements, tileIdRef.current);
+          const dropTarget = getCurrentPoolDropTarget(this, tileIdRef.current);
 
+          // Drop callbacks are authoritative; invalid compose attempts still notify Pool
+          // so it can reject the drop before this tile animates back.
           if (
             dropTarget !== null &&
-            acceptDrop(dropTarget, element, tileIdRef.current, callbacksRef.current)
+            acceptDrop(dropTarget, draggedElement, tileIdRef.current, callbacksRef.current)
           ) {
-            gsap.set(element, { clearProps: "all" });
-            restorePoolDragOverflow();
+            finishAcceptedDrop(draggedElement);
+            restorePoolDragOverflow(poolOverflowElementRef);
             return;
           }
 
-          animateReposition(element, restorePoolDragOverflow);
+          animateReposition(draggedElement, () => restorePoolDragOverflow(poolOverflowElementRef));
         },
         onClick: function onClick() {
           if (callbacksRef.current.isTappable) {
@@ -122,7 +106,7 @@ export function usePoolTileDraggable({
       return () => {
         clearDragFeedback(lastOverRef, sourceElement);
         draggableInstances.forEach((draggableInstance) => draggableInstance.kill());
-        restorePoolDragOverflow();
+        restorePoolDragOverflow(poolOverflowElementRef);
       };
     },
     { scope: buttonRef },
@@ -133,10 +117,71 @@ export function usePoolTileDraggable({
 // Helpers
 // ---------------------------------------------------------------------------
 
-type PoolTileCallbacks = Pick<UsePoolTileDraggableOptions, "onDropOnSlot" | "onDropOnTile">;
+type DropTargetFeedback = { canDrop: boolean; preview: string | null };
+
+type PoolTileCallbacks = Pick<
+  UsePoolTileDraggableOptions,
+  "onDropOnSlot" | "onDropOnTile" | "getDropTargetFeedback"
+>;
+
+type PoolDragFeedbackOptions = {
+  draggable: Draggable;
+  lastOverRef: React.MutableRefObject<Element | null>;
+  sourceTileId: number;
+  callbacks: PoolTileCallbacks;
+};
 
 const DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE = "data-drop-source-active";
 const POOL_SELECTOR = '[data-pool="true"]';
+
+function updatePoolDragFeedback({
+  draggable,
+  lastOverRef,
+  sourceTileId,
+  callbacks,
+}: PoolDragFeedbackOptions) {
+  const draggedElement = draggable.target as HTMLElement;
+  const dropTarget = getCurrentPoolDropTarget(draggable, sourceTileId);
+  const dropTargetFeedback = getFeedbackForDropTarget(dropTarget, callbacks);
+  const validDropTarget = dropTargetFeedback.canDrop ? dropTarget : null;
+
+  updateDropTargetHighlight({
+    previousTarget: lastOverRef.current,
+    nextTarget: validDropTarget,
+  });
+
+  updateSourceDragFeedback(draggedElement, validDropTarget, dropTargetFeedback.preview);
+  lastOverRef.current = validDropTarget;
+}
+
+function getCurrentPoolDropTarget(draggable: Draggable, selfTileId: number): Element | null {
+  const elements = document.elementsFromPoint?.(draggable.pointerX, draggable.pointerY) ?? [];
+  return findPoolDropTarget(elements, selfTileId);
+}
+
+function getFeedbackForDropTarget(
+  dropTarget: Element | null,
+  callbacks: PoolTileCallbacks,
+): DropTargetFeedback {
+  if (dropTarget === null) return { canDrop: false, preview: null };
+
+  return callbacks.getDropTargetFeedback?.(dropTarget) ?? { canDrop: true, preview: null };
+}
+
+function updateSourceDragFeedback(
+  sourceElement: HTMLElement,
+  validDropTarget: Element | null,
+  preview: string | null,
+) {
+  if (validDropTarget === null) {
+    sourceElement.removeAttribute(DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE);
+    clearTileTextOverride(sourceElement);
+    return;
+  }
+
+  setTileTextOverride(sourceElement, preview);
+  sourceElement.setAttribute(DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE, "true");
+}
 
 function findPoolDropTarget(elements: Element[], selfTileId: number): Element | null {
   return findDataAttributeDropTarget(elements, {
@@ -190,12 +235,21 @@ function recordDisplacedTileSnapBack(dropTarget: Element): number | null {
   return displacedTile.tileId;
 }
 
-function allowPoolDragOverflow() {
-  const poolElement = document.querySelector(POOL_SELECTOR) as HTMLElement | null;
-  if (poolElement !== null) poolElement.style.overflow = "visible";
+function finishAcceptedDrop(element: HTMLElement) {
+  gsap.set(element, { clearProps: "all" });
 }
 
-function restorePoolDragOverflow() {
-  const poolElement = document.querySelector(POOL_SELECTOR) as HTMLElement | null;
-  if (poolElement !== null) poolElement.style.overflow = "";
+function allowPoolDragOverflow(sourceElement: HTMLElement): HTMLElement | null {
+  const poolElement = sourceElement.closest(POOL_SELECTOR);
+  if (!(poolElement instanceof HTMLElement)) return null;
+
+  poolElement.style.overflow = "visible";
+  return poolElement;
+}
+
+function restorePoolDragOverflow(
+  poolOverflowElementRef: React.MutableRefObject<HTMLElement | null>,
+) {
+  if (poolOverflowElementRef.current !== null) poolOverflowElementRef.current.style.overflow = "";
+  poolOverflowElementRef.current = null;
 }
