@@ -68,8 +68,8 @@ export function Pool() {
   }
 
   function handleDropOnTile(sourceTile: TileType, targetId: number): boolean {
-    const combined = getComposedCharacter(sourceTile, targetId);
-    if (combined === null) return false;
+    const composedCharacter = getComposedCharacter(sourceTile, targetId);
+    if (composedCharacter === null) return false;
 
     setComposedTileId(targetId);
     dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId, incomingId: sourceTile.id } });
@@ -87,10 +87,10 @@ export function Pool() {
     const targetId = parseTileId(target);
     if (targetId === null) return { canDrop: false, preview: null };
 
-    const combined = getComposedCharacter(sourceTile, targetId);
-    return combined === null
+    const composedCharacter = getComposedCharacter(sourceTile, targetId);
+    return composedCharacter === null
       ? { canDrop: false, preview: null }
-      : { canDrop: true, preview: resolveCharacter(combined) };
+      : { canDrop: true, preview: resolveCharacter(composedCharacter) };
   }
 
   function getComposedCharacter(sourceTile: TileType, targetId: number) {
@@ -101,13 +101,11 @@ export function Pool() {
   return (
     <div className={styles.pool} role="group" aria-label="Jamo pool" data-pool="true">
       {state.pool.map((tile) => {
-        const isTappable =
-          getNextRotation(tile.character) !== null || decompose(tile.character) !== null;
         return (
           <PoolTile
             key={tile.id}
             tile={tile}
-            isTappable={isTappable}
+            isTappable={canTapTile(tile)}
             isRotating={rotatingTileId === tile.id}
             isJustComposed={composedTileId === tile.id}
             isNewlyAdded={newlyAddedTileIds.has(tile.id)}
@@ -115,8 +113,12 @@ export function Pool() {
             onDropOnTile={(targetId) => handleDropOnTile(tile, targetId)}
             onDropOnSlot={(slotIndex) => handleDropOnSlot(tile, slotIndex)}
             getDropTargetFeedback={(target) => getDropTargetFeedback(tile, target)}
-            onRotatingEnd={() => setRotatingTileId(null)}
-            onComposedEnd={() => setComposedTileId(null)}
+            onRotatingEnd={() =>
+              setRotatingTileId((currentId) => (currentId === tile.id ? null : currentId))
+            }
+            onComposedEnd={() =>
+              setComposedTileId((currentId) => (currentId === tile.id ? null : currentId))
+            }
             onNewlyAddedEnd={() =>
               setNewlyAddedTileIds((prev) => {
                 const next = new Set(prev);
@@ -129,6 +131,10 @@ export function Pool() {
       })}
     </div>
   );
+}
+
+function canTapTile(tile: TileType): boolean {
+  return getNextRotation(tile.character) !== null || decompose(tile.character) !== null;
 }
 
 function parseTileId(element: Element): number | null {
