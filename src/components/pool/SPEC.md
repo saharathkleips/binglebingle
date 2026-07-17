@@ -49,7 +49,7 @@ Renders a single tile by composing `CharacterTile` from `src/components/tile`. D
 - `onTap: () => void` — called on click when `isTappable`.
 - `onDropOnTile: (targetId: number) => boolean` — called when a drag ends on another tile; returns whether the drop was accepted.
 - `onDropOnSlot: (slotIndex: number) => boolean` — called when a drag ends on a submission slot; returns whether the drop was accepted.
-- `getDropTargetFeedback?: (target: Element) => { canDrop: boolean; preview: string | null }` — computes target validity and optional preview text in one pass; PoolTile attaches valid pool-tile merge previews to the dragged tile as `data-drop-preview` for shared tile CSS.
+- `getDropTargetFeedback: (target: Element) => { canDrop: boolean; preview: string | null }` — computes target validity and optional preview text in one pass; PoolTile attaches valid pool-tile merge previews to the dragged tile as `data-drop-preview` for shared tile CSS.
 - `isRotating`, `isJustComposed`, `isNewlyAdded` — feedback flags owned by Pool and animated through `useTileFeedback`.
 - `onRotatingEnd`, `onComposedEnd`, `onNewlyAddedEnd` — completion callbacks that clear Pool feedback state.
 

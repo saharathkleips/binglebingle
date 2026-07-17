@@ -30,9 +30,7 @@ export type UsePoolTileDraggableOptions = {
   onTap: () => void;
   onDropOnTile: (targetId: number) => boolean;
   onDropOnSlot: (slotIndex: number) => boolean;
-  getDropTargetFeedback:
-    | ((target: Element) => { canDrop: boolean; preview: string | null })
-    | undefined;
+  getDropTargetFeedback: (target: Element) => { canDrop: boolean; preview: string | null };
 };
 
 export function usePoolTileDraggable({
@@ -133,6 +131,7 @@ type PoolDragFeedbackOptions = {
 
 const DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE = "data-drop-source-active";
 const POOL_SELECTOR = '[data-pool="true"]';
+const NO_DROP_FEEDBACK = { canDrop: false, preview: null } satisfies DropTargetFeedback;
 
 function updatePoolDragFeedback({
   draggable,
@@ -154,18 +153,18 @@ function updatePoolDragFeedback({
   lastOverRef.current = validDropTarget;
 }
 
-function getCurrentPoolDropTarget(draggable: Draggable, selfTileId: number): Element | null {
+function getCurrentPoolDropTarget(draggable: Draggable, sourceTileId: number): Element | null {
   const elements = document.elementsFromPoint?.(draggable.pointerX, draggable.pointerY) ?? [];
-  return findPoolDropTarget(elements, selfTileId);
+  return findPoolDropTarget(elements, sourceTileId);
 }
 
 function getFeedbackForDropTarget(
   dropTarget: Element | null,
   callbacks: PoolTileCallbacks,
 ): DropTargetFeedback {
-  if (dropTarget === null) return { canDrop: false, preview: null };
+  if (dropTarget === null) return NO_DROP_FEEDBACK;
 
-  return callbacks.getDropTargetFeedback?.(dropTarget) ?? { canDrop: true, preview: null };
+  return callbacks.getDropTargetFeedback(dropTarget);
 }
 
 function updateSourceDragFeedback(
@@ -183,11 +182,11 @@ function updateSourceDragFeedback(
   sourceElement.setAttribute(DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE, "true");
 }
 
-function findPoolDropTarget(elements: Element[], selfTileId: number): Element | null {
+function findPoolDropTarget(elements: Element[], sourceTileId: number): Element | null {
   return findDataAttributeDropTarget(elements, {
     acceptedAttributes: [DATA_SLOT_INDEX_ATTRIBUTE, DATA_TILE_ID_ATTRIBUTE],
     excludedAttribute: DATA_TILE_ID_ATTRIBUTE,
-    excludedValue: String(selfTileId),
+    excludedValue: String(sourceTileId),
   });
 }
 
@@ -209,14 +208,7 @@ function acceptDrop(
 ): boolean {
   const slotIndex = parseDropTargetNumber(dropTarget, DATA_SLOT_INDEX_ATTRIBUTE);
   if (slotIndex !== null) {
-    recordTileSnapBack(sourceTileId, sourceElement, { shouldLiftOnArrival: true });
-    const displacedTileId = recordDisplacedTileSnapBack(dropTarget);
-    const isAccepted = callbacks.onDropOnSlot(slotIndex);
-    if (!isAccepted) {
-      discardPendingTileSnapBack(sourceTileId);
-      if (displacedTileId !== null) discardPendingTileSnapBack(displacedTileId);
-    }
-    return isAccepted;
+    return acceptSlotDrop({ dropTarget, sourceElement, sourceTileId, slotIndex, callbacks });
   }
 
   const targetTileId = parseDropTargetNumber(dropTarget, DATA_TILE_ID_ATTRIBUTE);
@@ -225,6 +217,31 @@ function acceptDrop(
   }
 
   return false;
+}
+
+type SlotDropOptions = {
+  dropTarget: Element;
+  sourceElement: HTMLElement;
+  sourceTileId: number;
+  slotIndex: number;
+  callbacks: PoolTileCallbacks;
+};
+
+function acceptSlotDrop({
+  dropTarget,
+  sourceElement,
+  sourceTileId,
+  slotIndex,
+  callbacks,
+}: SlotDropOptions): boolean {
+  recordTileSnapBack(sourceTileId, sourceElement, { shouldLiftOnArrival: true });
+  const displacedTileId = recordDisplacedTileSnapBack(dropTarget);
+  const isAccepted = callbacks.onDropOnSlot(slotIndex);
+  if (!isAccepted) {
+    discardPendingTileSnapBack(sourceTileId);
+    if (displacedTileId !== null) discardPendingTileSnapBack(displacedTileId);
+  }
+  return isAccepted;
 }
 
 function recordDisplacedTileSnapBack(dropTarget: Element): number | null {

@@ -24,6 +24,7 @@ function tileProps(
     onTap: vi.fn(),
     onDropOnTile: vi.fn(() => true),
     onDropOnSlot: vi.fn(() => true),
+    getDropTargetFeedback: vi.fn(() => ({ canDrop: true, preview: null })),
     ...overrides,
   };
 }
@@ -90,6 +91,7 @@ describe("PoolTile drag", () => {
           onTap={vi.fn()}
           onDropOnTile={vi.fn(() => true)}
           onDropOnSlot={vi.fn(() => true)}
+          getDropTargetFeedback={vi.fn(() => ({ canDrop: true, preview: null }))}
         />
       </div>,
     );
@@ -117,6 +119,7 @@ describe("PoolTile drag", () => {
           onTap={vi.fn()}
           onDropOnTile={vi.fn(() => true)}
           onDropOnSlot={vi.fn(() => true)}
+          getDropTargetFeedback={vi.fn(() => ({ canDrop: true, preview: null }))}
         />
       </div>,
     );
@@ -157,6 +160,7 @@ describe("PoolTile drag", () => {
           onTap={vi.fn()}
           onDropOnTile={vi.fn(() => true)}
           onDropOnSlot={vi.fn(() => true)}
+          getDropTargetFeedback={vi.fn(() => ({ canDrop: true, preview: null }))}
         />
       </div>,
     );
