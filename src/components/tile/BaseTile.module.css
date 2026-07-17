@@ -125,11 +125,11 @@
     background: linear-gradient(180deg, var(--tile-gradient-linear-stops));
     background-size: 100% 200%;
     animation: tile-border-shimmer 1000ms linear infinite paused;
-    mask-image: var(--tile-border-mask-image);
+    mask-image: url("./lightning-border.svg");
     mask-repeat: no-repeat;
     mask-position: center;
     mask-size: 100% 100%;
-    -webkit-mask-image: var(--tile-border-mask-image);
+    -webkit-mask-image: url("./lightning-border.svg");
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
     -webkit-mask-size: 100% 100%;

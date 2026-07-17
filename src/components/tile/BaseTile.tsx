@@ -5,9 +5,8 @@
  */
 
 import { clsx } from "clsx";
-import type { AnimationEventHandler, CSSProperties, ReactNode, Ref } from "react";
+import type { AnimationEventHandler, ReactNode, Ref } from "react";
 import type { CharacterResult } from "../../lib/engine";
-import lightningBorderUrl from "./lightning-border.svg?url";
 import styles from "./BaseTile.module.css";
 
 export type BaseTileElement = "button" | "div" | "span";
@@ -86,7 +85,7 @@ export function BaseTile(props: BaseTileProps) {
   const contents = (
     <span data-tile-surface>
       <span data-tile-text>{children}</span>
-      <LightningBorder />
+      <span aria-hidden="true" data-tile-border />
     </span>
   );
 
@@ -111,19 +110,4 @@ export function BaseTile(props: BaseTileProps) {
       {contents}
     </div>
   );
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-type LightningBorderStyle = CSSProperties & {
-  "--tile-border-mask-image": string;
-};
-
-function LightningBorder() {
-  const borderStyle: LightningBorderStyle = {
-    "--tile-border-mask-image": `url("${lightningBorderUrl}")`,
-  };
-
-  return <span aria-hidden="true" data-tile-border style={borderStyle} />;
 }
