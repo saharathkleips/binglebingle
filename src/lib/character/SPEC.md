@@ -79,6 +79,7 @@ Merges `incoming` into `target` following syllable construction rules. Returns `
 - CHOSEONG_ONLY + CHOSEONG_ONLY: `composeJamo` (double consonant or compound batchim result)
 - CHOSEONG_ONLY + JUNGSEONG_ONLY: becomes OPEN_SYLLABLE
 - OPEN_SYLLABLE + JUNGSEONG_ONLY: `composeJamo` on the jungseong (complex vowel)
+- JUNGSEONG_ONLY + OPEN_SYLLABLE: `composeJamo` on the incoming syllable's jungseong, preserving its choseong
 - OPEN_SYLLABLE + CHOSEONG_ONLY: consonant fills jongseong slot (factory rejects ㄸ/ㅃ/ㅉ)
 - FULL_SYLLABLE + CHOSEONG_ONLY: `composeJamo` on jongseong (compound batchim)
 - Multi-slot + multi-slot (both have 2+ jamo): `null` — would require dropping jamo

@@ -20,6 +20,9 @@
     "prepare": "simple-git-hooks"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
+    "clsx": "^2.1.1",
+    "gsap": "^3.15.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
@@ -38,6 +41,7 @@
     "simple-git-hooks": "^2.13.1",
     "typescript": "^6.0.2",
     "vite": "^8.0.3",
+    "vite-plugin-svgr": "^5.2.0",
     "vitest": "^4.1.2",
     "vitest-browser-react": "^2.2.0"
   },

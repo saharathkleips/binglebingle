@@ -17,7 +17,8 @@
 ```
 app/
 ├── App.tsx
-├── App.test.ts
+├── App.module.css
+├── App.test.tsx
 ├── README.md
 └── SPEC.md
 ```
@@ -27,6 +28,10 @@ app/
 ### App
 
 Initializes the game via `setupGame()` on mount and renders the full game UI.
+
+**Viewport support:**
+
+The game shell always renders. Minimum tile hitbox tokens are defined unconditionally in `src/index.css`; larger viewport media queries progressively enhance the tile scale. Very small or unusual viewports may clip naturally instead of showing a separate unsupported screen.
 
 **Loading / Instructions:**
 
@@ -50,6 +55,8 @@ Dev settings live in `App` local state; dev panel accessible via `?dev=1` URL pa
 **`GameProvider` wraps the entire app.** All game state lives in context; child components read via `useGame()`. `App` is the only place `GameProvider` is instantiated.
 
 **`setupGame()` called on mount.** The async puzzle fetch starts immediately; `InstructionsScreen` covers the load time so the player never sees a blank game state.
+
+**Always render the game shell.** The app keeps the minimum `44px` tile hitbox as the default token set and relies on flex layout to use whatever viewport space is available. In normal height tiers, game content is content-sized so submission and the full wrapped pool remain visible while history receives leftover space. At `600px` height and below, game content may shrink, the pool becomes the fallback scroll region, and history drops to its compact minimum. The shell reserves bottom padding with `--app-bottom-padding`, including `env(safe-area-inset-bottom)`, so the pool does not sit flush against mobile browser/system UI. This avoids rejecting narrow-but-tall or short-but-wide screens that can still be playable; if content clips, it clips naturally rather than being blocked by an unsupported screen.
 
 ## Open Questions
 

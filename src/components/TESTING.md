@@ -24,16 +24,17 @@ Prefer accessible queries. These return **locators** with built-in retry.
 screen.getByRole("button", { name: /submit/i });
 screen.getByText("ㄱ");
 screen.getByLabelText(/email/i);
-screen.getByTestId("token-0");
+document.querySelector('[data-token-id="0"]');
 ```
 
-For regex-based selectors that match multiple elements, use `.elements()` to get the raw array:
+For semantic data hooks that match multiple elements, use `querySelectorAll` and filter to the expected element type:
 
 ```tsx
-expect(screen.getByTestId(/^token-/).elements().length).toBe(3);
+const tokens = Array.from(document.querySelectorAll("[data-token-id]")).filter(
+  (element): element is HTMLElement => element instanceof HTMLElement,
+);
+expect(tokens.length).toBe(3);
 ```
-
-Note: `.elements()` returns synchronously. Ensure the parent container has already rendered (e.g. via a prior `await expect.element()`) before counting.
 
 ### Assertions
 
@@ -95,7 +96,7 @@ Pass a `vi.fn()` dispatch and assert on it after interaction. Type the mock when
 ```tsx
 const dispatch = vi.fn<(action: GameAction) => void>();
 const screen = await render(<Token tile={tile} dispatch={dispatch} />);
-await screen.getByTestId("token-0").click();
+await screen.getByRole("button", { name: "ㄱ" }).click();
 expect(dispatch).toHaveBeenCalledWith({
   type: "CHARACTER_ROTATE_NEXT",
   payload: { tileId: 0 },
@@ -110,27 +111,13 @@ expect(dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: "CHARA
 
 ### Drag and Drop (Pointer Events)
 
-Components use pointer-event-based drag (`onPointerDown`/`onPointerMove`/`onPointerUp`) with `setPointerCapture` and `elementsFromPoint`. The locator `dropTo()` method won't work — dispatch synthetic `PointerEvent`s instead via a helper:
+Components use pointer-event-based drag (`onPointerDown`/`onPointerMove`/`onPointerUp`) with `setPointerCapture` and `elementsFromPoint`. The locator `dropTo()` method won't work — dispatch synthetic `PointerEvent`s instead via shared helpers:
 
 ```tsx
-function pointerSequence(
-  element: HTMLElement,
-  events: Array<{ type: string; clientX: number; clientY: number }>,
-) {
-  for (const { type, clientX, clientY } of events) {
-    element.dispatchEvent(
-      new PointerEvent(type, {
-        clientX,
-        clientY,
-        bubbles: true,
-        cancelable: true,
-        pointerId: 1,
-        isPrimary: true,
-      }),
-    );
-  }
-}
+import { pointerSequence } from "../../test-utils/pointer-events";
 ```
+
+Use `dragSequence` from the same file for GSAP Draggable interactions, where `pointerdown` is dispatched on the element and later events are dispatched on `document`.
 
 Typical drag sequence — get the target's center via `getBoundingClientRect()`, then:
 
@@ -143,7 +130,7 @@ pointerSequence(sourceElement, [
 ]);
 ```
 
-To assert intermediate drag state (e.g. `data-drag-over`), omit `pointerup` and assert before sending it separately.
+To assert intermediate drag state (e.g. `data-drop-source-active`, `data-drop-pool-target-active`, or `data-drop-slot-target-active`), omit `pointerup` and assert before sending it separately.
 
 ### Waiting for Async State
 
@@ -159,7 +146,7 @@ await expect.element(screen.getByText("Success")).toBeVisible();
 Browser mode renders real CSS, so you can assert on computed styles:
 
 ```tsx
-const el = screen.getByTestId("token-0");
+const el = document.querySelector('[data-token-id="0"]');
 const element = el.element();
 const computedStyles = getComputedStyle(element);
 expect(computedStyles.opacity).toBe("0.5");
@@ -167,16 +154,18 @@ expect(computedStyles.opacity).toBe("0.5");
 
 #### CSS Modules class names
 
-CSS Modules mangles class names at build time, so never match against raw strings like `"shaking"`. Import the module and use its values:
+CSS Modules mangles class names at build time, so never match against raw strings like `"active"`. Import the module and use its values:
 
 ```tsx
-import styles from "./Token.module.css";
+import styles from "./Widget.module.css";
 
 // ✅ matches the mangled class name
-await expect.element(screen.getByTestId("token-0")).toHaveClass(styles.shaking);
+await expect
+  .element(screen.getByRole("button", { name: "Open widget" }))
+  .toHaveClass(styles.active);
 
 // ❌ will never match — raw name doesn't exist at runtime
-expect(element.className).toContain("shaking");
+expect(element.className).toContain("active");
 ```
 
 Use `expect.element().toHaveClass()` rather than synchronous `className` checks — it auto-retries, which handles React state updates that add the class after a re-render.

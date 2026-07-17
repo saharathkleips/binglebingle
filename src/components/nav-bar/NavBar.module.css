@@ -1,31 +1,89 @@
 .navBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-sm) var(--space-md);
-  border-bottom: 1px solid var(--color-border);
-  width: 100%;
-}
+  --nav-logo-width: 7.5rem;
+  --nav-logo-min-height: 2.15rem;
+  --nav-logo-font-size: 1.45rem;
+  --nav-actions-gap: 1.2rem;
+  --nav-action-cluster-gap: 0.18rem;
 
-.title {
-  font-size: 1.25rem;
-  font-weight: bold;
-}
-
-.instructionsButton {
-  font-size: 1rem;
-  font-weight: bold;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: calc(var(--space-sm) * 0.5) var(--space-md);
+  width: 100%;
 }
 
-.instructionsButton:hover {
-  background: var(--color-surface-active);
+.navContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(100%, 48rem);
+}
+
+.logo {
+  --logo-font-family: var(--font-family-tile);
+  --logo-font-weight: var(--font-weight-bold);
+  margin: 0;
+  width: var(--nav-logo-width);
+  min-height: var(--nav-logo-min-height);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--tile-radius);
+  background:
+    linear-gradient(var(--color-tile-face), var(--color-tile-face)) padding-box,
+    var(--gradient-logo-border) border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: var(--system-shadow-stack);
+  font-family: var(--logo-font-family);
+  font-size: var(--nav-logo-font-size);
+  font-weight: var(--logo-font-weight);
+  line-height: 1;
+  text-align: center;
+  user-select: none;
+  display: grid;
+  place-items: center;
+}
+
+.logoText {
+  display: block;
+  background: var(--gradient-logo-text);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--nav-actions-gap);
+}
+
+.actionCluster {
+  display: flex;
+  align-items: center;
+  gap: var(--nav-action-cluster-gap);
+}
+
+@media (max-width: 479px), (max-height: 600px) {
+  .navBar {
+    --nav-logo-width: 5.5rem;
+    --nav-logo-min-height: 1.875rem;
+    --nav-logo-font-size: 1.18rem;
+    --nav-actions-gap: 0.25rem;
+    --nav-action-cluster-gap: 0;
+
+    padding-block: 0.125rem;
+    padding-inline: var(--space-sm);
+  }
+}
+
+@media (max-width: 360px) {
+  .navBar {
+    --nav-logo-width: 4.5rem;
+    --nav-logo-min-height: 1.65rem;
+    --nav-logo-font-size: 0.98rem;
+    --nav-actions-gap: 0.125rem;
+    --nav-action-cluster-gap: 0;
+
+    padding-inline: calc(var(--space-sm) * 0.5);
+  }
 }

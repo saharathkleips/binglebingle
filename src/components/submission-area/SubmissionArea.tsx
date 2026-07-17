@@ -18,8 +18,8 @@ export function SubmissionArea() {
   const { state, dispatch } = useGame();
 
   return (
-    <div className={styles.submissionArea} data-testid="submission-area">
-      <div className={styles.slots}>
+    <section className={styles.submissionArea} aria-label="Submission area">
+      <div className={styles.slots} data-submission-slots>
         {state.submission.map((slot, index) => (
           <SubmissionSlot
             key={index}
@@ -34,10 +34,13 @@ export function SubmissionArea() {
                 payload: { fromSlotIndex: index, toSlotIndex },
               })
             }
+            onDropOnPool={() =>
+              dispatch({ type: "SUBMISSION_SLOT_REMOVE", payload: { slotIndex: index } })
+            }
           />
         ))}
       </div>
       <SubmissionButton submission={state.submission} dispatch={dispatch} />
-    </div>
+    </section>
   );
 }

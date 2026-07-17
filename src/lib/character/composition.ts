@@ -145,8 +145,12 @@ export function compose(target: Character, incoming: Character): Character | nul
         case "CHOSEONG_ONLY":
           // Consonant becomes choseong, vowel stays as jungseong
           return character({ choseong: incoming.choseong, jungseong: target.jungseong });
+        case "OPEN_SYLLABLE": {
+          const combined = composeJamo(incoming.jungseong, target.jungseong);
+          if (combined === null) return null;
+          return character({ choseong: incoming.choseong, jungseong: combined });
+        }
         case "JONGSEONG_ONLY":
-        case "OPEN_SYLLABLE":
         case "FULL_SYLLABLE":
           return null;
       }

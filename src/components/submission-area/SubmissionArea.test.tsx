@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "vitest-browser-react";
+import { pointerSequence } from "../../test-utils/pointer-events";
+import { getPoolTile, getSubmissionSlot } from "../../test-utils/dom-selectors";
 import { SubmissionArea } from "./SubmissionArea";
 import { Pool } from "../pool/Pool";
 import { GameProvider } from "../../context/game/GameContext";
@@ -25,49 +27,33 @@ async function renderWithPool(word: string) {
   );
 }
 
-/** Dispatch a sequence of pointer events directly on a DOM element. */
-function pointerSequence(
-  element: Element,
-  events: Array<{ type: string; clientX: number; clientY: number }>,
-) {
-  for (const { type, clientX, clientY } of events) {
-    element.dispatchEvent(
-      new PointerEvent(type, {
-        clientX,
-        clientY,
-        bubbles: true,
-        cancelable: true,
-        pointerId: 1,
-        isPrimary: true,
-      }),
-    );
-  }
+function submissionSlots(): HTMLElement[] {
+  return Array.from(document.querySelectorAll("[data-slot-index][data-slot-hitbox]")).filter(
+    (element): element is HTMLElement => element instanceof HTMLElement,
+  );
 }
 
 describe("SubmissionArea", () => {
   it("renders one slot per character in the target word", async () => {
     const screen = await renderSubmissionArea("한글");
-    expect(
-      screen
-        .getByTestId("submission-area")
-        .getByTestId(/^slot-/)
-        .elements().length,
-    ).toBe(2);
+    await expect
+      .element(screen.getByRole("region", { name: "Submission area" }))
+      .toBeInTheDocument();
+    expect(submissionSlots().length).toBe(2);
   });
 
   it("renders a submission button", async () => {
     const screen = await renderSubmissionArea("가");
-    await expect.element(screen.getByTestId("submission-button")).toBeInTheDocument();
+    await expect.element(screen.getByRole("button", { name: "도전" })).toBeInTheDocument();
   });
 });
 
 describe("SubmissionArea slot tap", () => {
   it("empties a filled slot when tapped", async () => {
-    // 가 → ㄱ(tile-0), ㅏ(tile-1); drag tile-0 into slot-0, then tap slot-0 to remove
     const screen = await renderWithPool("가");
 
-    const tile = screen.getByTestId("tile-0").element();
-    const slot = screen.getByTestId("slot-0").element();
+    const tile = getPoolTile(0);
+    const slot = getSubmissionSlot(0);
     const slotRect = slot.getBoundingClientRect();
     const slotCenterX = slotRect.left + slotRect.width / 2;
     const slotCenterY = slotRect.top + slotRect.height / 2;
@@ -79,10 +65,10 @@ describe("SubmissionArea slot tap", () => {
       { type: "pointerup", clientX: slotCenterX, clientY: slotCenterY },
     ]);
 
-    await expect.poll(() => screen.getByTestId("slot-0").element().textContent).not.toBe("");
+    await expect.poll(() => getSubmissionSlot(0).textContent).not.toBe("");
 
-    await screen.getByTestId("slot-0").click();
+    await screen.getByRole("button", { name: "ㄱ" }).click();
 
-    await expect.poll(() => screen.getByTestId("slot-0").element().textContent).toBe("");
+    await expect.poll(() => getSubmissionSlot(0).textContent).toBe("");
   });
 });

@@ -6,12 +6,12 @@ Playwright tests live here. `smoke.spec.ts` checks the page loads. `demo.spec.ts
 
 ## Selectors
 
-| What                          | Selector                                |
-| ----------------------------- | --------------------------------------- |
-| Pool tile by tile ID          | `page.getByTestId("tile-{id}")`         |
-| Submission slot by position   | `page.getByTestId("slot-{index}")`      |
-| Submission button             | `page.getByTestId("submission-button")` |
-| History tiles (all, in order) | `page.getByTestId("history-tile")`      |
+| What                          | Selector                                                        |
+| ----------------------------- | --------------------------------------------------------------- |
+| Pool tile by tile ID          | `page.locator('[data-tile-id="{id}"]')`                         |
+| Submission slot by position   | `page.locator('[data-slot-index="{index}"][data-slot-hitbox]')` |
+| Submission button             | `page.getByRole("button", { name: "도전" })`                    |
+| History tiles (all, in order) | `page.locator("[data-history-tile]")`                           |
 
 History tiles accumulate across guesses — the first guess fills `.nth(0–2)`, the second fills `.nth(3–5)`, and so on.
 
@@ -24,10 +24,10 @@ Every jamo or syllable in the pool has a numeric ID. These IDs are **stable unti
 **Initial pool** for the dev target word 고양이 (jamo fully decomposed + normalized):
 
 ```
-0:ㄱ  1:ㅏ  2:ㅇ  3:ㅏ  4:ㅇ  5:ㅇ  6:ㅣ
+0:ㄱ  1:ㅏ  2:ㅇ  3:ㅑ  4:ㅇ  5:ㅇ  6:ㅣ
 ```
 
-**Normalization**: vowels are stored as the first member of their rotation set. ㅗ normalizes to ㅏ because the set is `["ㅏ","ㅜ","ㅓ","ㅗ"]`. This is why tile-1 is ㅏ, not ㅗ.
+**Normalization**: vowels are stored as the first member of their rotation set. ㅗ normalizes to ㅏ because the set is `["ㅏ","ㅜ","ㅓ","ㅗ"]`. This is why tile-1 is ㅏ, not ㅗ. ㅑ belongs to a separate set (`["ㅑ","ㅠ","ㅕ","ㅛ"]`), so tile-3 stays ㅑ.
 
 **After compose** (e.g. drag ㅏ(1) onto ㄱ(0)):
 
@@ -108,9 +108,10 @@ Other rotation sets exist for double consonants and compound vowels — check `s
 After submitting, each history tile gets a `data-result` attribute:
 
 ```typescript
-await expect(page.getByTestId("history-tile").nth(0)).toHaveAttribute("data-result", "CORRECT");
-await expect(page.getByTestId("history-tile").nth(1)).toHaveAttribute("data-result", "PRESENT");
-await expect(page.getByTestId("history-tile").nth(2)).toHaveAttribute("data-result", "ABSENT");
+const historyTiles = page.locator("[data-history-tile]");
+await expect(historyTiles.nth(0)).toHaveAttribute("data-result", "CORRECT");
+await expect(historyTiles.nth(1)).toHaveAttribute("data-result", "PRESENT");
+await expect(historyTiles.nth(2)).toHaveAttribute("data-result", "ABSENT");
 ```
 
 Evaluation is **character (syllable block) level**, not jamo level. A tile is PRESENT if that exact syllable block appears in the target word but at a different position.
@@ -122,14 +123,14 @@ Evaluation is **character (syllable block) level**, not jamo level. A tile is PR
 The most common source of bugs in these tests is losing track of tile IDs. A comment block per guess helps:
 
 ```
-// Pool: 0:ㄱ  1:ㅏ  2:ㅇ  3:ㅏ  4:ㅇ  5:ㅇ  6:ㅣ
-// after drag ㅏ(1) onto ㄱ(0):   0:가  2:ㅇ  3:ㅏ  4:ㅇ  5:ㅇ  6:ㅣ
-// after drag ㅣ(6) onto ㅇ(5):   0:가  2:ㅇ  3:ㅏ  4:ㅇ  5:이
-// after drag ㅏ(3) onto ㅇ(2):   0:가  2:아  4:ㅇ  5:이
-// slots: 0→가(0)  1→이(5)  2→아(2)   pool leftover: 4:ㅇ
+// Pool: 0:ㄱ  1:ㅏ  2:ㅇ  3:ㅑ  4:ㅇ  5:ㅇ  6:ㅣ
+// after drag ㅏ(1) onto ㄱ(0):   0:가  2:ㅇ  3:ㅑ  4:ㅇ  5:ㅇ  6:ㅣ
+// after drag ㅣ(6) onto ㅇ(5):   0:가  2:ㅇ  3:ㅑ  4:ㅇ  5:이
+// after drag ㅑ(3) onto ㅇ(2):   0:가  2:야  4:ㅇ  5:이
+// slots: 0→가(0)  1→이(5)  2→야(2)   pool leftover: 4:ㅇ
 // submit → ABSENT · PRESENT · ABSENT
-// returned: 가(0)→ㄱ(0)+ㅏ(1)   아(2)→ㅇ(2)+ㅏ(3)   이(5) stays in slot-1
-// pool after: 0:ㄱ  1:ㅏ  2:ㅇ  3:ㅏ  4:ㅇ   slot-1: 이(5)
+// returned: 가(0)→ㄱ(0)+ㅏ(1)   야(2)→ㅇ(2)+ㅑ(3)   이(5) stays in slot-1
+// pool after: 4:ㅇ  0:ㄱ  1:ㅏ  2:ㅇ  3:ㅑ   slot-1: 이(5)
 ```
 
 ---

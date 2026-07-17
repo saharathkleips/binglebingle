@@ -1,11 +1,33 @@
 .historyArea {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  padding: var(--space-sm);
+  align-items: center;
+  gap: var(--tile-gap);
+  padding: var(--tile-gap);
+  min-height: calc(
+    var(--history-min-visible-rows) * (var(--tile-hitbox-size) + var(--tile-submission-history-gap))
+  );
+  overflow-y: auto;
+  flex: 0 1 auto;
+  /* VIS-26: smooth scroll as older guesses are pushed up. */
+  scroll-behavior: smooth;
+  scroll-padding-block: var(--tile-submission-history-gap);
+  scroll-snap-type: y mandatory;
 }
 
 .row {
   display: flex;
-  gap: var(--space-sm);
+  justify-content: center;
+  gap: var(--tile-submission-history-gap);
+  scroll-snap-align: end;
+  scroll-snap-stop: always;
+}
+
+@media (max-height: 600px) {
+  .historyArea {
+    max-height: calc(
+      var(--history-min-visible-rows) *
+        (var(--tile-hitbox-size) + var(--tile-submission-history-gap))
+    );
+  }
 }

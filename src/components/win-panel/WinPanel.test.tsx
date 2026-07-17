@@ -32,7 +32,7 @@ async function renderWinPanel(state: GameState) {
 describe("WinPanel", () => {
   it("renders the win panel", async () => {
     const screen = await renderWinPanel(wonState(1));
-    await expect.element(screen.getByTestId("win-panel")).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "Win summary" })).toBeInTheDocument();
   });
 
   it("displays the target word", async () => {
@@ -52,6 +52,6 @@ describe("WinPanel", () => {
 
   it("renders the share button as disabled", async () => {
     const screen = await renderWinPanel(wonState(1));
-    await expect.element(screen.getByTestId("share-button")).toBeDisabled();
+    await expect.element(screen.getByRole("button", { name: "Share" })).toBeDisabled();
   });
 });

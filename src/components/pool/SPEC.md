@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Renders the jamo pool and handles per-tile interactions. Reads pool state from `useGame()` and dispatches character actions.
+Renders the fixed-layout jamo pool and handles per-tile interactions. Reads pool state from `useGame()` and dispatches character actions. Pool tile coordinates are not persisted; the layout determines each tile's resting position.
 
 **Boundaries:**
 
@@ -18,10 +18,11 @@ Renders the jamo pool and handles per-tile interactions. Reads pool state from `
 pool/
 ├── Pool.tsx             # Interaction coordinator — owns tap/drag logic, dispatches actions
 ├── Pool.module.css      # Flex-wrap layout for pool tiles
-├── Tile.tsx             # Single tile — pointer/drag mechanics, renders isRejected shake
-├── Tile.module.css      # Tile styling + shake keyframes
+├── PoolTile.tsx                 # Single tile — renders shared tile visuals and feedback flags
+├── use-pool-tile-draggable.ts   # Pool-specific GSAP Draggable mechanics
+├── PoolTile.module.css          # Pool-specific hitbox cell layout
 ├── Pool.test.tsx
-├── Tile.test.tsx
+├── PoolTile.test.tsx
 ├── README.md
 └── SPEC.md
 ```
@@ -30,52 +31,57 @@ pool/
 
 ### Pool
 
-Reads `state.pool` from `useGame()` and renders a `Tile` for each tile. Owns all interaction logic:
+Reads `state.pool` from `useGame()` and renders a `PoolTile` for each tile. The container wraps tiles into the available width and sizes from its actual content; if the viewport is too short after history and submission reserve their minimum space, the pool becomes the fallback scroll region. Owns all interaction logic:
 
 - **`handleTap(tile)`** — checks `getNextRotation` / `decompose` and dispatches `CHARACTER_ROTATE_NEXT` or `CHARACTER_DECOMPOSE`.
-- **`handleDropOnTile(sourceTile, targetId)`** — looks up the target tile, calls `compose()` to validate; dispatches `CHARACTER_COMPOSE` on success or sets `rejectedTileId` on failure.
-- **`handleDropOnSlot(sourceTile, slotIndex)`** — dispatches `SUBMISSION_SLOT_INSERT`.
-- **`rejectedTileId`** local state — tracks which tile should shake; cleared via `onRejectedEnd` callback.
+- **`handleDropOnTile(sourceTile, targetId)`** — looks up the target tile, calls `compose()` to validate; dispatches `CHARACTER_COMPOSE` and returns `true` on success, or returns `false` so the dragged tile snaps back on failure.
+- **`handleDropOnSlot(sourceTile, slotIndex)`** — dispatches `SUBMISSION_SLOT_INSERT` and returns `true`; the draggable hook records the dragged pool tile so the destination slot animates it from the release point, and if the slot is filled, records the displaced submitted tile so it can snap back into the pool.
 
 Computes `isTappable` per tile and passes it as a prop.
 
-### Tile
+### PoolTile
 
-Renders a single tile. Display text comes from `resolveCharacter(tile.character)`.
-Owns pointer/drag mechanics only — no lib imports, no game logic.
+Renders a single tile by composing `CharacterTile` from `src/components/tile`. Delegates GSAP Draggable mechanics to `usePoolTileDraggable` and tile feedback animation setup to `useTileFeedback` — no character lib imports, no game logic.
 
 **Props:**
 
-- `isTappable: boolean` — drives the `inert` CSS class; when `true`, tap calls `onTap()`.
-- `isRejected: boolean` — Pool sets this when a compose operation is rejected; Tile renders feedback.
+- `isTappable: boolean` — gates tap-only behavior; when `true`, tap calls `onTap()`. Pool tiles remain visually interactive because they are draggable even when tapping is a no-op.
 - `onTap: () => void` — called on click when `isTappable`.
-- `onDropOnTile: (targetId: number) => void` — called when a drag ends on another tile.
-- `onDropOnSlot: (slotIndex: number) => void` — called when a drag ends on a submission slot.
-- `onRejectedEnd: () => void` — called from `onAnimationEnd`; Pool clears `rejectedTileId`.
+- `onDropOnTile: (targetId: number) => boolean` — called when a drag ends on another tile; returns whether the drop was accepted.
+- `onDropOnSlot: (slotIndex: number) => boolean` — called when a drag ends on a submission slot; returns whether the drop was accepted.
+- `getDropTargetFeedback: (target: Element) => { canDrop: boolean; preview: string | null }` — computes target validity and optional preview text in one pass; PoolTile attaches valid pool-tile merge previews to the dragged tile as `data-drop-preview` for shared tile CSS.
+- `isRotating`, `isJustComposed`, `isNewlyAdded` — feedback flags owned by Pool and animated through `useTileFeedback`.
+- `onRotatingEnd`, `onComposedEnd`, `onNewlyAddedEnd` — completion callbacks that clear Pool feedback state.
 
-**Drag behavior** (Pointer Events, no library):
+**Drag behavior** (GSAP Draggable):
 
-- `pointerdown`: record start position.
-- `pointermove`: if cumulative movement ≥ 4 px, enter drag mode; capture pointer; create a ghost `div` at cursor; highlight the element under the pointer via `data-drag-over="true"`.
-- `pointerup`: resolve drop target via `document.elementsFromPoint`; call `onDropOnSlot` or `onDropOnTile`; clean up ghost and highlights.
-- Drop onto `data-slot-index` element → `onDropOnSlot(slotIndex)`.
+- Draggable owns click-vs-drag differentiation and pointer event wiring.
+- `onDragStart`: temporarily allows pool overflow so the tile can travel to slots and plays pickup feedback.
+- `onDrag`: resolves the current target via `document.elementsFromPoint`, computes target feedback once, sets `data-drop-source-active="true"` on the dragged tile when the current target is valid, and sets a target-specific active attribute (`data-drop-pool-target-active` or `data-drop-slot-target-active`) on the current target. The dragged tile also receives `data-drop-preview` when a pool-tile merge result can be displayed. Slot CSS combines `data-drop-slot-target-active` with `data-slot-state` to distinguish empty and filled slot treatments.
+- `onDragEnd`: calls slot/tile callbacks for detected drop targets. If the callback accepts the drop, inline drag styles are cleared because React will re-render/unmount the tile. If no target exists or the callback rejects the drop, the tile animates back to its fixed pool layout position. Invalid compose attempts still notify Pool so it can show rejection feedback before the source tile snaps back.
+- Drop onto `data-slot-index` element → record the dragged source tile and any displaced filled-slot tile, then `onDropOnSlot(slotIndex)`.
 - Drop onto `data-tile-id` element → `onDropOnTile(targetId)`.
-- `pointercancel`: clean up ghost and highlights without calling any callback.
-
-**Drag suppression of tap:** a `wasDragRef` ref is set to `true` at the end of a drag so the synthetic `click` event that follows `pointerup` is discarded.
 
 ## Key Decisions
 
-**Tile is callback-only; Pool owns all game logic.** Tile no longer imports `compose`, `getNextRotation`, or `decompose`. The reducer already validates and no-ops on invalid actions; centralizing validity checks in Pool is more honest about ownership and leaves Tile as a pure "I exist, I can be interacted with, here's what happened" component.
+**PoolTile is callback-only; Pool owns all game logic.** PoolTile and `usePoolTileDraggable` do not import `compose`, `getNextRotation`, or `decompose`. The reducer already validates and no-ops on invalid actions; centralizing validity checks in Pool is more honest about ownership and leaves PoolTile as a pure "I exist, I can be interacted with, here's what happened" component.
 
-**`rejectedTileId` in Pool, not `isShaking` in Tile.** Moving shake state to Pool lets it be cleared from outside (via `onRejectedEnd`) and avoids Tile needing to know what caused the shake.
+**`isTappable` computed in Pool and passed as prop.** PoolTile has no knowledge of rotation sets or composition rules; Pool computes the flag once per render using the same lib calls it uses for dispatch. This flag is intentionally narrower than `BaseTile`'s `isInteractive` visual affordance: every pool tile can be dragged, so every pool tile remains visually interactive even when tapping is unavailable.
 
-**`isTappable` computed in Pool and passed as prop.** Tile has no knowledge of rotation sets or composition rules; Pool computes the flag once per render using the same lib calls it uses for dispatch.
+**Callbacks not context.** PoolTile receives callbacks from Pool rather than calling `useGame()`. This keeps PoolTile testable without wrapping in a provider and avoids redundant context subscriptions per tile.
 
-**Callbacks not context.** Tile receives callbacks from Pool rather than calling `useGame()`. This keeps Tile testable without wrapping in a provider and avoids redundant context subscriptions per tile.
+**Pool positions are fixed by layout.** GSAP Draggable applies temporary transforms during an active drag only. A successful drop dispatches state changes; an invalid drag animates back to `x: 0, y: 0` and clears inline styles so the tile resumes its natural flex-layout position.
 
-**Drag state tracked in refs, not state.** Only `isDragging` (visual opacity) uses `useState`; everything else (start position, ghost element, last highlighted target) uses refs to avoid re-renders on every `pointermove`.
+**Pool height is content-first with short-height scroll fallback.** The pool does not reserve a configured row count. Width determines the number of wrapped columns, which determines the content height. Pool tiles sit inside square `--tile-hitbox-size` cells so wrapping matches the rotation-safe interaction footprint rather than the narrower visible card. In normal height tiers the game content does not shrink, so the full wrapped pool remains visible and history receives the leftover space. At `600px` height and below, game content and pool may shrink, the pool may scroll, and history drops to its compact minimum.
 
-**`touch-action: none` on Tile.** Required for Pointer Events drag to work on touch devices; prevents the browser from claiming the gesture for scrolling before pointer capture can be established.
+**Drag state tracked in refs, not state.** `usePoolTileDraggable` keeps callback refs, the current tile id, and the last highlighted drop target in refs so Draggable callbacks stay current without re-rendering on every pointer movement.
+
+**`touch-action: none` from BaseTile interactive styles.** Required for drag on touch devices; prevents the browser from claiming the gesture for scrolling before the drag can begin.
+
+**Shared visuals stay in `CharacterTile` / `BaseTile`.** PoolTile attaches GSAP Draggable, refs, and drop-target data attributes to the shared tile element without importing character composition helpers or duplicating base tile CSS.
+
+**Merge preview is text-only at the behavior boundary.** Pool computes drop-target feedback in one pass: slot validity, pool-tile compose validity, and any resolved preview text. `usePoolTileDraggable` attaches that text to the dragged tile as `data-drop-preview` through the shared tile text override helper. Composition rules stay out of PoolTile, and the preview lives on the dragged tile because it remains visually above the target during overlap.
+
+**Feedback setup is delegated.** PoolTile keeps drag/drop behavior local but calls `useTileFeedback` for rotate, compose, particle, and entrance animations so the feedback contract stays separate from both shared visuals and Draggable setup. Tiles moved between the pool and submission consume pending snap-back release rects instead of playing generic newly-added or pop-in entrance animations.
 
 **`document.elementsFromPoint?.()` with optional chaining.** The API is not implemented in jsdom; optional chaining with a `[]` fallback keeps tests clean without needing a global polyfill.

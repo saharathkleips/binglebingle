@@ -1,0 +1,161 @@
+# SPEC: components/tile
+
+**Status:** stable
+
+## Purpose
+
+Provides reusable tile presentation for Binglebingle without coupling visual identity to any single game surface. Data flows from consuming components into a small visual primitive as already-renderable content, or into a character wrapper as a `Character` that is resolved for display.
+
+**Boundaries:**
+
+- Reads from: component props only.
+- Dispatches to: nothing.
+- Calls into: `src/lib/character` only from `CharacterTile` for display resolution; `src/lib/animation` only from `useTileFeedback`.
+- Does not call into: game context, reducers, pool logic, submission logic, or history logic.
+- `BaseTile` does not call into: GSAP, character resolution, game context, reducers, pool logic, submission logic, or history logic.
+
+The module is intentionally not an interaction layer. Drag/drop, tap, hit testing, reducer dispatches, invalid-drop recovery, submission readiness, history result semantics, and instruction-specific layout remain owned by their feature modules.
+
+## File Map
+
+```txt
+tile/
+├── BaseTile.tsx             # Shared visual primitive; no game state, no GSAP, no character resolution
+├── BaseTile.module.css      # Shared tile visual identity and narrow visual variants
+├── BaseTile.test.tsx
+├── lightning-border.svg     # Editable 번개문 border asset used as the CSS mask
+├── CharacterTile.tsx        # Resolves a game Character and renders BaseTile
+├── CharacterTile.test.tsx
+├── use-tile-feedback.ts     # Shared GSAP feedback hook for behavior components
+├── drop-target-helpers.ts   # Shared data-attribute drop-target DOM/tile lookup helpers
+├── tile-text-overrides.ts   # BaseTile text override helpers for drag previews
+├── use-latest-ref.ts        # Stable latest-value refs for imperative callbacks
+├── README.md
+└── SPEC.md
+```
+
+## Public API
+
+- `BaseTile` renders shared tile visuals for already-renderable content.
+- `BaseTileProps` configures `BaseTile` with visual props, pass-through DOM hooks, and caller-owned class names.
+- `BaseTileElement` is `"button" | "div" | "span"`.
+- `CharacterTile` resolves a game `Character` and renders the result in `BaseTile`.
+- `CharacterTileProps` is `Omit<BaseTileProps, "children"> & { character: Character }`.
+- `useTileFeedback` plays shared GSAP feedback animations on a caller-owned element ref.
+- `UseTileFeedbackOptions` supplies the element ref, feedback flags, and completion callbacks.
+- `drop-target-helpers` centralizes shared drop-target data attribute names, discovery, tile lookup, and active-state toggling for feature modules.
+- `tile-text-overrides` owns temporary text replacement for BaseTile merge previews so feature modules do not query BaseTile internals directly.
+- `useLatestRef` stores the latest props/callbacks for imperative animation handlers without forcing handler recreation.
+
+## Types
+
+```ts
+type BaseTileSharedProps = {
+  children: React.ReactNode;
+  className?: string | undefined;
+  dataAttributes?: Record<`data-${string}`, string | number | boolean>;
+  isInteractive?: boolean;
+  label?: string;
+  onAnimationEnd?: React.AnimationEventHandler<HTMLElement>;
+  result?: CharacterResult;
+};
+
+type BaseTileProps =
+  | (BaseTileSharedProps & { element?: "div"; ref?: React.Ref<HTMLDivElement> })
+  | (BaseTileSharedProps & { element: "button"; ref?: React.Ref<HTMLButtonElement> })
+  | (BaseTileSharedProps & { element: "span"; ref?: React.Ref<HTMLSpanElement> });
+
+type CharacterTileProps = Omit<BaseTileProps, "children"> & {
+  character: Character;
+};
+
+type UseTileFeedbackOptions = {
+  elementRef: React.RefObject<HTMLElement | null>;
+  isRotating?: boolean;
+  isJustComposed?: boolean;
+  isNewlyAdded?: boolean;
+  onRotatingEnd?: () => void;
+  onComposedEnd?: () => void;
+  onNewlyAddedEnd?: () => void;
+};
+```
+
+Add a new prop only when at least one current consumer needs that visual state. `BaseTile` intentionally does not expose a disabled state until a tile consumer needs the native disabled semantics; current tiles are either interactive or inert.
+
+## Tile Sizing Model
+
+The shared tile foundation is hitbox-first. `src/index.css` owns global tokens because pool, submission, history, instructions, and tile visuals all need the same geometry without depending on a CSS Module from this package.
+
+The square layout unit is `--tile-hitbox-size`. The x-small tier sets it to `44px`, matching the minimum interactive target from `docs/design/layout.md`. The visible portrait tile keeps the physical card ratio inside that cell:
+
+```txt
+width:  var(--tile-visual-short-edge) = hitbox × 2 / 3
+height: var(--tile-visual-long-edge)  = hitbox
+```
+
+The five supported viewport tiers are `x-small`, `small`, `medium`, `large`, and `x-large`. The `x-small` tier is defined as the default token set without a media query so the game can render on narrow-but-tall or otherwise unusual screens. Width-based CSS media queries select larger tile tiers without JavaScript or root data attributes. Each tier hand-tunes `--tile-gap`, `--tile-submission-history-gap`, `--tile-radius`, `--tile-border-padding`, `--tile-font-size`, `--tile-shadow-step`, and `--tile-shadow-depth`; these values intentionally are not one fully-fluid formula because the dense tiers need simplified detail. `--font-family-tile` defaults to Noto Sans KR and `--font-weight-tile` defaults to `900`. `x-large` is capped at a spacious game-piece size rather than growing indefinitely.
+
+Height is tuned independently from tile size. `--history-min-visible-rows` defaults to `2.25` rows, then drops to `1.25` rows on compact-height viewports so submission remains visible and the pool scroll fallback has more room. Pool rows are not tokenized; the browser derives them from available width, tile count, and wrapping.
+
+`BaseTile` is the visible card only. Consuming regions own square cells/hitboxes when they need them: pool cells can later rotate landscape tiles inside the square hitbox, while submission and history can remain portrait-only.
+
+## Components
+
+### BaseTile
+
+Renders tile content with the shared tile surface: dimensions, 번개문 lightning-pattern border, face, shadow, typography, and visual-only variants. It may render as a different element when semantics require it, but it must not own behavior for that element beyond passing safe DOM props needed for presentation and accessibility.
+
+Rules:
+
+- Accept already-renderable display content via `children`.
+- Do not import GSAP, `useGame`, reducer action types, pool/submission/history components, `resolveCharacter`, or character composition/rotation helpers.
+- Do not know about tile IDs, slot indices, drag targets, submitted guesses, or evaluation logic; it only passes caller-owned `data-*` attributes through to the rendered element.
+- Do not dispatch actions or register global event listeners.
+- Keep variant names visual and reusable across modules.
+
+### CharacterTile
+
+Accepts a game `Character`, calls `resolveCharacter`, and renders `BaseTile` with the resolved display text.
+
+Rules:
+
+- Contains no interaction, animation, reducer, or context behavior.
+- Passes only visual props through to `BaseTile`.
+- Remains the only shared tile component responsible for character resolution.
+
+### useTileFeedback
+
+Small hook that plays tile feedback animations on a caller-owned element ref: rotate squeeze, compose pulse with particle burst, and entrance scale.
+
+Rules:
+
+- Keep GSAP setup outside `BaseTile` and `CharacterTile`.
+- Accept only visual feedback flags, completion callbacks, and the element ref to animate.
+- Do not read game context, dispatch actions, or know about pool/submission/history semantics.
+- Do not introduce a generic `AnimatedTile` layer unless consumers need the exact same contract.
+
+## Key Decisions
+
+**Character resolution is separate from base visuals.** `BaseTile` receives display content and therefore stays reusable for history result markers, instruction examples, empty/future visual states, and any non-character tile-like content. `CharacterTile` is the convenience wrapper for game characters.
+
+**Feature modules own semantics.** Pool tiles can be draggable and tappable, submission slots can swap or return tiles, history tiles can show evaluation results, and instructions can render examples. Those behaviors are outside this module even when they share the same visual surface.
+
+**DOM hooks are pass-through only.** `ref`, `dataAttributes`, and `onAnimationEnd` exist so feature modules can attach their own semantics to the same visual element. `BaseTile` must not interpret those attributes or callbacks.
+
+**Feedback animations are hook-based.** `useTileFeedback` centralizes the shared GSAP feedback setup without making visual components depend on GSAP or creating a generic animated component layer.
+
+**Use engine result names for evaluated tiles.** `BaseTile` accepts an optional `result?: CharacterResult` instead of duplicating evaluation values as visual tone strings. Leaving `result` undefined selects the default tile treatment, while `CORRECT`, `PRESENT`, and `ABSENT` apply evaluated tile gradients.
+
+**Use the tile border as a CSS mask.** The 번개문 path remains in `lightning-border.svg` so vector tools can edit it directly, while `BaseTile.module.css` references it directly as the mask for a CSS linear gradient. Masking keeps the editable SVG shape while allowing the border gradient to be configured in CSS alongside the tile variants, without requiring runtime inline styles in `BaseTile`. Tiles build their conic text and linear border stops from five tile-local gradient color slots; result variants override only those color slots so evaluated states keep the same gradient geometry without duplicating stop lists. Button labels and brand chrome continue to use the global iridescent gradient tokens directly.
+
+**Keep reusable tile tokens in `:root`.** Hitbox size, visible tile edges, pool gap, submission/history gap, radius, border padding, font size, and shadow depth live in `src/index.css` because pool, submission, history, instructions, and tile visuals need the same geometry and effects. Older `--size-tile-*` and `--font-size-tile` aliases are intentionally not kept; this project is still small enough to migrate consumers directly to the hitbox-first tokens. `BaseTile.module.css` keeps only local state variables such as the currently selected visible edges and result gradient color slots.
+
+**BaseTile is not the hitbox.** The visual card derives from `--tile-visual-short-edge` and `--tile-visual-long-edge`; square `--tile-hitbox-size` wrappers belong to consuming regions that need interaction cells or rotation-safe pool footprints.
+
+**CSS classes are reserved for the public styling hook.** `BaseTile` keeps the CSS Module class on the root element so callers can compose layout classes predictably, while internal visual state and child roles use `data-tile-*` attributes. This keeps the stylesheet readable with nested selectors and avoids exporting class names for implementation-only spans or same-element variants.
+
+**Hover lift moves only the visual surface.** The root element remains the stable pointer target, while the internal `data-tile-surface` span receives the hover/focus transform and lifted shadow. The lifted cast-shadow offset compensates for the surface transform while the depth stack stays attached to the raised tile face. Moving the same element that owns `:hover` can make edge hover unstable because the tile leaves and re-enters the pointer hit area during the transition.
+
+**Tile text keeps Hangul font metrics.** The root tile uses a compact line height for predictable layout, but the internal text span restores enough line-height for Noto Sans KR glyph bounds. This prevents syllable bottoms such as the final `ㅇ` in `양` from being clipped without reducing the shared tile font size.
+
+**Drop-target feedback reuses tile-owned data attributes.** Feature modules imperatively set `data-drop-pool-target-active` or `data-drop-slot-target-active` during GSAP drag hit-testing, but `BaseTile.module.css` owns the shared target shimmer. Dragged pool tiles may also set `data-drop-preview` to let BaseTile CSS render the resolved merge result above the overlapped target. Shared helpers centralize the DOM attribute names, target lookup, active-state toggling, and temporary BaseTile text overrides, while drag semantics remain in the feature modules. This keeps behavior ownership explicit and avoids duplicated target visuals for pool tiles and filled submission slots.

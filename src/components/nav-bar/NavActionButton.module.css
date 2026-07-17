@@ -1,0 +1,68 @@
+.button {
+  --nav-action-hitbox-size: var(--interactive-hitbox-min-size);
+  --nav-action-font-size: 1.12rem;
+  --nav-action-surface-size: 2.35rem;
+  --nav-action-content-size: 1.35rem;
+  --nav-action-icon-size: 1.25rem;
+
+  width: var(--nav-action-hitbox-size);
+  height: var(--nav-action-hitbox-size);
+  padding: 0;
+  font-size: var(--nav-action-font-size);
+}
+
+.surface {
+  width: var(--nav-action-surface-size);
+  height: var(--nav-action-surface-size);
+  border-radius: 50%;
+}
+
+.content,
+.contentIcon {
+  width: var(--nav-action-content-size);
+  height: var(--nav-action-content-size);
+}
+
+.contentIcon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+
+  & svg {
+    width: var(--nav-action-icon-size);
+    height: var(--nav-action-icon-size);
+    color: var(--palette-najeon-iridescent-blue);
+    -webkit-text-fill-color: currentColor;
+    filter: drop-shadow(0 1px 0 var(--color-system-depth));
+
+    & path {
+      fill: url("#gear-iridescent-gradient");
+      paint-order: stroke fill;
+      stroke: var(--color-border);
+      stroke-width: 1px;
+      vector-effect: non-scaling-stroke;
+    }
+  }
+}
+
+@media (max-width: 479px), (max-height: 600px) {
+  .button {
+    --nav-action-font-size: 0.95rem;
+    --nav-action-surface-size: 1.9rem;
+    --nav-action-content-size: 1.15rem;
+    --nav-action-icon-size: 1.05rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .button {
+    --nav-action-font-size: 0.9rem;
+    --nav-action-surface-size: 1.7rem;
+    --nav-action-content-size: 1rem;
+    --nav-action-icon-size: 0.95rem;
+  }
+
+  .surface {
+    border-width: 1.5px;
+  }
+}

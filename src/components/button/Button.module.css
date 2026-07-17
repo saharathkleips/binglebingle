@@ -1,0 +1,95 @@
+.button {
+  --button-face: var(--color-surface);
+  --button-depth: var(--system-depth);
+  --button-cast-shadow-growth: var(--system-cast-shadow-growth);
+  --button-hover-offset: calc(var(--system-lift-distance) * 1.25);
+  --button-shadow-stack: var(--system-shadow-stack);
+  --button-shadow-stack-lifted:
+    var(--system-depth-stack),
+    calc(var(--system-cast-shadow-distance) + var(--button-hover-offset))
+      calc(var(--system-cast-shadow-distance) + var(--button-hover-offset)) 0
+      var(--color-system-shadow);
+  --button-shadow-stack-pressed: calc(var(--system-cast-shadow-distance) - var(--button-depth))
+    calc(var(--system-cast-shadow-distance) - var(--button-depth)) 0 var(--color-system-depth);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-chrome-foreground);
+  cursor: pointer;
+  font: inherit;
+  font-family: var(--font-family-ui);
+  font-weight: var(--font-weight-control);
+  line-height: 1;
+  touch-action: manipulation;
+  appearance: none;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):is(:hover, :focus-visible) .surface {
+    transform: translate(
+      calc(var(--button-hover-offset) * -1),
+      calc(var(--button-hover-offset) * -1)
+    );
+    box-shadow: var(--button-shadow-stack-lifted);
+  }
+
+  &:not(:disabled):active .surface {
+    transform: translate(var(--button-depth), var(--button-depth));
+    box-shadow: var(--button-shadow-stack-pressed);
+  }
+}
+
+.surface {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--color-border);
+  background: var(--button-face);
+  box-shadow: var(--button-shadow-stack);
+  transform-origin: center bottom;
+  transition:
+    box-shadow var(--motion-duration-fast) var(--motion-ease-standard),
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
+
+  .button:disabled & {
+    opacity: 0.55;
+  }
+}
+
+.text {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+}
+
+.textDepth,
+.textStroke,
+.textLabel {
+  grid-area: 1 / 1;
+}
+
+.textDepth {
+  color: var(--color-system-depth);
+  -webkit-text-fill-color: var(--color-system-depth);
+  -webkit-text-stroke: 1px var(--color-system-depth);
+  transform: translateY(1px);
+}
+
+.textStroke {
+  color: var(--color-chrome-foreground);
+  -webkit-text-fill-color: var(--color-chrome-foreground);
+  -webkit-text-stroke: 1px var(--color-chrome-foreground);
+}
+
+.textLabel {
+  position: relative;
+  background: var(--gradient-iridescent-conic);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}

@@ -1,32 +1,236 @@
-:root {
-  /* Tile / slot dimensions */
-  --size-tile: 3rem;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-  /* Spacing */
+body {
+  margin: 0;
+  background: var(--color-app-background);
+  color: var(--color-text);
+  font-family: var(--font-family-ui);
+}
+
+:root {
+  /* ── Palette: Obangsaek (오방색) vivid ────────────────────────────────── */
+  --palette-obangsaek-black: #080808;
+
+  /* ── Palette: Dancheong (단청) pastel ────────────────────────────────── */
+  --palette-dancheong-blue: #393f69;
+  --palette-dancheong-yellow: #fbe596;
+
+  /* ── Palette: Najeon Iridescent ─────────────────────── */
+  --palette-najeon-iridescent-lavender: #e6e6fa;
+  --palette-najeon-iridescent-blue: #b0e0e6;
+  --palette-najeon-iridescent-pink: #fff0f5;
+  --palette-najeon-iridescent-cyan: #e0ffff;
+  --palette-najeon-iridescent-mint: #f0fff0;
+
+  /* ── Palette: Najeon Green ─────────────────────── */
+  --palette-najeon-green-celadon: #e8f5e9;
+  --palette-najeon-green-jade: #b9fbc0;
+  --palette-najeon-green-sage: #c8e6c9;
+  --palette-najeon-green-seafoam: #a8e6cf;
+  --palette-najeon-green-mist: #d0f4de;
+
+  /* ── Palette: Najeon Yellow ─────────────────────── */
+  --palette-najeon-yellow-honey: #ffecb3;
+  --palette-najeon-yellow-ivory: #fff9c4;
+  --palette-najeon-yellow-apricot: #ffcc80;
+  --palette-najeon-yellow-citrine: #fff59d;
+  --palette-najeon-yellow-peach: #ffe0b2;
+
+  /* ── Palette: Najeon Gray ─────────────────────── */
+  --palette-najeon-gray-moonstone: #f8f9fa;
+  --palette-najeon-gray-fog: #e9ecef;
+  --palette-najeon-gray-lavender-mist: #f3e8ff;
+  --palette-najeon-gray-cloud-slate: #e2e8f0;
+  --palette-najeon-gray-silver: #e5e5e5;
+
+  /* ── Palette: Cream backgrounds ──────────────────────────────────────── */
+  --palette-rice-paper: #fbf7ef;
+
+  /* ── Semantic: App background ────────────────────────────────────────── */
+  --color-app-background: var(--palette-rice-paper);
+
+  /* ── Semantic: Surface ───────────────────────────────────────────────── */
+  --color-surface: var(--palette-rice-paper);
+  --color-surface-accent: var(--palette-dancheong-yellow);
+
+  /* ── Semantic: Text ──────────────────────────────────────────────────── */
+  --color-text: var(--palette-obangsaek-black);
+  --color-text-muted: var(--palette-dancheong-blue);
+
+  /* ── Semantic: Border and chrome ─────────────────────────────────────── */
+  --color-border: var(--palette-obangsaek-black);
+  --color-chrome-foreground: var(--palette-obangsaek-black);
+
+  /* ── Semantic: Overlay and drop feedback ─────────────────────────────── */
+  --color-overlay-backdrop: rgba(0, 0, 0, 0.6);
+  --color-drop-target-active: #3b5442;
+
+  /* ── Layers ──────────────────────────────────────────────────────────── */
+  --z-index-popover: 100;
+
+  /* ── Semantic: Tile face ─────────────────────────────────────────────── */
+  --color-tile-face: var(--palette-obangsaek-black);
+  --color-tile-depth: #1a1a1a;
+  --color-tile-shadow: rgba(0, 0, 0, 0.5);
+
+  /* ── Semantic: System chrome depth ───────────────────────────────────── */
+  --color-system-depth: var(--color-tile-depth);
+  --color-system-shadow: var(--color-tile-shadow);
+
+  /* ── Gradient tokens ─────────────────────────────────────────────────── */
+  --gradient-iridescent-conic-stops:
+    var(--palette-najeon-iridescent-lavender) 0deg, var(--palette-najeon-iridescent-blue) 72deg,
+    var(--palette-najeon-iridescent-pink) 144deg, var(--palette-najeon-iridescent-cyan) 216deg,
+    var(--palette-najeon-iridescent-mint) 288deg, var(--palette-najeon-iridescent-lavender) 360deg;
+  --gradient-iridescent-conic: conic-gradient(
+    from 180deg at 50% 50%,
+    var(--gradient-iridescent-conic-stops)
+  );
+  --gradient-logo-text: linear-gradient(
+    90deg,
+    var(--palette-najeon-iridescent-pink) 0%,
+    var(--palette-najeon-iridescent-lavender) 40%,
+    var(--palette-najeon-iridescent-cyan) 60%,
+    var(--palette-najeon-iridescent-blue) 100%
+  );
+  --gradient-logo-border: linear-gradient(
+    135deg,
+    var(--palette-najeon-iridescent-lavender) 0%,
+    var(--palette-najeon-iridescent-blue) 25%,
+    var(--palette-najeon-iridescent-pink) 50%,
+    var(--palette-najeon-iridescent-cyan) 75%,
+    var(--palette-najeon-iridescent-mint) 100%
+  );
+
+  /* ── Motion tokens ───────────────────────────────────────────────────── */
+  --motion-duration-fast: 140ms;
+  --motion-ease-standard: ease;
+
+  /* ── Interaction tokens ──────────────────────────────────────────────── */
+  --interactive-hitbox-min-size: 44px;
+
+  /* ── System chrome tokens: fixed, non-responsive controls ────────────── */
+  --system-depth-step: 1px;
+  --system-depth: 3px;
+  --system-depth-stack:
+    var(--system-depth-step) var(--system-depth-step) 0 var(--color-system-depth),
+    calc(var(--system-depth-step) * 2) calc(var(--system-depth-step) * 2) 0
+      var(--color-system-depth),
+    calc(var(--system-depth-step) * 3) calc(var(--system-depth-step) * 3) 0
+      var(--color-system-depth);
+  --system-cast-shadow-distance: calc(var(--system-depth) + var(--system-depth-step) * 2);
+  --system-cast-shadow: var(--system-cast-shadow-distance) var(--system-cast-shadow-distance) 0
+    var(--color-system-shadow);
+  --system-lift-distance: calc(var(--system-depth-step) * 3);
+  --system-cast-shadow-growth: var(--system-depth-step);
+  --system-shadow-stack: var(--system-depth-stack), var(--system-cast-shadow);
+
+  /* ── Tile tokens: x-small/minimum interactive tier ───────────────────── */
+  --tile-hitbox-size: var(--interactive-hitbox-min-size);
+  --tile-gap: 4px;
+  --tile-submission-history-gap: 4px;
+  --tile-radius: 4px;
+  --tile-border-width: 1px;
+  --tile-font-size: 20px;
+  --tile-depth-step: 1px;
+  --tile-depth: 3px;
+  --history-min-visible-rows: 2.25;
+
+  /* ── Tile derived tokens ─────────────────────────────────────────────── */
+  --tile-visual-long-edge: var(--tile-hitbox-size);
+  --tile-visual-short-edge: calc(var(--tile-hitbox-size) * 2 / 3);
+  --tile-depth-stack:
+    var(--tile-depth-step) var(--tile-depth-step) 0 var(--color-tile-depth),
+    calc(var(--tile-depth-step) * 2) calc(var(--tile-depth-step) * 2) 0 var(--color-tile-depth),
+    calc(var(--tile-depth-step) * 3) calc(var(--tile-depth-step) * 3) 0 var(--color-tile-depth);
+  --tile-cast-shadow: var(--tile-depth) var(--tile-depth) 0 var(--color-tile-shadow);
+  --tile-lift-distance: calc(var(--tile-depth-step) * 3);
+  --tile-shadow-stack: var(--tile-depth-stack), var(--tile-cast-shadow);
+
+  /* ── General spacing ────────────────────────────────────────────────── */
   --space-sm: 0.5rem;
   --space-md: 0.75rem;
+  --space-lg: 2rem;
 
-  /* Shape */
+  /* ── Viewport spacing ───────────────────────────────────────────────── */
+  --app-bottom-padding: max(var(--space-sm), env(safe-area-inset-bottom));
+
+  /* ── General shape ──────────────────────────────────────────────────── */
+  --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
 
-  /* Typography */
-  --font-size-tile: 1.5rem;
+  /* ── Typography ──────────────────────────────────────────────────────── */
+  --font-family-ui: system-ui, "Noto Sans KR", sans-serif;
+  --font-family-tile: "Noto Sans KR", var(--font-family-ui);
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-control: 800;
+  --font-weight-tile: 900;
+}
 
-  /* Surface colors */
-  --color-surface: #fff;
-  --color-surface-active: #f0f0f0;
-  --color-surface-empty: #fafafa;
+/* Tile tier: small */
+@media (min-width: 390px) {
+  :root {
+    --tile-hitbox-size: 48px;
+    --tile-gap: 5px;
+    --tile-submission-history-gap: 7px;
+    --tile-radius: 5px;
+    --tile-border-width: 1px;
+    --tile-font-size: 22px;
+    --tile-depth-step: 1px;
+    --tile-depth: 4px;
+  }
+}
 
-  /* Border */
-  --color-border: #ccc;
+/* Tile tier: medium */
+@media (min-width: 480px) {
+  :root {
+    --tile-hitbox-size: 56px;
+    --tile-gap: 7px;
+    --tile-submission-history-gap: 9px;
+    --tile-radius: 6px;
+    --tile-border-width: 1.25px;
+    --tile-font-size: 26px;
+    --tile-depth-step: 1px;
+    --tile-depth: 5px;
+  }
+}
 
-  /* Drag interaction */
-  --color-drag-border: #4a90e2;
-  --color-drag-bg: #e8f0fe;
+/* Tile tier: large */
+@media (min-width: 768px) {
+  :root {
+    --tile-hitbox-size: 64px;
+    --tile-gap: 8px;
+    --tile-submission-history-gap: 10px;
+    --tile-radius: 7px;
+    --tile-border-width: 1.5px;
+    --tile-font-size: 30px;
+    --tile-depth-step: 1px;
+    --tile-depth: 6px;
+  }
+}
 
-  /* Game state */
-  --color-correct: #6aaa64;
-  --color-present: #c9b458;
-  --color-absent: #787c7e;
-  --color-state-text: #fff;
+/* Tile tier: x-large */
+@media (min-width: 1100px) {
+  :root {
+    --tile-hitbox-size: 72px;
+    --tile-gap: 10px;
+    --tile-submission-history-gap: 12px;
+    --tile-radius: 8px;
+    --tile-border-width: 2px;
+    --tile-font-size: 34px;
+    --tile-depth-step: 1px;
+    --tile-depth: 7px;
+  }
+}
+
+/* Height tier: compact */
+@media (max-height: 600px) {
+  :root {
+    --history-min-visible-rows: 1.25;
+  }
 }

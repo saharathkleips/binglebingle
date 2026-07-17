@@ -2,8 +2,8 @@
 
 ## Current Status
 
-**Active version:** 1.3.x — Full Product Shell
-**Next milestone:** TBD
+**Active version:** 1.4.x — 단청 (Dancheong)
+**Next milestone:** 1.4.4 — GSAP Drag
 
 ## Versions
 
@@ -13,7 +13,7 @@
 | 1.1.x   | Domain Logic       | Complete |
 | 1.2.x   | Playable Game      | Complete |
 | 1.3.x   | Full Product Shell | Complete |
-| 1.4.x   | TBD                | Pending  |
+| 1.4.x   | 단청 (Dancheong)   | Active   |
 | 2.0.x   | Post-Launch        | Backlog  |
 
 ## Out of Scope
@@ -23,7 +23,7 @@
 | Multiplayer / shared sessions         | No backend                           |
 | User accounts / leaderboards          | No backend                           |
 | Hard guess limit                      | Designer decision — may add post-MVP |
-| Animated jamo rotation effects        | UX iteration deferred                |
+| Animated jamo rotation effects        | Addressed in 1.4.5 (VIS-20)          |
 | Accessibility / screen reader support | Post-MVP pass                        |
 | Archaic / historical jamo             | Out of modern Hangul scope           |
 | Complex jamo as given pool items      | Always constructed from basic jamo   |

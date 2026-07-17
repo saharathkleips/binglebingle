@@ -20,13 +20,13 @@ export function WinPanel() {
   const targetWordString = wordToString(state.targetWord);
 
   return (
-    <div className={styles.winPanel} data-testid="win-panel">
+    <section className={styles.winPanel} aria-label="Win summary">
       <p className={styles.message}>정답!</p>
       <p className={styles.targetWord}>{targetWordString}</p>
       <p className={styles.score}>{score.guessCount}번 만에 맞췄어요</p>
-      <button type="button" disabled data-testid="share-button">
+      <button type="button" disabled>
         Share
       </button>
-    </div>
+    </section>
   );
 }

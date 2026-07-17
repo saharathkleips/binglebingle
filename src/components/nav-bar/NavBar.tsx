@@ -1,3 +1,5 @@
+import Gear from "./gear.svg?react";
+import { NavActionButton } from "./NavActionButton";
 import styles from "./NavBar.module.css";
 
 type NavBarProps = {
@@ -14,17 +16,32 @@ type NavBarProps = {
  */
 export function NavBar({ onToggleInstructions, isInstructionsOpen }: NavBarProps) {
   return (
-    <nav className={styles.navBar} data-testid="nav-bar">
-      <h1 className={styles.title}>빙글빙글</h1>
-      <button
-        className={styles.instructionsButton}
-        onClick={onToggleInstructions}
-        aria-label="Toggle instructions"
-        aria-expanded={isInstructionsOpen}
-        data-testid="instructions-toggle"
-      >
-        ?
-      </button>
+    <nav className={styles.navBar} aria-label="Primary navigation">
+      <div className={styles.navContent}>
+        <h1 className={styles.logo} aria-label="빙글빙글">
+          <span className={styles.logoText}>ㅂㄱㅂㄱ</span>
+        </h1>
+        <div className={styles.actions} role="group" aria-label="Game actions">
+          <div className={styles.actionCluster}>
+            <NavActionButton ariaLabel="Set difficulty to three" label="삼" />
+            <NavActionButton ariaLabel="Set difficulty to four" label="사" />
+            <NavActionButton ariaLabel="Set difficulty to five" label="오" />
+          </div>
+          <div className={styles.actionCluster}>
+            <NavActionButton
+              ariaLabel="Toggle instructions"
+              isExpanded={isInstructionsOpen}
+              onClick={onToggleInstructions}
+              label="?"
+            />
+            <NavActionButton
+              ariaLabel="Open settings"
+              icon={<Gear focusable="false" />}
+              kind="icon"
+            />
+          </div>
+        </div>
+      </div>
     </nav>
   );
 }

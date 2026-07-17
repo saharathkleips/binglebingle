@@ -4,11 +4,13 @@ import { SubmissionButton } from "./SubmissionButton";
 import { character } from "../../lib/character";
 import type { SubmissionSlot, GameAction } from "../../context/game";
 
+const SUBMIT_BUTTON = { name: "도전" };
+
 describe("SubmissionButton", () => {
   it("is disabled when submission is empty", async () => {
     const submission: SubmissionSlot[] = [{ state: "EMPTY" }];
     const screen = await render(<SubmissionButton submission={submission} dispatch={vi.fn()} />);
-    await expect.element(screen.getByTestId("submission-button")).toBeDisabled();
+    await expect.element(screen.getByRole("button", SUBMIT_BUTTON)).toBeDisabled();
   });
 
   it("is disabled when a filled slot has an incomplete character", async () => {
@@ -16,7 +18,7 @@ describe("SubmissionButton", () => {
       { state: "FILLED", tileId: 0, character: character({ choseong: "ㄱ" })! },
     ];
     const screen = await render(<SubmissionButton submission={submission} dispatch={vi.fn()} />);
-    await expect.element(screen.getByTestId("submission-button")).toBeDisabled();
+    await expect.element(screen.getByRole("button", SUBMIT_BUTTON)).toBeDisabled();
   });
 
   it("is enabled when all filled slots have complete characters", async () => {
@@ -24,7 +26,7 @@ describe("SubmissionButton", () => {
       { state: "FILLED", tileId: 0, character: character("가")! },
     ];
     const screen = await render(<SubmissionButton submission={submission} dispatch={vi.fn()} />);
-    await expect.element(screen.getByTestId("submission-button")).not.toBeDisabled();
+    await expect.element(screen.getByRole("button", SUBMIT_BUTTON)).not.toBeDisabled();
   });
 
   it("dispatches ROUND_SUBMISSION_SUBMIT on click when valid", async () => {
@@ -33,7 +35,7 @@ describe("SubmissionButton", () => {
       { state: "FILLED", tileId: 0, character: character("가")! },
     ];
     const screen = await render(<SubmissionButton submission={submission} dispatch={dispatch} />);
-    await screen.getByTestId("submission-button").click();
+    await screen.getByRole("button", SUBMIT_BUTTON).click();
     expect(dispatch).toHaveBeenCalledWith({ type: "ROUND_SUBMISSION_SUBMIT" });
   });
 });

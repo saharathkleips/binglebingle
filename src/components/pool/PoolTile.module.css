@@ -1,0 +1,7 @@
+.cell {
+  display: grid;
+  width: var(--tile-hitbox-size);
+  height: var(--tile-hitbox-size);
+  flex: 0 0 auto;
+  place-items: center;
+}

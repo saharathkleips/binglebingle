@@ -1,0 +1,40 @@
+.button {
+  min-height: var(--interactive-hitbox-min-size);
+  margin: 0 0 0 12px;
+  padding: var(--button-hover-offset)
+    calc(var(--button-hover-offset) + var(--button-depth) + var(--button-cast-shadow-growth))
+    calc(var(--button-hover-offset) + var(--button-depth) + var(--button-cast-shadow-growth))
+    var(--button-hover-offset);
+  font-size: 1rem;
+}
+
+.surface {
+  min-width: 10rem;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-md);
+}
+
+.text,
+.motif {
+  z-index: 1;
+}
+
+.motif {
+  position: absolute;
+  bottom: 0;
+  height: auto;
+  color: currentColor;
+}
+
+.motifLeft {
+  left: 0.4rem;
+  bottom: -0.03rem;
+  width: 3rem;
+}
+
+.motifRight {
+  right: 0.7rem;
+  bottom: -0.03rem;
+  width: 2.5rem;
+}
