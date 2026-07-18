@@ -26,13 +26,21 @@ import { useLatestRef } from "../tile/use-latest-ref";
 export type UsePoolTileDraggableOptions = {
   buttonRef: React.RefObject<HTMLButtonElement | null>;
   tileId: number;
+  /** Tap is separate from drag; Draggable owns click-vs-drag differentiation. */
   isTappable: boolean;
   onTap: () => void;
+  /** Returns false when Pool rejects a pool-tile compose so the source can snap back. */
   onDropOnTile: (targetId: number) => boolean;
   onDropOnSlot: (slotIndex: number) => boolean;
+  /** Computes validity and merge-preview text together to avoid duplicate composition work. */
   getDropTargetFeedback: (target: Element) => { canDrop: boolean; preview: string | null };
 };
 
+/**
+ * Wires GSAP Draggable behavior for a pool tile without owning game rules.
+ *
+ * @param options - Tile identity, element ref, and Pool-owned interaction callbacks.
+ */
 export function usePoolTileDraggable({
   buttonRef,
   tileId,

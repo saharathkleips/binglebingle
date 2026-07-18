@@ -5,9 +5,11 @@ export type ButtonProps = {
   children: ReactNode;
   ariaExpanded?: boolean | undefined;
   ariaLabel?: string | undefined;
+  /** Local footprint, radius, and layout classes belong to consumers. */
   className?: string | undefined;
   disabled?: boolean | undefined;
   onClick?: (() => void) | undefined;
+  /** Local surface classes let consumers shape the moving layer while preserving shared depth behavior. */
   surfaceClassName?: string | undefined;
   type?: "button" | "submit" | "reset";
 };
@@ -16,6 +18,7 @@ export type ButtonTextProps = {
   children: string;
   ariaLabel?: string | undefined;
   className?: string | undefined;
+  /** Icon-only buttons can hide decorative layered text from assistive technology. */
   isHidden?: boolean | undefined;
 };
 

@@ -27,6 +27,13 @@ export type DropTargetTile = {
   tileId: number;
 };
 
+/**
+ * Finds the first element matching shared drag-target data attributes.
+ *
+ * @param elements - Hit-test elements ordered from front to back.
+ * @param query - Accepted attributes and optional self-exclusion rule.
+ * @returns The matching drop target, or null.
+ */
 export function findDropTarget(
   elements: readonly Element[],
   query: DropTargetQuery,
@@ -34,6 +41,11 @@ export function findDropTarget(
   return elements.find((element) => isDropTarget(element, query)) ?? null;
 }
 
+/**
+ * Moves active drop-target feedback from the previous element to the next element.
+ *
+ * @param options - Previous/next targets and optional attribute handlers.
+ */
 export function updateDropTargetHighlight({
   previousTarget,
   nextTarget,
@@ -49,14 +61,31 @@ export function updateDropTargetHighlight({
   }
 }
 
+/**
+ * Sets the pool or slot active-feedback attribute appropriate for a target element.
+ *
+ * @param element - Drop target element.
+ */
 export function setDropTargetActiveAttribute(element: Element) {
   element.setAttribute(getDropTargetActiveAttribute(element), "true");
 }
 
+/**
+ * Clears all shared drop-target active-feedback attributes from an element.
+ *
+ * @param element - Drop target element.
+ */
 export function removeDropTargetActiveAttributes(element: Element) {
   DROP_TARGET_ACTIVE_ATTRIBUTES.forEach((attribute) => element.removeAttribute(attribute));
 }
 
+/**
+ * Parses an integer-valued data attribute from a drop target.
+ *
+ * @param element - Element containing the data attribute.
+ * @param attribute - Attribute name to parse.
+ * @returns The parsed integer, or null when absent/invalid.
+ */
 export function parseDropTargetNumber(element: Element, attribute: string): number | null {
   const value = element.getAttribute(attribute);
   if (value === null) return null;
@@ -65,6 +94,12 @@ export function parseDropTargetNumber(element: Element, attribute: string): numb
   return Number.isInteger(parsedValue) ? parsedValue : null;
 }
 
+/**
+ * Finds a tile element and id inside a possibly larger drop target wrapper.
+ *
+ * @param dropTarget - Drop target or wrapper element.
+ * @returns The tile element and id, or null.
+ */
 export function findDropTargetTile(dropTarget: Element): DropTargetTile | null {
   const tileElement = findTileElement(dropTarget);
   if (tileElement === null) return null;

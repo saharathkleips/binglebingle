@@ -12,6 +12,7 @@ import type { BaseTileProps } from "./BaseTile";
 type BaseTilePropsWithoutChildren<Props> = Props extends unknown ? Omit<Props, "children"> : never;
 
 export type CharacterTileProps = BaseTilePropsWithoutChildren<BaseTileProps> & {
+  /** Game character resolved here so BaseTile can remain presentation-only. */
   character: Character;
 };
 

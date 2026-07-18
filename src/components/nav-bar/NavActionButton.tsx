@@ -4,6 +4,7 @@ import styles from "./NavActionButton.module.css";
 
 type NavActionButtonBaseProps = {
   ariaLabel: string;
+  /** Forwarded to aria-expanded for controls that open overlays. */
   isExpanded?: boolean;
   onClick?: () => void;
 };

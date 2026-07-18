@@ -29,13 +29,20 @@ import { useLatestRef } from "../tile/use-latest-ref";
 export type UseSubmissionSlotDraggableOptions = {
   buttonRef: React.RefObject<HTMLButtonElement | null>;
   isFilled: boolean;
+  /** Tile identity lets cross-owner moves consume captured release rects by tile id. */
   filledTileId: number | null;
   slotIndex: number;
   onTap: () => void;
   onDropOnSlot: (toSlotIndex: number) => void;
+  /** Called for tap-to-return and drags released outside the submission row. */
   onDropOnPool: () => void;
 };
 
+/**
+ * Wires GSAP Draggable behavior for filled submission slots.
+ *
+ * @param options - Slot identity, element ref, and SubmissionArea-owned callbacks.
+ */
 export function useSubmissionSlotDraggable({
   buttonRef,
   isFilled,

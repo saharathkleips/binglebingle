@@ -13,11 +13,16 @@ import { WinPanel } from "../win-panel/WinPanel";
 import type { GameState } from "../../context/game";
 import styles from "./App.module.css";
 
-// Temporary dev wiring — replaced by Game.tsx in milestone 1.3.1
+type AppProps = {
+  /** Allows tests and future persistence/loading flows to supply an already-created game. */
+  initialState?: GameState;
+};
+
+// Temporary dev wiring until puzzle loading is connected to production word data.
 const DEV_WORD = createWord("고양이")!;
 const DEV_INITIAL_STATE = createInitialGameState(DEV_WORD);
 
-export function App({ initialState = DEV_INITIAL_STATE }: { initialState?: GameState } = {}) {
+export function App({ initialState = DEV_INITIAL_STATE }: AppProps = {}) {
   return <GameApp initialState={initialState} />;
 }
 
@@ -29,6 +34,7 @@ function GameApp({ initialState }: { initialState: GameState }) {
   }
 
   return (
+    // Keep GameProvider at the root so all child UI reads and dispatches through useGame().
     <GameProvider initialState={initialState}>
       <div className={styles.app}>
         <div className={styles.gameShell}>

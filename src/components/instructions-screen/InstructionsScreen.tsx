@@ -4,7 +4,9 @@ import { CharacterTile } from "../tile/CharacterTile";
 import styles from "./InstructionsScreen.module.css";
 
 type InstructionsScreenProps = {
+  /** Parent-owned visibility keeps the NavBar button and overlay in sync. */
   isOpen: boolean;
+  /** Called by either the dismiss button or backdrop click. */
   onClose: () => void;
 };
 

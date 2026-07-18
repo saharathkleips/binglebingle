@@ -4,6 +4,7 @@ import styles from "./NavBar.module.css";
 
 type NavBarProps = {
   onToggleInstructions: () => void;
+  /** Drives aria-expanded on the instructions button; NavBar stays props-only. */
   isInstructionsOpen: boolean;
 };
 

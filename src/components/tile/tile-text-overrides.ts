@@ -6,6 +6,12 @@
 
 export const DATA_DROP_PREVIEW_ATTRIBUTE = "data-drop-preview";
 
+/**
+ * Temporarily replaces BaseTile text for drag previews without exposing BaseTile internals to callers.
+ *
+ * @param element - Tile root element.
+ * @param text - Preview text, or null to clear the override.
+ */
 export function setTileTextOverride(element: Element, text: string | null) {
   if (text === null) {
     clearTileTextOverride(element);
@@ -23,6 +29,11 @@ export function setTileTextOverride(element: Element, text: string | null) {
   element.setAttribute(DATA_DROP_PREVIEW_ATTRIBUTE, text);
 }
 
+/**
+ * Restores original BaseTile text after a temporary preview override.
+ *
+ * @param element - Tile root element.
+ */
 export function clearTileTextOverride(element: Element) {
   if (!(element instanceof HTMLElement)) return;
 

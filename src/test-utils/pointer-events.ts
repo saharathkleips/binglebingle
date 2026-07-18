@@ -8,7 +8,10 @@ export type DragToElementCenterOptions = {
   activationOffset?: number;
 };
 
-/** Dispatch a sequence of pointer events directly on a DOM element. */
+/**
+ * Dispatches a sequence of pointer events directly on one DOM element.
+ * Use for components that handle pointer events themselves.
+ */
 export function pointerSequence(element: Element, events: readonly PointerSequenceEvent[]) {
   events.forEach(({ type, clientX, clientY }) => {
     element.dispatchEvent(createPointerEvent(type, clientX, clientY));
@@ -26,7 +29,10 @@ export function dragSequence(element: Element, events: readonly PointerSequenceE
   });
 }
 
-/** Drag an element to the center point of another element and release it. */
+/**
+ * Drags an element to the center point of another element and releases it.
+ * Thin wrapper for tests that only care about the final drop result.
+ */
 export function dragToElementCenter(
   sourceElement: Element,
   targetElement: Element,
