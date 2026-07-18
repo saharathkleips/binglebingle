@@ -4,12 +4,17 @@ import { CharacterTile } from "../tile/CharacterTile";
 import styles from "./InstructionsScreen.module.css";
 
 type InstructionsScreenProps = {
+  /** Parent-owned visibility keeps the NavBar button and overlay in sync. */
   isOpen: boolean;
+  /** Called by either the dismiss button or backdrop click. */
   onClose: () => void;
 };
 
+/** Example history tile data used by the instructions walkthrough. */
 type GuessTile = {
+  /** Character shown in the example guess row. */
   character: Character;
+  /** Evaluation color/state applied to the example tile. */
   result: CharacterResult;
 };
 

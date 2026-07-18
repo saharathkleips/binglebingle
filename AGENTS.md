@@ -1,55 +1,58 @@
 # AGENTS.md
 
-**빙글빙글 (Binglebingle)** — single-player Korean word-guessing game. Player is given a pool of jamo and constructs Korean syllable characters by rotating jamo into related forms, combining them into double consonants or complex vowels, and composing them into syllable blocks. Guesses are evaluated character-by-character as correct / present / absent.
+**빙글빙글 (Binglebingle)** — single-player Korean word-guessing game. Players assemble Korean syllable blocks from Hangul Compatibility Jamo by rotating, combining, decomposing, and submitting guesses evaluated as correct / present / absent.
 
 ## Environment
 
-Running in a locked-down devcontainer (Debian bookworm-slim). If a failure looks like an environment constraint rather than a code problem, **stop and ask** — do not attempt to work around it automatically.
+Locked-down Debian devcontainer. If a failure looks environmental, stop and ask.
 
-- **Network**: outbound firewall — package fetches and registry calls may be blocked
-- **pnpm**: supply-chain hardened — new installs or registry changes may be restricted
-- **Tools**: minimal image — some CLI tools may not be present
-- **Git**: config is read-only — do not attempt to modify it
+- Use `pnpm` only; never npm or yarn
+- Network/package installs may be blocked
+- Git config is read-only; do not modify it
 
-## Non-Negotiable Constraints
+## Hard Constraints
 
-- **Package manager**: pnpm only — never npm or yarn
-- **Unicode**: Hangul Compatibility Jamo (U+3130–U+318F) in all application code
-- **Stack**: TypeScript strict + React 19 + CSS Modules + native CSS + Vite, deployed as a PWA on GitHub Pages — do not introduce alternatives
+- Application code must use Hangul Compatibility Jamo (U+3130–U+318F)
+- Stack: TypeScript strict, React 19, CSS Modules, native CSS, Vite, PWA/GitHub Pages
+- Do not introduce alternate frameworks, styling systems, package managers, or build tools
 
-## File & Folder Naming
+## Project Conventions
 
-- Folders: `kebab-case`; React components: `PascalCase.tsx`; everything else: `kebab-case.ts`
-- Tests: mirror source name + `.test.ts(x)`
-- Each module has a `README.md` (public API) — read this before the source
-- Each module has a `SPEC.md` (implementation decisions) — read before making changes, and document any non-obvious decisions while working
-- No index barrels — import directly from the file that owns the export
-- File layout: exported symbols (types, functions) at the top; unexported helpers at the bottom
+- Folders: `kebab-case`
+- React components: `PascalCase.tsx`
+- Other source files: `kebab-case.ts`
+- Tests mirror source name with `.test.ts(x)`
+- No index barrels; import from the file that owns the export
+- No per-module README/SPEC requirement; keep useful notes in code, tests, or nearby comments
+- Prefer inline JSDoc on exported object/type properties (especially props and domain state) for editor hover support; avoid relying only on type-level `@property` lists.
 
 ## Naming
 
-- Prefer functional style (`map`/`flatMap`/`reduce`/`filter`) over imperative loops, `while`, or variable reassignment
-- Limit `as` casts — if one is unavoidable, add an inline comment explaining why
-- Variable names: favor descriptive full words — avoid abbreviations and single-letter names
-- `camelCase` variables/params, `SCREAMING_SNAKE_CASE` module-level constants, `PascalCase` types/components
-- Booleans: prefix with `is`, `has`, `can`, `should`
-- Prefer `type` over `interface`; no `I` prefix; discriminated unions always have a `kind` or `type` literal field
-- Props type named `<ComponentName>Props` in the same file; no default exports from component files
-- Event handler props: `on<Event>`; internal handlers: `handle<Event>`
+- Prefer descriptive full words over abbreviations or single-letter names
+- Booleans start with `is`, `has`, `can`, `should`
+- Prefer `type` over `interface`; discriminated unions use a `kind` or `type` literal field
+- React props types are named `<ComponentName>Props` and live with the component
+- Event handler props use `on<Event>`; internal handlers use `handle<Event>`
+
+## Architecture Boundaries
+
+- `src/lib/`: domain logic; pure unless explicitly wrapping platform/UI effects such as animation
+- `src/context/`: stateful bridge between lib and React UI
+- Reducers/action handlers: pure, no React, no I/O, no side effects
+- Components read/dispatch game state through `GameProvider`/`useGame()`
+- Business logic stays in `src/lib`; components may call lib functions at interaction boundaries
+
+## Components
+
+- CSS Modules only; use `clsx` for conditional classes
+- Avoid inline styles except for runtime-computed values
+- Do not add speculative `useMemo`/`useCallback`; rely on React 19/Compiler unless profiling shows need
+- If changing compact viewport breakpoints, update related layout rules together
 
 ## Tests
 
-Unit tests colocated with source. Naming: `describe('<fn>')` → `it('<does what> when <condition>')`. Use `it.each` for functions with many input/output cases. Run `pnpm test:coverage` to find gaps.
-
-E2E tests in `tests/**/*.spec.ts`. Test observable UI behavior only; prefer accessible selectors for normal UI and semantic domain data hooks for game entities.
-
-## Comments
-
-- JSDoc `@param`/`@returns` on every exported function in `src/lib/`
-- Explain _why_, not _what_; no commented-out code
-
-## Reference Docs
-
-- `docs/architecture.md` — system design, layer boundaries, key decisions
-- `docs/roadmap/` — versioned milestones; README.md has current status and next milestone
-- `docs/templates/` — templates for new docs; check here before creating any new doc, and if no template exists for the doc type, suggest whether one should be added
+- Unit tests colocated with source
+- Use `it.each` for functions with many input/output cases
+- Component tests use Vitest Browser Mode; see `src/components/TESTING.md`
+- E2E tests live in `tests/**/*.spec.ts`
+- Prefer accessible selectors; use semantic data hooks for game entities

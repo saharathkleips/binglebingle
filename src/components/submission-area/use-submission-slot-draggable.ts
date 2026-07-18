@@ -26,16 +26,29 @@ import {
 } from "../tile/drop-target-helpers";
 import { useLatestRef } from "../tile/use-latest-ref";
 
+/** Options for wiring draggable behavior on a filled submission slot. */
 export type UseSubmissionSlotDraggableOptions = {
+  /** Ref to the filled slot button that GSAP Draggable should own. */
   buttonRef: React.RefObject<HTMLButtonElement | null>;
+  /** Whether this slot currently has a draggable tile. */
   isFilled: boolean;
+  /** Tile identity lets cross-owner moves consume captured release rects by tile id. */
   filledTileId: number | null;
+  /** Zero-based source slot index. */
   slotIndex: number;
+  /** Called when Draggable resolves the pointer sequence as a tap. */
   onTap: () => void;
+  /** Called when the drag is released on another submission slot. */
   onDropOnSlot: (toSlotIndex: number) => void;
+  /** Called for tap-to-return and drags released outside the submission row. */
   onDropOnPool: () => void;
 };
 
+/**
+ * Wires GSAP Draggable behavior for filled submission slots.
+ *
+ * @param options - Slot identity, element ref, and SubmissionArea-owned callbacks.
+ */
 export function useSubmissionSlotDraggable({
   buttonRef,
   isFilled,

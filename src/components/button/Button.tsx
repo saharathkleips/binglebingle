@@ -1,21 +1,35 @@
 import { type ReactNode } from "react";
 import styles from "./Button.module.css";
 
+/** Props for the shared system {@link Button}. */
 export type ButtonProps = {
+  /** Button content rendered inside the moving surface layer. */
   children: ReactNode;
+  /** Forwarded to `aria-expanded` for disclosure-style buttons. */
   ariaExpanded?: boolean | undefined;
+  /** Accessible label for icon-only or visually abbreviated buttons. */
   ariaLabel?: string | undefined;
+  /** Local footprint, radius, and layout classes belong to consumers. */
   className?: string | undefined;
+  /** Disables native button interaction and shared active feedback. */
   disabled?: boolean | undefined;
+  /** Click handler for the button action. */
   onClick?: (() => void) | undefined;
+  /** Local surface classes let consumers shape the moving layer while preserving shared depth behavior. */
   surfaceClassName?: string | undefined;
+  /** Native button type; defaults to `button` to avoid accidental form submission. */
   type?: "button" | "submit" | "reset";
 };
 
+/** Props for the layered text treatment used inside shared system buttons. */
 export type ButtonTextProps = {
+  /** Visible text copied into each decorative layer. */
   children: string;
+  /** Accessible label when the visible text is abbreviated or symbolic. */
   ariaLabel?: string | undefined;
+  /** Local class for sizing or positioning the text stack. */
   className?: string | undefined;
+  /** Icon-only buttons can hide decorative layered text from assistive technology. */
   isHidden?: boolean | undefined;
 };
 

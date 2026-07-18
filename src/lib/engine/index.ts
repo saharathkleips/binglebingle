@@ -17,15 +17,11 @@ export type Submission = readonly (Character | null)[];
 /** Per-character evaluation result for a submitted guess. */
 export type CharacterResult = "CORRECT" | "PRESENT" | "ABSENT";
 
-/**
- * The evaluation of a single submission slot.
- *
- * @property character - The Character placed in this slot. Absent when the slot was empty —
- *   absence signals "no tile placed here" rather than an invalid or failed state.
- * @property result - The evaluation result for this slot.
- */
+/** The evaluation of a single submission slot. */
 export type EvaluatedCharacter = {
+  /** Character placed in this slot; absent when the slot was empty. */
   character?: Character;
+  /** Evaluation result for this slot. */
   result: CharacterResult;
 };
 
@@ -43,11 +39,8 @@ export type ValidationFailureReason = "NO_CHARACTERS" | "INCOMPLETE_CHARACTER";
 /** Result of validating a submission before dispatch. `"VALID"` or the specific failure reason. */
 export type ValidationResult = "VALID" | ValidationFailureReason;
 
-/**
- * Scoring output for a completed game.
- *
- * @property guessCount - The number of guesses taken. MVP scoring only; typed for extensibility.
- */
+/** Scoring output for a completed game. */
 export type ScoringResult = {
+  /** Number of guesses taken. MVP scoring only; typed for extensibility. */
   guessCount: number;
 };

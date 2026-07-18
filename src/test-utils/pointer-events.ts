@@ -1,14 +1,23 @@
+/** Pointer event shape used by low-level drag helpers. */
 export type PointerSequenceEvent = {
+  /** Native pointer event type to dispatch, such as `pointerdown` or `pointerup`. */
   type: string;
+  /** Viewport X coordinate for the event. */
   clientX: number;
+  /** Viewport Y coordinate for the event. */
   clientY: number;
 };
 
+/** Options for dragging a source element to a target element's center point. */
 export type DragToElementCenterOptions = {
+  /** Initial horizontal move used to exceed the draggable activation threshold. */
   activationOffset?: number;
 };
 
-/** Dispatch a sequence of pointer events directly on a DOM element. */
+/**
+ * Dispatches a sequence of pointer events directly on one DOM element.
+ * Use for components that handle pointer events themselves.
+ */
 export function pointerSequence(element: Element, events: readonly PointerSequenceEvent[]) {
   events.forEach(({ type, clientX, clientY }) => {
     element.dispatchEvent(createPointerEvent(type, clientX, clientY));
@@ -26,7 +35,10 @@ export function dragSequence(element: Element, events: readonly PointerSequenceE
   });
 }
 
-/** Drag an element to the center point of another element and release it. */
+/**
+ * Drags an element to the center point of another element and releases it.
+ * Thin wrapper for tests that only care about the final drop result.
+ */
 export function dragToElementCenter(
   sourceElement: Element,
   targetElement: Element,

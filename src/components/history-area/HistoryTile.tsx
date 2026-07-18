@@ -8,12 +8,9 @@ import { BaseTile } from "../tile/BaseTile";
 import { CharacterTile } from "../tile/CharacterTile";
 import type { EvaluatedCharacter } from "../../lib/engine";
 
-/**
- * Props for the `HistoryTile` component.
- *
- * @property evaluated - The evaluated character to display, including its result classification.
- */
+/** Props for the `HistoryTile` component. */
 export type HistoryTileProps = {
+  /** Evaluated character to display, including its result classification. */
   evaluated: EvaluatedCharacter;
 };
 
