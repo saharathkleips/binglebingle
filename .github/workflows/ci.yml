@@ -1,0 +1,188 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  static-checks:
+    name: Static checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check formatting
+        id: format
+        continue-on-error: true
+        run: pnpm format:check
+      - name: Run lint
+        id: lint
+        continue-on-error: true
+        run: pnpm lint
+      - name: Run typecheck
+        id: typecheck
+        continue-on-error: true
+        run: pnpm test:typecheck
+      - name: Summarize static checks
+        if: always()
+        run: |
+          echo "## Static checks" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Format | ${{ steps.format.outcome }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Lint | ${{ steps.lint.outcome }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Typecheck | ${{ steps.typecheck.outcome }} |" >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "${{ steps.format.outcome }}" == "failure" || "${{ steps.lint.outcome }}" == "failure" || "${{ steps.typecheck.outcome }}" == "failure" ]]; then
+            exit 1
+          fi
+
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run unit tests
+        run: pnpm test:unit
+
+  component-tests:
+    name: Component tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run component tests
+        run: pnpm test:component
+      - name: Upload component test attachments
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: component-test-artifacts
+          path: |
+            .vitest-attachments/
+            test-results/
+          if-no-files-found: ignore
+
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
+      - name: Upload Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  # E2E tests are intentionally disabled until the suite is ready for CI.
+  # e2e-tests:
+  #   name: E2E tests
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v4
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 24
+  #         cache: pnpm
+  #     - name: Install dependencies
+  #       run: pnpm install --frozen-lockfile
+  #     - name: Install Chromium
+  #       run: pnpm exec playwright install --with-deps chromium
+  #     - name: Build
+  #       run: pnpm build
+  #     - name: Run E2E tests against preview build
+  #       run: pnpm test:e2e
+  #       env:
+  #         PLAYWRIGHT_WEB_SERVER_COMMAND: pnpm preview --host 127.0.0.1 --port 5173
+  #     - name: Upload E2E report
+  #       if: failure()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: playwright-report
+  #         path: playwright-report/
+  #         if-no-files-found: ignore
+  #     - name: Upload E2E test results
+  #       if: failure()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: playwright-test-results
+  #         path: test-results/
+  #         if-no-files-found: ignore
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs:
+      - static-checks
+      - unit-tests
+      - component-tests
+      - build
+      # Re-enable once the e2e-tests job is uncommented above.
+      # - e2e-tests
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

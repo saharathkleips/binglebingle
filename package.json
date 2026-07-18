@@ -47,5 +47,6 @@
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm format && git add -u && pnpm lint && pnpm test:typecheck"
-  }
+  },
+  "packageManager": "pnpm@10.33.0"
 }
