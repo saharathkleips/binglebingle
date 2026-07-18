@@ -15,7 +15,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "html"],
       include: ["src/lib/**", "src/components/**", "src/context/**"],
-      exclude: ["src/**/*.md", "src/**/*.css"],
+      exclude: ["src/**/*.md", "src/**/*.css", "src/**/*.svg"],
       thresholds: {
         "src/lib/**": {
           statements: 98,

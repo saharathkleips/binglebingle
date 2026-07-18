@@ -119,17 +119,20 @@ export function animateHistoryRowReveal(rowElement: HTMLElement): gsap.core.Time
     ease: MOTION_EASE_STANDARD_OUT,
   });
 
-  // Tiles flip in one-by-one, left to right.
-  timeline.from(
-    tiles,
-    {
-      scaleX: 0,
-      duration: MOTION_DURATION_SLOT_ENTRANCE,
-      ease: MOTION_EASE_DECISIVE_IN_OUT,
-      stagger: MOTION_STAGGER_HISTORY_TILE,
-    },
-    MOTION_OVERLAP_HISTORY_TILE,
-  );
+  // Tiles flip in one-by-one, left to right. Skip the tween when no tiles exist;
+  // GSAP logs a target warning for empty NodeLists, and an empty row has nothing to reveal.
+  if (tiles.length > 0) {
+    timeline.from(
+      tiles,
+      {
+        scaleX: 0,
+        duration: MOTION_DURATION_SLOT_ENTRANCE,
+        ease: MOTION_EASE_DECISIVE_IN_OUT,
+        stagger: MOTION_STAGGER_HISTORY_TILE,
+      },
+      MOTION_OVERLAP_HISTORY_TILE,
+    );
+  }
 
   return timeline;
 }
