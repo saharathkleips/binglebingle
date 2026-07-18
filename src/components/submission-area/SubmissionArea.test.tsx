@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "vitest-browser-react";
-import { pointerSequence } from "../../test-utils/pointer-events";
+import { dragToElementCenter, pointerSequence } from "../../test-utils/pointer-events";
 import { getPoolTile, getSubmissionSlot } from "../../test-utils/dom-selectors";
 import { SubmissionArea } from "./SubmissionArea";
 import { Pool } from "../pool/Pool";
@@ -48,7 +48,37 @@ describe("SubmissionArea", () => {
   });
 });
 
-describe("SubmissionArea slot tap", () => {
+describe("SubmissionArea slot interactions", () => {
+  it("moves a filled slot onto another submission slot", async () => {
+    await renderWithPool("가나");
+
+    dragToElementCenter(getPoolTile(0), getSubmissionSlot(0));
+    await expect.poll(() => getSubmissionSlot(0).textContent).not.toBe("");
+    dragToElementCenter(getPoolTile(1), getSubmissionSlot(1));
+    await expect.poll(() => getSubmissionSlot(1).textContent).not.toBe("");
+
+    const firstSlotText = getSubmissionSlot(0).textContent;
+    const secondSlotText = getSubmissionSlot(1).textContent;
+    dragToElementCenter(getSubmissionSlot(0), getSubmissionSlot(1));
+
+    await expect.poll(() => getSubmissionSlot(1).textContent).toBe(firstSlotText);
+    expect(getSubmissionSlot(0).textContent).toBe(secondSlotText);
+  });
+
+  it("returns a filled slot to the pool when dropped on the pool", async () => {
+    await renderWithPool("가");
+
+    dragToElementCenter(getPoolTile(0), getSubmissionSlot(0));
+    await expect.poll(() => getSubmissionSlot(0).textContent).not.toBe("");
+    const pool = document.querySelector("[data-pool]");
+    if (!(pool instanceof HTMLElement)) throw new Error("Expected pool element.");
+
+    dragToElementCenter(getSubmissionSlot(0), pool);
+
+    await expect.poll(() => getSubmissionSlot(0).textContent).toBe("");
+    await expect.poll(() => getPoolTile(0).textContent).not.toBe("");
+  });
+
   it("empties a filled slot when tapped", async () => {
     const screen = await renderWithPool("가");
 
