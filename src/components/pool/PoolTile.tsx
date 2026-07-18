@@ -27,34 +27,31 @@ import type { Tile } from "../../context/game";
 import { usePoolTileDraggable } from "./use-pool-tile-draggable";
 import styles from "./PoolTile.module.css";
 
-/**
- * Props for the {@link PoolTile} component.
- *
- * @property tile - The tile data to render.
- * @property isTappable - Whether tapping this tile does anything; drag remains available either way.
- * @property isRotating - Pool sets this when the tile's jamo was just rotated; PoolTile plays a brief GSAP squeeze.
- * @property isJustComposed - Pool sets this on the target tile after a successful compose; PoolTile plays heartbeat + particles.
- * @property isNewlyAdded - Pool sets this when this tile ID first appears in the pool; PoolTile plays entrance animation.
- * @property onTap - Called on click when `isTappable` is true.
- * @property onDropOnTile - Called when a drag ends on another tile, with that tile's id. Returns whether the drop was accepted.
- * @property onDropOnSlot - Called when a drag ends on a submission slot, with that slot's index. Returns whether the drop was accepted.
- * @property getDropTargetFeedback - Returns whether the current target accepts the drop and any preview text to show.
- * @property onRotatingEnd - Called after the rotate squeeze completes; Pool clears rotatingTileId.
- * @property onComposedEnd - Called after the compose heartbeat completes; Pool clears composedTileId.
- * @property onNewlyAddedEnd - Called after the entrance animation completes; Pool clears the id.
- */
+/** Props for the {@link PoolTile} component. */
 export type PoolTileProps = {
+  /** Tile data to render and use for drag identity. */
   tile: Tile;
+  /** Whether tapping this tile does anything; drag remains available either way. */
   isTappable: boolean;
+  /** Pool sets this when the tile's jamo was just rotated; PoolTile plays a brief GSAP squeeze. */
   isRotating?: boolean;
+  /** Pool sets this on the target tile after a successful compose; PoolTile plays heartbeat + particles. */
   isJustComposed?: boolean;
+  /** Pool sets this when this tile ID first appears in the pool; PoolTile plays entrance animation. */
   isNewlyAdded?: boolean;
+  /** Called on click when `isTappable` is true. */
   onTap: () => void;
+  /** Called when a drag ends on another tile. Returns whether the drop was accepted. */
   onDropOnTile: (targetId: number) => boolean;
+  /** Called when a drag ends on a submission slot. Returns whether the drop was accepted. */
   onDropOnSlot: (slotIndex: number) => boolean;
+  /** Returns whether the current drag target accepts the drop and any preview text to show. */
   getDropTargetFeedback: (target: Element) => { canDrop: boolean; preview: string | null };
+  /** Called after the rotate squeeze completes so Pool can clear `rotatingTileId`. */
   onRotatingEnd?: () => void;
+  /** Called after the compose heartbeat completes so Pool can clear `composedTileId`. */
   onComposedEnd?: () => void;
+  /** Called after the entrance animation completes so Pool can clear the newly-added id. */
   onNewlyAddedEnd?: () => void;
 };
 

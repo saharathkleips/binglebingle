@@ -10,15 +10,11 @@ import type { GuessRecord } from "../../lib/engine";
 import type { Word } from "../../lib/word";
 import type { Character } from "../../lib/character";
 
-/**
- * A single tile in the player's jamo pool.
- *
- * @property id - Stable index into the original pool array; never changes even
- *   as `character` mutates through rotate, combine, or split actions.
- * @property character - The current jamo character represented by this tile.
- */
+/** A single tile in the player's jamo pool. */
 export type Tile = {
+  /** Stable tile identity; persists as `character` mutates through rotate, compose, or decompose actions. */
   id: number;
+  /** Current jamo or syllable block represented by this tile. */
   character: Character;
 };
 
@@ -28,21 +24,28 @@ export type Tile = {
  * mutations to the tile (e.g. rotation) are reflected in the submission.
  */
 export type SubmissionSlot =
-  | { state: "FILLED"; tileId: number; character: Character }
-  | { state: "EMPTY" };
+  | {
+      /** Filled slots participate in validation and submission evaluation. */
+      state: "FILLED";
+      /** ID of the source tile occupying this slot. */
+      tileId: number;
+      /** Snapshot of the tile character currently shown in this slot. */
+      character: Character;
+    }
+  | {
+      /** Empty slots render as drop targets and block full-word submission. */
+      state: "EMPTY";
+    };
 
-/**
- * Top-level game state for a single round.
- *
- * @property targetWord - The target word the player is trying to guess.
- * @property pool - The jamo tiles currently available to the player.
- * @property submission - The player's current in-progress guess.
- * @property history - All evaluated guesses submitted so far this round.
- */
+/** Top-level game state for a single round. */
 export type GameState = {
+  /** Target word the player is trying to guess. */
   targetWord: Word;
+  /** Tiles currently available in the player's pool. */
   pool: readonly Tile[];
+  /** Player's current in-progress guess, aligned positionally with `targetWord`. */
   submission: readonly SubmissionSlot[];
+  /** Evaluated guesses submitted so far this round. */
   history: readonly GuessRecord[];
 };
 

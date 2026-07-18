@@ -10,8 +10,11 @@ type InstructionsScreenProps = {
   onClose: () => void;
 };
 
+/** Example history tile data used by the instructions walkthrough. */
 type GuessTile = {
+  /** Character shown in the example guess row. */
   character: Character;
+  /** Evaluation color/state applied to the example tile. */
   result: CharacterResult;
 };
 

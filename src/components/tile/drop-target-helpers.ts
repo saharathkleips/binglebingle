@@ -9,21 +9,33 @@ export const DATA_SLOT_INDEX_ATTRIBUTE = "data-slot-index";
 export const DATA_DROP_POOL_TARGET_ACTIVE_ATTRIBUTE = "data-drop-pool-target-active";
 export const DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE = "data-drop-slot-target-active";
 
+/** Query configuration for finding a data-attribute-backed drop target. */
 export type DropTargetQuery = {
+  /** Data attributes that identify acceptable drop targets. */
   acceptedAttributes: readonly string[];
+  /** Optional attribute used to exclude the dragged source from target matching. */
   excludedAttribute?: string;
+  /** Optional attribute value paired with `excludedAttribute` for self-exclusion. */
   excludedValue?: string;
 };
 
+/** Active-target transition state for drag hover feedback. */
 export type DropTargetHighlightOptions = {
+  /** Previously highlighted drop target, if any. */
   previousTarget: Element | null;
+  /** Newly highlighted drop target, if any. */
   nextTarget: Element | null;
+  /** Applies the active feedback attribute to `nextTarget`. */
   setActiveAttribute?: (element: Element) => void;
+  /** Removes active feedback attributes from `previousTarget`. */
   removeActiveAttribute?: (element: Element) => void;
 };
 
+/** Parsed pool/submission tile drop target. */
 export type DropTargetTile = {
+  /** Element carrying the target tile data attribute. */
   element: HTMLElement;
+  /** Parsed stable game tile ID for the target element. */
   tileId: number;
 };
 

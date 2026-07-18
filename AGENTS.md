@@ -24,6 +24,7 @@ Locked-down Debian devcontainer. If a failure looks environmental, stop and ask.
 - Tests mirror source name with `.test.ts(x)`
 - No index barrels; import from the file that owns the export
 - No per-module README/SPEC requirement; keep useful notes in code, tests, or nearby comments
+- Prefer inline JSDoc on exported object/type properties (especially props and domain state) for editor hover support; avoid relying only on type-level `@property` lists.
 
 ## Naming
 

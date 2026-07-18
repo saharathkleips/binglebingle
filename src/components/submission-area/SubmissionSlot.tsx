@@ -15,18 +15,17 @@ import { useSubmissionSlotDraggable } from "./use-submission-slot-draggable";
 import Lotus from "./lotus.svg?react";
 import styles from "./SubmissionSlot.module.css";
 
-/**
- * @property slot - The slot state (empty or filled with a tile).
- * @property slotIndex - Index of this slot in the submission array.
- * @property onTap - Called when a filled slot is tapped; parent removes the tile.
- * @property onDropOnSlot - Called when a drag ends on another slot, with that slot's index.
- * @property onDropOnPool - Called when a drag ends over the pool; parent returns the tile.
- */
+/** Props for a single submission row slot. */
 export type SubmissionSlotProps = {
+  /** Slot state to render: empty hitbox or filled tile reference. */
   slot: SubmissionSlotType;
+  /** Zero-based position of this slot in the submission array. */
   slotIndex: number;
+  /** Called when a filled slot is tapped so the parent can remove the tile. */
   onTap: () => void;
+  /** Called when a drag ends on another slot, with that destination slot index. */
   onDropOnSlot: (toSlotIndex: number) => void;
+  /** Called when a drag ends over the pool so the parent can return the tile. */
   onDropOnPool?: () => void;
 };
 

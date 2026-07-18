@@ -1,10 +1,16 @@
+/** Pointer event shape used by low-level drag helpers. */
 export type PointerSequenceEvent = {
+  /** Native pointer event type to dispatch, such as `pointerdown` or `pointerup`. */
   type: string;
+  /** Viewport X coordinate for the event. */
   clientX: number;
+  /** Viewport Y coordinate for the event. */
   clientY: number;
 };
 
+/** Options for dragging a source element to a target element's center point. */
 export type DragToElementCenterOptions = {
+  /** Initial horizontal move used to exceed the draggable activation threshold. */
   activationOffset?: number;
 };
 

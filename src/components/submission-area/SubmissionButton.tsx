@@ -12,12 +12,11 @@ import Hills2 from "./hills-2.svg?react";
 import Hills3 from "./hills-3.svg?react";
 import styles from "./SubmissionButton.module.css";
 
-/**
- * @property submission - The current submission slots to validate.
- * @property dispatch - Game dispatch function.
- */
+/** Props for the submission action button. */
 export type SubmissionButtonProps = {
+  /** Current submission slots used to derive button enabled state. */
   submission: readonly SubmissionSlot[];
+  /** Game dispatch function used to submit the current guess. */
   dispatch: Dispatch<GameAction>;
 };
 

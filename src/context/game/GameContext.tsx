@@ -13,8 +13,11 @@ import type { GameState, GameAction } from ".";
 // Provider
 // ---------------------------------------------------------------------------
 
+/** Props for the root game state provider. */
 export type GameProviderProps = {
+  /** Initial reducer state for the mounted game session. */
   initialState: GameState;
+  /** Component subtree that reads game state through `useGame`. */
   children: ReactNode;
 };
 
@@ -52,7 +55,9 @@ export function useGame(): GameContextValue {
 // ---------------------------------------------------------------------------
 
 type GameContextValue = {
+  /** Current game reducer state. */
   state: GameState;
+  /** Reducer dispatch function for game actions. */
   dispatch: Dispatch<GameAction>;
 };
 

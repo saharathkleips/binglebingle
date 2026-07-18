@@ -2,7 +2,9 @@ import Gear from "./gear.svg?react";
 import { NavActionButton } from "./NavActionButton";
 import styles from "./NavBar.module.css";
 
+/** Props for the top navigation bar. */
 type NavBarProps = {
+  /** Called when the user clicks the instructions toggle. */
   onToggleInstructions: () => void;
   /** Drives aria-expanded on the instructions button; NavBar stays props-only. */
   isInstructionsOpen: boolean;
@@ -11,8 +13,7 @@ type NavBarProps = {
 /**
  * Top navigation bar rendered on every screen.
  *
- * @param onToggleInstructions - Called when the user clicks the "?" button.
- * @param isInstructionsOpen - Whether the InstructionsScreen overlay is currently open.
+ * @param props - Navigation callbacks and overlay state.
  * @returns The rendered NavBar element.
  */
 export function NavBar({ onToggleInstructions, isInstructionsOpen }: NavBarProps) {

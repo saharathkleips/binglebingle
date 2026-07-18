@@ -14,13 +14,21 @@ import {
 } from "../../lib/animation/tile-animations";
 import { useLatestRef } from "./use-latest-ref";
 
+/** Options for shared GSAP feedback on a tile-like element. */
 export type UseTileFeedbackOptions = {
+  /** Ref to the rendered element that receives animation effects. */
   elementRef: RefObject<HTMLElement | null>;
+  /** Plays the rotate squeeze animation while true. */
   isRotating?: boolean | undefined;
+  /** Plays compose pulse and particles while true. */
   isJustComposed?: boolean | undefined;
+  /** Plays entrance scale animation while true. */
   isNewlyAdded?: boolean | undefined;
+  /** Called after the rotate squeeze animation completes. */
   onRotatingEnd?: (() => void) | undefined;
+  /** Called after the compose pulse animation completes. */
   onComposedEnd?: (() => void) | undefined;
+  /** Called after the entrance scale animation completes. */
   onNewlyAddedEnd?: (() => void) | undefined;
 };
 

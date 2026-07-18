@@ -25,8 +25,11 @@ import { gsap } from "./register";
 
 const PARTICLE_COUNT = 8;
 
+/** Options for tile entrance scale animations. */
 export type EntranceScaleOptions = {
+  /** Initial scale before the tile grows into its natural size. */
   fromScale?: number;
+  /** Animation duration in seconds. */
   duration?: number;
 };
 

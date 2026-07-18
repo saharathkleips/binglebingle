@@ -13,6 +13,7 @@ import { WinPanel } from "../win-panel/WinPanel";
 import type { GameState } from "../../context/game";
 import styles from "./App.module.css";
 
+/** Props for the application root. */
 type AppProps = {
   /** Allows tests and future persistence/loading flows to supply an already-created game. */
   initialState?: GameState;
@@ -26,7 +27,12 @@ export function App({ initialState = DEV_INITIAL_STATE }: AppProps = {}) {
   return <GameApp initialState={initialState} />;
 }
 
-function GameApp({ initialState }: { initialState: GameState }) {
+type GameAppProps = {
+  /** Initial state passed to the root GameProvider for this mounted game session. */
+  initialState: GameState;
+};
+
+function GameApp({ initialState }: GameAppProps) {
   const [isInstructionsOpen, setIsInstructionsOpen] = useState(true);
 
   function handleToggleInstructions() {

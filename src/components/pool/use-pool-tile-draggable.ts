@@ -23,14 +23,19 @@ import {
 import { clearTileTextOverride, setTileTextOverride } from "../tile/tile-text-overrides";
 import { useLatestRef } from "../tile/use-latest-ref";
 
+/** Options for wiring draggable behavior on a rendered pool tile. */
 export type UsePoolTileDraggableOptions = {
+  /** Ref to the pool tile button that GSAP Draggable should own. */
   buttonRef: React.RefObject<HTMLButtonElement | null>;
+  /** Stable game tile ID used for drop self-exclusion and snap-back lookup. */
   tileId: number;
   /** Tap is separate from drag; Draggable owns click-vs-drag differentiation. */
   isTappable: boolean;
+  /** Called when Draggable resolves the pointer sequence as a tap. */
   onTap: () => void;
   /** Returns false when Pool rejects a pool-tile compose so the source can snap back. */
   onDropOnTile: (targetId: number) => boolean;
+  /** Called when the drag is released on a submission slot. Returns whether the drop was accepted. */
   onDropOnSlot: (slotIndex: number) => boolean;
   /** Computes validity and merge-preview text together to avoid duplicate composition work. */
   getDropTargetFeedback: (target: Element) => { canDrop: boolean; preview: string | null };
@@ -123,7 +128,12 @@ export function usePoolTileDraggable({
 // Helpers
 // ---------------------------------------------------------------------------
 
-type DropTargetFeedback = { canDrop: boolean; preview: string | null };
+type DropTargetFeedback = {
+  /** Whether the current target accepts the dragged pool tile. */
+  canDrop: boolean;
+  /** Temporary text to render on the source tile while hovering a valid compose target. */
+  preview: string | null;
+};
 
 type PoolTileCallbacks = Pick<
   UsePoolTileDraggableOptions,
@@ -131,9 +141,13 @@ type PoolTileCallbacks = Pick<
 >;
 
 type PoolDragFeedbackOptions = {
+  /** Active Draggable instance for the source tile. */
   draggable: Draggable;
+  /** Last highlighted drop target so feedback can be moved or cleared. */
   lastOverRef: React.MutableRefObject<Element | null>;
+  /** Stable ID of the dragged source tile. */
   sourceTileId: number;
+  /** Pool-owned drop and feedback callbacks. */
   callbacks: PoolTileCallbacks;
 };
 
@@ -228,10 +242,15 @@ function acceptDrop(
 }
 
 type SlotDropOptions = {
+  /** Submission slot drop target element. */
   dropTarget: Element;
+  /** Dragged pool tile element. */
   sourceElement: HTMLElement;
+  /** Stable ID of the dragged source tile. */
   sourceTileId: number;
+  /** Destination submission slot index. */
   slotIndex: number;
+  /** Pool-owned drop callbacks. */
   callbacks: PoolTileCallbacks;
 };
 

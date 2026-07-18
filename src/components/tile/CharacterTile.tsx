@@ -9,8 +9,10 @@ import { resolveCharacter } from "../../lib/character";
 import { BaseTile } from "./BaseTile";
 import type { BaseTileProps } from "./BaseTile";
 
+/** Removes caller-provided children from each BaseTile variant before CharacterTile resolves its own text. */
 type BaseTilePropsWithoutChildren<Props> = Props extends unknown ? Omit<Props, "children"> : never;
 
+/** Props for the character-aware tile wrapper. */
 export type CharacterTileProps = BaseTilePropsWithoutChildren<BaseTileProps> & {
   /** Game character resolved here so BaseTile can remain presentation-only. */
   character: Character;

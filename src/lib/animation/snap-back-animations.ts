@@ -18,13 +18,19 @@ const SNAP_BACK_CLONE_STRIPPED_ATTRIBUTES = [
   "data-tile-id",
 ] as const;
 
+/** Options captured when recording a cross-owner tile snap-back. */
 export type TileSnapBackOptions = {
+  /** Whether the destination tile should briefly adopt the hover lift after arrival. */
   shouldLiftOnArrival?: boolean;
 };
 
+/** Pending snap-back data consumed by the next rendered instance of the same tile ID. */
 export type TileSnapBackSnapshot = {
+  /** Visual clone that animates from the release position while React re-parents the real tile. */
   clone: HTMLElement;
+  /** Fallback cleanup timer in case the consuming animation never runs. */
   cleanupTimer: ReturnType<typeof setTimeout>;
+  /** Whether the destination tile should briefly adopt the hover lift after arrival. */
   shouldLiftOnArrival: boolean;
 };
 
