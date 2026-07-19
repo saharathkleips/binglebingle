@@ -1,0 +1,78 @@
+.logoHeading {
+  margin: 0;
+}
+
+.logoButton {
+  --logo-font-family: var(--font-family-tile);
+  --logo-font-weight: var(--font-weight-bold);
+  --logo-hover-offset: var(--system-lift-distance);
+  --logo-press-offset: calc(var(--system-depth-distance) - var(--system-depth-step));
+  --logo-pressed-cast-shadow-distance: calc(
+    var(--system-cast-shadow-distance) - var(--logo-press-offset)
+  );
+  --logo-shadow-stack-lifted:
+    var(--system-depth-stack),
+    calc(var(--system-cast-shadow-distance) + var(--logo-hover-offset))
+      calc(var(--system-cast-shadow-distance) + var(--logo-hover-offset)) 0
+      var(--color-system-shadow);
+  --logo-shadow-stack-pressed:
+    var(--system-depth-step) var(--system-depth-step) 0 var(--color-system-depth),
+    var(--logo-press-offset) var(--logo-press-offset) 0 var(--color-system-depth),
+    var(--logo-press-offset) var(--logo-press-offset) 0 var(--color-system-depth),
+    var(--logo-pressed-cast-shadow-distance) var(--logo-pressed-cast-shadow-distance) 0
+      var(--color-system-shadow);
+
+  display: inline-grid;
+  place-items: center;
+  width: var(--nav-logo-width);
+  min-height: var(--interactive-hitbox-min-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-family: var(--logo-font-family);
+  font-size: var(--nav-logo-font-size);
+  font-weight: var(--logo-font-weight);
+  line-height: 1;
+  touch-action: manipulation;
+  user-select: none;
+  appearance: none;
+
+  &:is(:hover, :focus-visible) .logoSurface {
+    transform: translate(calc(var(--logo-hover-offset) * -1), calc(var(--logo-hover-offset) * -1));
+    box-shadow: var(--logo-shadow-stack-lifted);
+  }
+
+  &:active .logoSurface {
+    transform: translate(var(--logo-press-offset), var(--logo-press-offset));
+    box-shadow: var(--logo-shadow-stack-pressed);
+  }
+}
+
+.logoSurface {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: var(--nav-logo-min-height);
+  border: 1px solid transparent;
+  border-radius: var(--tile-radius);
+  background:
+    linear-gradient(var(--color-tile-face), var(--color-tile-face)) padding-box,
+    var(--gradient-logo-border) border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: var(--system-shadow-stack);
+  text-align: center;
+  transform-origin: center bottom;
+  transition:
+    box-shadow var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.logoText {
+  display: block;
+  background: var(--gradient-logo-text);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}

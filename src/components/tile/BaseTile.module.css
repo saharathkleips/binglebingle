@@ -17,8 +17,8 @@
     var(--tile-gradient-color-1) 100%;
   --tile-hover-lift-multiplier: 1.25;
   --tile-hover-offset: calc(var(--tile-lift-distance) * var(--tile-hover-lift-multiplier));
-  --tile-cast-shadow-lifted: calc(var(--tile-depth) + var(--tile-hover-offset))
-    calc(var(--tile-depth) + var(--tile-hover-offset)) 0 var(--color-tile-shadow);
+  --tile-cast-shadow-lifted: calc(var(--tile-cast-shadow-distance) + var(--tile-hover-offset))
+    calc(var(--tile-cast-shadow-distance) + var(--tile-hover-offset)) 0 var(--color-tile-shadow);
   --tile-shadow-stack-lifted: var(--tile-depth-stack), var(--tile-cast-shadow-lifted);
 
   position: relative;
