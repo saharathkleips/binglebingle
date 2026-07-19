@@ -14,8 +14,9 @@ import styles from "./HistoryArea.module.css";
 /**
  * Renders the full guess history as rows of evaluated tiles.
  *
- * Returns `null` when no guesses have been made, avoiding empty layout space.
- * Auto-scrolls to the bottom (newest guess) whenever history grows.
+ * Renders an empty accessible region before the first guess without reserving
+ * history-row space. Auto-scrolls to the bottom (newest guess) whenever history
+ * grows.
  * Animates the newest row in with a slide and per-tile flip stagger.
  */
 export function HistoryArea() {
@@ -50,8 +51,6 @@ export function HistoryArea() {
       revealTimelineRef.current?.kill();
     };
   }, []);
-
-  if (state.history.length === 0) return null;
 
   return (
     <section ref={containerRef} className={styles.historyArea} aria-label="Guess history">

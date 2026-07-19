@@ -35,11 +35,10 @@ function createGuessRecord(value: string, result: CharacterResult): GuessRecord 
 }
 
 describe("HistoryArea", () => {
-  it("renders nothing when history is empty", async () => {
+  it("renders an empty history region when history is empty", async () => {
     const screen = await renderHistoryArea([]);
-    await expect
-      .element(screen.getByRole("region", { name: "Guess history" }))
-      .not.toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "Guess history" })).toBeInTheDocument();
+    expect(getHistoryTiles().length).toBe(0);
   });
 
   it("renders one row per guess record", async () => {
