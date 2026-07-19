@@ -15,11 +15,11 @@ import styles from "./App.module.css";
 
 /** Props for the application root. */
 type AppProps = {
-  /** Allows tests and future persistence/loading flows to supply an already-created game. */
+  /** Optional prebuilt game state, mainly used by tests. */
   initialState?: GameState;
 };
 
-// Temporary dev wiring until puzzle loading is connected to production word data.
+// Default puzzle used when no caller supplies initial game state.
 const DEV_WORD = createWord("고양이")!;
 const DEV_INITIAL_STATE = createInitialGameState(DEV_WORD);
 
@@ -40,7 +40,6 @@ function GameApp({ initialState }: GameAppProps) {
   }
 
   return (
-    // Keep GameProvider at the root so all child UI reads and dispatches through useGame().
     <GameProvider initialState={initialState}>
       <div className={styles.app}>
         <div className={styles.gameShell}>

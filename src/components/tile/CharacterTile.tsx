@@ -21,7 +21,7 @@ export type CharacterTileProps = BaseTilePropsWithoutChildren<BaseTileProps> & {
 /**
  * Resolves a game Character and renders it with the shared tile surface.
  *
- * @param props - Visual tile props plus the Character to display.
+ * @param props - See {@link CharacterTileProps}.
  */
 export function CharacterTile({ character, ...visualProps }: CharacterTileProps) {
   return <BaseTile {...visualProps}>{resolveCharacter(character) ?? ""}</BaseTile>;

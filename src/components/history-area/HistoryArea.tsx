@@ -2,7 +2,7 @@
  * @file HistoryArea.tsx
  *
  * Displays the guess history as a grid of evaluated tiles.
- * Animates new rows in with a slide + staggered tile flip (VIS-25).
+ * Animates new rows in with a slide + staggered tile flip.
  */
 
 import { useLayoutEffect, useRef } from "react";
@@ -25,7 +25,6 @@ export function HistoryArea() {
   const prevLengthRef = useRef(state.history.length);
   const revealTimelineRef = useRef<ReturnType<typeof animateHistoryRowReveal> | null>(null);
 
-  // VIS-25: animate new submissions and keep the newest guess in view.
   useLayoutEffect(() => {
     const container = containerRef.current;
     if (container === null) {

@@ -18,7 +18,7 @@ export type HistoryTileProps = {
  * Renders a single evaluated tile, displaying the resolved character and applying
  * shared result styling.
  *
- * @param props - {@link HistoryTileProps}
+ * @param props - See {@link HistoryTileProps}.
  */
 export function HistoryTile({ evaluated }: HistoryTileProps) {
   const sharedProps = {

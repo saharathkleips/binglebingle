@@ -7,7 +7,6 @@
   min-height: 0;
   overflow-y: auto;
   flex: 0 1 auto;
-  /* VIS-26: smooth scroll as older guesses are pushed up. */
   scroll-behavior: smooth;
   scroll-padding-block: var(--tile-submission-history-gap);
   scroll-snap-type: y mandatory;

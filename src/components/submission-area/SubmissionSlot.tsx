@@ -33,7 +33,7 @@ export type SubmissionSlotProps = {
  * Renders a single submission slot. Empty slots are drop targets; filled slots
  * show the resolved character and return the tile to the pool on tap.
  *
- * @param props - {@link SubmissionSlotProps}
+ * @param props - See {@link SubmissionSlotProps}.
  */
 export function SubmissionSlot({
   slot,

@@ -49,7 +49,6 @@ export function useTileFeedback({
   const onComposedEndRef = useLatestRef(onComposedEnd);
   const onNewlyAddedEndRef = useLatestRef(onNewlyAddedEnd);
 
-  // VIS-21: brief squeeze pulse when the jamo rotates.
   useLayoutEffect(() => {
     if (!isRotating || !elementRef.current) return;
     const tween = animateRotateSqueeze(elementRef.current, () => onRotatingEndRef.current());
@@ -58,7 +57,6 @@ export function useTileFeedback({
     };
   }, [elementRef, isRotating, onRotatingEndRef]);
 
-  // VIS-19: scale heartbeat on the tile that received a compose.
   useLayoutEffect(() => {
     if (!isJustComposed || !elementRef.current) return;
     const tween = animateComposePulse(elementRef.current, () => onComposedEndRef.current());
@@ -67,7 +65,6 @@ export function useTileFeedback({
     };
   }, [elementRef, isJustComposed, onComposedEndRef]);
 
-  // VIS-20: entrance scale for newly-added tiles (decompose results, etc.).
   useLayoutEffect(() => {
     if (!isNewlyAdded || !elementRef.current) return;
     const tween = animateEntranceScale(elementRef.current, () => onNewlyAddedEndRef.current());

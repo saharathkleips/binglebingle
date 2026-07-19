@@ -12,9 +12,6 @@ type NavBarProps = {
 
 /**
  * Top navigation bar rendered on every screen.
- *
- * @param props - Navigation callbacks and overlay state.
- * @returns The rendered NavBar element.
  */
 export function NavBar({ onToggleInstructions, isInstructionsOpen }: NavBarProps) {
   return (

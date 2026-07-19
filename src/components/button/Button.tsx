@@ -36,8 +36,7 @@ export type ButtonTextProps = {
 /**
  * Shared system button with a stable hitbox and moving depth surface.
  *
- * @param props - Button content, DOM hooks, and local class names for sizing/shape.
- * @returns The rendered button element.
+ * @param props - See {@link ButtonProps}.
  */
 export function Button({
   children,
@@ -66,8 +65,7 @@ export function Button({
 /**
  * Layered gradient text treatment for shared system buttons.
  *
- * @param props - Text content plus accessibility and local sizing hooks.
- * @returns The rendered layered text span.
+ * @param props - See {@link ButtonTextProps}.
  */
 export function ButtonText({ children, ariaLabel, className, isHidden = false }: ButtonTextProps) {
   return (
