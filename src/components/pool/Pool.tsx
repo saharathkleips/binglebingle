@@ -10,6 +10,7 @@ import { useState, useLayoutEffect, useMemo, useRef } from "react";
 import { useGame } from "../../context/game/GameContext";
 import {
   clearTileEntranceSnapBackSuppressions,
+  recordTileSnapBack,
   shouldSuppressTileEntranceForSnapBack,
 } from "../../lib/animation/snap-back-animations";
 import { resolveCharacter } from "../../lib/character";
@@ -21,7 +22,7 @@ import {
   DATA_TILE_ID_ATTRIBUTE,
   parseDropTargetNumber,
 } from "../tile/drop-target-helpers";
-import type { Tile as TileType } from "../../context/game";
+import type { SubmissionSlot, Tile as TileType } from "../../context/game";
 import styles from "./Pool.module.css";
 
 /**
@@ -58,13 +59,23 @@ export function Pool() {
     prevPoolIdsRef.current = currentIds;
   }, [state.pool]);
 
-  function handleTap(tile: TileType) {
+  function handleTap(tile: TileType, sourceElement?: HTMLElement) {
     if (getNextRotation(tile.character) !== null) {
       setRotatingTileId(tile.id);
       dispatch({ type: "CHARACTER_ROTATE_NEXT", payload: { tileId: tile.id } });
-    } else if (decompose(tile.character) !== null) {
-      dispatch({ type: "CHARACTER_DECOMPOSE", payload: { tileId: tile.id } });
+      return;
     }
+
+    const parts = decompose(tile.character);
+    if (parts === null) return;
+
+    if (sourceElement instanceof HTMLElement) {
+      const newTileId = getNextMissingTileId(state.pool, state.submission);
+      recordTileSnapBack(newTileId, sourceElement, {
+        cloneText: resolveCharacter(parts[1]) ?? "",
+      });
+    }
+    dispatch({ type: "CHARACTER_DECOMPOSE", payload: { tileId: tile.id } });
   }
 
   function handleDropOnTile(sourceTile: TileType, targetId: number): boolean {
@@ -109,7 +120,7 @@ export function Pool() {
             isRotating={rotatingTileId === tile.id}
             isJustComposed={composedTileId === tile.id}
             isNewlyAdded={newlyAddedTileIds.has(tile.id)}
-            onTap={() => handleTap(tile)}
+            onTap={(sourceElement) => handleTap(tile, sourceElement)}
             onDropOnTile={(targetId) => handleDropOnTile(tile, targetId)}
             onDropOnSlot={(slotIndex) => handleDropOnSlot(tile, slotIndex)}
             getDropTargetFeedback={(target) => getDropTargetFeedback(tile, target)}
@@ -139,4 +150,18 @@ function canTapTile(tile: TileType): boolean {
 
 function parseTileId(element: Element): number | null {
   return parseDropTargetNumber(element, DATA_TILE_ID_ATTRIBUTE);
+}
+
+function getNextMissingTileId(
+  pool: readonly TileType[],
+  submission: readonly SubmissionSlot[],
+): number {
+  const usedIds = new Set([
+    ...pool.map((tile) => tile.id),
+    ...submission.flatMap((slot) => (slot.state === "FILLED" ? [slot.tileId] : [])),
+  ]);
+
+  let nextId = 0;
+  while (usedIds.has(nextId)) nextId += 1;
+  return nextId;
 }

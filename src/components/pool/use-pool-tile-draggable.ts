@@ -32,7 +32,7 @@ export type UsePoolTileDraggableOptions = {
   /** Tap is separate from drag; Draggable owns click-vs-drag differentiation. */
   isTappable: boolean;
   /** Called when Draggable resolves the pointer sequence as a tap. */
-  onTap: () => void;
+  onTap: (sourceElement: HTMLElement) => void;
   /** Returns false when Pool rejects a pool-tile compose so the source can snap back. */
   onDropOnTile: (targetId: number) => boolean;
   /** Called when the drag is released on a submission slot. Returns whether the drop was accepted. */
@@ -109,7 +109,7 @@ export function usePoolTileDraggable({
         },
         onClick: function onClick() {
           if (callbacksRef.current.isTappable) {
-            callbacksRef.current.onTap();
+            callbacksRef.current.onTap(sourceElement);
           }
         },
       });

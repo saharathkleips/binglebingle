@@ -22,6 +22,8 @@ const SNAP_BACK_CLONE_STRIPPED_ATTRIBUTES = [
 export type TileSnapBackOptions = {
   /** Whether the destination tile should briefly adopt the hover lift after arrival. */
   shouldLiftOnArrival?: boolean;
+  /** Optional text to show on the traveling clone when it represents a newly-created tile. */
+  cloneText?: string;
 };
 
 /** Pending snap-back data consumed by the next rendered instance of the same tile ID. */
@@ -55,6 +57,7 @@ export function recordTileSnapBack(
 
   const fromRect = element.getBoundingClientRect();
   const clone = element.cloneNode(true) as HTMLElement; // DOM clone preserves the rendered tile surface.
+  if (options.cloneText !== undefined) setCloneTileText(clone, options.cloneText);
   SNAP_BACK_CLONE_STRIPPED_ATTRIBUTES.forEach((attribute) => clone.removeAttribute(attribute));
   clone.setAttribute("aria-hidden", "true");
   clone.style.position = "fixed";
@@ -191,6 +194,13 @@ export function animateSnapBackFromRect(
 function removeTileSnapBackSnapshot(snapshot: TileSnapBackSnapshot): void {
   clearTimeout(snapshot.cleanupTimer);
   snapshot.clone.remove();
+}
+
+function setCloneTileText(clone: HTMLElement, text: string): void {
+  const textElement = clone.querySelector<HTMLElement>("[data-tile-text]");
+  if (textElement === null) return;
+
+  textElement.textContent = text;
 }
 
 function applyArrivalLift(element: HTMLElement): void {

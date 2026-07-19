@@ -40,7 +40,7 @@ export type PoolTileProps = {
   /** Pool sets this when this tile ID first appears in the pool; PoolTile plays entrance animation. */
   isNewlyAdded?: boolean;
   /** Called on click when `isTappable` is true. */
-  onTap: () => void;
+  onTap: (sourceElement: HTMLElement) => void;
   /** Called when a drag ends on another tile. Returns whether the drop was accepted. */
   onDropOnTile: (targetId: number) => boolean;
   /** Called when a drag ends on a submission slot. Returns whether the drop was accepted. */
