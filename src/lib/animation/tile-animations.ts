@@ -1,7 +1,7 @@
 /**
  * @file tile-animations.ts
  *
- * GSAP animation helpers for tile game actions: compose pulse,
+ * GSAP animation helpers for tile game actions: compose impact,
  * entrance scale, history row reveal, and particle burst.
  * All helpers return either a Tween/Timeline or a cleanup function.
  */
@@ -13,7 +13,6 @@ import {
   MOTION_DURATION_PARTICLE_BURST,
   MOTION_DURATION_SLOT_ENTRANCE,
   MOTION_EASE_DECISIVE_IN_OUT,
-  MOTION_EASE_DECISIVE_OUT,
   MOTION_EASE_ENTRANCE,
   MOTION_EASE_STANDARD_IN,
   MOTION_EASE_STANDARD_OUT,
@@ -55,25 +54,39 @@ export function animateRotateSqueeze(
 }
 
 /**
- * Plays a scale "heartbeat" on the tile that absorbed a compose.
+ * Plays an impact rebound on the tile that absorbed a compose.
+ * The target compresses on contact, springs larger, then settles back to natural size.
  * Call on the target tile element immediately after the compose dispatch.
  *
  * @param element - The tile element that received the incoming tile.
  * @param onComplete - Optional callback invoked when the animation finishes.
- * @returns A GSAP Tween — kill it if the component unmounts early.
+ * @returns A GSAP Timeline — kill it if the component unmounts early.
  */
 export function animateComposePulse(
   element: HTMLElement,
   onComplete?: () => void,
-): gsap.core.Tween {
-  return gsap.to(element, {
-    scale: 1.22,
-    duration: MOTION_DURATION_FAST,
-    ease: MOTION_EASE_DECISIVE_OUT,
-    yoyo: true,
-    repeat: 1,
-    ...(onComplete !== undefined && { onComplete }),
-  });
+): gsap.core.Timeline {
+  const timeline = gsap.timeline({ ...(onComplete !== undefined && { onComplete }) });
+
+  timeline
+    .to(element, {
+      scale: 0.86,
+      duration: MOTION_DURATION_FAST,
+      ease: MOTION_EASE_STANDARD_IN,
+    })
+    .to(element, {
+      scale: 1.1,
+      duration: MOTION_DURATION_FAST,
+      ease: "back.out(1.4)",
+    })
+    .to(element, {
+      scale: 1,
+      duration: MOTION_DURATION_INSTANT,
+      ease: MOTION_EASE_STANDARD_OUT,
+      clearProps: "scale",
+    });
+
+  return timeline;
 }
 
 /**

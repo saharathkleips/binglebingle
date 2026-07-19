@@ -2,7 +2,8 @@
  * Unit tests for tile-animations helpers.
  *
  * These run in the Node/unit environment. Only helpers that use `gsap.to()`
- * (which is lazy and doesn't need the CSS harness) can be tested here.
+ * or timelines of `gsap.to()` calls (which are lazy and don't need the CSS harness)
+ * can be tested here.
  * Helpers that use `gsap.from()` or DOM APIs (animateEntranceScale,
  * animateHistoryRowReveal, animateParticleBurst) are covered by the browser
  * component tests in Pool.test.tsx and HistoryArea.test.tsx.
@@ -52,16 +53,16 @@ describe("animateRotateSqueeze", () => {
 });
 
 describe("animateComposePulse", () => {
-  it("returns a GSAP Tween", () => {
-    const tween = animateComposePulse(mockElement());
-    expect(tween).toBeInstanceOf(gsap.core.Tween);
-    tween.kill();
+  it("returns a GSAP Timeline", () => {
+    const timeline = animateComposePulse(mockElement());
+    expect(timeline).toBeInstanceOf(gsap.core.Timeline);
+    timeline.kill();
   });
 
   it("accepts an optional onComplete callback without error", () => {
     const onComplete = vi.fn();
-    const tween = animateComposePulse(mockElement(), onComplete);
-    expect(tween).toBeInstanceOf(gsap.core.Tween);
-    tween.kill();
+    const timeline = animateComposePulse(mockElement(), onComplete);
+    expect(timeline).toBeInstanceOf(gsap.core.Timeline);
+    timeline.kill();
   });
 });
