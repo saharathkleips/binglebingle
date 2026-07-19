@@ -1,4 +1,5 @@
 import Gear from "./gear.svg?react";
+import { Logo } from "./Logo";
 import { NavActionButton } from "./NavActionButton";
 import styles from "./NavBar.module.css";
 
@@ -17,9 +18,7 @@ export function NavBar({ onToggleInstructions, isInstructionsOpen }: NavBarProps
   return (
     <nav className={styles.navBar} aria-label="Primary navigation">
       <div className={styles.navContent}>
-        <h1 className={styles.logo} aria-label="빙글빙글">
-          <span className={styles.logoText}>ㅂㄱㅂㄱ</span>
-        </h1>
+        <Logo />
         <div className={styles.actions} role="group" aria-label="Game actions">
           <div className={styles.actionCluster}>
             <NavActionButton ariaLabel="Set difficulty to three" label="삼" />

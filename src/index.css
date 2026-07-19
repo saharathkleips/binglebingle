@@ -115,14 +115,14 @@ body {
 
   /* ── System chrome tokens: fixed, non-responsive controls ────────────── */
   --system-depth-step: 1px;
-  --system-depth: 3px;
+  --system-depth-distance: 3px;
   --system-depth-stack:
     var(--system-depth-step) var(--system-depth-step) 0 var(--color-system-depth),
     calc(var(--system-depth-step) * 2) calc(var(--system-depth-step) * 2) 0
       var(--color-system-depth),
     calc(var(--system-depth-step) * 3) calc(var(--system-depth-step) * 3) 0
       var(--color-system-depth);
-  --system-cast-shadow-distance: calc(var(--system-depth) + var(--system-depth-step) * 2);
+  --system-cast-shadow-distance: calc(var(--system-depth-distance) + var(--system-depth-step) * 2);
   --system-cast-shadow: var(--system-cast-shadow-distance) var(--system-cast-shadow-distance) 0
     var(--color-system-shadow);
   --system-lift-distance: calc(var(--system-depth-step) * 3);
@@ -137,7 +137,7 @@ body {
   --tile-border-width: 1px;
   --tile-font-size: 20px;
   --tile-depth-step: 1px;
-  --tile-depth: 3px;
+  --tile-cast-shadow-distance: 3px;
   --history-min-visible-rows: 2.25;
 
   /* ── Tile derived tokens ─────────────────────────────────────────────── */
@@ -147,7 +147,8 @@ body {
     var(--tile-depth-step) var(--tile-depth-step) 0 var(--color-tile-depth),
     calc(var(--tile-depth-step) * 2) calc(var(--tile-depth-step) * 2) 0 var(--color-tile-depth),
     calc(var(--tile-depth-step) * 3) calc(var(--tile-depth-step) * 3) 0 var(--color-tile-depth);
-  --tile-cast-shadow: var(--tile-depth) var(--tile-depth) 0 var(--color-tile-shadow);
+  --tile-cast-shadow: var(--tile-cast-shadow-distance) var(--tile-cast-shadow-distance) 0
+    var(--color-tile-shadow);
   --tile-lift-distance: calc(var(--tile-depth-step) * 3);
   --tile-shadow-stack: var(--tile-depth-stack), var(--tile-cast-shadow);
 
@@ -182,7 +183,7 @@ body {
     --tile-border-width: 1px;
     --tile-font-size: 22px;
     --tile-depth-step: 1px;
-    --tile-depth: 4px;
+    --tile-cast-shadow-distance: 4px;
   }
 }
 
@@ -196,7 +197,7 @@ body {
     --tile-border-width: 1.25px;
     --tile-font-size: 26px;
     --tile-depth-step: 1px;
-    --tile-depth: 5px;
+    --tile-cast-shadow-distance: 5px;
   }
 }
 
@@ -210,7 +211,7 @@ body {
     --tile-border-width: 1.5px;
     --tile-font-size: 30px;
     --tile-depth-step: 1px;
-    --tile-depth: 6px;
+    --tile-cast-shadow-distance: 6px;
   }
 }
 
@@ -224,7 +225,7 @@ body {
     --tile-border-width: 2px;
     --tile-font-size: 34px;
     --tile-depth-step: 1px;
-    --tile-depth: 7px;
+    --tile-cast-shadow-distance: 7px;
   }
 }
 

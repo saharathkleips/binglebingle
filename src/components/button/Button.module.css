@@ -1,16 +1,24 @@
 .button {
   --button-face: var(--color-surface);
-  --button-depth: var(--system-depth);
+  --button-depth-distance: var(--system-depth-distance);
   --button-cast-shadow-growth: var(--system-cast-shadow-growth);
-  --button-hover-offset: calc(var(--system-lift-distance) * 1.25);
+  --button-hover-offset: var(--system-lift-distance);
+  --button-press-offset: calc(var(--button-depth-distance) - var(--system-depth-step));
+  --button-pressed-cast-shadow-distance: calc(
+    var(--system-cast-shadow-distance) - var(--button-press-offset)
+  );
   --button-shadow-stack: var(--system-shadow-stack);
   --button-shadow-stack-lifted:
     var(--system-depth-stack),
     calc(var(--system-cast-shadow-distance) + var(--button-hover-offset))
       calc(var(--system-cast-shadow-distance) + var(--button-hover-offset)) 0
       var(--color-system-shadow);
-  --button-shadow-stack-pressed: calc(var(--system-cast-shadow-distance) - var(--button-depth))
-    calc(var(--system-cast-shadow-distance) - var(--button-depth)) 0 var(--color-system-depth);
+  --button-shadow-stack-pressed:
+    var(--system-depth-step) var(--system-depth-step) 0 var(--color-system-depth),
+    var(--button-press-offset) var(--button-press-offset) 0 var(--color-system-depth),
+    var(--button-press-offset) var(--button-press-offset) 0 var(--color-system-depth),
+    var(--button-pressed-cast-shadow-distance) var(--button-pressed-cast-shadow-distance) 0
+      var(--color-system-shadow);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -38,7 +46,7 @@
   }
 
   &:not(:disabled):active .surface {
-    transform: translate(var(--button-depth), var(--button-depth));
+    transform: translate(var(--button-press-offset), var(--button-press-offset));
     box-shadow: var(--button-shadow-stack-pressed);
   }
 }

@@ -2,8 +2,12 @@
   min-height: var(--interactive-hitbox-min-size);
   margin: 0 0 0 12px;
   padding: var(--button-hover-offset)
-    calc(var(--button-hover-offset) + var(--button-depth) + var(--button-cast-shadow-growth))
-    calc(var(--button-hover-offset) + var(--button-depth) + var(--button-cast-shadow-growth))
+    calc(
+      var(--button-hover-offset) + var(--button-depth-distance) + var(--button-cast-shadow-growth)
+    )
+    calc(
+      var(--button-hover-offset) + var(--button-depth-distance) + var(--button-cast-shadow-growth)
+    )
     var(--button-hover-offset);
   font-size: 1rem;
 }
