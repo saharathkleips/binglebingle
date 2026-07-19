@@ -7,7 +7,6 @@
  */
 
 import {
-  MOTION_DURATION_FAST,
   MOTION_DURATION_INSTANT,
   MOTION_DURATION_MEDIUM,
   MOTION_DURATION_SLOT_ENTRANCE,
@@ -66,18 +65,18 @@ export function animateComposePulse(
 
   timeline
     .to(element, {
-      scale: 0.8,
-      duration: MOTION_DURATION_FAST,
+      scale: 0.84,
+      duration: 0.09,
       ease: MOTION_EASE_STANDARD_IN,
     })
     .to(element, {
-      scale: 1.18,
-      duration: MOTION_DURATION_FAST,
-      ease: "back.out(1.8)",
+      scale: 1.14,
+      duration: 0.1,
+      ease: "back.out(2)",
     })
     .to(element, {
       scale: 1,
-      duration: MOTION_DURATION_INSTANT,
+      duration: 0.06,
       ease: MOTION_EASE_STANDARD_OUT,
       clearProps: "scale",
     });
