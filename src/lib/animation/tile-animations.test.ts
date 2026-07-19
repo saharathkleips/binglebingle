@@ -5,8 +5,7 @@
  * or timelines of `gsap.to()` calls (which are lazy and don't need the CSS harness)
  * can be tested here.
  * Helpers that use `gsap.from()` or DOM APIs (animateEntranceScale,
- * animateHistoryRowReveal, animateParticleBurst) are covered by the browser
- * component tests in Pool.test.tsx and HistoryArea.test.tsx.
+ * animateHistoryRowReveal) are covered by the browser component tests.
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { gsap } from "./register";

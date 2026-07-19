@@ -9,7 +9,6 @@ import type { RefObject } from "react";
 import {
   animateComposePulse,
   animateEntranceScale,
-  animateParticleBurst,
   animateRotateSqueeze,
 } from "../../lib/animation/tile-animations";
 import { useLatestRef } from "./use-latest-ref";
@@ -20,7 +19,7 @@ export type UseTileFeedbackOptions = {
   elementRef: RefObject<HTMLElement | null>;
   /** Plays the rotate squeeze animation while true. */
   isRotating?: boolean | undefined;
-  /** Plays compose pulse and particles while true. */
+  /** Plays compose pulse while true. */
   isJustComposed?: boolean | undefined;
   /** Plays entrance scale animation while true. */
   isNewlyAdded?: boolean | undefined;
@@ -59,15 +58,12 @@ export function useTileFeedback({
     };
   }, [elementRef, isRotating, onRotatingEndRef]);
 
-  // VIS-19: scale heartbeat + particle burst on the tile that received a compose.
+  // VIS-19: scale heartbeat on the tile that received a compose.
   useLayoutEffect(() => {
     if (!isJustComposed || !elementRef.current) return;
-    const element = elementRef.current;
-    const cleanupParticles = animateParticleBurst(element);
-    const tween = animateComposePulse(element, () => onComposedEndRef.current());
+    const tween = animateComposePulse(elementRef.current, () => onComposedEndRef.current());
     return () => {
       tween.kill();
-      cleanupParticles();
     };
   }, [elementRef, isJustComposed, onComposedEndRef]);
 
