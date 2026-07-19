@@ -23,7 +23,7 @@ export type SubmissionButtonProps = {
 /**
  * Validates the current submission and dispatches ROUND_SUBMISSION_SUBMIT on click.
  *
- * @param props - {@link SubmissionButtonProps}
+ * @param props - See {@link SubmissionButtonProps}.
  */
 export function SubmissionButton({ submission, dispatch }: SubmissionButtonProps) {
   const isValid = canSubmit(submission) === "VALID";

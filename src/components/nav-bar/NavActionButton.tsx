@@ -32,8 +32,7 @@ type NavActionButtonProps = NavActionButtonBaseProps &
 /**
  * Circular nav action using the same surface and label treatment as the submission button.
  *
- * @param props - {@link NavActionButtonProps}
- * @returns The rendered nav action button.
+ * @param props - See {@link NavActionButtonProps}.
  */
 export function NavActionButton(props: NavActionButtonProps) {
   return (

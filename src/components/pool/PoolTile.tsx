@@ -4,15 +4,8 @@
  * A single interactive pool tile in the jamo pool.
  * Uses pool-specific GSAP Draggable mechanics — all game logic lives in Pool.
  *
- * Drag behavior (UI-04):
- * - Drag to SubmissionSlot → onDropOnSlot(slotIndex)
- * - Drag to another pool tile → onDropOnTile(targetId)
+ * Supports dragging to submission slots or other pool tiles.
  * GSAP Draggable handles click-vs-drag differentiation natively.
- *
- * Animation props (1.4.5):
- * - isRotating: plays a brief GSAP squeeze when the jamo cycles
- * - isJustComposed: plays a scale heartbeat on the target tile
- * - isNewlyAdded: plays an entrance scale animation for newly-appeared tiles
  */
 
 import { useLayoutEffect, useRef } from "react";

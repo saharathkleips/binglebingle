@@ -2,7 +2,7 @@
  * @file WinPanel.tsx
  *
  * Displayed in-place when the player wins. Shows the target word, guess count,
- * and an inert Share button (functionality added in a later milestone).
+ * and currently disabled Share button.
  */
 
 import { useGame } from "../../context/game/GameContext";
@@ -11,7 +11,7 @@ import { wordToString } from "../../lib/word";
 import styles from "./WinPanel.module.css";
 
 /**
- * Renders the win state: target word, score, and an inert Share placeholder.
+ * Renders the win state: target word, score, and disabled Share action.
  * Must be rendered inside a GameProvider.
  */
 export function WinPanel() {

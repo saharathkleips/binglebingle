@@ -45,11 +45,7 @@ const EXAMPLE_CHARACTERS = {
 
 /**
  * Full-screen overlay explaining the game mechanic via a worked example.
- * Shown on first load and reopenable via the NavBar "?" button.
- *
- * @param isOpen - Whether the overlay is visible.
- * @param onClose - Called when the player dismisses the overlay.
- * @returns The rendered overlay, or null when closed.
+ * Parent state controls whether the overlay is shown.
  */
 export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps) {
   if (!isOpen) return null;
