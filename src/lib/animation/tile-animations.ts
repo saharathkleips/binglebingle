@@ -1,29 +1,23 @@
 /**
  * @file tile-animations.ts
  *
- * GSAP animation helpers for tile game actions: compose pulse,
- * entrance scale, history row reveal, and particle burst.
- * All helpers return either a Tween/Timeline or a cleanup function.
+ * GSAP animation helpers for tile game actions: compose impact,
+ * entrance scale, and history row reveal.
+ * All helpers return a Tween or Timeline.
  */
 
 import {
-  MOTION_DURATION_FAST,
   MOTION_DURATION_INSTANT,
   MOTION_DURATION_MEDIUM,
-  MOTION_DURATION_PARTICLE_BURST,
   MOTION_DURATION_SLOT_ENTRANCE,
   MOTION_EASE_DECISIVE_IN_OUT,
-  MOTION_EASE_DECISIVE_OUT,
   MOTION_EASE_ENTRANCE,
   MOTION_EASE_STANDARD_IN,
   MOTION_EASE_STANDARD_OUT,
   MOTION_OVERLAP_HISTORY_TILE,
   MOTION_STAGGER_HISTORY_TILE,
-  PARTICLE_BURST_COLORS,
 } from "./motion-tokens";
 import { gsap } from "./register";
-
-const PARTICLE_COUNT = 8;
 
 /** Options for tile entrance scale animations. */
 export type EntranceScaleOptions = {
@@ -55,25 +49,39 @@ export function animateRotateSqueeze(
 }
 
 /**
- * Plays a scale "heartbeat" on the tile that absorbed a compose.
+ * Plays an impact rebound on the tile that absorbed a compose.
+ * The target compresses on contact, springs larger, then settles back to natural size.
  * Call on the target tile element immediately after the compose dispatch.
  *
  * @param element - The tile element that received the incoming tile.
  * @param onComplete - Optional callback invoked when the animation finishes.
- * @returns A GSAP Tween — kill it if the component unmounts early.
+ * @returns A GSAP Timeline — kill it if the component unmounts early.
  */
 export function animateComposePulse(
   element: HTMLElement,
   onComplete?: () => void,
-): gsap.core.Tween {
-  return gsap.to(element, {
-    scale: 1.22,
-    duration: MOTION_DURATION_FAST,
-    ease: MOTION_EASE_DECISIVE_OUT,
-    yoyo: true,
-    repeat: 1,
-    ...(onComplete !== undefined && { onComplete }),
-  });
+): gsap.core.Timeline {
+  const timeline = gsap.timeline({ ...(onComplete !== undefined && { onComplete }) });
+
+  timeline
+    .to(element, {
+      scale: 0.84,
+      duration: 0.09,
+      ease: MOTION_EASE_STANDARD_IN,
+    })
+    .to(element, {
+      scale: 1.14,
+      duration: 0.1,
+      ease: "back.out(2)",
+    })
+    .to(element, {
+      scale: 1,
+      duration: 0.06,
+      ease: MOTION_EASE_STANDARD_OUT,
+      clearProps: "scale",
+    });
+
+  return timeline;
 }
 
 /**
@@ -135,67 +143,4 @@ export function animateHistoryRowReveal(rowElement: HTMLElement): gsap.core.Time
   }
 
   return timeline;
-}
-
-/**
- * Emits a brief particle burst from the center of `element`.
- * Particles are fixed-positioned divs appended to `document.body` and
- * removed when the animation completes.
- *
- * @param element - The element whose center is the burst origin.
- * @returns A cleanup function that kills the animation and removes particles immediately.
- */
-export function animateParticleBurst(element: HTMLElement): () => void {
-  const rect = element.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-
-  const particles = Array.from({ length: PARTICLE_COUNT }, (_, index) => {
-    const particle = document.createElement("div");
-    particle.style.cssText = [
-      "position:fixed",
-      `left:${centerX}px`,
-      `top:${centerY}px`,
-      "width:6px",
-      "height:6px",
-      "border-radius:50%",
-      `background:${PARTICLE_BURST_COLORS[index % PARTICLE_BURST_COLORS.length]}`,
-      "pointer-events:none",
-      "z-index:9999",
-      "transform:translate(-50%,-50%)",
-    ].join(";");
-    document.body.appendChild(particle);
-    return particle;
-  });
-
-  // Shared cleanup referenced by both the returned handle and the timeline's
-  // onComplete, so the two code paths converge on a single function body.
-  // `let` hoisting lets us declare cleanup before timeline is constructed.
-  let timeline: gsap.core.Timeline;
-  function cleanup() {
-    timeline?.kill();
-    particles.forEach((particle) => particle.remove());
-  }
-
-  timeline = gsap.timeline({ onComplete: cleanup });
-
-  particles.forEach((particle, index) => {
-    const angle = (index / PARTICLE_COUNT) * Math.PI * 2;
-    // Fixed angles give a clean radial burst; no random — reproducible in tests.
-    const distance = 30 + (index % 3) * 8;
-    timeline.to(
-      particle,
-      {
-        x: Math.cos(angle) * distance,
-        y: Math.sin(angle) * distance,
-        opacity: 0,
-        scale: 0.3,
-        duration: MOTION_DURATION_PARTICLE_BURST,
-        ease: MOTION_EASE_STANDARD_OUT,
-      },
-      0,
-    );
-  });
-
-  return cleanup;
 }

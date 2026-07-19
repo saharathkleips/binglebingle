@@ -22,9 +22,6 @@ export const MOTION_DURATION_MEDIUM = 0.22;
 /** Shared failed-drop and cross-owner snap-back travel timing. */
 export const MOTION_DURATION_SNAP = 0.3;
 
-/** Particle lifetime for compose/decompose celebration bursts. */
-export const MOTION_DURATION_PARTICLE_BURST = 0.42;
-
 /** Delay between history tiles during submitted-row reveal. */
 export const MOTION_STAGGER_HISTORY_TILE = 0.12;
 
@@ -54,15 +51,3 @@ export const SNAP_BACK_ANIMATION = {
   duration: MOTION_DURATION_SNAP,
   ease: MOTION_EASE_SNAP,
 } as const;
-
-/** 오방색/단청 palette used for particle bursts. */
-export const PARTICLE_BURST_COLORS = [
-  "#c3291b", // obangsaek-red
-  "#f7ce46", // obangsaek-yellow
-  "#0a0af5", // obangsaek-blue
-  "#347641", // obangsaek-green
-  "#e25749", // dancheong-red
-  "#4da576", // dancheong-green
-  "#393f69", // dancheong-blue
-  "#fbe596", // dancheong-yellow
-] as const;

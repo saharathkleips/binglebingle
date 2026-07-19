@@ -11,7 +11,7 @@
  *
  * Animation props (1.4.5):
  * - isRotating: plays a brief GSAP squeeze when the jamo cycles
- * - isJustComposed: plays a scale heartbeat + particle burst on the target tile
+ * - isJustComposed: plays a scale heartbeat on the target tile
  * - isNewlyAdded: plays an entrance scale animation for newly-appeared tiles
  */
 
@@ -35,12 +35,12 @@ export type PoolTileProps = {
   isTappable: boolean;
   /** Pool sets this when the tile's jamo was just rotated; PoolTile plays a brief GSAP squeeze. */
   isRotating?: boolean;
-  /** Pool sets this on the target tile after a successful compose; PoolTile plays heartbeat + particles. */
+  /** Pool sets this on the target tile after a successful compose; PoolTile plays heartbeat feedback. */
   isJustComposed?: boolean;
   /** Pool sets this when this tile ID first appears in the pool; PoolTile plays entrance animation. */
   isNewlyAdded?: boolean;
   /** Called on click when `isTappable` is true. */
-  onTap: () => void;
+  onTap: (sourceElement: HTMLElement) => void;
   /** Called when a drag ends on another tile. Returns whether the drop was accepted. */
   onDropOnTile: (targetId: number) => boolean;
   /** Called when a drag ends on a submission slot. Returns whether the drop was accepted. */
