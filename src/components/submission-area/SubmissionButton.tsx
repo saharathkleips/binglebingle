@@ -1,43 +1,34 @@
 /**
  * @file SubmissionButton.tsx
  *
- * Validates the current submission and dispatches ROUND_SUBMISSION_SUBMIT.
+ * Renders the button used to submit the current guess.
  */
 
-import { type Dispatch } from "react";
 import { Button, ButtonText } from "../button/Button";
-import { canSubmit } from "../../lib/engine/validate";
-import type { SubmissionSlot, GameAction } from "../../context/game";
 import Hills2 from "./hills-2.svg?react";
 import Hills3 from "./hills-3.svg?react";
 import styles from "./SubmissionButton.module.css";
 
 /** Props for the submission action button. */
 export type SubmissionButtonProps = {
-  /** Current submission slots used to derive button enabled state. */
-  submission: readonly SubmissionSlot[];
-  /** Game dispatch function used to submit the current guess. */
-  dispatch: Dispatch<GameAction>;
+  /** Whether the current guess is not ready to submit. */
+  isDisabled: boolean;
+  /** Called when the player activates the submit button. */
+  onSubmit: () => void;
 };
 
 /**
- * Validates the current submission and dispatches ROUND_SUBMISSION_SUBMIT on click.
+ * Renders the submission button and delegates submit behavior to its owner.
  *
  * @param props - See {@link SubmissionButtonProps}.
  */
-export function SubmissionButton({ submission, dispatch }: SubmissionButtonProps) {
-  const isValid = canSubmit(submission) === "VALID";
-
-  function handleClick() {
-    if (isValid) dispatch({ type: "ROUND_SUBMISSION_SUBMIT" });
-  }
-
+export function SubmissionButton({ isDisabled, onSubmit }: SubmissionButtonProps) {
   return (
     <Button
       className={styles.button}
       surfaceClassName={styles.surface}
-      onClick={handleClick}
-      disabled={!isValid}
+      onClick={onSubmit}
+      disabled={isDisabled}
     >
       <Hills3
         className={`${styles.motif} ${styles.motifLeft}`}

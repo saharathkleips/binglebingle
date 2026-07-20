@@ -12,6 +12,26 @@ import { evaluateGuess } from "../../lib/engine/evaluate";
 import type { Word } from "../../lib/word";
 import type { GameState, SubmissionSlot, Tile } from ".";
 
+/** Returned tiles grouped by the submitted slot that produced them. */
+export type ReturnedTilesForSlot = {
+  /** Zero-based submission slot index that returned these tiles. */
+  slotIndex: number;
+  /** Tiles returned to the pool from this slot after submit processing. */
+  tiles: readonly Tile[];
+};
+
+/** Pure description of the state transition produced by submitting a guess. */
+export type SubmitGuessTransition = {
+  /** Per-slot evaluation for the submitted guess. */
+  evaluation: ReturnType<typeof evaluateGuess>;
+  /** Submission after correct/present slots are kept and absent slots are cleared. */
+  submission: readonly SubmissionSlot[];
+  /** Pool after absent tiles are decomposed and returned. */
+  pool: readonly Tile[];
+  /** Returned tiles grouped by their source submission slot. */
+  returnedTilesBySlot: readonly ReturnedTilesForSlot[];
+};
+
 // ---------------------------------------------------------------------------
 // Shared builders (also used by createInitialGameState in game-reducer.ts)
 // ---------------------------------------------------------------------------
@@ -54,13 +74,36 @@ export function buildEmptySubmission(word: Word): readonly SubmissionSlot[] {
  * @returns Next game state
  */
 export function handleSubmitGuess(state: GameState): GameState {
+  const transition = prepareSubmitGuessTransition(state);
+
+  return {
+    ...state,
+    history: [...state.history, transition.evaluation],
+    pool: transition.pool,
+    submission: transition.submission,
+  };
+}
+
+/**
+ * Describes the pure state transition produced by submitting the current guess.
+ * Returned tiles retain their source slot so consumers can trace which submission
+ * slot produced each returned tile without duplicating reducer rules.
+ *
+ * @param state - Current game state
+ * @returns Submit transition details
+ */
+export function prepareSubmitGuessTransition(state: GameState): SubmitGuessTransition {
   const evaluation = evaluateGuess(
     state.submission.map((slot) => (slot.state === "FILLED" ? slot.character : null)),
     state.targetWord,
   );
 
   // Zip each slot with its evaluation result for use in the steps below.
-  const pairs = state.submission.map((slot, i) => ({ slot, result: evaluation[i]?.result }));
+  const pairs = state.submission.map((slot, slotIndex) => ({
+    slot,
+    slotIndex,
+    result: evaluation[slotIndex]?.result,
+  }));
 
   // Correct and present slots remain filled; absent slots are cleared.
   const newSubmission: readonly SubmissionSlot[] = pairs.map(({ slot, result }) =>
@@ -70,35 +113,39 @@ export function handleSubmitGuess(state: GameState): GameState {
   );
 
   // Collect the tiles being returned to the pool.
-  const absentTiles: Tile[] = pairs.flatMap(({ slot, result }) =>
+  const absentSlots = pairs.flatMap(({ slot, slotIndex, result }) =>
     slot.state === "FILLED" && result !== "CORRECT" && result !== "PRESENT"
-      ? [{ id: slot.tileId, character: slot.character }]
+      ? [{ slot, slotIndex }]
       : [],
   );
 
   // Fully decompose absent tiles without normalizing. A composed jamo (e.g. ㄲ)
   // expands to its parts (ㄱ, ㄱ); extra parts from decomposition get fresh IDs.
   const usedIds = new Set([
-    ...state.pool.map((t) => t.id),
-    ...absentTiles.map((t) => t.id),
-    ...newSubmission.flatMap((s) => (s.state === "FILLED" ? [s.tileId] : [])),
+    ...state.pool.map((tile) => tile.id),
+    ...absentSlots.map(({ slot }) => slot.tileId),
+    ...newSubmission.flatMap((slot) => (slot.state === "FILLED" ? [slot.tileId] : [])),
   ]);
-  const decomposedTiles = absentTiles.flatMap(({ id, character }) => {
-    const parts = fullDecompose([character]);
-    return parts.map((char, partIndex) => {
-      if (partIndex === 0) return { id, character: char };
+  const returnedTilesBySlot = absentSlots.map(({ slot, slotIndex }) => {
+    const parts = fullDecompose([slot.character]);
+    const tiles = parts.map((character, partIndex) => {
+      if (partIndex === 0) return { id: slot.tileId, character };
+
       let newId = 0;
       while (usedIds.has(newId)) newId++;
       usedIds.add(newId);
-      return { id: newId, character: char };
+      return { id: newId, character };
     });
+
+    return { slotIndex, tiles };
   });
+  const returnedTiles = returnedTilesBySlot.flatMap(({ tiles }) => tiles);
 
   return {
-    ...state,
-    history: [...state.history, evaluation],
-    pool: [...state.pool, ...decomposedTiles],
+    evaluation,
+    pool: [...state.pool, ...returnedTiles],
     submission: newSubmission,
+    returnedTilesBySlot,
   };
 }
 

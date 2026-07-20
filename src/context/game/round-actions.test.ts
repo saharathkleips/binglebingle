@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { handleSubmitGuess, handleResetRound } from "./round-actions";
+import { handleSubmitGuess, handleResetRound, prepareSubmitGuessTransition } from "./round-actions";
 import { character } from "../../lib/character";
 import { createWord } from "../../lib/word";
 import type { GameState, SubmissionSlot } from ".";
@@ -22,6 +22,29 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
 function filledSlot(syllable: string, tileId: number): SubmissionSlot {
   return { state: "FILLED", tileId, character: character(syllable)! };
 }
+
+// ---------------------------------------------------------------------------
+// prepareSubmitGuessTransition
+// Word is "가나" throughout — evaluations are determined by submission content.
+// ---------------------------------------------------------------------------
+
+describe("prepareSubmitGuessTransition", () => {
+  it("returns absent decomposed tiles grouped by source slot", () => {
+    const state = makeState({
+      submission: [filledSlot("까", 0), filledSlot("나", 1)],
+    });
+
+    const transition = prepareSubmitGuessTransition(state);
+
+    expect(transition.returnedTilesBySlot).toHaveLength(1);
+    expect(transition.returnedTilesBySlot[0]?.slotIndex).toBe(0);
+    expect(transition.returnedTilesBySlot[0]?.tiles).toEqual([
+      { id: 0, character: character({ choseong: "ㄱ" }) },
+      { id: 2, character: character({ choseong: "ㄱ" }) },
+      { id: 3, character: character({ jungseong: "ㅏ" }) },
+    ]);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // handleSubmitGuess
