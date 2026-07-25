@@ -92,10 +92,14 @@ export function useSubmissionSlotDraggable({
 
             deferredSnapshot = null;
             setSlotPlacingAttribute(buttonRef.current);
-            activeSnapBackTween = animateSnapBackFromRect(buttonRef.current, pendingSnapshot, () => {
-              activeSnapBackTween = null;
-              if (buttonRef.current) removeSlotPlacingAttribute(buttonRef.current);
-            });
+            activeSnapBackTween = animateSnapBackFromRect(
+              buttonRef.current,
+              pendingSnapshot,
+              () => {
+                activeSnapBackTween = null;
+                if (buttonRef.current) removeSlotPlacingAttribute(buttonRef.current);
+              },
+            );
           });
         } else {
           animateEntranceScale(buttonRef.current, undefined, {
