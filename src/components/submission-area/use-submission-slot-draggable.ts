@@ -17,7 +17,14 @@ import { animateEntranceScale } from "../../lib/animation/tile-animations";
 import type { TileSnapBackSnapshot } from "../../lib/animation/snap-back-animations";
 import {
   DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE,
+  DATA_POOL_ATTRIBUTE,
+  DATA_SLOT_DRAGGING_ATTRIBUTE,
+  DATA_SLOT_HITBOX_ATTRIBUTE,
   DATA_SLOT_INDEX_ATTRIBUTE,
+  DATA_SLOT_PLACING_ATTRIBUTE,
+  DATA_SUBMISSION_SLOTS_ATTRIBUTE,
+} from "../../lib/dom-data-attributes";
+import {
   findDropTarget as findDataAttributeDropTarget,
   findDropTargetTile,
   parseDropTargetNumber,
@@ -69,6 +76,7 @@ export function useSubmissionSlotDraggable({
 
       let deferredSnapBackFrame: number | null = null;
       let deferredSnapshot: TileSnapBackSnapshot | null = null;
+      let activeSnapBackTween: gsap.core.Tween | null = null;
 
       if (filledTileId !== null) {
         const pendingSnapshot = popPendingTileSnapBack(filledTileId);
@@ -84,9 +92,14 @@ export function useSubmissionSlotDraggable({
 
             deferredSnapshot = null;
             setSlotPlacingAttribute(buttonRef.current);
-            animateSnapBackFromRect(buttonRef.current, pendingSnapshot, () => {
-              if (buttonRef.current) removeSlotPlacingAttribute(buttonRef.current);
-            });
+            activeSnapBackTween = animateSnapBackFromRect(
+              buttonRef.current,
+              pendingSnapshot,
+              () => {
+                activeSnapBackTween = null;
+                if (buttonRef.current) removeSlotPlacingAttribute(buttonRef.current);
+              },
+            );
           });
         } else {
           animateEntranceScale(buttonRef.current, undefined, {
@@ -170,6 +183,7 @@ export function useSubmissionSlotDraggable({
       return () => {
         if (deferredSnapBackFrame !== null) cancelAnimationFrame(deferredSnapBackFrame);
         if (deferredSnapshot !== null) deferredSnapshot.clone.remove();
+        activeSnapBackTween?.kill();
         clearSlotDropTargetHighlight(lastOverRef);
         if (buttonRef.current) {
           removeSlotDraggingAttribute(buttonRef.current);
@@ -222,7 +236,7 @@ function findSlotDropTargetByPoint(
   pointerY: number,
 ): Element | null {
   return (
-    Array.from(document.querySelectorAll("[data-slot-hitbox]")).find((element) => {
+    Array.from(document.querySelectorAll(`[${DATA_SLOT_HITBOX_ATTRIBUTE}]`)).find((element) => {
       if (!(element instanceof HTMLElement)) return false;
       if (element.getAttribute(DATA_SLOT_INDEX_ATTRIBUTE) === String(selfSlotIndex)) return false;
 
@@ -268,10 +282,12 @@ function isOutsideSubmissionSlots(
   pointerY: number,
   element: HTMLElement,
 ): boolean {
-  const slotsContainer = element.closest("[data-submission-slots]");
+  const slotsContainer = element.closest(`[${DATA_SUBMISSION_SLOTS_ATTRIBUTE}]`);
   if (!(slotsContainer instanceof HTMLElement)) return false;
 
-  const slotHitboxes = Array.from(slotsContainer.querySelectorAll("[data-slot-hitbox]"));
+  const slotHitboxes = Array.from(
+    slotsContainer.querySelectorAll(`[${DATA_SLOT_HITBOX_ATTRIBUTE}]`),
+  );
   if (slotHitboxes.length === 0) return false;
 
   return slotHitboxes.every((slotHitbox) => {
@@ -284,22 +300,22 @@ function isOutsideSubmissionSlots(
 
 function isOverPool(elements: Element[]): boolean {
   return elements.some(
-    (element) => element instanceof HTMLElement && element.hasAttribute("data-pool"),
+    (element) => element instanceof HTMLElement && element.hasAttribute(DATA_POOL_ATTRIBUTE),
   );
 }
 
 function setSlotDraggingAttribute(element: HTMLElement) {
-  element.parentElement?.setAttribute("data-slot-dragging", "true");
+  element.parentElement?.setAttribute(DATA_SLOT_DRAGGING_ATTRIBUTE, "true");
 }
 
 function removeSlotDraggingAttribute(element: HTMLElement) {
-  element.parentElement?.removeAttribute("data-slot-dragging");
+  element.parentElement?.removeAttribute(DATA_SLOT_DRAGGING_ATTRIBUTE);
 }
 
 function setSlotPlacingAttribute(element: HTMLElement) {
-  element.parentElement?.setAttribute("data-slot-placing", "true");
+  element.parentElement?.setAttribute(DATA_SLOT_PLACING_ATTRIBUTE, "true");
 }
 
 function removeSlotPlacingAttribute(element: HTMLElement) {
-  element.parentElement?.removeAttribute("data-slot-placing");
+  element.parentElement?.removeAttribute(DATA_SLOT_PLACING_ATTRIBUTE);
 }

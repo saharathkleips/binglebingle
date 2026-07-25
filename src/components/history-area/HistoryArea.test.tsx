@@ -3,7 +3,7 @@ import { render } from "vitest-browser-react";
 import { pointerSequence } from "../../test-utils/pointer-events";
 import {
   getHistoryRow,
-  getHistoryTiles,
+  getHistoryCards,
   getPoolTile,
   getSubmissionSlot,
 } from "../../test-utils/dom-selectors";
@@ -14,6 +14,7 @@ import { GameProvider } from "../../context/game/GameContext";
 import type { GameState } from "../../context/game";
 import type { CharacterResult, GuessRecord } from "../../lib/engine";
 import { character } from "../../lib/character";
+import { DATA_HISTORY_CARD_ATTRIBUTE } from "../../lib/dom-data-attributes";
 import { createWord } from "../../lib/word";
 
 async function renderHistoryArea(history: readonly GuessRecord[]) {
@@ -38,13 +39,13 @@ describe("HistoryArea", () => {
   it("renders an empty history region when history is empty", async () => {
     const screen = await renderHistoryArea([]);
     await expect.element(screen.getByRole("region", { name: "Guess history" })).toBeInTheDocument();
-    expect(getHistoryTiles().length).toBe(0);
+    expect(getHistoryCards().length).toBe(0);
   });
 
   it("renders one row per guess record", async () => {
     await renderHistoryArea([createGuessRecord("가", "CORRECT")]);
     await expect.element(getHistoryRow(0)).toBeInTheDocument();
-    expect(getHistoryRow(0).querySelectorAll("[data-history-tile]").length).toBe(1);
+    expect(getHistoryRow(0).querySelectorAll(`[${DATA_HISTORY_CARD_ATTRIBUTE}]`).length).toBe(1);
   });
 
   it("renders multiple rows for multiple guesses", async () => {
@@ -96,7 +97,7 @@ describe("HistoryArea reveal animation", () => {
       .toBeTruthy();
     await screen.getByRole("button", { name: "도전" }).click();
 
-    await expect.poll(() => getHistoryTiles().length).toBe(1);
+    await expect.poll(() => getHistoryCards().length).toBe(1);
     await expect.element(getHistoryRow(0)).toBeInTheDocument();
   });
 });

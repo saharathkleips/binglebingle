@@ -13,20 +13,42 @@ export const MOTION_DURATION_FAST = 0.14;
 /** Drag pick-up timing; intentionally close to CSS `--motion-duration-fast` hover lift. */
 export const MOTION_DURATION_PICK_UP = 0.15;
 
-/** Filled submission slot and history tile reveal timing. */
+/** Filled submission slot entrance timing. */
 export const MOTION_DURATION_SLOT_ENTRANCE = 0.2;
 
-/** Default entrance and row reveal timing for medium-weight UI motion. */
+/** Default timing for medium-weight UI motion such as history-row shifts. */
 export const MOTION_DURATION_MEDIUM = 0.22;
 
 /** Shared failed-drop and cross-owner snap-back travel timing. */
 export const MOTION_DURATION_SNAP = 0.3;
 
-/** Delay between history tiles during submitted-row reveal. */
-export const MOTION_STAGGER_HISTORY_TILE = 0.12;
+/** Tunable timings for the submitted-slots-to-history reveal sequence. */
+export const SUBMISSION_HISTORY_REVEAL_TIMING = {
+  /** Existing history rows shift upward to make visual room for the incoming row. */
+  historyRowsShiftDuration: MOTION_DURATION_MEDIUM,
+  /** Submitted slot silhouettes travel from the submission row and land as history cards. */
+  cardDealDuration: 0.26,
+  /** Delay between each submitted slot silhouette starting its deal into history. */
+  cardDealStagger: 0.16,
+  /** Hold between the last dealt card landing and the first result reveal. */
+  cardRevealStartDelay: 0,
+  /** Delay between each landed card starting its present/absent/correct reveal. */
+  cardRevealStagger: 0.16,
+  /** Duration of each half of the present/absent/correct result flip. */
+  cardFlipHalfDuration: 0.13,
+  /** Duration of one half of the final yoyo pulse after a card is revealed. */
+  cardPulseDuration: 0.1,
+  /** Small hold after the final card reveal before React commits the submitted row. */
+  completionHoldDuration: MOTION_DURATION_FAST,
+} as const;
 
-/** Starts history tile reveal just before the row slide finishes. */
-export const MOTION_OVERLAP_HISTORY_TILE = "-=0.06";
+/** Tunable timings for submitted pieces decomposing back into the pool after submit. */
+export const RETURN_TO_POOL_AFTER_SUBMISSION_TIMING = {
+  /** Delay before the first returned tile starts moving to the pool. */
+  startDelay: 0.18,
+  /** Delay between each returned tile's snap-back start. */
+  stagger: 0.12,
+} as const;
 
 /** Default deceleration for UI feedback that should settle smoothly. */
 export const MOTION_EASE_STANDARD_OUT = "power2.out";

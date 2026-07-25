@@ -6,7 +6,12 @@
 
 import { clsx } from "clsx";
 import type { AnimationEventHandler, ReactNode, Ref } from "react";
-import type { CharacterResult } from "../../lib/engine";
+import {
+  DATA_TILE_BORDER_ATTRIBUTE,
+  DATA_TILE_INTERACTIVE_ATTRIBUTE,
+  DATA_TILE_SURFACE_ATTRIBUTE,
+  DATA_TILE_TEXT_ATTRIBUTE,
+} from "../../lib/dom-data-attributes";
 import styles from "./BaseTile.module.css";
 
 export type BaseTileElement = "button" | "div" | "span";
@@ -25,8 +30,6 @@ type BaseTileSharedProps = {
   label?: string;
   /** Optional animation-end handler for caller-owned CSS feedback. */
   onAnimationEnd?: AnimationEventHandler<HTMLElement>;
-  /** Optional engine evaluation result for result-colored tiles. */
-  result?: CharacterResult;
 };
 
 /** Props for a button-backed {@link BaseTile}. */
@@ -70,21 +73,19 @@ export function BaseTile(props: BaseTileProps) {
     isInteractive = false,
     label,
     onAnimationEnd,
-    result,
   } = props;
   const composedClassName = clsx(styles.tile, className);
   const sharedProps = {
     ...dataAttributes,
-    "data-tile-interactive": isInteractive || undefined,
-    "data-tile-result": result,
+    [DATA_TILE_INTERACTIVE_ATTRIBUTE]: isInteractive || undefined,
     "aria-label": label,
     className: composedClassName,
     onAnimationEnd,
   };
   const contents = (
-    <span data-tile-surface>
-      <span data-tile-text>{children}</span>
-      <span aria-hidden="true" data-tile-border />
+    <span {...{ [DATA_TILE_SURFACE_ATTRIBUTE]: true }}>
+      <span {...{ [DATA_TILE_TEXT_ATTRIBUTE]: true }}>{children}</span>
+      <span aria-hidden="true" {...{ [DATA_TILE_BORDER_ATTRIBUTE]: true }} />
     </span>
   );
 

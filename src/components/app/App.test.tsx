@@ -1,12 +1,23 @@
 import { describe, it, expect } from "vitest";
 import { render } from "vitest-browser-react";
 import { App } from "./App";
+import { GameProvider, useGame } from "../../context/game/GameContext";
 import { createInitialGameState } from "../../context/game/game-reducer";
-import { createWord } from "../../lib/word";
 import { character } from "../../lib/character";
+import {
+  DATA_HISTORY_ANIMATION_SPACER_ATTRIBUTE,
+  DATA_SUBMISSION_HISTORY_REVEAL_CARD_ATTRIBUTE,
+  dataAttributeSelector,
+} from "../../lib/dom-data-attributes";
+import { isWon } from "../../lib/engine/scoring";
+import { createWord } from "../../lib/word";
+import { HistoryArea } from "../history-area/HistoryArea";
+import { SubmissionArea } from "../submission-area/SubmissionArea";
+import { WinPanel } from "../win-panel/WinPanel";
 import type { GameState } from "../../context/game";
 
 const WORD = createWord("고양이")!;
+const ONE_SYLLABLE_WORD = createWord("가")!;
 
 function wonState(): GameState {
   return {
@@ -19,6 +30,31 @@ function wonState(): GameState {
       ],
     ],
   };
+}
+
+function winningSubmissionState(): GameState {
+  return {
+    ...createInitialGameState(ONE_SYLLABLE_WORD),
+    pool: [],
+    submission: [{ state: "FILLED", tileId: 0, character: character("가")! }],
+  };
+}
+
+function SubmitToWinHarness({ initialState }: { initialState: GameState }) {
+  return (
+    <GameProvider initialState={initialState}>
+      <HistoryArea />
+      <SubmitToWinContent />
+    </GameProvider>
+  );
+}
+
+function SubmitToWinContent() {
+  const { state } = useGame();
+
+  if (isWon(state.history)) return <WinPanel />;
+
+  return <SubmissionArea />;
 }
 
 describe("App", () => {
@@ -78,5 +114,19 @@ describe("App win state", () => {
   it("keeps history area visible when the game is won", async () => {
     const screen = await render(<App initialState={wonState()} />);
     await expect.element(screen.getByRole("region", { name: "Guess history" })).toBeInTheDocument();
+  });
+
+  it("cleans up submit reveal DOM when a winning submission unmounts the submission area", async () => {
+    const screen = await render(<SubmitToWinHarness initialState={winningSubmissionState()} />);
+
+    await screen.getByRole("button", { name: "도전" }).click();
+
+    await expect.element(screen.getByRole("region", { name: "Win summary" })).toBeInTheDocument();
+    expect(
+      document.querySelector(dataAttributeSelector(DATA_HISTORY_ANIMATION_SPACER_ATTRIBUTE)),
+    ).toBeNull();
+    expect(
+      document.querySelector(dataAttributeSelector(DATA_SUBMISSION_HISTORY_REVEAL_CARD_ATTRIBUTE)),
+    ).toBeNull();
   });
 });

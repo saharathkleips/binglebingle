@@ -9,6 +9,13 @@ import {
   recordTileSnapBack,
   shouldSuppressTileEntranceForSnapBack,
 } from "./snap-back-animations";
+import {
+  DATA_SLOT_INDEX_ATTRIBUTE,
+  DATA_SLOT_STATE_ATTRIBUTE,
+  DATA_TILE_ID_ATTRIBUTE,
+  DATA_TILE_TEXT_ATTRIBUTE,
+  dataAttributeSelector,
+} from "../dom-data-attributes";
 
 /**
  * GSAP can animate plain objects in Node — we use a proxy that
@@ -17,13 +24,14 @@ import {
 type MockElementOptions = {
   clone?: HTMLElement;
   surface?: HTMLElement | null;
+  textElement?: { textContent: string };
   onRemove?: () => void;
 };
 
 function mockStyle(): CSSStyleDeclaration {
   return new Proxy({ setProperty: vi.fn() } as unknown as CSSStyleDeclaration, {
     get: (target, prop) => Reflect.get(target, prop) ?? "",
-    set: () => true,
+    set: (target, prop, value) => Reflect.set(target, prop, value),
   });
 }
 
@@ -51,7 +59,12 @@ function mockElement(options: MockElementOptions = {}): HTMLElement {
     setAttribute: vi.fn(),
     removeAttribute: vi.fn(),
     remove: vi.fn(options.onRemove),
-    querySelector: () => options.surface ?? null,
+    querySelector: (selector: string) => {
+      if (selector === dataAttributeSelector(DATA_TILE_TEXT_ATTRIBUTE)) {
+        return options.textElement ?? null;
+      }
+      return options.surface ?? null;
+    },
   };
 
   return element as unknown as HTMLElement;
@@ -86,6 +99,20 @@ describe("tile snap-back registry", () => {
 
     expect(popPendingTileSnapBack(9)).toMatchObject({ shouldLiftOnArrival: true });
     clearTileEntranceSnapBackSuppressions([9]);
+  });
+
+  it("stores delayed clone-text updates for animation start", () => {
+    recordTileSnapBack(17, mockElement(), {
+      cloneText: "ㄱ",
+      cloneTextTiming: "on-start",
+      delay: 0.42,
+    });
+
+    expect(popPendingTileSnapBack(17)).toMatchObject({
+      cloneTextOnStart: "ㄱ",
+      delay: 0.42,
+    });
+    clearTileEntranceSnapBackSuppressions([17]);
   });
 
   it("discards a pending tile rect without suppressing entrance", () => {
@@ -123,11 +150,29 @@ describe("tile snap-back registry", () => {
 
     expect(appendChild).toHaveBeenCalledWith(clone);
     expect(clone.removeAttribute).toHaveBeenCalledWith("id");
-    expect(clone.removeAttribute).toHaveBeenCalledWith("data-slot-index");
-    expect(clone.removeAttribute).toHaveBeenCalledWith("data-slot-state");
-    expect(clone.removeAttribute).toHaveBeenCalledWith("data-tile-id");
+    expect(clone.removeAttribute).toHaveBeenCalledWith(DATA_SLOT_INDEX_ATTRIBUTE);
+    expect(clone.removeAttribute).toHaveBeenCalledWith(DATA_SLOT_STATE_ATTRIBUTE);
+    expect(clone.removeAttribute).toHaveBeenCalledWith(DATA_TILE_ID_ATTRIBUTE);
     expect(clone.setAttribute).toHaveBeenCalledWith("aria-hidden", "true");
     discardPendingTileSnapBack(12);
+  });
+
+  it("keeps snap-back clones visible before movement by default", () => {
+    const clone = mockElement();
+
+    recordTileSnapBack(19, mockElement({ clone }));
+
+    expect(clone.style.visibility).toBe("visible");
+    discardPendingTileSnapBack(19);
+  });
+
+  it("allows delayed snap-back clones to stay hidden until movement starts", () => {
+    const clone = mockElement();
+
+    recordTileSnapBack(20, mockElement({ clone }), { initialVisibility: "hidden-until-start" });
+
+    expect(clone.style.visibility).toBe("hidden");
+    discardPendingTileSnapBack(20);
   });
 
   it("cleans up stale pending snapshots on the fallback timer", () => {
@@ -179,6 +224,23 @@ describe("animateSnapBackFromRect", () => {
     expect(onComplete).toHaveBeenCalledOnce();
     expect(destinationSurface.style.transform).toBe("");
     expect(destinationSurface.style.boxShadow).toBe("");
+  });
+
+  it("applies deferred clone text when snap-back movement starts", () => {
+    const textElement = { textContent: "" };
+    const clone = mockElement({ textElement });
+    recordTileSnapBack(18, mockElement({ clone }), {
+      cloneText: "ㄲ",
+      cloneTextTiming: "on-start",
+    });
+    const snapshot = popPendingTileSnapBack(18);
+    if (snapshot === null) throw new Error("Expected a pending snap-back snapshot.");
+
+    const tween = animateSnapBackFromRect(mockElement(), snapshot);
+    tween.vars.onStart?.();
+
+    expect(textElement.textContent).toBe("ㄲ");
+    tween.kill();
   });
 
   it("keeps cleanup idempotent when interrupted after completion", () => {

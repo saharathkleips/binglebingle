@@ -4,8 +4,8 @@
  * These run in the Node/unit environment. Only helpers that use `gsap.to()`
  * or timelines of `gsap.to()` calls (which are lazy and don't need the CSS harness)
  * can be tested here.
- * Helpers that use `gsap.from()` or DOM APIs (animateEntranceScale,
- * animateHistoryRowReveal) are covered by the browser component tests.
+ * Helpers that use `gsap.from()` or DOM APIs (animateEntranceScale)
+ * are covered by the browser component tests.
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { gsap } from "./register";

@@ -5,6 +5,11 @@ import { getSubmissionSlot } from "../../test-utils/dom-selectors";
 import { SubmissionSlot } from "./SubmissionSlot";
 import { character } from "../../lib/character";
 import type { SubmissionSlot as SlotType } from "../../context/game";
+import {
+  DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE,
+  DATA_SLOT_INDEX_ATTRIBUTE,
+  DATA_SUBMISSION_SLOTS_ATTRIBUTE,
+} from "../../lib/dom-data-attributes";
 
 const FILLED_SLOT: SlotType = {
   state: "FILLED",
@@ -56,7 +61,7 @@ describe("SubmissionSlot", () => {
     await render(
       <SubmissionSlot slot={slot} slotIndex={2} onTap={vi.fn()} onDropOnSlot={vi.fn()} />,
     );
-    await expect.element(getSubmissionSlot(2)).toHaveAttribute("data-slot-index", "2");
+    await expect.element(getSubmissionSlot(2)).toHaveAttribute(DATA_SLOT_INDEX_ATTRIBUTE, "2");
   });
 });
 
@@ -113,7 +118,7 @@ describe("SubmissionSlot drag", () => {
 
     await expect
       .element(getSubmissionSlot(1))
-      .toHaveAttribute("data-drop-slot-target-active", "true");
+      .toHaveAttribute(DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE, "true");
 
     dragSequence(button0, [{ type: "pointerup", clientX: targetX, clientY: targetY }]);
   });
@@ -121,7 +126,7 @@ describe("SubmissionSlot drag", () => {
   it("returns a filled slot to the pool when dropped outside the slot hitboxes", async () => {
     const onDropOnPool = vi.fn();
     await render(
-      <div data-submission-slots>
+      <div {...{ [DATA_SUBMISSION_SLOTS_ATTRIBUTE]: true }}>
         <SubmissionSlot
           slot={FILLED_SLOT}
           slotIndex={0}

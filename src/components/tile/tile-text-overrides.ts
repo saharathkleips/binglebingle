@@ -4,7 +4,14 @@
  * Helpers for temporary BaseTile text overrides used by drag previews.
  */
 
-export const DATA_DROP_PREVIEW_ATTRIBUTE = "data-drop-preview";
+import {
+  DATA_DROP_PREVIEW_ATTRIBUTE,
+  DATA_TILE_ORIGINAL_TEXT_ATTRIBUTE,
+  DATA_TILE_TEXT_ATTRIBUTE,
+  dataAttributeSelector,
+} from "../../lib/dom-data-attributes";
+
+export { DATA_DROP_PREVIEW_ATTRIBUTE } from "../../lib/dom-data-attributes";
 
 /**
  * Temporarily replaces BaseTile text for drag previews without exposing BaseTile internals to callers.
@@ -51,8 +58,7 @@ export function clearTileTextOverride(element: Element) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const DATA_TILE_ORIGINAL_TEXT_ATTRIBUTE = "data-drop-original-text";
-const TILE_TEXT_SELECTOR = "[data-tile-text]";
+const TILE_TEXT_SELECTOR = dataAttributeSelector(DATA_TILE_TEXT_ATTRIBUTE);
 
 function findTileTextElement(element: Element): HTMLElement | null {
   if (!(element instanceof HTMLElement)) return null;

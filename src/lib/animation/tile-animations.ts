@@ -1,21 +1,16 @@
 /**
  * @file tile-animations.ts
  *
- * GSAP animation helpers for tile game actions: compose impact,
- * entrance scale, and history row reveal.
+ * GSAP animation helpers for tile game actions: compose impact and entrance scale.
  * All helpers return a Tween or Timeline.
  */
 
 import {
   MOTION_DURATION_INSTANT,
   MOTION_DURATION_MEDIUM,
-  MOTION_DURATION_SLOT_ENTRANCE,
-  MOTION_EASE_DECISIVE_IN_OUT,
   MOTION_EASE_ENTRANCE,
   MOTION_EASE_STANDARD_IN,
   MOTION_EASE_STANDARD_OUT,
-  MOTION_OVERLAP_HISTORY_TILE,
-  MOTION_STAGGER_HISTORY_TILE,
 } from "./motion-tokens";
 import { gsap } from "./register";
 
@@ -106,41 +101,4 @@ export function animateEntranceScale(
     clearProps: "scale",
     ...(onComplete !== undefined && { onComplete }),
   });
-}
-
-/**
- * Stagger-reveals a history row after a guess is submitted.
- * The row slides in from below, then each tile flips in left-to-right.
- *
- * @param rowElement - The `.row` container holding the HistoryTile divs.
- * @returns A GSAP Timeline — kill it on unmount.
- */
-export function animateHistoryRowReveal(rowElement: HTMLElement): gsap.core.Timeline {
-  const timeline = gsap.timeline();
-  const tiles = rowElement.querySelectorAll("[data-history-tile]");
-
-  // Row slides up from just below its final position.
-  timeline.from(rowElement, {
-    y: 20,
-    opacity: 0,
-    duration: MOTION_DURATION_MEDIUM,
-    ease: MOTION_EASE_STANDARD_OUT,
-  });
-
-  // Tiles flip in one-by-one, left to right. Skip the tween when no tiles exist;
-  // GSAP logs a target warning for empty NodeLists, and an empty row has nothing to reveal.
-  if (tiles.length > 0) {
-    timeline.from(
-      tiles,
-      {
-        scaleX: 0,
-        duration: MOTION_DURATION_SLOT_ENTRANCE,
-        ease: MOTION_EASE_DECISIVE_IN_OUT,
-        stagger: MOTION_STAGGER_HISTORY_TILE,
-      },
-      MOTION_OVERLAP_HISTORY_TILE,
-    );
-  }
-
-  return timeline;
 }

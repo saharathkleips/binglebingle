@@ -5,6 +5,7 @@ import { getPoolTile } from "../../test-utils/dom-selectors";
 import { Pool } from "./Pool";
 import { GameProvider } from "../../context/game/GameContext";
 import { createInitialGameState } from "../../context/game/game-reducer";
+import { DATA_TILE_ID_ATTRIBUTE, dataAttributeSelector } from "../../lib/dom-data-attributes";
 import { createWord } from "../../lib/word";
 
 async function renderPool(word: string) {
@@ -17,9 +18,9 @@ async function renderPool(word: string) {
 }
 
 function poolTiles(): HTMLElement[] {
-  return Array.from(document.querySelectorAll("[data-tile-id]")).filter(
-    (element): element is HTMLElement => element instanceof HTMLElement,
-  );
+  return Array.from(
+    document.querySelectorAll(dataAttributeSelector(DATA_TILE_ID_ATTRIBUTE)),
+  ).filter((element): element is HTMLElement => element instanceof HTMLElement);
 }
 
 describe("Pool", () => {

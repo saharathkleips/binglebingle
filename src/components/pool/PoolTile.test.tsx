@@ -10,6 +10,14 @@ import {
   popPendingTileSnapBack,
 } from "../../lib/animation/snap-back-animations";
 import type { Tile as TileType } from "../../context/game";
+import {
+  DATA_DROP_PREVIEW_ATTRIBUTE,
+  DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE,
+  DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE,
+  DATA_SLOT_HITBOX_ATTRIBUTE,
+  DATA_SLOT_INDEX_ATTRIBUTE,
+  DATA_TILE_INTERACTIVE_ATTRIBUTE,
+} from "../../lib/dom-data-attributes";
 
 function tile(id: number, char: ReturnType<typeof character>): TileType {
   return { id, character: char! };
@@ -52,7 +60,7 @@ describe("PoolTile", () => {
   it("keeps the interactive affordance when not isTappable because pool tiles are draggable", async () => {
     await render(<PoolTile {...tileProps({ isTappable: false })} />);
 
-    await expect.element(getTileById(0)).toHaveAttribute("data-tile-interactive", "true");
+    await expect.element(getTileById(0)).toHaveAttribute(DATA_TILE_INTERACTIVE_ATTRIBUTE, "true");
   });
 });
 
@@ -62,7 +70,7 @@ describe("PoolTile drag", () => {
     await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <PoolTile {...tileProps({ onDropOnSlot })} />
-        <button data-slot-index="1" data-slot-hitbox>
+        <button {...{ [DATA_SLOT_INDEX_ATTRIBUTE]: 1, [DATA_SLOT_HITBOX_ATTRIBUTE]: true }}>
           _
         </button>
       </div>,
@@ -128,7 +136,7 @@ describe("PoolTile drag", () => {
 
     await expect.poll(() => onDropOnTile.mock.calls.length).toBe(1);
     expect(onDropOnTile).toHaveBeenCalledWith(1);
-    await expect.element(getTileById(0)).not.toHaveAttribute("data-drop-source-active");
+    await expect.element(getTileById(0)).not.toHaveAttribute(DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE);
   });
 
   it("does not call onDropOnSlot or onDropOnTile when dropped on empty space", async () => {
@@ -175,13 +183,13 @@ describe("PoolTile drag", () => {
       { type: "pointermove", clientX: targetCenterX, clientY: targetCenterY },
     ]);
 
-    await expect.element(getTileById(0)).toHaveAttribute("data-drop-preview", "가");
+    await expect.element(getTileById(0)).toHaveAttribute(DATA_DROP_PREVIEW_ATTRIBUTE, "가");
     await expect.element(getTileById(0)).toHaveTextContent("가");
 
     dragSequence(tileElement, [
       { type: "pointerup", clientX: targetCenterX, clientY: targetCenterY },
     ]);
-    await expect.element(getTileById(0)).not.toHaveAttribute("data-drop-preview");
+    await expect.element(getTileById(0)).not.toHaveAttribute(DATA_DROP_PREVIEW_ATTRIBUTE);
     await expect.element(getTileById(0)).toHaveTextContent("ㄱ");
   });
 
@@ -189,7 +197,7 @@ describe("PoolTile drag", () => {
     await render(
       <div style={{ display: "flex", gap: "100px" }}>
         <PoolTile {...tileProps()} />
-        <button data-slot-index="0" data-slot-hitbox>
+        <button {...{ [DATA_SLOT_INDEX_ATTRIBUTE]: 0, [DATA_SLOT_HITBOX_ATTRIBUTE]: true }}>
           _
         </button>
       </div>,
@@ -207,7 +215,7 @@ describe("PoolTile drag", () => {
 
     await expect
       .element(getSubmissionSlot(0))
-      .toHaveAttribute("data-drop-slot-target-active", "true");
+      .toHaveAttribute(DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE, "true");
 
     dragSequence(tileElement, [{ type: "pointerup", clientX: slotCenterX, clientY: slotCenterY }]);
   });

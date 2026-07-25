@@ -20,6 +20,7 @@ import {
 } from "./submission-actions";
 import {
   handleSubmitGuess,
+  commitSubmitGuessTransition,
   handleResetRound,
   buildInitialPool,
   buildEmptySubmission,
@@ -67,6 +68,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return handleSubmissionSlotRemove(state, action.payload);
     case "ROUND_SUBMISSION_SUBMIT":
       return handleSubmitGuess(state);
+    case "ROUND_SUBMISSION_COMMIT":
+      return commitSubmitGuessTransition(state, action.payload);
     case "ROUND_RESET":
       return handleResetRound(state);
   }

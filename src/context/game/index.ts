@@ -74,14 +74,33 @@ export type SubmissionAction =
   | { type: "SUBMISSION_SLOT_REMOVE"; payload: { slotIndex: number } }
   | { type: "SUBMISSION_SLOT_MOVE"; payload: { fromSlotIndex: number; toSlotIndex: number } };
 
+/** Precomputed submit transition fields needed to commit a submitted guess. */
+export type SubmitGuessCommitPayload = {
+  /** Per-slot evaluation for the submitted guess. */
+  evaluation: GuessRecord;
+  /** Submission after correct/present slots are kept and absent slots are cleared. */
+  submission: readonly SubmissionSlot[];
+  /** Pool after absent tiles are decomposed and returned. */
+  pool: readonly Tile[];
+};
+
 /**
- * Actions for round progression: submitting a guess or resetting the round.
+ * Actions for round progression: submitting a guess, committing an already prepared submit
+ * transition, or resetting the round.
  *
  * - `ROUND_SUBMISSION_SUBMIT` — evaluate the current submission, record the result; correct/present
  *   slots remain filled, absent tiles are fully decomposed and returned to the pool
+ * - `ROUND_SUBMISSION_COMMIT` — commit a precomputed submit transition produced by domain logic
  * - `ROUND_RESET` — restore the pool and clear the submission for a new attempt
  */
-export type RoundAction = { type: "ROUND_SUBMISSION_SUBMIT" } | { type: "ROUND_RESET" };
+export type RoundAction =
+  | { type: "ROUND_SUBMISSION_SUBMIT" }
+  | {
+      type: "ROUND_SUBMISSION_COMMIT";
+      /** Precomputed domain transition to apply exactly once. */
+      payload: SubmitGuessCommitPayload;
+    }
+  | { type: "ROUND_RESET" };
 
 /**
  * All actions that can be dispatched to the game reducer.
@@ -93,6 +112,7 @@ export type RoundAction = { type: "ROUND_SUBMISSION_SUBMIT" } | { type: "ROUND_R
  * - `SUBMISSION_SLOT_REMOVE` — return the tile in a slot back to the pool
  * - `SUBMISSION_SLOT_MOVE` — move a tile from one submission slot to another
  * - `ROUND_SUBMISSION_SUBMIT` — record an evaluated guess and update slots by result
+ * - `ROUND_SUBMISSION_COMMIT` — commit a precomputed submit transition
  * - `ROUND_RESET` — restore the pool and clear the submission for a new attempt
  */
 export type GameAction = CharacterAction | SubmissionAction | RoundAction;
