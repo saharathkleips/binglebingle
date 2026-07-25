@@ -26,10 +26,10 @@ body {
   --palette-najeon-iridescent-cyan: #e0ffff;
   --palette-najeon-iridescent-mint: #f0fff0;
 
-  /* ── Palette: Najeon result accents ─────────────────────── */
-  --palette-najeon-green-jade: #b9fbc0;
-  --palette-najeon-yellow-citrine: #fff59d;
-  --palette-najeon-gray-cloud-slate: #e2e8f0;
+  /* ── Palette: Submission result accents ─────────────────────── */
+  --palette-submission-hill-green: #3b961e;
+  --palette-lotus-center-yellow: #f6d24b;
+  --palette-najeon-gray-pearl-shadow: #b8c0cc;
 
   /* ── Palette: Cream backgrounds ──────────────────────────────────────── */
   --palette-rice-paper: #fbf7ef;
@@ -54,9 +54,9 @@ body {
   --color-drop-target-active: #3b5442;
 
   /* ── Semantic: Guess evaluation results ──────────────────────────────── */
-  --color-result-correct: var(--palette-najeon-green-jade);
-  --color-result-present: var(--palette-najeon-yellow-citrine);
-  --color-result-absent: var(--palette-najeon-gray-cloud-slate);
+  --color-result-correct: var(--palette-submission-hill-green);
+  --color-result-present: var(--palette-lotus-center-yellow);
+  --color-result-absent: var(--palette-najeon-gray-pearl-shadow);
 
   /* ── Layers ──────────────────────────────────────────────────────────── */
   --z-index-popover: 100;
@@ -128,6 +128,8 @@ body {
   --tile-depth-step: 1px;
   --tile-cast-shadow-distance: 3px;
   --history-min-visible-rows: 2.25;
+  --history-empty-card-motif-opacity: 0.5;
+  --history-empty-card-motif-saturation: 0.5;
 
   /* ── Tile derived tokens ─────────────────────────────────────────────── */
   --tile-visual-long-edge: var(--tile-hitbox-size);
@@ -172,11 +174,56 @@ body {
   z-index: 1;
 }
 
+.submission-history-reveal-card[data-history-empty-card] {
+  --lotus-motif-opacity: var(--history-empty-card-motif-opacity);
+  --lotus-motif-saturation: var(--history-empty-card-motif-saturation);
+}
+
 .submission-history-reveal-card[data-result] {
+  border-color: var(--color-border);
   font-family: var(--font-family-tile);
   font-size: var(--tile-font-size);
   font-weight: var(--font-weight-tile);
   line-height: 1;
+}
+
+/* Shared by React-rendered history cards and imperative submission-reveal clones. */
+.history-card-layered-text {
+  display: inline-grid;
+  place-items: center;
+  line-height: 1.2;
+}
+
+.history-card-layered-text-depth,
+.history-card-layered-text-outline,
+.history-card-layered-text-label {
+  grid-area: 1 / 1;
+}
+
+.history-card-layered-text-depth,
+.history-card-layered-text-outline {
+  pointer-events: none;
+  user-select: none;
+}
+
+.history-card-layered-text-depth {
+  color: var(--color-system-depth);
+  -webkit-text-fill-color: var(--color-system-depth);
+  -webkit-text-stroke: 1px var(--color-system-depth);
+  transform: translateY(1px);
+}
+
+.history-card-layered-text-outline {
+  color: var(--color-border);
+  -webkit-text-fill-color: var(--color-border);
+  -webkit-text-stroke: 1px var(--color-border);
+}
+
+.history-card-layered-text-label {
+  position: relative;
+  z-index: 1;
+  color: currentColor;
+  -webkit-text-fill-color: currentColor;
 }
 
 .submission-history-reveal-card[data-result="CORRECT"] {

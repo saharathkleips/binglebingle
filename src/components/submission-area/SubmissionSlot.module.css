@@ -14,32 +14,6 @@
   user-select: none;
 }
 
-.slotPlaceholder {
-  --submission-slot-placeholder-background: var(--color-app-background);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: var(--tile-visual-short-edge);
-  height: var(--tile-visual-long-edge);
-  flex: none;
-  pointer-events: none;
-  border: max(1px, var(--tile-border-width)) solid currentColor;
-  border-radius: var(--tile-radius);
-  background-color: var(--submission-slot-placeholder-background);
-  box-shadow: var(--tile-depth-stack);
-  transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
-}
-
-.slotMotif {
-  display: block;
-  width: calc(var(--tile-visual-short-edge) * 0.8);
-  height: auto;
-  overflow: visible;
-  pointer-events: none;
-}
-
 .empty {
   color: var(--color-chrome-foreground);
 }
@@ -64,7 +38,7 @@
   color: var(--color-chrome-foreground);
 }
 
-.slotGhost > .slotPlaceholder {
+.slotGhost > [data-submission-slot-placeholder] {
   position: absolute;
   opacity: 1;
   box-shadow: var(--tile-depth-stack);
@@ -76,7 +50,7 @@
 
 .slot,
 .slotGhost {
-  &[data-drop-slot-target-active="true"] .slotPlaceholder {
-    --submission-slot-placeholder-background: var(--color-drop-target-active);
+  &[data-drop-slot-target-active="true"] [data-submission-slot-placeholder] {
+    --lotus-tile-back-background: var(--color-drop-target-active);
   }
 }

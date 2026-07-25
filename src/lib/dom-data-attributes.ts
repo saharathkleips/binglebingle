@@ -23,6 +23,8 @@ export const DATA_TILE_ORIGINAL_TEXT_ATTRIBUTE = "data-drop-original-text";
 export const DATA_SLOT_HITBOX_ATTRIBUTE = "data-slot-hitbox";
 /** Submission slots container marker. */
 export const DATA_SUBMISSION_SLOTS_ATTRIBUTE = "data-submission-slots";
+/** Generic lotus tile-back marker used by decoration, tests, and animation styling. */
+export const DATA_LOTUS_TILE_BACK_ATTRIBUTE = "data-lotus-tile-back";
 /** Placeholder silhouette inside a submission slot. */
 export const DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE = "data-submission-slot-placeholder";
 /** Temporary clone used while submitted slots reveal into history. */
@@ -35,7 +37,9 @@ export const DATA_HISTORY_AREA_ATTRIBUTE = "data-history-area";
 export const DATA_HISTORY_ROW_INDEX_ATTRIBUTE = "data-history-row-index";
 /** Revealed history card marker. */
 export const DATA_HISTORY_CARD_ATTRIBUTE = "data-history-card";
-/** Evaluation result marker for revealed cards and animation clones. */
+/** Empty history-card marker for subdued placeholder styling. */
+export const DATA_HISTORY_EMPTY_CARD_ATTRIBUTE = "data-history-empty-card";
+/** Evaluation result marker for non-empty revealed cards and animation clones. */
 export const DATA_RESULT_ATTRIBUTE = "data-result";
 /** Pool container marker used by tests and demos. */
 export const DATA_POOL_ATTRIBUTE = "data-pool";

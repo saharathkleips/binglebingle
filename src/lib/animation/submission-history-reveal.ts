@@ -18,8 +18,12 @@ import {
   dataAttributeSelector,
 } from "../dom-data-attributes";
 import type { EvaluatedCharacter } from "../engine";
+import { isEvaluatedCharacterEmpty } from "../evaluated-character-display";
 import { scheduleNextFrame } from "./frame-scheduler";
-import { createCardFlipRevealTimeline, createCardPulseTimeline } from "./submission-history-card";
+import {
+  createCardFlipRevealTimeline,
+  createEmptyCardPulseTimeline,
+} from "./submission-history-card";
 import { reserveHistoryRowScrollSpace } from "./submission-history-scroll-space";
 import { gsap } from "./register";
 
@@ -27,7 +31,7 @@ import { gsap } from "./register";
 export type SubmissionSlotsRevealOptions = {
   /** Called before temporary history scroll-space is restored. */
   onBeforeRestore?: () => void;
-  /** Called after temporary history scroll-space is restored. */
+  /** Called after temporary history scroll-space restoration is attempted. */
   onComplete?: () => void;
 };
 
@@ -219,8 +223,8 @@ function addCardReveals(
     const position = `cardReveal+=${cardIndex * SUBMISSION_HISTORY_REVEAL_TIMING.cardRevealStagger}`;
 
     timeline.add(
-      evaluated.character === undefined
-        ? createCardPulseTimeline(clone)
+      isEvaluatedCharacterEmpty(evaluated)
+        ? createEmptyCardPulseTimeline(clone)
         : createCardFlipRevealTimeline(clone, evaluated),
       position,
     );
@@ -247,26 +251,43 @@ function completeSubmissionReveal(
   options: SubmissionSlotsRevealOptions,
 ): void {
   let beforeRestoreError: unknown;
+  let restoreError: unknown;
+  let completeError: unknown;
 
   try {
     options.onBeforeRestore?.();
   } catch (error) {
     beforeRestoreError = error;
-  } finally {
+  }
+
+  try {
     restoreHistorySpace();
+  } catch (error) {
+    restoreError = error;
+  }
+
+  try {
+    options.onComplete?.();
+  } catch (error) {
+    completeError = error;
+  } finally {
     scheduleNextFrame(() => {
       removeRevealCardClones(cardEntries);
     });
   }
 
-  options.onComplete?.();
   if (beforeRestoreError !== undefined) throw beforeRestoreError;
+  if (restoreError !== undefined) throw restoreError;
+  if (completeError !== undefined) throw completeError;
 }
 
 function interruptSubmissionReveal(
   cardEntries: readonly RevealCardEntry[],
   restoreHistorySpace: () => void,
 ): void {
-  restoreHistorySpace();
-  removeRevealCardClones(cardEntries);
+  try {
+    restoreHistorySpace();
+  } finally {
+    removeRevealCardClones(cardEntries);
+  }
 }

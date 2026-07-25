@@ -105,7 +105,7 @@ Other rotation sets exist for double consonants and compound vowels — check `s
 
 ## Guess Results
 
-After submitting, each history card gets a `data-result` attribute:
+After submitting, non-empty history cards get a `data-result` attribute:
 
 ```typescript
 const historyCards = page.locator("[data-history-card]");
@@ -113,6 +113,8 @@ await expect(historyCards.nth(0)).toHaveAttribute("data-result", "CORRECT");
 await expect(historyCards.nth(1)).toHaveAttribute("data-result", "PRESENT");
 await expect(historyCards.nth(2)).toHaveAttribute("data-result", "ABSENT");
 ```
+
+Empty submitted slots are represented as history cards without `data-result` and with `data-history-empty-card`.
 
 Evaluation is **character (syllable block) level**, not jamo level. A tile is PRESENT if that exact syllable block appears in the target word but at a different position.
 

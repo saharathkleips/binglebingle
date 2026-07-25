@@ -8,7 +8,10 @@ import { describe, it, expect, afterEach } from "vitest";
 import { character } from "../character";
 import {
   DATA_HISTORY_ANIMATION_SPACER_ATTRIBUTE,
+  DATA_HISTORY_EMPTY_CARD_ATTRIBUTE,
   DATA_HISTORY_ROW_INDEX_ATTRIBUTE,
+  DATA_LOTUS_TILE_BACK_ATTRIBUTE,
+  DATA_RESULT_ATTRIBUTE,
   DATA_SLOT_HITBOX_ATTRIBUTE,
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_SUBMISSION_HISTORY_REVEAL_CARD_ATTRIBUTE,
@@ -16,7 +19,14 @@ import {
   DATA_SUBMISSION_SLOTS_ATTRIBUTE,
   dataAttributeSelector,
 } from "../dom-data-attributes";
+import {
+  HISTORY_CARD_LAYERED_TEXT_CLASS,
+  HISTORY_CARD_LAYERED_TEXT_DEPTH_CLASS,
+  HISTORY_CARD_LAYERED_TEXT_LABEL_CLASS,
+  HISTORY_CARD_LAYERED_TEXT_OUTLINE_CLASS,
+} from "../history-card-layered-text";
 import { gsap } from "./register";
+import { createEmptyCardPulseTimeline } from "./submission-history-card";
 import { animateSubmissionSlotsToHistoryReveal } from "./submission-history-reveal";
 
 const ABSENT_EVALUATION = [{ result: "ABSENT" as const }];
@@ -139,6 +149,79 @@ describe("animateSubmissionSlotsToHistoryReveal", () => {
         dataAttributeSelector(DATA_HISTORY_ANIMATION_SPACER_ATTRIBUTE),
       ),
     ).toBeNull();
+  });
+
+  it("restores temporary history space when onComplete throws", () => {
+    const slotsContainer = createSlotsContainer(1);
+    const historyContainer = createHistoryContainer(0);
+    document.body.append(historyContainer, slotsContainer);
+
+    const timeline = animateSubmissionSlotsToHistoryReveal(
+      slotsContainer,
+      ABSENT_EVALUATION,
+      historyContainer,
+      {
+        onComplete: () => {
+          throw new Error("completion failed");
+        },
+      },
+    );
+
+    expect(() => timeline.progress(1)).toThrow("completion failed");
+    expect(
+      historyContainer.querySelector(
+        dataAttributeSelector(DATA_HISTORY_ANIMATION_SPACER_ATTRIBUTE),
+      ),
+    ).toBeNull();
+  });
+
+  it("marks empty reveal clones as empty history cards after their pulse", () => {
+    const clone = document.createElement("span");
+    clone.setAttribute(DATA_RESULT_ATTRIBUTE, "ABSENT");
+    clone.setAttribute(DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE, "true");
+
+    const timeline = createEmptyCardPulseTimeline(clone);
+    timeline.progress(1);
+
+    expect(clone.getAttribute(DATA_HISTORY_EMPTY_CARD_ATTRIBUTE)).toBe("true");
+    expect(clone.hasAttribute(DATA_RESULT_ATTRIBUTE)).toBe(false);
+    expect(clone.hasAttribute(DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE)).toBe(false);
+    expect(clone.style.getPropertyValue("--lotus-motif-opacity")).toBe("");
+    expect(clone.style.getPropertyValue("--lotus-motif-saturation")).toBe("");
+  });
+
+  it("replaces stale lotus markers with layered text on filled reveal clones", () => {
+    const slotsContainer = createSlotsContainer(1);
+    const historyContainer = createHistoryContainer(0);
+    document.body.append(historyContainer, slotsContainer);
+
+    const timeline = animateSubmissionSlotsToHistoryReveal(
+      slotsContainer,
+      [{ character: character("가")!, result: "CORRECT" }],
+      historyContainer,
+    );
+    timeline.progress(1);
+
+    const clone = slotsContainer.querySelector(
+      dataAttributeSelector(DATA_SUBMISSION_HISTORY_REVEAL_CARD_ATTRIBUTE),
+    );
+
+    expect(clone?.hasAttribute(DATA_LOTUS_TILE_BACK_ATTRIBUTE)).toBe(false);
+    expect(clone?.hasAttribute(DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE)).toBe(false);
+    expect(clone?.querySelector(`.${HISTORY_CARD_LAYERED_TEXT_CLASS}`)).not.toBeNull();
+    expect(
+      clone
+        ?.querySelector(`.${HISTORY_CARD_LAYERED_TEXT_DEPTH_CLASS}`)
+        ?.getAttribute("aria-hidden"),
+    ).toBe("true");
+    expect(
+      clone
+        ?.querySelector(`.${HISTORY_CARD_LAYERED_TEXT_OUTLINE_CLASS}`)
+        ?.getAttribute("aria-hidden"),
+    ).toBe("true");
+    expect(clone?.querySelector(`.${HISTORY_CARD_LAYERED_TEXT_LABEL_CLASS}`)?.textContent).toBe(
+      "가",
+    );
   });
 
   it("keeps history-space cleanup idempotent after completion", () => {

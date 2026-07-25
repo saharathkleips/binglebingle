@@ -18,7 +18,7 @@ import {
 } from "../../lib/dom-data-attributes";
 import type { SubmissionSlot as SubmissionSlotType } from "../../context/game";
 import { useSubmissionSlotDraggable } from "./use-submission-slot-draggable";
-import Lotus from "./lotus.svg?react";
+import { Lotus } from "../decoration/Lotus";
 import styles from "./SubmissionSlot.module.css";
 
 /** Props for a single submission row slot. */
@@ -85,13 +85,7 @@ export function SubmissionSlot({
   }, [isFilled]);
 
   const slotPlaceholder = (
-    <span
-      aria-hidden="true"
-      className={styles.slotPlaceholder}
-      {...{ [DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE]: true }}
-    >
-      <Lotus className={styles.slotMotif} />
-    </span>
+    <Lotus dataAttributes={{ [DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE]: true }} />
   );
 
   const slotElement = isFilled ? (

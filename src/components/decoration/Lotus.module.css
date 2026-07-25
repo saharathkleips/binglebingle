@@ -1,0 +1,29 @@
+.tileBack {
+  --lotus-tile-back-background: var(--color-app-background);
+  --lotus-motif-opacity: 1;
+  --lotus-motif-saturation: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--tile-visual-short-edge);
+  height: var(--tile-visual-long-edge);
+  flex: none;
+  pointer-events: none;
+  border: max(1px, var(--tile-border-width)) solid currentColor;
+  border-radius: var(--tile-radius);
+  background-color: var(--lotus-tile-back-background);
+  box-shadow: var(--tile-depth-stack);
+  transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.motif {
+  display: block;
+  width: calc(var(--tile-visual-short-edge) * 0.8);
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+  opacity: var(--lotus-motif-opacity);
+  filter: saturate(var(--lotus-motif-saturation));
+}

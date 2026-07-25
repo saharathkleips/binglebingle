@@ -4,10 +4,16 @@
  * A single revealed card in the guess history, colored by evaluation result.
  */
 
-import { resolveCharacter } from "../../lib/character";
-import { DATA_HISTORY_CARD_ATTRIBUTE, DATA_RESULT_ATTRIBUTE } from "../../lib/dom-data-attributes";
+import {
+  DATA_HISTORY_CARD_ATTRIBUTE,
+  DATA_HISTORY_EMPTY_CARD_ATTRIBUTE,
+  DATA_RESULT_ATTRIBUTE,
+} from "../../lib/dom-data-attributes";
+import { getEvaluatedCharacterText } from "../../lib/evaluated-character-display";
 import type { EvaluatedCharacter } from "../../lib/engine";
+import { Lotus } from "../decoration/Lotus";
 import styles from "./HistoryArea.module.css";
+import { HistoryCardLayeredText } from "./HistoryCardLayeredText";
 
 /** Props for the `HistoryCard` component. */
 export type HistoryCardProps = {
@@ -24,15 +30,26 @@ export type HistoryCardProps = {
  * @param props - See {@link HistoryCardProps}.
  */
 export function HistoryCard({ evaluated }: HistoryCardProps) {
-  const text =
-    evaluated.character === undefined ? "" : (resolveCharacter(evaluated.character) ?? "");
+  const text = getEvaluatedCharacterText(evaluated);
+
+  if (text === "") {
+    return (
+      <Lotus
+        className={`${styles.historyEmptyCard} ${styles.historyEmptyCardLotus}`}
+        dataAttributes={{
+          [DATA_HISTORY_CARD_ATTRIBUTE]: true,
+          [DATA_HISTORY_EMPTY_CARD_ATTRIBUTE]: true,
+        }}
+      />
+    );
+  }
 
   return (
     <div
       className={styles.historyCard}
       {...{ [DATA_RESULT_ATTRIBUTE]: evaluated.result, [DATA_HISTORY_CARD_ATTRIBUTE]: true }}
     >
-      <span className={styles.historyCardText}>{text}</span>
+      <HistoryCardLayeredText text={text} />
     </div>
   );
 }
