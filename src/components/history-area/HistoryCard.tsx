@@ -13,6 +13,7 @@ import { getEvaluatedCharacterText } from "../../lib/evaluated-character-display
 import type { EvaluatedCharacter } from "../../lib/engine";
 import { Lotus } from "../decoration/Lotus";
 import styles from "./HistoryArea.module.css";
+import { HistoryCardLayeredText } from "./HistoryCardLayeredText";
 
 /** Props for the `HistoryCard` component. */
 export type HistoryCardProps = {
@@ -48,7 +49,7 @@ export function HistoryCard({ evaluated }: HistoryCardProps) {
       className={styles.historyCard}
       {...{ [DATA_RESULT_ATTRIBUTE]: evaluated.result, [DATA_HISTORY_CARD_ATTRIBUTE]: true }}
     >
-      <span className={styles.historyCardText}>{text}</span>
+      <HistoryCardLayeredText text={text} />
     </div>
   );
 }
