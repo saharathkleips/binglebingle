@@ -25,10 +25,13 @@
 }
 
 .motif {
+  --submission-button-hill-light: var(--color-result-correct);
+  --submission-button-hill-dark: var(--color-drop-target-active);
+
   position: absolute;
   bottom: 0;
   height: auto;
-  color: currentColor;
+  pointer-events: none;
 }
 
 .motifLeft {
