@@ -74,6 +74,21 @@
   color: var(--color-result-absent);
 }
 
+.historyEmptyCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tile-visual-short-edge);
+  height: var(--tile-hitbox-size);
+  flex: none;
+  color: var(--color-chrome-foreground);
+}
+
+.historyEmptyCardLotus {
+  --lotus-motif-opacity: var(--history-empty-card-motif-opacity);
+  --lotus-motif-saturation: var(--history-empty-card-motif-saturation);
+}
+
 .historyCardText {
   display: block;
   line-height: 1.2;

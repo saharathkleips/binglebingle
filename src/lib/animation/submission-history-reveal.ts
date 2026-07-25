@@ -18,8 +18,12 @@ import {
   dataAttributeSelector,
 } from "../dom-data-attributes";
 import type { EvaluatedCharacter } from "../engine";
+import { isEvaluatedCharacterEmpty } from "../evaluated-character-display";
 import { scheduleNextFrame } from "./frame-scheduler";
-import { createCardFlipRevealTimeline, createCardPulseTimeline } from "./submission-history-card";
+import {
+  createCardFlipRevealTimeline,
+  createEmptyCardPulseTimeline,
+} from "./submission-history-card";
 import { reserveHistoryRowScrollSpace } from "./submission-history-scroll-space";
 import { gsap } from "./register";
 
@@ -219,8 +223,8 @@ function addCardReveals(
     const position = `cardReveal+=${cardIndex * SUBMISSION_HISTORY_REVEAL_TIMING.cardRevealStagger}`;
 
     timeline.add(
-      evaluated.character === undefined
-        ? createCardPulseTimeline(clone)
+      isEvaluatedCharacterEmpty(evaluated)
+        ? createEmptyCardPulseTimeline(clone)
         : createCardFlipRevealTimeline(clone, evaluated),
       position,
     );

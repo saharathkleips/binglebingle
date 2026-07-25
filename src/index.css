@@ -128,6 +128,8 @@ body {
   --tile-depth-step: 1px;
   --tile-cast-shadow-distance: 3px;
   --history-min-visible-rows: 2.25;
+  --history-empty-card-motif-opacity: 0.5;
+  --history-empty-card-motif-saturation: 0.5;
 
   /* ── Tile derived tokens ─────────────────────────────────────────────── */
   --tile-visual-long-edge: var(--tile-hitbox-size);
@@ -170,6 +172,11 @@ body {
   color: var(--color-chrome-foreground);
   background-color: var(--color-app-background);
   z-index: 1;
+}
+
+.submission-history-reveal-card[data-history-empty-card] {
+  --lotus-motif-opacity: var(--history-empty-card-motif-opacity);
+  --lotus-motif-saturation: var(--history-empty-card-motif-saturation);
 }
 
 .submission-history-reveal-card[data-result] {

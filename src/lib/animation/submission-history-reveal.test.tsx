@@ -8,7 +8,9 @@ import { describe, it, expect, afterEach } from "vitest";
 import { character } from "../character";
 import {
   DATA_HISTORY_ANIMATION_SPACER_ATTRIBUTE,
+  DATA_HISTORY_EMPTY_CARD_ATTRIBUTE,
   DATA_HISTORY_ROW_INDEX_ATTRIBUTE,
+  DATA_RESULT_ATTRIBUTE,
   DATA_SLOT_HITBOX_ATTRIBUTE,
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_SUBMISSION_HISTORY_REVEAL_CARD_ATTRIBUTE,
@@ -17,6 +19,7 @@ import {
   dataAttributeSelector,
 } from "../dom-data-attributes";
 import { gsap } from "./register";
+import { createEmptyCardPulseTimeline } from "./submission-history-card";
 import { animateSubmissionSlotsToHistoryReveal } from "./submission-history-reveal";
 
 const ABSENT_EVALUATION = [{ result: "ABSENT" as const }];
@@ -139,6 +142,19 @@ describe("animateSubmissionSlotsToHistoryReveal", () => {
         dataAttributeSelector(DATA_HISTORY_ANIMATION_SPACER_ATTRIBUTE),
       ),
     ).toBeNull();
+  });
+
+  it("marks empty reveal clones as empty history cards after their pulse", () => {
+    const clone = document.createElement("span");
+    clone.setAttribute(DATA_RESULT_ATTRIBUTE, "ABSENT");
+
+    const timeline = createEmptyCardPulseTimeline(clone);
+    timeline.progress(1);
+
+    expect(clone.getAttribute(DATA_HISTORY_EMPTY_CARD_ATTRIBUTE)).toBe("true");
+    expect(clone.hasAttribute(DATA_RESULT_ATTRIBUTE)).toBe(false);
+    expect(clone.style.getPropertyValue("--lotus-motif-opacity")).toBe("");
+    expect(clone.style.getPropertyValue("--lotus-motif-saturation")).toBe("");
   });
 
   it("keeps history-space cleanup idempotent after completion", () => {
