@@ -210,7 +210,9 @@ describe("animateSubmissionSlotsToHistoryReveal", () => {
     expect(clone?.hasAttribute(DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE)).toBe(false);
     expect(clone?.querySelector(`.${HISTORY_CARD_LAYERED_TEXT_CLASS}`)).not.toBeNull();
     expect(
-      clone?.querySelector(`.${HISTORY_CARD_LAYERED_TEXT_DEPTH_CLASS}`)?.getAttribute("aria-hidden"),
+      clone
+        ?.querySelector(`.${HISTORY_CARD_LAYERED_TEXT_DEPTH_CLASS}`)
+        ?.getAttribute("aria-hidden"),
     ).toBe("true");
     expect(
       clone
