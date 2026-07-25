@@ -12,57 +12,36 @@ body {
 }
 
 :root {
-  /* ── Palette: Obangsaek (오방색) vivid ────────────────────────────────── */
-  --palette-obangsaek-black: #080808;
-
-  /* ── Palette: Dancheong (단청) pastel ────────────────────────────────── */
-  --palette-dancheong-blue: #393f69;
-  --palette-dancheong-yellow: #fbe596;
-
-  /* ── Palette: Najeon Iridescent ─────────────────────── */
-  --palette-najeon-iridescent-lavender: #e6e6fa;
-  --palette-najeon-iridescent-blue: #b0e0e6;
-  --palette-najeon-iridescent-pink: #fff0f5;
-  --palette-najeon-iridescent-cyan: #e0ffff;
-  --palette-najeon-iridescent-mint: #f0fff0;
-
-  /* ── Palette: Submission result accents ─────────────────────── */
-  --palette-submission-hill-green: #3b961e;
-  --palette-lotus-center-yellow: #f6d24b;
-  --palette-najeon-gray-pearl-shadow: #b8c0cc;
-
-  /* ── Palette: Cream backgrounds ──────────────────────────────────────── */
-  --palette-rice-paper: #fbf7ef;
+  /* ── Palette: Iridescent ─────────────────────────────────────────────── */
+  --palette-iridescent-lavender: #e6e6fa;
+  --palette-iridescent-blue: #b0e0e6;
+  --palette-iridescent-pink: #fff0f5;
+  --palette-iridescent-cyan: #e0ffff;
+  --palette-iridescent-mint: #f0fff0;
 
   /* ── Semantic: App background ────────────────────────────────────────── */
-  --color-app-background: var(--palette-rice-paper);
+  --color-app-background: #fbf7ef;
 
   /* ── Semantic: Surface ───────────────────────────────────────────────── */
-  --color-surface: var(--palette-rice-paper);
-  --color-surface-accent: var(--palette-dancheong-yellow);
+  --color-surface: #fbf7ef;
 
   /* ── Semantic: Text ──────────────────────────────────────────────────── */
-  --color-text: var(--palette-obangsaek-black);
-  --color-text-muted: var(--palette-dancheong-blue);
+  --color-text: #080808;
 
   /* ── Semantic: Border and chrome ─────────────────────────────────────── */
-  --color-border: var(--palette-obangsaek-black);
-  --color-chrome-foreground: var(--palette-obangsaek-black);
+  --color-border: #080808;
+  --color-chrome-foreground: #080808;
 
   /* ── Semantic: Overlay and drop feedback ─────────────────────────────── */
-  --color-overlay-backdrop: rgba(0, 0, 0, 0.6);
   --color-drop-target-active: #3b5442;
 
   /* ── Semantic: Guess evaluation results ──────────────────────────────── */
-  --color-result-correct: var(--palette-submission-hill-green);
-  --color-result-present: var(--palette-lotus-center-yellow);
-  --color-result-absent: var(--palette-najeon-gray-pearl-shadow);
-
-  /* ── Layers ──────────────────────────────────────────────────────────── */
-  --z-index-popover: 100;
+  --color-result-correct: #3b961e;
+  --color-result-present: #f6d24b;
+  --color-result-absent: #b8c0cc;
 
   /* ── Semantic: Tile face ─────────────────────────────────────────────── */
-  --color-tile-face: var(--palette-obangsaek-black);
+  --color-tile-face: #080808;
   --color-tile-depth: #1a1a1a;
   --color-tile-shadow: rgba(0, 0, 0, 0.5);
 
@@ -72,27 +51,27 @@ body {
 
   /* ── Gradient tokens ─────────────────────────────────────────────────── */
   --gradient-iridescent-conic-stops:
-    var(--palette-najeon-iridescent-lavender) 0deg, var(--palette-najeon-iridescent-blue) 72deg,
-    var(--palette-najeon-iridescent-pink) 144deg, var(--palette-najeon-iridescent-cyan) 216deg,
-    var(--palette-najeon-iridescent-mint) 288deg, var(--palette-najeon-iridescent-lavender) 360deg;
+    var(--palette-iridescent-lavender) 0deg, var(--palette-iridescent-blue) 72deg,
+    var(--palette-iridescent-pink) 144deg, var(--palette-iridescent-cyan) 216deg,
+    var(--palette-iridescent-mint) 288deg, var(--palette-iridescent-lavender) 360deg;
   --gradient-iridescent-conic: conic-gradient(
     from 180deg at 50% 50%,
     var(--gradient-iridescent-conic-stops)
   );
   --gradient-logo-text: linear-gradient(
     90deg,
-    var(--palette-najeon-iridescent-pink) 0%,
-    var(--palette-najeon-iridescent-lavender) 40%,
-    var(--palette-najeon-iridescent-cyan) 60%,
-    var(--palette-najeon-iridescent-blue) 100%
+    var(--palette-iridescent-pink) 0%,
+    var(--palette-iridescent-lavender) 40%,
+    var(--palette-iridescent-cyan) 60%,
+    var(--palette-iridescent-blue) 100%
   );
   --gradient-logo-border: linear-gradient(
     135deg,
-    var(--palette-najeon-iridescent-lavender) 0%,
-    var(--palette-najeon-iridescent-blue) 25%,
-    var(--palette-najeon-iridescent-pink) 50%,
-    var(--palette-najeon-iridescent-cyan) 75%,
-    var(--palette-najeon-iridescent-mint) 100%
+    var(--palette-iridescent-lavender) 0%,
+    var(--palette-iridescent-blue) 25%,
+    var(--palette-iridescent-pink) 50%,
+    var(--palette-iridescent-cyan) 75%,
+    var(--palette-iridescent-mint) 100%
   );
 
   /* ── Motion tokens ───────────────────────────────────────────────────── */
@@ -146,19 +125,15 @@ body {
   /* ── General spacing ────────────────────────────────────────────────── */
   --space-sm: 0.5rem;
   --space-md: 0.75rem;
-  --space-lg: 2rem;
-
   /* ── Viewport spacing ───────────────────────────────────────────────── */
   --app-bottom-padding: max(var(--space-sm), env(safe-area-inset-bottom));
 
   /* ── General shape ──────────────────────────────────────────────────── */
-  --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
 
   /* ── Typography ──────────────────────────────────────────────────────── */
   --font-family-ui: system-ui, "Noto Sans KR", sans-serif;
   --font-family-tile: "Noto Sans KR", var(--font-family-ui);
-  --font-weight-semibold: 600;
   --font-weight-bold: 700;
   --font-weight-control: 800;
   --font-weight-tile: 900;
