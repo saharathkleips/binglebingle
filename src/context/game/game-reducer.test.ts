@@ -132,6 +132,22 @@ describe("gameReducer", () => {
     expect(next.history).toHaveLength(1);
   });
 
+  it("routes ROUND_SUBMISSION_COMMIT — applies a precomputed submit transition", () => {
+    const state = createInitialGameState(word("가"));
+    const next = gameReducer(state, {
+      type: "ROUND_SUBMISSION_COMMIT",
+      payload: {
+        evaluation: [{ character: character("가")!, result: "CORRECT" }],
+        pool: [],
+        submission: [{ state: "FILLED", tileId: 0, character: character("가")! }],
+      },
+    });
+
+    expect(next.history).toHaveLength(1);
+    expect(next.pool).toEqual([]);
+    expect(next.submission[0]?.state).toBe("FILLED");
+  });
+
   it("routes ROUND_RESET — restores the pool and clears the submission", () => {
     const dirty = { ...createInitialGameState(word("가")), pool: [] };
     const next = gameReducer(dirty, { type: "ROUND_RESET" });

@@ -9,7 +9,13 @@
 import { useRef, useLayoutEffect } from "react";
 import { gsap } from "../../lib/animation/register";
 import { CharacterTile } from "../tile/CharacterTile";
-import { DATA_SLOT_INDEX_ATTRIBUTE, DATA_TILE_ID_ATTRIBUTE } from "../tile/drop-target-helpers";
+import {
+  DATA_SLOT_HITBOX_ATTRIBUTE,
+  DATA_SLOT_INDEX_ATTRIBUTE,
+  DATA_SLOT_STATE_ATTRIBUTE,
+  DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE,
+  DATA_TILE_ID_ATTRIBUTE,
+} from "../../lib/dom-data-attributes";
 import type { SubmissionSlot as SubmissionSlotType } from "../../context/game";
 import { useSubmissionSlotDraggable } from "./use-submission-slot-draggable";
 import Lotus from "./lotus.svg?react";
@@ -79,7 +85,11 @@ export function SubmissionSlot({
   }, [isFilled]);
 
   const slotPlaceholder = (
-    <span aria-hidden="true" className={styles.slotPlaceholder}>
+    <span
+      aria-hidden="true"
+      className={styles.slotPlaceholder}
+      {...{ [DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE]: true }}
+    >
       <Lotus className={styles.slotMotif} />
     </span>
   );
@@ -94,7 +104,7 @@ export function SubmissionSlot({
       dataAttributes={{
         [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex,
         [DATA_TILE_ID_ATTRIBUTE]: slot.tileId,
-        "data-slot-state": "filled",
+        [DATA_SLOT_STATE_ATTRIBUTE]: "filled",
       }}
     />
   ) : (
@@ -102,8 +112,8 @@ export function SubmissionSlot({
       ref={emptySlotRef}
       className={`${styles.slot} ${styles.empty}`}
       {...{ [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex }}
-      data-slot-state="empty"
-      data-slot-hitbox
+      {...{ [DATA_SLOT_STATE_ATTRIBUTE]: "empty" }}
+      {...{ [DATA_SLOT_HITBOX_ATTRIBUTE]: true }}
     >
       {slotPlaceholder}
     </div>
@@ -117,8 +127,8 @@ export function SubmissionSlot({
       <div
         className={styles.slotGhost}
         {...{ [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex }}
-        data-slot-state="filled"
-        data-slot-hitbox
+        {...{ [DATA_SLOT_STATE_ATTRIBUTE]: "filled" }}
+        {...{ [DATA_SLOT_HITBOX_ATTRIBUTE]: true }}
       >
         {slotElement}
         {slotPlaceholder}

@@ -5,6 +5,15 @@
  * React owner changes so a tile can animate smoothly into its new rendered home.
  */
 
+import {
+  DATA_SLOT_INDEX_ATTRIBUTE,
+  DATA_SLOT_STATE_ATTRIBUTE,
+  DATA_TILE_ID_ATTRIBUTE,
+  DATA_TILE_SURFACE_ATTRIBUTE,
+  DATA_TILE_TEXT_ATTRIBUTE,
+  dataAttributeSelector,
+} from "../dom-data-attributes";
+import { scheduleNextFrame } from "./frame-scheduler";
 import { SNAP_BACK_ANIMATION } from "./motion-tokens";
 import { gsap } from "./register";
 
@@ -13,10 +22,11 @@ const ARRIVAL_LIFT_TRANSFORM =
 const ARRIVAL_LIFT_SHADOW = "var(--tile-shadow-stack-lifted)";
 const SNAP_BACK_CLONE_STRIPPED_ATTRIBUTES = [
   "id",
-  "data-slot-index",
-  "data-slot-state",
-  "data-tile-id",
+  DATA_SLOT_INDEX_ATTRIBUTE,
+  DATA_SLOT_STATE_ATTRIBUTE,
+  DATA_TILE_ID_ATTRIBUTE,
 ] as const;
+const SNAP_BACK_FALLBACK_CLEANUP_BUFFER_MS = 1000;
 
 /** Options captured when recording a cross-owner tile snap-back. */
 export type TileSnapBackOptions = {
@@ -24,6 +34,12 @@ export type TileSnapBackOptions = {
   shouldLiftOnArrival?: boolean;
   /** Optional text to show on the traveling clone when it represents a newly-created tile. */
   cloneText?: string;
+  /** When to apply `cloneText` to the traveling clone. Defaults to `immediate`. */
+  cloneTextTiming?: "immediate" | "on-start";
+  /** Optional delay before the traveling clone starts moving to its destination. */
+  delay?: number;
+  /** Initial clone visibility before any delayed movement starts. Defaults to `visible`. */
+  initialVisibility?: "visible" | "hidden-until-start";
 };
 
 /** Pending snap-back data consumed by the next rendered instance of the same tile ID. */
@@ -34,6 +50,10 @@ export type TileSnapBackSnapshot = {
   cleanupTimer: ReturnType<typeof setTimeout>;
   /** Whether the destination tile should briefly adopt the hover lift after arrival. */
   shouldLiftOnArrival: boolean;
+  /** Optional text to apply to the clone when its tween starts. */
+  cloneTextOnStart?: string;
+  /** Delay before the traveling clone starts moving to its destination. */
+  delay: number;
 };
 
 const pendingTileSnapBacks = new Map<number, TileSnapBackSnapshot>();
@@ -57,7 +77,10 @@ export function recordTileSnapBack(
 
   const fromRect = element.getBoundingClientRect();
   const clone = element.cloneNode(true) as HTMLElement; // DOM clone preserves the rendered tile surface.
-  if (options.cloneText !== undefined) setCloneTileText(clone, options.cloneText);
+  const shouldApplyCloneTextOnStart = options.cloneTextTiming === "on-start";
+  if (options.cloneText !== undefined && !shouldApplyCloneTextOnStart) {
+    setCloneTileText(clone, options.cloneText);
+  }
   SNAP_BACK_CLONE_STRIPPED_ATTRIBUTES.forEach((attribute) => clone.removeAttribute(attribute));
   clone.setAttribute("aria-hidden", "true");
   clone.style.position = "fixed";
@@ -68,19 +91,28 @@ export function recordTileSnapBack(
   clone.style.margin = "0";
   clone.style.transform = "none";
   clone.style.pointerEvents = "none";
+  clone.style.visibility =
+    options.initialVisibility === "hidden-until-start" ? "hidden" : "visible";
   clone.style.zIndex = "10000";
   if (typeof document !== "undefined") document.body.appendChild(clone);
 
-  const cleanupTimer = setTimeout(() => {
-    if (pendingTileSnapBacks.get(tileId)?.clone !== clone) return;
-    pendingTileSnapBacks.delete(tileId);
-    clone.remove();
-  }, 0);
+  const cleanupTimer = setTimeout(
+    () => {
+      if (pendingTileSnapBacks.get(tileId)?.clone !== clone) return;
+      pendingTileSnapBacks.delete(tileId);
+      clone.remove();
+    },
+    getSnapBackFallbackCleanupDelayMs(options.delay ?? 0),
+  );
 
   pendingTileSnapBacks.set(tileId, {
     clone,
     cleanupTimer,
+    ...(options.cloneText !== undefined && shouldApplyCloneTextOnStart
+      ? { cloneTextOnStart: options.cloneText }
+      : {}),
     shouldLiftOnArrival: options.shouldLiftOnArrival === true,
+    delay: options.delay ?? 0,
   });
 }
 
@@ -182,7 +214,13 @@ export function animateSnapBackFromRect(
     top: toRect.top,
     width: toRect.width,
     height: toRect.height,
+    delay: snapshot.delay,
     ...SNAP_BACK_ANIMATION,
+    onStart: () => {
+      if (snapshot.cloneTextOnStart !== undefined)
+        setCloneTileText(clone, snapshot.cloneTextOnStart);
+      clone.style.visibility = "visible";
+    },
     onComplete: () => {
       cleanup();
       onComplete?.();
@@ -196,8 +234,16 @@ function removeTileSnapBackSnapshot(snapshot: TileSnapBackSnapshot): void {
   snapshot.clone.remove();
 }
 
+function getSnapBackFallbackCleanupDelayMs(delaySeconds: number): number {
+  return (
+    (delaySeconds + SNAP_BACK_ANIMATION.duration) * 1000 + SNAP_BACK_FALLBACK_CLEANUP_BUFFER_MS
+  );
+}
+
 function setCloneTileText(clone: HTMLElement, text: string): void {
-  const textElement = clone.querySelector<HTMLElement>("[data-tile-text]");
+  const textElement = clone.querySelector<HTMLElement>(
+    dataAttributeSelector(DATA_TILE_TEXT_ATTRIBUTE),
+  );
   if (textElement === null) return;
 
   textElement.textContent = text;
@@ -227,14 +273,7 @@ function syncArrivalLiftVariables(clone: HTMLElement, destinationElement: HTMLEl
 }
 
 function clearArrivalLiftOnNextFrame(element: HTMLElement): void {
-  const schedule =
-    globalThis.requestAnimationFrame ??
-    ((callback: FrameRequestCallback) => {
-      globalThis.setTimeout(callback, 0);
-      return 0;
-    });
-
-  schedule(() => {
+  scheduleNextFrame(() => {
     const surface = findTileSurface(element);
     if (surface === null) return;
 
@@ -244,5 +283,5 @@ function clearArrivalLiftOnNextFrame(element: HTMLElement): void {
 }
 
 function findTileSurface(element: HTMLElement): HTMLElement | null {
-  return element.querySelector<HTMLElement>("[data-tile-surface]");
+  return element.querySelector<HTMLElement>(dataAttributeSelector(DATA_TILE_SURFACE_ATTRIBUTE));
 }

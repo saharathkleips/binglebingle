@@ -16,12 +16,14 @@ import {
 import { resolveCharacter } from "../../lib/character";
 import { getNextRotation } from "../../lib/character/rotation";
 import { decompose, compose } from "../../lib/character/composition";
-import { PoolTile } from "./PoolTile";
 import {
+  DATA_INPUT_LOCKED_ATTRIBUTE,
+  DATA_POOL_ATTRIBUTE,
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_TILE_ID_ATTRIBUTE,
-  parseDropTargetNumber,
-} from "../tile/drop-target-helpers";
+} from "../../lib/dom-data-attributes";
+import { PoolTile } from "./PoolTile";
+import { parseDropTargetNumber } from "../tile/drop-target-helpers";
 import type { SubmissionSlot, Tile as TileType } from "../../context/game";
 import styles from "./Pool.module.css";
 
@@ -30,7 +32,7 @@ import styles from "./Pool.module.css";
  * all interaction logic: tap dispatch, compose validation, slot insertion.
  */
 export function Pool() {
-  const { state, dispatch } = useGame();
+  const { state, dispatch, isInputLocked } = useGame();
   const [rotatingTileId, setRotatingTileId] = useState<number | null>(null);
   const [composedTileId, setComposedTileId] = useState<number | null>(null);
   const [newlyAddedTileIds, setNewlyAddedTileIds] = useState<Set<number>>(new Set());
@@ -60,6 +62,8 @@ export function Pool() {
   }, [state.pool]);
 
   function handleTap(tile: TileType, sourceElement?: HTMLElement) {
+    if (isInputLocked) return;
+
     if (getNextRotation(tile.character) !== null) {
       setRotatingTileId(tile.id);
       dispatch({ type: "CHARACTER_ROTATE_NEXT", payload: { tileId: tile.id } });
@@ -79,6 +83,8 @@ export function Pool() {
   }
 
   function handleDropOnTile(sourceTile: TileType, targetId: number): boolean {
+    if (isInputLocked) return false;
+
     const composedCharacter = getComposedCharacter(sourceTile, targetId);
     if (composedCharacter === null) return false;
 
@@ -88,11 +94,15 @@ export function Pool() {
   }
 
   function handleDropOnSlot(sourceTile: TileType, slotIndex: number): boolean {
+    if (isInputLocked) return false;
+
     dispatch({ type: "SUBMISSION_SLOT_INSERT", payload: { tileId: sourceTile.id, slotIndex } });
     return true;
   }
 
   function getDropTargetFeedback(sourceTile: TileType, target: Element) {
+    if (isInputLocked) return { canDrop: false, preview: null };
+
     if (target.hasAttribute(DATA_SLOT_INDEX_ATTRIBUTE)) return { canDrop: true, preview: null };
 
     const targetId = parseTileId(target);
@@ -110,13 +120,22 @@ export function Pool() {
   }
 
   return (
-    <div className={styles.pool} role="group" aria-label="Jamo pool" data-pool="true">
+    <div
+      className={styles.pool}
+      role="group"
+      aria-label="Jamo pool"
+      aria-disabled={isInputLocked || undefined}
+      {...{
+        [DATA_INPUT_LOCKED_ATTRIBUTE]: isInputLocked || undefined,
+        [DATA_POOL_ATTRIBUTE]: true,
+      }}
+    >
       {state.pool.map((tile) => {
         return (
           <PoolTile
             key={tile.id}
             tile={tile}
-            isTappable={canTapTile(tile)}
+            isTappable={!isInputLocked && canTapTile(tile)}
             isRotating={rotatingTileId === tile.id}
             isJustComposed={composedTileId === tile.id}
             isNewlyAdded={newlyAddedTileIds.has(tile.id)}

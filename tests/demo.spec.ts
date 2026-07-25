@@ -28,6 +28,17 @@
  */
 
 import { test, expect, type Page, type Locator } from "@playwright/test";
+import {
+  DATA_HISTORY_CARD_ATTRIBUTE,
+  DATA_INPUT_LOCKED_ATTRIBUTE,
+  DATA_POOL_ATTRIBUTE,
+  DATA_RESULT_ATTRIBUTE,
+  DATA_SLOT_HITBOX_ATTRIBUTE,
+  DATA_SLOT_INDEX_ATTRIBUTE,
+  DATA_SUBMISSION_ANIMATING_ATTRIBUTE,
+  DATA_TILE_ID_ATTRIBUTE,
+  dataAttributeSelector,
+} from "../src/lib/dom-data-attributes";
 
 /**
  * Simulates a pointer-events drag from source to target with visible movement.
@@ -64,13 +75,36 @@ async function pause(page: Page, ms = 600) {
   await page.waitForTimeout(ms);
 }
 
+/** Waits until submit-owned reveal/snap-back motion has released input again. */
+async function waitForGameReady(page: Page) {
+  await expect(page.getByRole("region", { name: "Submission area" })).not.toHaveAttribute(
+    DATA_SUBMISSION_ANIMATING_ATTRIBUTE,
+    "true",
+  );
+  await expect(page.getByRole("group", { name: "Jamo pool" })).not.toHaveAttribute(
+    DATA_INPUT_LOCKED_ATTRIBUTE,
+    "true",
+  );
+}
+
 test("demo: guesses 가이야 → 고야이 → 고양이 to win", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "알겠어요!" }).click();
 
-  const tile = (id: number) => page.locator(`[data-pool="true"] [data-tile-id="${id}"]`);
-  const slot = (index: number) => page.locator(`[data-slot-index="${index}"][data-slot-hitbox]`);
-  const historyTiles = page.locator("[data-history-tile]");
+  const tile = (id: number) =>
+    page.locator(
+      `${dataAttributeSelector(DATA_POOL_ATTRIBUTE, true)} ${dataAttributeSelector(
+        DATA_TILE_ID_ATTRIBUTE,
+        id,
+      )}`,
+    );
+  const slot = (index: number) =>
+    page.locator(
+      `${dataAttributeSelector(DATA_SLOT_INDEX_ATTRIBUTE, index)}${dataAttributeSelector(
+        DATA_SLOT_HITBOX_ATTRIBUTE,
+      )}`,
+    );
+  const historyCards = page.locator(dataAttributeSelector(DATA_HISTORY_CARD_ATTRIBUTE));
 
   // -------------------------------------------------------------------------
   // GUESS 1 — 가이야  (showcase PRESENT: 이 belongs at position 2, not 1)
@@ -95,14 +129,16 @@ test("demo: guesses 가이야 → 고야이 → 고양이 to win", async ({ page
   await pause(page);
 
   await page.getByRole("button", { name: "도전" }).click();
-  await pause(page, 1000);
+  await expect(historyCards).toHaveCount(3);
+  await waitForGameReady(page);
+  await pause(page);
 
   // Board row 0: 가 ABSENT · 이 PRESENT · 야 ABSENT
   // Pool after (가 and 야 decompose on return): 0:ㄱ  1:ㅏ  2:ㅇ  3:ㅑ  4:ㅇ
   // Submission: slot-0 EMPTY · slot-1 이(tile-5, PRESENT) · slot-2 EMPTY
-  await expect(historyTiles.nth(0)).toHaveAttribute("data-result", "ABSENT");
-  await expect(historyTiles.nth(1)).toHaveAttribute("data-result", "PRESENT");
-  await expect(historyTiles.nth(2)).toHaveAttribute("data-result", "ABSENT");
+  await expect(historyCards.nth(0)).toHaveAttribute(DATA_RESULT_ATTRIBUTE, "ABSENT");
+  await expect(historyCards.nth(1)).toHaveAttribute(DATA_RESULT_ATTRIBUTE, "PRESENT");
+  await expect(historyCards.nth(2)).toHaveAttribute(DATA_RESULT_ATTRIBUTE, "ABSENT");
 
   // -------------------------------------------------------------------------
   // GUESS 2 — 고야이  (showcase compose → decompose → rotate → recompose)
@@ -147,35 +183,39 @@ test("demo: guesses 가이야 → 고야이 → 고양이 to win", async ({ page
   await pause(page);
 
   await page.getByRole("button", { name: "도전" }).click();
-  await pause(page, 1000);
+  await expect(historyCards).toHaveCount(6);
+  await waitForGameReady(page);
+  await pause(page);
 
   // Board row 1: 고 CORRECT · 야 ABSENT · 이 CORRECT
   // Pool after (야 decomposes on return): 4:ㅇ  2:ㅇ  1:ㅑ
   // Submission: slot-0 고(tile-0) · slot-1 EMPTY · slot-2 이(tile-5)
-  await expect(historyTiles.nth(3)).toHaveAttribute("data-result", "CORRECT");
-  await expect(historyTiles.nth(4)).toHaveAttribute("data-result", "ABSENT");
-  await expect(historyTiles.nth(5)).toHaveAttribute("data-result", "CORRECT");
+  await expect(historyCards.nth(3)).toHaveAttribute(DATA_RESULT_ATTRIBUTE, "CORRECT");
+  await expect(historyCards.nth(4)).toHaveAttribute(DATA_RESULT_ATTRIBUTE, "ABSENT");
+  await expect(historyCards.nth(5)).toHaveAttribute(DATA_RESULT_ATTRIBUTE, "CORRECT");
 
   // -------------------------------------------------------------------------
   // GUESS 3 — 고양이  (compose 양 and win)
   // -------------------------------------------------------------------------
   // Pool: 4:ㅇ  2:ㅇ  1:ㅑ
 
-  // Build 야: drag ㅑ(1) onto ㅇ(2) → tile-2 becomes 야, tile-1 removed
-  await drag(page, tile(1), tile(2));
+  // Build 야: drag ㅑ(1) onto the original leftover ㅇ(4) → tile-4 becomes 야, tile-1 removed.
+  // Using the pre-existing pool tile avoids racing the returning ㅇ(2) snap-back animation in demos.
+  await drag(page, tile(1), tile(4));
   await pause(page);
-  // Build 양: drag ㅇ(4) onto 야(2) → tile-2 becomes 양, tile-4 removed
-  await drag(page, tile(4), tile(2));
+  // Build 양: drag returned ㅇ(2) onto 야(4) → tile-4 becomes 양, tile-2 removed
+  await drag(page, tile(2), tile(4));
   await pause(page);
   // Place 양 in the only empty slot; slots 0 and 2 are already correct.
-  await drag(page, tile(2), slot(1)); // 양 → slot 1
+  await drag(page, tile(4), slot(1)); // 양 → slot 1
   await pause(page);
 
   await page.getByRole("button", { name: "도전" }).click();
+  await expect(historyCards).toHaveCount(9);
   await pause(page, 2000); // hold on the winning state
 
   // Board row 2: all CORRECT
-  await expect(historyTiles.nth(6)).toHaveAttribute("data-result", "CORRECT");
-  await expect(historyTiles.nth(7)).toHaveAttribute("data-result", "CORRECT");
-  await expect(historyTiles.nth(8)).toHaveAttribute("data-result", "CORRECT");
+  await expect(historyCards.nth(6)).toHaveAttribute(DATA_RESULT_ATTRIBUTE, "CORRECT");
+  await expect(historyCards.nth(7)).toHaveAttribute(DATA_RESULT_ATTRIBUTE, "CORRECT");
+  await expect(historyCards.nth(8)).toHaveAttribute(DATA_RESULT_ATTRIBUTE, "CORRECT");
 });

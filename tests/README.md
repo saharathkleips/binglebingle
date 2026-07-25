@@ -11,9 +11,9 @@ Playwright tests live here. `smoke.spec.ts` checks the page loads. `demo.spec.ts
 | Pool tile by tile ID          | `page.locator('[data-tile-id="{id}"]')`                         |
 | Submission slot by position   | `page.locator('[data-slot-index="{index}"][data-slot-hitbox]')` |
 | Submission button             | `page.getByRole("button", { name: "도전" })`                    |
-| History tiles (all, in order) | `page.locator("[data-history-tile]")`                           |
+| History cards (all, in order) | `page.locator("[data-history-card]")`                           |
 
-History tiles accumulate across guesses — the first guess fills `.nth(0–2)`, the second fills `.nth(3–5)`, and so on.
+History cards accumulate across guesses — the first guess fills `.nth(0–2)`, the second fills `.nth(3–5)`, and so on.
 
 ---
 
@@ -105,13 +105,13 @@ Other rotation sets exist for double consonants and compound vowels — check `s
 
 ## Guess Results
 
-After submitting, each history tile gets a `data-result` attribute:
+After submitting, each history card gets a `data-result` attribute:
 
 ```typescript
-const historyTiles = page.locator("[data-history-tile]");
-await expect(historyTiles.nth(0)).toHaveAttribute("data-result", "CORRECT");
-await expect(historyTiles.nth(1)).toHaveAttribute("data-result", "PRESENT");
-await expect(historyTiles.nth(2)).toHaveAttribute("data-result", "ABSENT");
+const historyCards = page.locator("[data-history-card]");
+await expect(historyCards.nth(0)).toHaveAttribute("data-result", "CORRECT");
+await expect(historyCards.nth(1)).toHaveAttribute("data-result", "PRESENT");
+await expect(historyCards.nth(2)).toHaveAttribute("data-result", "ABSENT");
 ```
 
 Evaluation is **character (syllable block) level**, not jamo level. A tile is PRESENT if that exact syllable block appears in the target word but at a different position.
@@ -143,4 +143,4 @@ async function pause(page: Page, ms = 600) {
 }
 ```
 
-Use `pause()` between every drag and click for readability. Use `pause(page, 1000)` after each submission and `pause(page, 2000)` after the final winning submission so the video doesn't cut off.
+Use `pause()` between ordinary drag/click actions for readability. After submission, prefer waiting for the history count plus the game-ready attributes (`data-submission-animating` / `data-input-locked`) instead of relying on a fixed timeout. Keep an extra hold after the final winning submission so the video doesn't cut off.

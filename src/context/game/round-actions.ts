@@ -1,7 +1,7 @@
 /**
  * @file round-actions.ts
  *
- * Handlers for round-progression actions: ROUND_SUBMISSION_SUBMIT, ROUND_RESET.
+ * Handlers for round-progression actions: submit, commit prepared submit, reset.
  * Also exports pool/submission builders shared with createInitialGameState.
  * No React. No side effects.
  */
@@ -10,7 +10,7 @@ import { fullDecompose } from "../../lib/character/composition";
 import { normalizeCharacter } from "../../lib/character/rotation";
 import { evaluateGuess } from "../../lib/engine/evaluate";
 import type { Word } from "../../lib/word";
-import type { GameState, SubmissionSlot, Tile } from ".";
+import type { GameState, SubmissionSlot, SubmitGuessCommitPayload, Tile } from ".";
 
 /** Returned tiles grouped by the submitted slot that produced them. */
 export type ReturnedTilesForSlot = {
@@ -21,13 +21,7 @@ export type ReturnedTilesForSlot = {
 };
 
 /** Pure description of the state transition produced by submitting a guess. */
-export type SubmitGuessTransition = {
-  /** Per-slot evaluation for the submitted guess. */
-  evaluation: ReturnType<typeof evaluateGuess>;
-  /** Submission after correct/present slots are kept and absent slots are cleared. */
-  submission: readonly SubmissionSlot[];
-  /** Pool after absent tiles are decomposed and returned. */
-  pool: readonly Tile[];
+export type SubmitGuessTransition = SubmitGuessCommitPayload & {
   /** Returned tiles grouped by their source submission slot. */
   returnedTilesBySlot: readonly ReturnedTilesForSlot[];
 };
@@ -74,8 +68,22 @@ export function buildEmptySubmission(word: Word): readonly SubmissionSlot[] {
  * @returns Next game state
  */
 export function handleSubmitGuess(state: GameState): GameState {
-  const transition = prepareSubmitGuessTransition(state);
+  return commitSubmitGuessTransition(state, prepareSubmitGuessTransition(state));
+}
 
+/**
+ * Commits an already-prepared submit transition. This remains domain-level state
+ * application; callers may precompute the transition to coordinate UI animation
+ * without duplicating submit rules.
+ *
+ * @param state - Current game state
+ * @param transition - Precomputed submit transition fields
+ * @returns Next game state
+ */
+export function commitSubmitGuessTransition(
+  state: GameState,
+  transition: SubmitGuessCommitPayload,
+): GameState {
   return {
     ...state,
     history: [...state.history, transition.evaluation],

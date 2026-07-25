@@ -6,6 +6,12 @@ import { SubmissionArea } from "./SubmissionArea";
 import { Pool } from "../pool/Pool";
 import { GameProvider } from "../../context/game/GameContext";
 import { createInitialGameState } from "../../context/game/game-reducer";
+import {
+  DATA_POOL_ATTRIBUTE,
+  DATA_SLOT_HITBOX_ATTRIBUTE,
+  DATA_SLOT_INDEX_ATTRIBUTE,
+  dataAttributeSelector,
+} from "../../lib/dom-data-attributes";
 import { createWord } from "../../lib/word";
 
 async function renderSubmissionArea(word: string) {
@@ -28,9 +34,13 @@ async function renderWithPool(word: string) {
 }
 
 function submissionSlots(): HTMLElement[] {
-  return Array.from(document.querySelectorAll("[data-slot-index][data-slot-hitbox]")).filter(
-    (element): element is HTMLElement => element instanceof HTMLElement,
-  );
+  return Array.from(
+    document.querySelectorAll(
+      `${dataAttributeSelector(DATA_SLOT_INDEX_ATTRIBUTE)}${dataAttributeSelector(
+        DATA_SLOT_HITBOX_ATTRIBUTE,
+      )}`,
+    ),
+  ).filter((element): element is HTMLElement => element instanceof HTMLElement);
 }
 
 describe("SubmissionArea", () => {
@@ -70,7 +80,7 @@ describe("SubmissionArea slot interactions", () => {
 
     dragToElementCenter(getPoolTile(0), getSubmissionSlot(0));
     await expect.poll(() => getSubmissionSlot(0).textContent).not.toBe("");
-    const pool = document.querySelector("[data-pool]");
+    const pool = document.querySelector(dataAttributeSelector(DATA_POOL_ATTRIBUTE));
     if (!(pool instanceof HTMLElement)) throw new Error("Expected pool element.");
 
     dragToElementCenter(getSubmissionSlot(0), pool);

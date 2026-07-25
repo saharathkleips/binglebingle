@@ -14,7 +14,7 @@ import {
   popPendingTileSnapBack,
 } from "../../lib/animation/snap-back-animations";
 import { CharacterTile } from "../tile/CharacterTile";
-import { DATA_TILE_ID_ATTRIBUTE } from "../tile/drop-target-helpers";
+import { DATA_TILE_ID_ATTRIBUTE } from "../../lib/dom-data-attributes";
 import { useTileFeedback } from "../tile/use-tile-feedback";
 import type { Tile } from "../../context/game";
 import { usePoolTileDraggable } from "./use-pool-tile-draggable";

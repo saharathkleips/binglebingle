@@ -4,10 +4,12 @@
  * Shared DOM helpers for tile and slot drag/drop target discovery and feedback.
  */
 
-export const DATA_TILE_ID_ATTRIBUTE = "data-tile-id";
-export const DATA_SLOT_INDEX_ATTRIBUTE = "data-slot-index";
-export const DATA_DROP_POOL_TARGET_ACTIVE_ATTRIBUTE = "data-drop-pool-target-active";
-export const DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE = "data-drop-slot-target-active";
+import {
+  DATA_DROP_POOL_TARGET_ACTIVE_ATTRIBUTE,
+  DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE,
+  DATA_TILE_ID_ATTRIBUTE,
+  dataAttributeSelector,
+} from "../../lib/dom-data-attributes";
 
 /** Query configuration for finding a data-attribute-backed drop target. */
 export type DropTargetQuery = {
@@ -132,7 +134,7 @@ const DROP_TARGET_ACTIVE_ATTRIBUTES = [
 function findTileElement(dropTarget: Element): HTMLElement | null {
   const tileElement = dropTarget.hasAttribute(DATA_TILE_ID_ATTRIBUTE)
     ? dropTarget
-    : dropTarget.querySelector(`[${DATA_TILE_ID_ATTRIBUTE}]`);
+    : dropTarget.querySelector(dataAttributeSelector(DATA_TILE_ID_ATTRIBUTE));
 
   return tileElement instanceof HTMLElement ? tileElement : null;
 }

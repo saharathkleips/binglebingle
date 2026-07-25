@@ -12,8 +12,12 @@ import {
   recordTileSnapBack,
 } from "../../lib/animation/snap-back-animations";
 import {
+  DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE,
+  DATA_POOL_ATTRIBUTE,
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_TILE_ID_ATTRIBUTE,
+} from "../../lib/dom-data-attributes";
+import {
   findDropTarget as findDataAttributeDropTarget,
   findDropTargetTile,
   parseDropTargetNumber,
@@ -151,8 +155,7 @@ type PoolDragFeedbackOptions = {
   callbacks: PoolTileCallbacks;
 };
 
-const DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE = "data-drop-source-active";
-const POOL_SELECTOR = '[data-pool="true"]';
+const POOL_SELECTOR = `[${DATA_POOL_ATTRIBUTE}="true"]`;
 const NO_DROP_FEEDBACK = { canDrop: false, preview: null } satisfies DropTargetFeedback;
 
 function updatePoolDragFeedback({

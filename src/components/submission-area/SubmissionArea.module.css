@@ -10,3 +10,12 @@
   display: flex;
   gap: var(--tile-submission-history-gap);
 }
+
+.submissionArea[data-submission-animating="true"] {
+  pointer-events: none;
+}
+
+.submissionArea[data-submission-animating="true"] [data-tile-id] {
+  position: relative;
+  z-index: 2;
+}

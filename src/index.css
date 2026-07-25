@@ -26,26 +26,10 @@ body {
   --palette-najeon-iridescent-cyan: #e0ffff;
   --palette-najeon-iridescent-mint: #f0fff0;
 
-  /* ── Palette: Najeon Green ─────────────────────── */
-  --palette-najeon-green-celadon: #e8f5e9;
+  /* ── Palette: Najeon result accents ─────────────────────── */
   --palette-najeon-green-jade: #b9fbc0;
-  --palette-najeon-green-sage: #c8e6c9;
-  --palette-najeon-green-seafoam: #a8e6cf;
-  --palette-najeon-green-mist: #d0f4de;
-
-  /* ── Palette: Najeon Yellow ─────────────────────── */
-  --palette-najeon-yellow-honey: #ffecb3;
-  --palette-najeon-yellow-ivory: #fff9c4;
-  --palette-najeon-yellow-apricot: #ffcc80;
   --palette-najeon-yellow-citrine: #fff59d;
-  --palette-najeon-yellow-peach: #ffe0b2;
-
-  /* ── Palette: Najeon Gray ─────────────────────── */
-  --palette-najeon-gray-moonstone: #f8f9fa;
-  --palette-najeon-gray-fog: #e9ecef;
-  --palette-najeon-gray-lavender-mist: #f3e8ff;
   --palette-najeon-gray-cloud-slate: #e2e8f0;
-  --palette-najeon-gray-silver: #e5e5e5;
 
   /* ── Palette: Cream backgrounds ──────────────────────────────────────── */
   --palette-rice-paper: #fbf7ef;
@@ -68,6 +52,11 @@ body {
   /* ── Semantic: Overlay and drop feedback ─────────────────────────────── */
   --color-overlay-backdrop: rgba(0, 0, 0, 0.6);
   --color-drop-target-active: #3b5442;
+
+  /* ── Semantic: Guess evaluation results ──────────────────────────────── */
+  --color-result-correct: var(--palette-najeon-green-jade);
+  --color-result-present: var(--palette-najeon-yellow-citrine);
+  --color-result-absent: var(--palette-najeon-gray-cloud-slate);
 
   /* ── Layers ──────────────────────────────────────────────────────────── */
   --z-index-popover: 100;
@@ -171,6 +160,35 @@ body {
   --font-weight-bold: 700;
   --font-weight-control: 800;
   --font-weight-tile: 900;
+}
+
+.submission-history-reveal-card {
+  position: fixed;
+  margin: 0;
+  pointer-events: none;
+  transform-origin: center center;
+  color: var(--color-chrome-foreground);
+  background-color: var(--color-app-background);
+  z-index: 1;
+}
+
+.submission-history-reveal-card[data-result] {
+  font-family: var(--font-family-tile);
+  font-size: var(--tile-font-size);
+  font-weight: var(--font-weight-tile);
+  line-height: 1;
+}
+
+.submission-history-reveal-card[data-result="CORRECT"] {
+  color: var(--color-result-correct);
+}
+
+.submission-history-reveal-card[data-result="PRESENT"] {
+  color: var(--color-result-present);
+}
+
+.submission-history-reveal-card[data-result="ABSENT"] {
+  color: var(--color-result-absent);
 }
 
 /* Tile tier: small */

@@ -22,8 +22,12 @@
   );
 }
 
-.historyArea:has(> .row:only-child) {
+.historyArea:has(> .row:only-of-type) {
   min-height: calc(var(--tile-hitbox-size) + var(--tile-submission-history-gap));
+}
+
+.historyArea:has(> .row:first-of-type:nth-last-of-type(2)) {
+  min-height: calc(2 * (var(--tile-hitbox-size) + var(--tile-submission-history-gap)));
 }
 
 .historyArea::before {
@@ -37,6 +41,42 @@
   gap: var(--tile-submission-history-gap);
   scroll-snap-align: end;
   scroll-snap-stop: always;
+}
+
+.historyCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--tile-visual-short-edge);
+  height: var(--tile-visual-long-edge);
+  flex: none;
+  border: max(1px, var(--tile-border-width)) solid currentColor;
+  border-radius: var(--tile-radius);
+  background-color: var(--color-app-background);
+  box-shadow: var(--tile-depth-stack);
+  color: var(--color-chrome-foreground);
+  font-family: var(--font-family-tile);
+  font-size: var(--tile-font-size);
+  font-weight: var(--font-weight-tile);
+  line-height: 1;
+}
+
+.historyCard[data-result="CORRECT"] {
+  color: var(--color-result-correct);
+}
+
+.historyCard[data-result="PRESENT"] {
+  color: var(--color-result-present);
+}
+
+.historyCard[data-result="ABSENT"] {
+  color: var(--color-result-absent);
+}
+
+.historyCardText {
+  display: block;
+  line-height: 1.2;
 }
 
 @media (max-height: 600px) {

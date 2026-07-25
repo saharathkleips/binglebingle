@@ -10,6 +10,10 @@
   overflow-y: visible;
 }
 
+.pool[data-input-locked="true"] {
+  pointer-events: none;
+}
+
 @media (max-height: 600px) {
   .pool {
     flex: 1 1 0;

@@ -45,30 +45,6 @@
     appearance: none;
   }
 
-  &[data-tile-result="CORRECT"] {
-    --tile-gradient-color-1: var(--palette-najeon-green-celadon);
-    --tile-gradient-color-2: var(--palette-najeon-green-jade);
-    --tile-gradient-color-3: var(--palette-najeon-green-sage);
-    --tile-gradient-color-4: var(--palette-najeon-green-seafoam);
-    --tile-gradient-color-5: var(--palette-najeon-green-mist);
-  }
-
-  &[data-tile-result="PRESENT"] {
-    --tile-gradient-color-1: var(--palette-najeon-yellow-honey);
-    --tile-gradient-color-2: var(--palette-najeon-yellow-ivory);
-    --tile-gradient-color-3: var(--palette-najeon-yellow-apricot);
-    --tile-gradient-color-4: var(--palette-najeon-yellow-citrine);
-    --tile-gradient-color-5: var(--palette-najeon-yellow-peach);
-  }
-
-  &[data-tile-result="ABSENT"] {
-    --tile-gradient-color-1: var(--palette-najeon-gray-moonstone);
-    --tile-gradient-color-2: var(--palette-najeon-gray-fog);
-    --tile-gradient-color-3: var(--palette-najeon-gray-lavender-mist);
-    --tile-gradient-color-4: var(--palette-najeon-gray-cloud-slate);
-    --tile-gradient-color-5: var(--palette-najeon-gray-silver);
-  }
-
   &[data-tile-interactive="true"] {
     cursor: pointer;
     /* touch-action:none allows pointer capture for drag on touch devices. */
