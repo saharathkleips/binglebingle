@@ -31,17 +31,7 @@
   & svg {
     width: var(--nav-action-icon-size);
     height: var(--nav-action-icon-size);
-    color: var(--palette-najeon-iridescent-blue);
-    -webkit-text-fill-color: currentColor;
     filter: drop-shadow(0 1px 0 var(--color-system-depth));
-
-    & path {
-      fill: url("#gear-iridescent-gradient");
-      paint-order: stroke fill;
-      stroke: var(--color-border);
-      stroke-width: 1px;
-      vector-effect: non-scaling-stroke;
-    }
   }
 }
 

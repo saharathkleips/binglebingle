@@ -1,9 +1,9 @@
 .tile {
-  --tile-gradient-color-1: var(--palette-najeon-iridescent-lavender);
-  --tile-gradient-color-2: var(--palette-najeon-iridescent-blue);
-  --tile-gradient-color-3: var(--palette-najeon-iridescent-pink);
-  --tile-gradient-color-4: var(--palette-najeon-iridescent-cyan);
-  --tile-gradient-color-5: var(--palette-najeon-iridescent-mint);
+  --tile-gradient-color-1: var(--palette-iridescent-lavender);
+  --tile-gradient-color-2: var(--palette-iridescent-blue);
+  --tile-gradient-color-3: var(--palette-iridescent-pink);
+  --tile-gradient-color-4: var(--palette-iridescent-cyan);
+  --tile-gradient-color-5: var(--palette-iridescent-mint);
   --tile-gradient-conic-stops:
     var(--tile-gradient-color-1) 0deg, var(--tile-gradient-color-2) 72deg,
     var(--tile-gradient-color-3) 144deg, var(--tile-gradient-color-4) 216deg,

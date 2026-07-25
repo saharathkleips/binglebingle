@@ -1,7 +1,4 @@
 .navBar {
-  --nav-logo-width: 7.5rem;
-  --nav-logo-min-height: 2.15rem;
-  --nav-logo-font-size: 1.45rem;
   --nav-actions-gap: 1.2rem;
   --nav-action-cluster-gap: 0.18rem;
 
@@ -33,9 +30,6 @@
 
 @media (max-width: 479px), (max-height: 600px) {
   .navBar {
-    --nav-logo-width: 5.5rem;
-    --nav-logo-min-height: 1.875rem;
-    --nav-logo-font-size: 1.18rem;
     --nav-actions-gap: 0.25rem;
     --nav-action-cluster-gap: 0;
 
@@ -46,9 +40,6 @@
 
 @media (max-width: 360px) {
   .navBar {
-    --nav-logo-width: 4.5rem;
-    --nav-logo-min-height: 1.65rem;
-    --nav-logo-font-size: 0.98rem;
     --nav-actions-gap: 0.125rem;
     --nav-action-cluster-gap: 0;
 

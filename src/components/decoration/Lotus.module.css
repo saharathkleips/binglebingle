@@ -1,5 +1,13 @@
 .tileBack {
   --lotus-tile-back-background: var(--color-app-background);
+  --lotus-background: #000;
+  --lotus-leaf-light: var(--color-result-correct);
+  --lotus-leaf-dark: var(--color-drop-target-active);
+  --lotus-petal-light: #eb5638;
+  --lotus-petal-dark: #cb2c24;
+  --lotus-center: var(--color-result-present);
+  --lotus-stroke-light: #fff;
+  --lotus-stroke-dark: #000;
   --lotus-motif-opacity: 1;
   --lotus-motif-saturation: 1;
 

@@ -3,8 +3,13 @@
 }
 
 .logoButton {
+  --logo-width: 7.5rem;
+  --logo-min-height: 2.15rem;
+  --logo-font-size: 1.45rem;
+  --logo-radius: 4px;
   --logo-font-family: var(--font-family-tile);
   --logo-font-weight: var(--font-weight-bold);
+  --logo-face: var(--color-chrome-foreground);
   --logo-hover-offset: var(--system-lift-distance);
   --logo-press-offset: calc(var(--system-depth-distance) - var(--system-depth-step));
   --logo-pressed-cast-shadow-distance: calc(
@@ -24,7 +29,7 @@
 
   display: inline-grid;
   place-items: center;
-  width: var(--nav-logo-width);
+  width: var(--logo-width);
   min-height: var(--interactive-hitbox-min-size);
   padding: 0;
   border: 0;
@@ -32,7 +37,7 @@
   cursor: pointer;
   font: inherit;
   font-family: var(--logo-font-family);
-  font-size: var(--nav-logo-font-size);
+  font-size: var(--logo-font-size);
   font-weight: var(--logo-font-weight);
   line-height: 1;
   touch-action: manipulation;
@@ -54,11 +59,11 @@
   display: grid;
   place-items: center;
   width: 100%;
-  min-height: var(--nav-logo-min-height);
+  min-height: var(--logo-min-height);
   border: 1px solid transparent;
-  border-radius: var(--tile-radius);
+  border-radius: var(--logo-radius);
   background:
-    linear-gradient(var(--color-tile-face), var(--color-tile-face)) padding-box,
+    linear-gradient(var(--logo-face), var(--logo-face)) padding-box,
     var(--gradient-logo-border) border-box;
   background-clip: padding-box, border-box;
   box-shadow: var(--system-shadow-stack);
@@ -75,4 +80,44 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+}
+
+@media (min-width: 390px) {
+  .logoButton {
+    --logo-radius: 5px;
+  }
+}
+
+@media (min-width: 480px) {
+  .logoButton {
+    --logo-radius: 6px;
+  }
+}
+
+@media (min-width: 768px) {
+  .logoButton {
+    --logo-radius: 7px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .logoButton {
+    --logo-radius: 8px;
+  }
+}
+
+@media (max-width: 479px), (max-height: 600px) {
+  .logoButton {
+    --logo-width: 5.5rem;
+    --logo-min-height: 1.875rem;
+    --logo-font-size: 1.18rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .logoButton {
+    --logo-width: 4.5rem;
+    --logo-min-height: 1.65rem;
+    --logo-font-size: 0.98rem;
+  }
 }

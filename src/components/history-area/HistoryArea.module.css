@@ -60,6 +60,7 @@
   font-size: var(--tile-font-size);
   font-weight: var(--font-weight-tile);
   line-height: 1;
+  user-select: none;
 }
 
 .historyCard[data-result="CORRECT"] {
@@ -82,6 +83,7 @@
   height: var(--tile-hitbox-size);
   flex: none;
   color: var(--color-chrome-foreground);
+  user-select: none;
 }
 
 .historyEmptyCardLotus {

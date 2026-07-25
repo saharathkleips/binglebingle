@@ -31,6 +31,7 @@
   font-weight: var(--font-weight-control);
   line-height: 1;
   touch-action: manipulation;
+  user-select: none;
   appearance: none;
 
   &:disabled {
