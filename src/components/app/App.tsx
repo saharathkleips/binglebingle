@@ -64,7 +64,12 @@ function GameContent() {
   const { state } = useGame();
 
   if (isWon(state.history)) {
-    return <WinPanel />;
+    return (
+      <>
+        <SubmissionArea isInteractionDisabled isSubmitVisible={false} isWinDanceEnabled />
+        <WinPanel />
+      </>
+    );
   }
 
   return (

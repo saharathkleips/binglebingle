@@ -35,9 +35,10 @@ describe("WinPanel", () => {
     await expect.element(screen.getByRole("region", { name: "Win summary" })).toBeInTheDocument();
   });
 
-  it("displays the target word", async () => {
+  it("does not repeat the target word as text", async () => {
     const screen = await renderWinPanel(wonState(1));
-    await expect.element(screen.getByText("고양이")).toBeInTheDocument();
+    await expect.element(screen.getByText("정답")).toBeInTheDocument();
+    await expect.element(screen.getByText("고양이")).not.toBeInTheDocument();
   });
 
   it("displays the guess count when solved in one guess", async () => {
