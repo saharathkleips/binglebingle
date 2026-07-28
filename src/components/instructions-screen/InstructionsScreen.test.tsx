@@ -10,49 +10,57 @@ function instructionsBackdrop(): HTMLElement {
 describe("InstructionsScreen", () => {
   it("renders nothing when isOpen is false", async () => {
     const screen = await render(<InstructionsScreen isOpen={false} onClose={() => {}} />);
-    await expect
-      .element(screen.getByRole("dialog", { name: "Game instructions" }))
-      .not.toBeInTheDocument();
+    await expect.element(screen.getByRole("dialog", { name: "게임 방법" })).not.toBeInTheDocument();
   });
 
   it("renders the overlay when isOpen is true", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    await expect
-      .element(screen.getByRole("dialog", { name: "Game instructions" }))
-      .toBeInTheDocument();
+    await expect.element(screen.getByRole("dialog", { name: "게임 방법" })).toBeInTheDocument();
   });
 
-  it("renders the compose phase with the jamo pool", async () => {
+  it("renders the goal text with the initial jamo pool", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    await expect.element(screen.getByRole("region", { name: "Compose phase" })).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: "게임 방법" });
+    await expect.element(dialog).toHaveTextContent("숨은 낱말");
+    await expect.element(dialog).toHaveTextContent("ㅇ");
+    await expect.element(dialog).toHaveTextContent("ㄱ");
+    await expect.element(dialog).toHaveTextContent("ㄹ");
   });
 
-  it("renders the compose phase with 가 as present", async () => {
+  it("renders the character-building section with the 왜 construction", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    const phase = screen.getByRole("region", { name: "Compose phase" });
-    await expect.element(phase).toHaveTextContent("가");
+    const section = screen.getByRole("region", { name: "글자 만들기" });
+    await expect.element(section).toHaveTextContent("ㅏ");
+    await expect.element(section).toHaveTextContent("ㅜ");
+    await expect.element(section).toHaveTextContent("ㅓ");
+    await expect.element(section).toHaveTextContent("ㅗ");
+    await expect.element(section).toHaveTextContent("ㅘ");
+    await expect.element(section).toHaveTextContent("ㅙ");
+    await expect.element(section).toHaveTextContent("왜");
   });
 
-  it("renders the rotate phase with 오가로", async () => {
+  it("renders the submission section with an incomplete guess", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    const phase = screen.getByRole("region", { name: "Rotate phase" });
-    await expect.element(phase).toHaveTextContent("오");
-    await expect.element(phase).toHaveTextContent("가");
-    await expect.element(phase).toHaveTextContent("로");
+    const section = screen.getByRole("region", { name: "추측 제출" });
+    await expect.element(section).toHaveTextContent("빈칸도 괜찮아요");
+    await expect.element(section).toHaveTextContent("라");
+    await expect.element(section).toHaveTextContent("왜");
+    await expect.element(section).toHaveTextContent("노랑");
+    await expect.element(screen.getByLabelText("빈칸")).toBeInTheDocument();
   });
 
-  it("renders the deconstruct phase with 왜가리 all correct", async () => {
+  it("renders the success section with 왜가리 all correct", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    const phase = screen.getByRole("region", { name: "Deconstruct phase" });
-    await expect.element(phase).toHaveTextContent("왜");
-    await expect.element(phase).toHaveTextContent("가");
-    await expect.element(phase).toHaveTextContent("리");
+    const section = screen.getByRole("region", { name: "성공" });
+    await expect.element(section).toHaveTextContent("왜");
+    await expect.element(section).toHaveTextContent("가");
+    await expect.element(section).toHaveTextContent("리");
   });
 
-  it("calls onClose when the dismiss button is clicked", async () => {
+  it("calls onClose when the close button is clicked", async () => {
     const handleClose = vi.fn();
     const screen = await render(<InstructionsScreen isOpen={true} onClose={handleClose} />);
-    await screen.getByRole("button", { name: "알겠어요!" }).click();
+    await screen.getByRole("button", { name: "닫기" }).click();
     expect(handleClose).toHaveBeenCalledOnce();
   });
 
@@ -66,13 +74,13 @@ describe("InstructionsScreen", () => {
   it("does not call onClose when the card itself is clicked", async () => {
     const handleClose = vi.fn();
     const screen = await render(<InstructionsScreen isOpen={true} onClose={handleClose} />);
-    await screen.getByRole("dialog", { name: "Game instructions" }).click();
+    await screen.getByRole("dialog", { name: "게임 방법" }).click();
     expect(handleClose).not.toHaveBeenCalled();
   });
 
   it("has dialog role and aria-modal for accessibility", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    const dialog = screen.getByRole("dialog", { name: "Game instructions" });
+    const dialog = screen.getByRole("dialog", { name: "게임 방법" });
     await expect.element(dialog).toHaveAttribute("role", "dialog");
     await expect.element(dialog).toHaveAttribute("aria-modal", "true");
   });
