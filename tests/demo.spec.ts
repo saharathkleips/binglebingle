@@ -77,11 +77,11 @@ async function pause(page: Page, ms = 600) {
 
 /** Waits until submit-owned reveal/snap-back motion has released input again. */
 async function waitForGameReady(page: Page) {
-  await expect(page.getByRole("region", { name: "Submission area" })).not.toHaveAttribute(
+  await expect(page.getByRole("region", { name: "제출 영역" })).not.toHaveAttribute(
     DATA_SUBMISSION_ANIMATING_ATTRIBUTE,
     "true",
   );
-  await expect(page.getByRole("group", { name: "Jamo pool" })).not.toHaveAttribute(
+  await expect(page.getByRole("group", { name: "자모 조각 모음" })).not.toHaveAttribute(
     DATA_INPUT_LOCKED_ATTRIBUTE,
     "true",
   );
@@ -89,7 +89,7 @@ async function waitForGameReady(page: Page) {
 
 test("demo: guesses 가이야 → 고야이 → 고양이 to win", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "알겠어요!" }).click();
+  await page.getByRole("button", { name: "닫기" }).click();
 
   const tile = (id: number) =>
     page.locator(

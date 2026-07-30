@@ -16,27 +16,23 @@ type NavBarProps = {
  */
 export function NavBar({ onToggleInstructions, isInstructionsOpen }: NavBarProps) {
   return (
-    <nav className={styles.navBar} aria-label="Primary navigation">
+    <nav className={styles.navBar} aria-label="주요 메뉴">
       <div className={styles.navContent}>
         <Logo />
-        <div className={styles.actions} role="group" aria-label="Game actions">
+        <div className={styles.actions} role="group" aria-label="게임 메뉴">
           <div className={styles.actionCluster}>
-            <NavActionButton ariaLabel="Set difficulty to three" label="삼" />
-            <NavActionButton ariaLabel="Set difficulty to four" label="사" />
-            <NavActionButton ariaLabel="Set difficulty to five" label="오" />
+            <NavActionButton ariaLabel="3글자 난이도로 설정" label="삼" />
+            <NavActionButton ariaLabel="4글자 난이도로 설정" label="사" />
+            <NavActionButton ariaLabel="5글자 난이도로 설정" label="오" />
           </div>
           <div className={styles.actionCluster}>
             <NavActionButton
-              ariaLabel="Toggle instructions"
+              ariaLabel="게임 방법"
               isExpanded={isInstructionsOpen}
               onClick={onToggleInstructions}
               label="?"
             />
-            <NavActionButton
-              ariaLabel="Open settings"
-              icon={<Gear focusable="false" />}
-              kind="icon"
-            />
+            <NavActionButton ariaLabel="설정 열기" icon={<Gear focusable="false" />} kind="icon" />
           </div>
         </div>
       </div>

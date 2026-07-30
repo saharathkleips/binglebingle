@@ -36,7 +36,7 @@ export function HistoryArea() {
     <section
       ref={historyAreaRef}
       className={styles.historyArea}
-      aria-label="Guess history"
+      aria-label="도전 기록"
       {...{ [DATA_HISTORY_AREA_ATTRIBUTE]: true }}
     >
       {state.history.map((guess, rowIndex) => (

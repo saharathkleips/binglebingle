@@ -26,13 +26,13 @@ function poolTiles(): HTMLElement[] {
 describe("Pool", () => {
   it("renders a tile for each tile in the pool", async () => {
     const screen = await renderPool("가");
-    await expect.element(screen.getByRole("group", { name: "Jamo pool" })).toBeInTheDocument();
+    await expect.element(screen.getByRole("group", { name: "자모 조각 모음" })).toBeInTheDocument();
     expect(poolTiles().length).toBe(2);
   });
 
   it("renders pool tiles for a multi-character word", async () => {
     const screen = await renderPool("한글");
-    await expect.element(screen.getByRole("group", { name: "Jamo pool" })).toBeInTheDocument();
+    await expect.element(screen.getByRole("group", { name: "자모 조각 모음" })).toBeInTheDocument();
     expect(poolTiles().length).toBe(6);
   });
 });
