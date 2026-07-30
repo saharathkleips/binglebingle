@@ -6,6 +6,7 @@
  * pool on tap, and can be dragged to another slot to swap positions.
  */
 
+import { clsx } from "clsx";
 import { useRef, useLayoutEffect } from "react";
 import { gsap } from "../../lib/animation/register";
 import { CharacterTile } from "../tile/CharacterTile";
@@ -27,6 +28,10 @@ export type SubmissionSlotProps = {
   slot: SubmissionSlotType;
   /** Zero-based position of this slot in the submission array. */
   slotIndex: number;
+  /** Disables drag and tap behavior so the slot can be used as a visual placeholder. */
+  isInteractionDisabled?: boolean;
+  /** Adds the repeating win dance animation to a filled slot. */
+  isWinDanceEnabled?: boolean;
   /** Called when a filled slot is tapped so the parent can remove the tile. */
   onTap: () => void;
   /** Called when a drag ends on another slot, with that destination slot index. */
@@ -44,6 +49,8 @@ export type SubmissionSlotProps = {
 export function SubmissionSlot({
   slot,
   slotIndex,
+  isInteractionDisabled = false,
+  isWinDanceEnabled = false,
   onTap,
   onDropOnSlot,
   onDropOnPool = () => {},
@@ -66,7 +73,7 @@ export function SubmissionSlot({
 
   useSubmissionSlotDraggable({
     buttonRef: filledButtonRef,
-    isFilled,
+    isFilled: isFilled && !isInteractionDisabled,
     filledTileId,
     slotIndex,
     onTap,
@@ -88,19 +95,34 @@ export function SubmissionSlot({
     <Lotus dataAttributes={{ [DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE]: true }} />
   );
 
+  const filledClassName = clsx(styles.filled, isWinDanceEnabled && styles.winDance);
+
   const slotElement = isFilled ? (
-    <CharacterTile
-      character={slot.character}
-      element="button"
-      className={styles.filled ?? ""}
-      isInteractive
-      ref={filledButtonRef}
-      dataAttributes={{
-        [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex,
-        [DATA_TILE_ID_ATTRIBUTE]: slot.tileId,
-        [DATA_SLOT_STATE_ATTRIBUTE]: "filled",
-      }}
-    />
+    isInteractionDisabled ? (
+      <CharacterTile
+        character={slot.character}
+        element="div"
+        className={filledClassName}
+        dataAttributes={{
+          [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex,
+          [DATA_TILE_ID_ATTRIBUTE]: slot.tileId,
+          [DATA_SLOT_STATE_ATTRIBUTE]: "filled",
+        }}
+      />
+    ) : (
+      <CharacterTile
+        character={slot.character}
+        element="button"
+        className={filledClassName}
+        isInteractive
+        ref={filledButtonRef}
+        dataAttributes={{
+          [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex,
+          [DATA_TILE_ID_ATTRIBUTE]: slot.tileId,
+          [DATA_SLOT_STATE_ATTRIBUTE]: "filled",
+        }}
+      />
+    )
   ) : (
     <div
       ref={emptySlotRef}
@@ -119,7 +141,7 @@ export function SubmissionSlot({
   if (isFilled) {
     return (
       <div
-        className={styles.slotGhost}
+        className={clsx(styles.slotGhost, isWinDanceEnabled && styles.hidePlaceholder)}
         {...{ [DATA_SLOT_INDEX_ATTRIBUTE]: slotIndex }}
         {...{ [DATA_SLOT_STATE_ATTRIBUTE]: "filled" }}
         {...{ [DATA_SLOT_HITBOX_ATTRIBUTE]: true }}

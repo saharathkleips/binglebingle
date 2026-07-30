@@ -6,6 +6,7 @@
 
 import { useLayoutEffect } from "react";
 import { useGame } from "../../context/game/GameContext";
+import { isWon } from "../../lib/engine/scoring";
 import {
   DATA_HISTORY_AREA_ATTRIBUTE,
   DATA_HISTORY_ROW_INDEX_ATTRIBUTE,
@@ -22,6 +23,7 @@ import styles from "./HistoryArea.module.css";
  */
 export function HistoryArea() {
   const { state, historyAreaRef } = useGame();
+  const isGameWon = isWon(state.history);
 
   useLayoutEffect(() => {
     const container = historyAreaRef.current;
@@ -44,7 +46,11 @@ export function HistoryArea() {
           {...{ [DATA_HISTORY_ROW_INDEX_ATTRIBUTE]: rowIndex }}
         >
           {guess.map((evaluated, colIndex) => (
-            <HistoryCard key={colIndex} evaluated={evaluated} />
+            <HistoryCard
+              key={colIndex}
+              evaluated={evaluated}
+              isWinDanceEnabled={isGameWon && rowIndex === state.history.length - 1}
+            />
           ))}
         </div>
       ))}

@@ -44,8 +44,24 @@
   box-shadow: var(--tile-depth-stack);
 }
 
+.hidePlaceholder > [data-submission-slot-placeholder] {
+  display: none;
+}
+
 .slotGhost .filled {
   z-index: 1;
+}
+
+.winDance {
+  animation: var(--motion-win-dance-name) var(--motion-win-dance-duration)
+    var(--motion-win-dance-ease) infinite;
+  transform-origin: var(--motion-win-dance-transform-origin);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .winDance {
+    animation: none;
+  }
 }
 
 .slot,

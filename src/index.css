@@ -19,6 +19,14 @@ body {
   --palette-iridescent-cyan: #e0ffff;
   --palette-iridescent-mint: #f0fff0;
 
+  /* ── Palette: Dancheong-inspired celebration ─────────────────────────── */
+  --palette-dancheong-jade: #48a088;
+  --palette-dancheong-mint: #7ec1af;
+  --palette-dancheong-gold: #f4c874;
+  --palette-dancheong-yellow: #f9f07a;
+  --palette-dancheong-red: #dd5954;
+  --palette-dancheong-blossom: #eebcc5;
+
   /* ── Semantic: App background ────────────────────────────────────────── */
   --color-app-background: #fbf7ef;
 
@@ -44,6 +52,14 @@ body {
   --color-tile-face: #080808;
   --color-tile-depth: #1a1a1a;
   --color-tile-shadow: rgba(0, 0, 0, 0.5);
+
+  /* ── Semantic: Celebration ───────────────────────────────────────────── */
+  --color-confetti-jade: var(--palette-dancheong-jade);
+  --color-confetti-mint: var(--palette-dancheong-mint);
+  --color-confetti-gold: var(--palette-dancheong-gold);
+  --color-confetti-yellow: var(--palette-dancheong-yellow);
+  --color-confetti-red: var(--palette-dancheong-red);
+  --color-confetti-blossom: var(--palette-dancheong-blossom);
 
   /* ── Semantic: System chrome depth ───────────────────────────────────── */
   --color-system-depth: var(--color-tile-depth);
@@ -77,6 +93,11 @@ body {
   /* ── Motion tokens ───────────────────────────────────────────────────── */
   --motion-duration-fast: 140ms;
   --motion-ease-standard: ease;
+  --motion-win-dance-name: binglebingle-win-dance;
+  --motion-win-dance-duration: 2s;
+  --motion-win-dance-ease: cubic-bezier(0.28, 1.15, 0.42, 1);
+  --motion-win-dance-opposite-delay: -1s;
+  --motion-win-dance-transform-origin: 50% 88%;
 
   /* ── Interaction tokens ──────────────────────────────────────────────── */
   --interactive-hitbox-min-size: 44px;
@@ -137,6 +158,41 @@ body {
   --font-weight-bold: 700;
   --font-weight-control: 800;
   --font-weight-tile: 900;
+}
+
+@keyframes binglebingle-win-dance {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  18% {
+    transform: rotate(-20deg);
+  }
+
+  29% {
+    transform: rotate(-9deg);
+  }
+
+  38% {
+    transform: rotate(-16deg);
+  }
+
+  50% {
+    transform: rotate(0deg);
+  }
+
+  68% {
+    transform: rotate(20deg);
+  }
+
+  79% {
+    transform: rotate(9deg);
+  }
+
+  88% {
+    transform: rotate(16deg);
+  }
 }
 
 .submission-history-reveal-card {

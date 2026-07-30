@@ -19,7 +19,20 @@ import { useSubmitGuessReveal } from "./use-submit-guess-reveal";
  * Renders the submission row and submit button from game state.
  * Player places tiles into slots, sees resolved characters, and submits guesses.
  */
-export function SubmissionArea() {
+export type SubmissionAreaProps = {
+  /** Disables moving, tapping, dropping, and submitting; useful for win-state placeholders. */
+  isInteractionDisabled?: boolean;
+  /** Whether to render the submit button below the slots. */
+  isSubmitVisible?: boolean;
+  /** Adds the repeating win dance animation to filled slots. */
+  isWinDanceEnabled?: boolean;
+};
+
+export function SubmissionArea({
+  isInteractionDisabled = false,
+  isSubmitVisible = true,
+  isWinDanceEnabled = false,
+}: SubmissionAreaProps = {}) {
   const { state } = useGame();
   const {
     slotsRef,
@@ -43,13 +56,26 @@ export function SubmissionArea() {
             key={index}
             slot={slot}
             slotIndex={index}
-            onTap={() => handleSlotRemove(index)}
-            onDropOnSlot={(toSlotIndex) => handleSlotMove(index, toSlotIndex)}
-            onDropOnPool={() => handleSlotRemove(index)}
+            isInteractionDisabled={isInteractionDisabled}
+            isWinDanceEnabled={isWinDanceEnabled}
+            onTap={() => {
+              if (!isInteractionDisabled) handleSlotRemove(index);
+            }}
+            onDropOnSlot={(toSlotIndex) => {
+              if (!isInteractionDisabled) handleSlotMove(index, toSlotIndex);
+            }}
+            onDropOnPool={() => {
+              if (!isInteractionDisabled) handleSlotRemove(index);
+            }}
           />
         ))}
       </div>
-      <SubmissionButton isDisabled={isSubmitDisabled} onSubmit={handleSubmit} />
+      {isSubmitVisible ? (
+        <SubmissionButton
+          isDisabled={isInteractionDisabled || isSubmitDisabled}
+          onSubmit={handleSubmit}
+        />
+      ) : null}
     </section>
   );
 }

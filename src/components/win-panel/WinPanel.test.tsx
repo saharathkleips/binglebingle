@@ -35,23 +35,30 @@ describe("WinPanel", () => {
     await expect.element(screen.getByRole("region", { name: "Win summary" })).toBeInTheDocument();
   });
 
-  it("displays the target word", async () => {
+  it("does not repeat the target word as text", async () => {
     const screen = await renderWinPanel(wonState(1));
-    await expect.element(screen.getByText("고양이")).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: "정답! 1번째 시도 성공!" }))
+      .toBeInTheDocument();
+    await expect.element(screen.getByText("고양이")).not.toBeInTheDocument();
   });
 
   it("displays the guess count when solved in one guess", async () => {
     const screen = await renderWinPanel(wonState(1));
-    await expect.element(screen.getByText("1번 만에 맞췄어요")).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: "정답! 1번째 시도 성공!" }))
+      .toBeInTheDocument();
   });
 
   it("displays the guess count when solved in multiple guesses", async () => {
     const screen = await renderWinPanel(wonState(3));
-    await expect.element(screen.getByText("3번 만에 맞췄어요")).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: "정답! 3번째 시도 성공!" }))
+      .toBeInTheDocument();
   });
 
-  it("renders the share button as disabled", async () => {
+  it("renders the share button", async () => {
     const screen = await renderWinPanel(wonState(1));
-    await expect.element(screen.getByRole("button", { name: "Share" })).toBeDisabled();
+    await expect.element(screen.getByRole("button", { name: "공유" })).not.toBeDisabled();
   });
 });

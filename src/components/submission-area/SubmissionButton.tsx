@@ -13,6 +13,8 @@ import styles from "./SubmissionButton.module.css";
 export type SubmissionButtonProps = {
   /** Whether the current guess is not ready to submit. */
   isDisabled: boolean;
+  /** Accessible and visible action label. Defaults to the submit action text. */
+  label?: string;
   /** Called when the player activates the submit button. */
   onSubmit: () => void;
 };
@@ -22,7 +24,7 @@ export type SubmissionButtonProps = {
  *
  * @param props - See {@link SubmissionButtonProps}.
  */
-export function SubmissionButton({ isDisabled, onSubmit }: SubmissionButtonProps) {
+export function SubmissionButton({ isDisabled, label = "도전", onSubmit }: SubmissionButtonProps) {
   return (
     <Button
       className={styles.button}
@@ -35,8 +37,8 @@ export function SubmissionButton({ isDisabled, onSubmit }: SubmissionButtonProps
         aria-hidden="true"
         focusable="false"
       />
-      <ButtonText className={styles.text} ariaLabel="도전">
-        도전
+      <ButtonText className={styles.text} ariaLabel={label}>
+        {label}
       </ButtonText>
       <Hills2
         className={`${styles.motif} ${styles.motifRight}`}

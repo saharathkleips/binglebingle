@@ -22,6 +22,12 @@ const ONE_SYLLABLE_WORD = createWord("가")!;
 function wonState(): GameState {
   return {
     ...createInitialGameState(WORD),
+    pool: [],
+    submission: [
+      { state: "FILLED", tileId: 0, character: character("고")! },
+      { state: "FILLED", tileId: 1, character: character("양")! },
+      { state: "FILLED", tileId: 2, character: character("이")! },
+    ],
     history: [
       [
         { character: character("고")!, result: "CORRECT" as const },
@@ -52,7 +58,14 @@ function SubmitToWinHarness({ initialState }: { initialState: GameState }) {
 function SubmitToWinContent() {
   const { state } = useGame();
 
-  if (isWon(state.history)) return <WinPanel />;
+  if (isWon(state.history)) {
+    return (
+      <>
+        <SubmissionArea isInteractionDisabled isSubmitVisible={false} isWinDanceEnabled />
+        <WinPanel />
+      </>
+    );
+  }
 
   return <SubmissionArea />;
 }
@@ -104,11 +117,13 @@ describe("App win state", () => {
     await expect.element(screen.getByRole("group", { name: "Jamo pool" })).not.toBeInTheDocument();
   });
 
-  it("hides submission area when the game is won", async () => {
+  it("keeps a locked submission area when the game is won", async () => {
     const screen = await render(<App initialState={wonState()} />);
     await expect
       .element(screen.getByRole("region", { name: "Submission area" }))
-      .not.toBeInTheDocument();
+      .toBeInTheDocument();
+    await expect.element(screen.getByRole("button", { name: "도전" })).not.toBeInTheDocument();
+    await expect.element(screen.getByRole("button", { name: "고" })).not.toBeInTheDocument();
   });
 
   it("keeps history area visible when the game is won", async () => {
@@ -116,17 +131,23 @@ describe("App win state", () => {
     await expect.element(screen.getByRole("region", { name: "Guess history" })).toBeInTheDocument();
   });
 
-  it("cleans up submit reveal DOM when a winning submission unmounts the submission area", async () => {
+  it("cleans up submit reveal DOM after transitioning to the win screen", async () => {
     const screen = await render(<SubmitToWinHarness initialState={winningSubmissionState()} />);
 
     await screen.getByRole("button", { name: "도전" }).click();
 
     await expect.element(screen.getByRole("region", { name: "Win summary" })).toBeInTheDocument();
-    expect(
-      document.querySelector(dataAttributeSelector(DATA_HISTORY_ANIMATION_SPACER_ATTRIBUTE)),
-    ).toBeNull();
-    expect(
-      document.querySelector(dataAttributeSelector(DATA_SUBMISSION_HISTORY_REVEAL_CARD_ATTRIBUTE)),
-    ).toBeNull();
+    await expect
+      .poll(() =>
+        document.querySelector(dataAttributeSelector(DATA_HISTORY_ANIMATION_SPACER_ATTRIBUTE)),
+      )
+      .toBeNull();
+    await expect
+      .poll(() =>
+        document.querySelector(
+          dataAttributeSelector(DATA_SUBMISSION_HISTORY_REVEAL_CARD_ATTRIBUTE),
+        ),
+      )
+      .toBeNull();
   });
 });
