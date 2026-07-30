@@ -38,7 +38,14 @@ export function WinPanel() {
           <ButtonText className={styles.answerLabel} isHidden>
             정답!
           </ButtonText>
-          <span className={styles.score}>{scoreLabel}</span>
+          <span className={styles.score}>
+            <ButtonText className={styles.scoreCount} isHidden>
+              {`${score.guessCount}`}
+            </ButtonText>
+            <ButtonText className={styles.scoreDetail} isHidden>
+              번째 시도 성공!
+            </ButtonText>
+          </span>
         </span>
       </Button>
       <SubmissionButton isDisabled={false} label="공유" onSubmit={handleShare} />

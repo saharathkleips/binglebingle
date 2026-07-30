@@ -8,40 +8,167 @@
 }
 
 .winCardButton {
+  --tile-gradient-color-1: var(--palette-iridescent-lavender);
+  --tile-gradient-color-2: var(--palette-iridescent-blue);
+  --tile-gradient-color-3: var(--palette-iridescent-pink);
+  --tile-gradient-color-4: var(--palette-iridescent-cyan);
+  --tile-gradient-color-5: var(--palette-iridescent-mint);
+  --tile-gradient-linear-stops:
+    var(--tile-gradient-color-1) 0%, var(--tile-gradient-color-2) 10%,
+    var(--tile-gradient-color-3) 20%, var(--tile-gradient-color-4) 30%,
+    var(--tile-gradient-color-5) 40%, var(--tile-gradient-color-1) 50%,
+    var(--tile-gradient-color-2) 60%, var(--tile-gradient-color-3) 70%,
+    var(--tile-gradient-color-4) 80%, var(--tile-gradient-color-5) 90%,
+    var(--tile-gradient-color-1) 100%;
+  --win-card-width: 8.6rem;
+  --win-card-cast-shadow-distance: 4px;
+  --win-card-depth-stack:
+    1px 1px 0 var(--color-tile-depth), 2px 2px 0 var(--color-tile-depth),
+    3px 3px 0 var(--color-tile-depth);
+  --win-card-answer-font-size: 1.35rem;
+  --win-card-score-count-font-size: 0.95rem;
+  --win-card-score-detail-font-size: 0.78rem;
+  --button-hover-offset: 3px;
+  --button-press-offset: 2px;
+  --button-shadow-stack:
+    var(--win-card-depth-stack),
+    var(--win-card-cast-shadow-distance) var(--win-card-cast-shadow-distance) 0
+      var(--color-tile-shadow);
+  --button-shadow-stack-lifted:
+    var(--win-card-depth-stack),
+    calc(var(--win-card-cast-shadow-distance) + var(--button-hover-offset))
+      calc(var(--win-card-cast-shadow-distance) + var(--button-hover-offset)) 0
+      var(--color-tile-shadow);
+  --button-shadow-stack-pressed:
+    var(--win-card-depth-stack),
+    calc(var(--win-card-cast-shadow-distance) - var(--button-press-offset))
+      calc(var(--win-card-cast-shadow-distance) - var(--button-press-offset)) 0
+      var(--color-tile-shadow);
+
   min-height: var(--interactive-hitbox-min-size);
   padding: var(--button-hover-offset)
-    calc(
-      var(--button-hover-offset) + var(--button-depth-distance) + var(--button-cast-shadow-growth)
-    )
-    calc(
-      var(--button-hover-offset) + var(--button-depth-distance) + var(--button-cast-shadow-growth)
-    )
+    calc(var(--button-hover-offset) + var(--win-card-cast-shadow-distance))
+    calc(var(--button-hover-offset) + var(--win-card-cast-shadow-distance))
     var(--button-hover-offset);
 }
 
 .winCardSurface {
-  min-width: min(16rem, calc(100vw - 2rem));
-  padding: 1rem 1.25rem;
-  border-radius: var(--radius-md);
+  position: relative;
+  width: min(var(--win-card-width), calc(100vw - 2rem));
+  aspect-ratio: 80 / 53;
+  overflow: clip;
+  border: 0;
+  border-radius: calc(var(--tile-radius) * 2);
+  background: var(--color-tile-face);
+  box-shadow: var(--button-shadow-stack);
+}
+
+@media (min-width: 390px) {
+  .winCardButton {
+    --win-card-width: 9.3rem;
+    --win-card-cast-shadow-distance: 5px;
+    --win-card-answer-font-size: 1.5rem;
+    --win-card-score-count-font-size: 1rem;
+    --win-card-score-detail-font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 480px) {
+  .winCardButton {
+    --win-card-width: 10.9rem;
+    --win-card-cast-shadow-distance: 6px;
+    --win-card-depth-stack:
+      1px 1px 0 var(--color-tile-depth), 2px 2px 0 var(--color-tile-depth),
+      3px 3px 0 var(--color-tile-depth), 4px 4px 0 var(--color-tile-depth);
+    --button-press-offset: 3px;
+    --win-card-answer-font-size: 1.65rem;
+    --win-card-score-count-font-size: 1.05rem;
+    --win-card-score-detail-font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .winCardButton {
+    --win-card-width: 12.4rem;
+    --win-card-cast-shadow-distance: 7px;
+    --win-card-answer-font-size: 1.8rem;
+    --win-card-score-count-font-size: 1.05rem;
+    --win-card-score-detail-font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 1100px) {
+  .winCardButton {
+    --win-card-width: 14rem;
+    --win-card-cast-shadow-distance: 8px;
+    --win-card-answer-font-size: 1.9rem;
+  }
+}
+
+.winCardSurface::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(100% * 53 / 80);
+  height: calc(100% * 80 / 53);
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(180deg, var(--tile-gradient-linear-stops));
+  background-size: 100% 200%;
+  animation: win-card-border-shimmer 1000ms linear infinite paused;
+  mask-image: url("../tile/lightning-border.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 100% 100%;
+  -webkit-mask-image: url("../tile/lightning-border.svg");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: 100% 100%;
+  transform: translate(-50%, -50%) rotate(90deg);
+  transform-origin: center;
+}
+
+.winCardButton:is(:hover, :focus-visible) .winCardSurface::after {
+  animation-play-state: running;
 }
 
 .winCardContent {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.65rem;
   z-index: 1;
 }
 
 .answerLabel {
-  font-size: 1.75rem;
-  font-weight: var(--font-weight-control);
+  font-size: var(--win-card-answer-font-size);
+  font-weight: var(--font-weight-tile);
   line-height: 1;
 }
 
 .score {
-  font-size: 1rem;
-  font-weight: var(--font-weight-bold);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  font-weight: var(--font-weight-tile);
   line-height: 1.2;
-  color: var(--color-chrome-foreground);
+  white-space: nowrap;
+}
+
+.scoreCount {
+  font-size: var(--win-card-score-count-font-size);
+}
+
+.scoreDetail {
+  font-size: var(--win-card-score-detail-font-size);
+}
+
+@keyframes win-card-border-shimmer {
+  from {
+    background-position: 0% 0%;
+  }
+
+  to {
+    background-position: 0% 100%;
+  }
 }
