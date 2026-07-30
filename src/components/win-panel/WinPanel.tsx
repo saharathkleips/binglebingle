@@ -4,9 +4,11 @@
  * Displayed below the locked winning submission. Shows a compact win summary.
  */
 
+import { useEffect, useRef } from "react";
 import { useGame } from "../../context/game/GameContext";
 import { Button, ButtonText } from "../button/Button";
 import { SubmissionButton } from "../submission-area/SubmissionButton";
+import { triggerJamoConfetti } from "../../lib/animation/jamo-confetti";
 import { calculateScore } from "../../lib/engine/scoring";
 import styles from "./WinPanel.module.css";
 
@@ -15,11 +17,14 @@ import styles from "./WinPanel.module.css";
  */
 export function WinPanel() {
   const { state } = useGame();
+  const winCardButtonRef = useRef<HTMLButtonElement>(null);
   const score = calculateScore(state.history);
   const scoreLabel = `${score.guessCount}번째 시도 성공!`;
 
+  useEffect(() => triggerElementConfetti(winCardButtonRef.current), []);
+
   function handleWinCardClick() {
-    // TODO: Re-trigger jamo confetti from this card.
+    triggerElementConfetti(winCardButtonRef.current);
   }
 
   function handleShare() {
@@ -30,6 +35,7 @@ export function WinPanel() {
     <section className={styles.winPanel} aria-label="Win summary">
       <Button
         ariaLabel={`정답! ${scoreLabel}`}
+        ref={winCardButtonRef}
         className={styles.winCardButton}
         surfaceClassName={styles.winCardSurface}
         onClick={handleWinCardClick}
@@ -51,4 +57,9 @@ export function WinPanel() {
       <SubmissionButton isDisabled={false} label="공유" onSubmit={handleShare} />
     </section>
   );
+}
+
+function triggerElementConfetti(element: HTMLElement | null): (() => void) | undefined {
+  if (element === null) return undefined;
+  return triggerJamoConfetti({ originElement: element });
 }

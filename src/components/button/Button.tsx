@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, type Ref } from "react";
 import styles from "./Button.module.css";
 
 /** Props for the shared system {@link Button}. */
@@ -13,6 +13,8 @@ export type ButtonProps = {
   className?: string | undefined;
   /** Disables native button interaction and shared active feedback. */
   disabled?: boolean | undefined;
+  /** Ref for consumers that need to measure or focus the native button. */
+  ref?: Ref<HTMLButtonElement> | undefined;
   /** Click handler for the button action. */
   onClick?: (() => void) | undefined;
   /** Local surface classes let consumers shape the moving layer while preserving shared depth behavior. */
@@ -42,6 +44,7 @@ export function Button({
   children,
   ariaExpanded,
   ariaLabel,
+  ref,
   className,
   disabled = false,
   onClick,
@@ -50,6 +53,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
+      ref={ref}
       type={type}
       className={joinClassNames(styles.button, className)}
       onClick={onClick}
