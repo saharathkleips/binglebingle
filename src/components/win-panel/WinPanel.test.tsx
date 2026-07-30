@@ -37,18 +37,24 @@ describe("WinPanel", () => {
 
   it("does not repeat the target word as text", async () => {
     const screen = await renderWinPanel(wonState(1));
-    await expect.element(screen.getByText("정답")).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: "정답! 1번째 시도 성공!" }))
+      .toBeInTheDocument();
     await expect.element(screen.getByText("고양이")).not.toBeInTheDocument();
   });
 
   it("displays the guess count when solved in one guess", async () => {
     const screen = await renderWinPanel(wonState(1));
-    await expect.element(screen.getByText("1번 만에 맞췄어요")).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: "정답! 1번째 시도 성공!" }))
+      .toBeInTheDocument();
   });
 
   it("displays the guess count when solved in multiple guesses", async () => {
     const screen = await renderWinPanel(wonState(3));
-    await expect.element(screen.getByText("3번 만에 맞췄어요")).toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("button", { name: "정답! 3번째 시도 성공!" }))
+      .toBeInTheDocument();
   });
 
   it("renders the share button", async () => {

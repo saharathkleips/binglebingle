@@ -3,17 +3,45 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-sm);
+  padding: var(--space-md) var(--space-sm) var(--space-sm);
   text-align: center;
 }
 
+.winCardButton {
+  min-height: var(--interactive-hitbox-min-size);
+  padding: var(--button-hover-offset)
+    calc(
+      var(--button-hover-offset) + var(--button-depth-distance) + var(--button-cast-shadow-growth)
+    )
+    calc(
+      var(--button-hover-offset) + var(--button-depth-distance) + var(--button-cast-shadow-growth)
+    )
+    var(--button-hover-offset);
+}
+
+.winCardSurface {
+  min-width: min(16rem, calc(100vw - 2rem));
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+}
+
+.winCardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  z-index: 1;
+}
+
 .answerLabel {
-  font-size: 1rem;
-  font-weight: var(--font-weight-bold);
-  color: #393f69;
+  font-size: 1.75rem;
+  font-weight: var(--font-weight-control);
+  line-height: 1;
 }
 
 .score {
   font-size: 1rem;
-  color: #393f69;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  color: var(--color-chrome-foreground);
 }
