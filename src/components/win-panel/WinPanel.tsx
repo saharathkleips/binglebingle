@@ -32,7 +32,7 @@ export function WinPanel() {
   }
 
   return (
-    <section className={styles.winPanel} aria-label="Win summary">
+    <section className={styles.winPanel} aria-label="성공 결과">
       <Button
         ariaLabel={`정답! ${scoreLabel}`}
         ref={winCardButtonRef}

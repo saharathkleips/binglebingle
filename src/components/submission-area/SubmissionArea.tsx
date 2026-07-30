@@ -46,7 +46,7 @@ export function SubmissionArea({
   return (
     <section
       className={styles.submissionArea}
-      aria-label="Submission area"
+      aria-label="제출 영역"
       aria-busy={isSubmissionAnimating || undefined}
       {...{ [DATA_SUBMISSION_ANIMATING_ATTRIBUTE]: isSubmissionAnimating || undefined }}
     >

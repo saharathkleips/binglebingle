@@ -73,18 +73,14 @@ function SubmitToWinContent() {
 describe("App", () => {
   it("renders the nav bar with the abbreviated game logo", async () => {
     const screen = await render(<App />);
-    await expect
-      .element(screen.getByRole("navigation", { name: "Primary navigation" }))
-      .toBeInTheDocument();
+    await expect.element(screen.getByRole("navigation", { name: "주요 메뉴" })).toBeInTheDocument();
     await expect.element(screen.getByRole("heading", { level: 1 })).toHaveTextContent("ㅂㄱㅂㄱ");
   });
 
   it("renders pool and submission area", async () => {
     const screen = await render(<App />);
-    await expect.element(screen.getByRole("group", { name: "Jamo pool" })).toBeInTheDocument();
-    await expect
-      .element(screen.getByRole("region", { name: "Submission area" }))
-      .toBeInTheDocument();
+    await expect.element(screen.getByRole("group", { name: "자모 조각 모음" })).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "제출 영역" })).toBeInTheDocument();
   });
 
   it("renders history area when initial state has a prior guess", async () => {
@@ -102,33 +98,33 @@ describe("App", () => {
       ],
     };
     const screen = await render(<App initialState={initialState} />);
-    await expect.element(screen.getByRole("region", { name: "Guess history" })).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "도전 기록" })).toBeInTheDocument();
   });
 });
 
 describe("App win state", () => {
   it("shows win panel when the game is won", async () => {
     const screen = await render(<App initialState={wonState()} />);
-    await expect.element(screen.getByRole("region", { name: "Win summary" })).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "성공 결과" })).toBeInTheDocument();
   });
 
   it("hides pool when the game is won", async () => {
     const screen = await render(<App initialState={wonState()} />);
-    await expect.element(screen.getByRole("group", { name: "Jamo pool" })).not.toBeInTheDocument();
+    await expect
+      .element(screen.getByRole("group", { name: "자모 조각 모음" }))
+      .not.toBeInTheDocument();
   });
 
   it("keeps a locked submission area when the game is won", async () => {
     const screen = await render(<App initialState={wonState()} />);
-    await expect
-      .element(screen.getByRole("region", { name: "Submission area" }))
-      .toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "제출 영역" })).toBeInTheDocument();
     await expect.element(screen.getByRole("button", { name: "도전" })).not.toBeInTheDocument();
     await expect.element(screen.getByRole("button", { name: "고" })).not.toBeInTheDocument();
   });
 
   it("keeps history area visible when the game is won", async () => {
     const screen = await render(<App initialState={wonState()} />);
-    await expect.element(screen.getByRole("region", { name: "Guess history" })).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "도전 기록" })).toBeInTheDocument();
   });
 
   it("cleans up submit reveal DOM after transitioning to the win screen", async () => {
@@ -136,7 +132,7 @@ describe("App win state", () => {
 
     await screen.getByRole("button", { name: "도전" }).click();
 
-    await expect.element(screen.getByRole("region", { name: "Win summary" })).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "성공 결과" })).toBeInTheDocument();
     await expect
       .poll(() =>
         document.querySelector(dataAttributeSelector(DATA_HISTORY_ANIMATION_SPACER_ATTRIBUTE)),

@@ -38,7 +38,7 @@ function createGuessRecord(value: string, result: CharacterResult): GuessRecord 
 describe("HistoryArea", () => {
   it("renders an empty history region when history is empty", async () => {
     const screen = await renderHistoryArea([]);
-    await expect.element(screen.getByRole("region", { name: "Guess history" })).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "도전 기록" })).toBeInTheDocument();
     expect(getHistoryCards().length).toBe(0);
   });
 

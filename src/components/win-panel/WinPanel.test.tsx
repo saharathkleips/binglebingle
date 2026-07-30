@@ -32,7 +32,7 @@ async function renderWinPanel(state: GameState) {
 describe("WinPanel", () => {
   it("renders the win panel", async () => {
     const screen = await renderWinPanel(wonState(1));
-    await expect.element(screen.getByRole("region", { name: "Win summary" })).toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "성공 결과" })).toBeInTheDocument();
   });
 
   it("does not repeat the target word as text", async () => {

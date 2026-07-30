@@ -46,9 +46,7 @@ function submissionSlots(): HTMLElement[] {
 describe("SubmissionArea", () => {
   it("renders one slot per character in the target word", async () => {
     const screen = await renderSubmissionArea("한글");
-    await expect
-      .element(screen.getByRole("region", { name: "Submission area" }))
-      .toBeInTheDocument();
+    await expect.element(screen.getByRole("region", { name: "제출 영역" })).toBeInTheDocument();
     expect(submissionSlots().length).toBe(2);
   });
 

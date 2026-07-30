@@ -123,7 +123,7 @@ export function Pool() {
     <div
       className={styles.pool}
       role="group"
-      aria-label="Jamo pool"
+      aria-label="자모 조각 모음"
       aria-disabled={isInputLocked || undefined}
       {...{
         [DATA_INPUT_LOCKED_ATTRIBUTE]: isInputLocked || undefined,
