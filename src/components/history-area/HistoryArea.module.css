@@ -75,6 +75,19 @@
   color: var(--color-result-absent);
 }
 
+.winDanceOpposite {
+  animation: var(--motion-win-dance-name) var(--motion-win-dance-duration)
+    var(--motion-win-dance-ease) infinite;
+  animation-delay: var(--motion-win-dance-opposite-delay);
+  transform-origin: var(--motion-win-dance-transform-origin);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .winDanceOpposite {
+    animation: none;
+  }
+}
+
 .historyEmptyCard {
   display: flex;
   align-items: center;

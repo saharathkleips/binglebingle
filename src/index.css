@@ -77,6 +77,11 @@ body {
   /* ── Motion tokens ───────────────────────────────────────────────────── */
   --motion-duration-fast: 140ms;
   --motion-ease-standard: ease;
+  --motion-win-dance-name: binglebingle-win-dance;
+  --motion-win-dance-duration: 2s;
+  --motion-win-dance-ease: cubic-bezier(0.28, 1.15, 0.42, 1);
+  --motion-win-dance-opposite-delay: -1s;
+  --motion-win-dance-transform-origin: 50% 88%;
 
   /* ── Interaction tokens ──────────────────────────────────────────────── */
   --interactive-hitbox-min-size: 44px;
@@ -137,6 +142,41 @@ body {
   --font-weight-bold: 700;
   --font-weight-control: 800;
   --font-weight-tile: 900;
+}
+
+@keyframes binglebingle-win-dance {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  18% {
+    transform: rotate(-20deg);
+  }
+
+  29% {
+    transform: rotate(-9deg);
+  }
+
+  38% {
+    transform: rotate(-16deg);
+  }
+
+  50% {
+    transform: rotate(0deg);
+  }
+
+  68% {
+    transform: rotate(20deg);
+  }
+
+  79% {
+    transform: rotate(9deg);
+  }
+
+  88% {
+    transform: rotate(16deg);
+  }
 }
 
 .submission-history-reveal-card {
