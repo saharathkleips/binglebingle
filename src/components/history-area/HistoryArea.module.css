@@ -44,6 +44,7 @@
 }
 
 .historyCard {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,18 +62,6 @@
   font-weight: var(--font-weight-tile);
   line-height: 1;
   user-select: none;
-}
-
-.historyCard[data-result="CORRECT"] {
-  color: var(--color-result-correct);
-}
-
-.historyCard[data-result="PRESENT"] {
-  color: var(--color-result-present);
-}
-
-.historyCard[data-result="ABSENT"] {
-  color: var(--color-result-absent);
 }
 
 .winDanceOpposite {
