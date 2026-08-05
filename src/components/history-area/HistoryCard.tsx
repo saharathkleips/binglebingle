@@ -12,6 +12,12 @@ import {
 } from "../../lib/dom-data-attributes";
 import { getEvaluatedCharacterText } from "../../lib/evaluated-character-display";
 import type { EvaluatedCharacter } from "../../lib/engine";
+import Inhwi from "../../assets/history-card-inhwi.svg?react";
+import {
+  HISTORY_CARD_INHWI_BOTTOM_CLASS,
+  HISTORY_CARD_INHWI_DECORATED_CLASS,
+  HISTORY_CARD_INHWI_TOP_CLASS,
+} from "../../lib/history-card-inhwi";
 import { Lotus } from "../decoration/Lotus";
 import styles from "./HistoryArea.module.css";
 import { HistoryCardLayeredText } from "./HistoryCardLayeredText";
@@ -50,9 +56,11 @@ export function HistoryCard({ evaluated, isWinDanceEnabled = false }: HistoryCar
 
   return (
     <div
-      className={clsx(styles.historyCard, winDanceClassName)}
+      className={clsx(styles.historyCard, HISTORY_CARD_INHWI_DECORATED_CLASS, winDanceClassName)}
       {...{ [DATA_RESULT_ATTRIBUTE]: evaluated.result, [DATA_HISTORY_CARD_ATTRIBUTE]: true }}
     >
+      <Inhwi className={HISTORY_CARD_INHWI_TOP_CLASS} aria-hidden="true" focusable="false" />
+      <Inhwi className={HISTORY_CARD_INHWI_BOTTOM_CLASS} aria-hidden="true" focusable="false" />
       <HistoryCardLayeredText text={text} />
     </div>
   );

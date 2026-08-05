@@ -219,7 +219,38 @@ body {
 }
 
 /* Shared by React-rendered history cards and imperative submission-reveal clones. */
+.history-card-inhwi-decorated {
+  --history-card-inhwi-width: calc(100% + 4px);
+  --history-card-inhwi-inline-offset: 50%;
+  --history-card-inhwi-block-offset: -2px;
+
+  overflow: hidden;
+}
+
+.history-card-inhwi-top,
+.history-card-inhwi-bottom {
+  position: absolute;
+  left: var(--history-card-inhwi-inline-offset);
+  width: var(--history-card-inhwi-width);
+  height: auto;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transform-origin: center center;
+}
+
+.history-card-inhwi-top {
+  top: var(--history-card-inhwi-block-offset);
+}
+
+.history-card-inhwi-bottom {
+  bottom: var(--history-card-inhwi-block-offset);
+  transform: translateX(-50%) scaleY(-1);
+}
+
+/* Shared by React-rendered history cards and imperative submission-reveal clones. */
 .history-card-layered-text {
+  position: relative;
+  z-index: 1;
   display: inline-grid;
   place-items: center;
   line-height: 1.2;
@@ -257,15 +288,24 @@ body {
   -webkit-text-fill-color: currentColor;
 }
 
-.submission-history-reveal-card[data-result="CORRECT"] {
+.history-card-inhwi-decorated[data-result="CORRECT"] {
+  --history-card-inhwi-light: var(--color-result-correct);
+  --history-card-inhwi-dark: var(--color-drop-target-active);
+
   color: var(--color-result-correct);
 }
 
-.submission-history-reveal-card[data-result="PRESENT"] {
+.history-card-inhwi-decorated[data-result="PRESENT"] {
+  --history-card-inhwi-light: var(--color-result-present);
+  --history-card-inhwi-dark: #8f6f16;
+
   color: var(--color-result-present);
 }
 
-.submission-history-reveal-card[data-result="ABSENT"] {
+.history-card-inhwi-decorated[data-result="ABSENT"] {
+  --history-card-inhwi-light: var(--color-result-absent);
+  --history-card-inhwi-dark: #5f6670;
+
   color: var(--color-result-absent);
 }
 

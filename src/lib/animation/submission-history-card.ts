@@ -17,6 +17,12 @@ import {
 } from "../dom-data-attributes";
 import { getEvaluatedCharacterText } from "../evaluated-character-display";
 import type { EvaluatedCharacter } from "../engine";
+import {
+  createHistoryCardInhwiElement,
+  HISTORY_CARD_INHWI_BOTTOM_CLASS,
+  HISTORY_CARD_INHWI_DECORATED_CLASS,
+  HISTORY_CARD_INHWI_TOP_CLASS,
+} from "../history-card-inhwi";
 import { createHistoryCardLayeredTextElement } from "../history-card-layered-text";
 import { gsap } from "./register";
 
@@ -84,6 +90,7 @@ function revealSubmissionHistoryCardClone(clone: HTMLElement, evaluated: Evaluat
 }
 
 function revealEmptyHistoryCardClone(clone: HTMLElement): void {
+  clone.classList.remove(HISTORY_CARD_INHWI_DECORATED_CLASS);
   clone.removeAttribute(DATA_RESULT_ATTRIBUTE);
   clone.removeAttribute(DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE);
   clone.setAttribute(DATA_HISTORY_EMPTY_CARD_ATTRIBUTE, "true");
@@ -94,7 +101,12 @@ function revealFilledHistoryCardClone(
   result: EvaluatedCharacter["result"],
   text: string,
 ): void {
-  clone.replaceChildren(createHistoryCardLayeredTextElement(text));
+  clone.classList.add(HISTORY_CARD_INHWI_DECORATED_CLASS);
+  clone.replaceChildren(
+    createHistoryCardInhwiElement(HISTORY_CARD_INHWI_TOP_CLASS),
+    createHistoryCardInhwiElement(HISTORY_CARD_INHWI_BOTTOM_CLASS),
+    createHistoryCardLayeredTextElement(text),
+  );
   clone.removeAttribute(DATA_HISTORY_EMPTY_CARD_ATTRIBUTE);
   clone.removeAttribute(DATA_LOTUS_TILE_BACK_ATTRIBUTE);
   clone.removeAttribute(DATA_SUBMISSION_SLOT_PLACEHOLDER_ATTRIBUTE);
