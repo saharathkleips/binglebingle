@@ -49,6 +49,19 @@ describe("NavBar", () => {
     expect(handleToggle).toHaveBeenCalledOnce();
   });
 
+  it("calls onToggleSettings when the settings button is clicked", async () => {
+    const handleToggleSettings = vi.fn();
+    const screen = await render(
+      <NavBar
+        onToggleInstructions={() => {}}
+        isInstructionsOpen={false}
+        onToggleSettings={handleToggleSettings}
+      />,
+    );
+    await screen.getByRole("button", { name: "설정 열기" }).click();
+    expect(handleToggleSettings).toHaveBeenCalledOnce();
+  });
+
   it("sets aria-expanded to false when instructions are closed", async () => {
     const screen = await render(
       <NavBar onToggleInstructions={() => {}} isInstructionsOpen={false} />,

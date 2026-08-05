@@ -1,101 +1,84 @@
 /**
  * @file index.ts
  *
- * Word list loading and daily/random/fixed word selection.
+ * Daily word schedule loading and selection.
  * This slice owns the game-initialization concern of *which word to play* —
  * distinct from what a word structurally is (src/lib/word/).
  *
- * loadWords performs I/O; all other exports are pure.
+ * loadDailyWords performs I/O; all other exports are pure.
  * No React. No game-state knowledge beyond the initial word choice.
  */
 
-import { createWord, wordToString } from "../word";
+import { createWord } from "../word";
 import type { Word } from "../word";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-/** Strategy for selecting a word from the loaded word list. */
-export type WordSelectionStrategy =
-  | { kind: "daily" }
-  | { kind: "random" }
-  | { kind: "fixed"; word: string }
-  | { kind: "byDate"; date: string }; // ISO date 'YYYY-MM-DD'
+/** Supported puzzle difficulty, expressed as the target word length in syllables. */
+export type Difficulty = 3 | 4 | 5;
+
+/** All currently supported puzzle difficulties. */
+export const DIFFICULTIES: readonly Difficulty[] = [3, 4, 5];
+
+/** A curated daily puzzle entry loaded from the per-difficulty daily schedule. */
+export type DailyWordEntry = {
+  /** Local ISO date (`YYYY-MM-DD`) when this word should be used. */
+  date: string;
+  /** Validated target word for the entry's difficulty. */
+  word: Word;
+};
 
 // ---------------------------------------------------------------------------
 // Exported functions
 // ---------------------------------------------------------------------------
 
 /**
- * Fetches and validates the word list from `public/data/words.json`.
- * Entries that fail createWord validation are silently dropped.
- *
- * @returns The validated word list
+ * Fetches and validates the curated daily schedule for one difficulty.
+ * Entries that do not match `{ date: string, word: string }`, fail word validation,
+ * or contain a word for another difficulty are silently dropped.
  */
-export async function loadWords(): Promise<readonly Word[]> {
-  const response = await fetch("/data/words.json");
+export async function loadDailyWords(difficulty: Difficulty): Promise<readonly DailyWordEntry[]> {
+  const response = await fetch(`${import.meta.env.BASE_URL}data/daily/${difficulty}.json`);
+  if ("ok" in response && !response.ok) return [];
   const raw: unknown = await response.json();
   if (!Array.isArray(raw)) return [];
-  const words: Word[] = [];
+
+  const entries: DailyWordEntry[] = [];
   for (const entry of raw) {
-    if (typeof entry !== "string") continue;
-    const word = createWord(entry);
-    if (word !== null) words.push(word);
+    if (!isRawDailyWordEntry(entry)) continue;
+    const word = createWord(entry.word);
+    if (word !== null && word.length === difficulty) entries.push({ date: entry.date, word });
   }
-  return words;
+  return entries;
 }
 
-/**
- * Selects a word from the list by the given strategy.
- *
- * - `daily`: date-seeded deterministic selection using today's date
- * - `random`: uniform random selection
- * - `fixed`: returns the word matching the given string (falls back to first)
- * - `byDate`: selects as if today were the given ISO date ('YYYY-MM-DD')
- *
- * @param words - Non-empty validated word list
- * @param strategy - Selection strategy
- * @returns A Word from the list
- */
-export function selectWord(words: readonly Word[], strategy: WordSelectionStrategy): Word {
-  switch (strategy.kind) {
-    case "daily":
-      return wordForDate(words, todayIso());
-    case "byDate":
-      return wordForDate(words, strategy.date);
-    case "random":
-      return words[Math.floor(Math.random() * words.length)]!;
-    case "fixed": {
-      const found = words.find((w) => wordToString(w) === strategy.word);
-      return found ?? words[0]!;
-    }
-  }
+/** Returns whether a word length is one of the supported difficulty levels. */
+export function isSupportedDifficulty(length: number): length is Difficulty {
+  return DIFFICULTIES.includes(length as Difficulty);
+}
+
+/** Returns today's date as an ISO string ('YYYY-MM-DD') in local time. */
+export function todayIso(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/** Returns the word explicitly scheduled for a local ISO date, if present. */
+export function selectDailyWord(entries: readonly DailyWordEntry[], date: string): Word | null {
+  return entries.find((entry) => entry.date === date)?.word ?? null;
 }
 
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Returns today's date as an ISO string ('YYYY-MM-DD') in local time.
- * @internal
- */
-function todayIso(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-/**
- * Selects a deterministic word for a given ISO date by converting the date
- * to integer days since the Unix epoch and taking the modulo of the list length.
- * @internal
- */
-function wordForDate(words: readonly Word[], isoDate: string): Word {
-  const ms = new Date(isoDate).getTime();
-  const dayIndex = Math.floor(ms / 86_400_000);
-  return words[((dayIndex % words.length) + words.length) % words.length]!;
+function isRawDailyWordEntry(entry: unknown): entry is { date: string; word: string } {
+  if (typeof entry !== "object" || entry === null) return false;
+  const candidate = entry as Partial<Record<"date" | "word", unknown>>;
+  return typeof candidate.date === "string" && typeof candidate.word === "string";
 }

@@ -9,6 +9,7 @@
 import { fullDecompose } from "../../lib/character/composition";
 import { normalizeCharacter } from "../../lib/character/rotation";
 import { evaluateGuess } from "../../lib/engine/evaluate";
+import type { Character } from "../../lib/character";
 import type { Word } from "../../lib/word";
 import type { GameState, SubmissionSlot, SubmitGuessCommitPayload, Tile } from ".";
 
@@ -39,10 +40,13 @@ export type SubmitGuessTransition = SubmitGuessCommitPayload & {
  * @returns An ordered pool of single-jamo tiles
  */
 export function buildInitialPool(word: Word): readonly Tile[] {
-  return fullDecompose(word).map((char, index) => ({
-    id: index,
-    character: normalizeCharacter(char),
-  }));
+  return fullDecompose(word)
+    .map(normalizeCharacter)
+    .sort(compareInitialPoolCharacters)
+    .map((char, index) => ({
+      id: index,
+      character: char,
+    }));
 }
 
 /**
@@ -53,6 +57,37 @@ export function buildInitialPool(word: Word): readonly Tile[] {
  */
 export function buildEmptySubmission(word: Word): readonly SubmissionSlot[] {
   return word.map(() => ({ state: "EMPTY" as const }));
+}
+
+function compareInitialPoolCharacters(left: Character, right: Character): number {
+  const leftGroup = initialPoolCharacterGroup(left);
+  const rightGroup = initialPoolCharacterGroup(right);
+  if (leftGroup !== rightGroup) return leftGroup - rightGroup;
+  return initialPoolCharacterSortValue(left).localeCompare(
+    initialPoolCharacterSortValue(right),
+    "ko",
+  );
+}
+
+function initialPoolCharacterGroup(character: Character): number {
+  return character.kind === "JUNGSEONG_ONLY" ? 1 : 0;
+}
+
+function initialPoolCharacterSortValue(character: Character): string {
+  switch (character.kind) {
+    case "CHOSEONG_ONLY":
+      return character.choseong;
+    case "JONGSEONG_ONLY":
+      return character.jongseong;
+    case "JUNGSEONG_ONLY":
+      return character.jungseong;
+    case "OPEN_SYLLABLE":
+      return `${character.choseong}${character.jungseong}`;
+    case "FULL_SYLLABLE":
+      return `${character.choseong}${character.jungseong}${character.jongseong}`;
+    case "EMPTY":
+      return "";
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -9,6 +9,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useReducer,
   useRef,
   useState,
@@ -29,6 +30,8 @@ export type GameProviderProps = {
   initialState: GameState;
   /** Component subtree that reads game state through `useGame`. */
   children: ReactNode;
+  /** Called after reducer state changes; used by app-level local persistence. */
+  onStateChange?: ((state: GameState) => void) | undefined;
 };
 
 /**
@@ -38,11 +41,20 @@ export type GameProviderProps = {
  * @param props.initialState - Initial game state (from `createInitialGameState`)
  * @param props.children - Component subtree that needs game state
  */
-export function GameProvider({ initialState, children }: GameProviderProps) {
+export function GameProvider({ initialState, children, onStateChange }: GameProviderProps) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const [inputLockCount, setInputLockCount] = useState(0);
   const historyAreaRef = useRef<HTMLElement>(null);
+  const onStateChangeRef = useRef(onStateChange);
   const isInputLocked = inputLockCount > 0;
+
+  useEffect(() => {
+    onStateChangeRef.current = onStateChange;
+  });
+
+  useEffect(() => {
+    onStateChangeRef.current?.(state);
+  }, [state]);
 
   const acquireInputLock = useCallback(() => {
     let hasReleased = false;

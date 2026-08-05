@@ -49,7 +49,8 @@ describe("Pool tap", () => {
   it("decomposes a composable tile on tap after it has been composed", async () => {
     const screen = await renderPool("나가");
 
-    dragToElementCenter(getPoolTile(0), getPoolTile(2));
+    const consonantTiles = poolTiles().filter((tile) => tile.textContent === "ㄱ");
+    dragToElementCenter(consonantTiles[0]!, consonantTiles[1]!);
 
     await expect.poll(() => poolTiles().length).toBe(3);
 
