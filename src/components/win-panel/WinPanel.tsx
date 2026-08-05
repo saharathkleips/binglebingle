@@ -10,18 +10,33 @@ import { Button, ButtonText } from "../button/Button";
 import { SubmissionButton } from "../submission-area/SubmissionButton";
 import { triggerJamoConfetti } from "../../lib/animation/jamo-confetti";
 import { calculateScore } from "../../lib/engine/scoring";
+import { wordToString } from "../../lib/word";
 import styles from "./WinPanel.module.css";
+
+const AUTO_CELEBRATED_WIN_STORAGE_PREFIX = "binglebingle:auto-celebrated-win";
+const autoCelebratedWinKeys = new Set<string>();
+
+type WinPanelProps = {
+  /** Stable daily-game identity used to suppress duplicate automatic celebrations. */
+  celebrationScope?: string | undefined;
+};
 
 /**
  * Renders the win summary details. Must be rendered inside a GameProvider.
  */
-export function WinPanel() {
+export function WinPanel({ celebrationScope = "standalone" }: WinPanelProps = {}) {
   const { state } = useGame();
   const winCardButtonRef = useRef<HTMLButtonElement>(null);
   const score = calculateScore(state.history);
   const scoreLabel = `${score.guessCount}번째 시도 성공!`;
+  const winKey = `${celebrationScope}:${wordToString(state.targetWord)}:${state.history.length}`;
 
-  useEffect(() => triggerElementConfetti(winCardButtonRef.current), []);
+  useEffect(() => {
+    if (hasAutoCelebratedWin(winKey)) return undefined;
+
+    markAutoCelebratedWin(winKey);
+    return triggerElementConfetti(winCardButtonRef.current);
+  }, [winKey]);
 
   function handleWinCardClick() {
     triggerElementConfetti(winCardButtonRef.current);
@@ -57,6 +72,37 @@ export function WinPanel() {
       <SubmissionButton isDisabled={false} label="공유" onSubmit={handleShare} />
     </section>
   );
+}
+
+function hasAutoCelebratedWin(winKey: string): boolean {
+  if (autoCelebratedWinKeys.has(winKey)) return true;
+
+  const storage = getLocalStorage();
+  return storage?.getItem(autoCelebratedWinStorageKey(winKey)) === "true";
+}
+
+function markAutoCelebratedWin(winKey: string): void {
+  autoCelebratedWinKeys.add(winKey);
+
+  const storage = getLocalStorage();
+  try {
+    storage?.setItem(autoCelebratedWinStorageKey(winKey), "true");
+  } catch {
+    // Ignore storage failures; in-memory suppression still handles remounts in this session.
+  }
+}
+
+function autoCelebratedWinStorageKey(winKey: string): string {
+  return `${AUTO_CELEBRATED_WIN_STORAGE_PREFIX}:${winKey}`;
+}
+
+function getLocalStorage(): Storage | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
 }
 
 function triggerElementConfetti(element: HTMLElement | null): (() => void) | undefined {

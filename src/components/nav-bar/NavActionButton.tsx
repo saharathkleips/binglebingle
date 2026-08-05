@@ -7,9 +7,11 @@ type NavActionButtonBaseProps = {
   /** Accessible action name for the circular nav control. */
   ariaLabel: string;
   /** Forwarded to aria-expanded for controls that open overlays. */
-  isExpanded?: boolean;
+  isExpanded?: boolean | undefined;
+  /** Forwarded to aria-pressed for selected/toggle controls. */
+  isPressed?: boolean | undefined;
   /** Called when the user activates the nav control. */
-  onClick?: () => void;
+  onClick?: (() => void) | undefined;
 };
 
 /** Props for text and icon nav actions. */
@@ -42,6 +44,7 @@ export function NavActionButton(props: NavActionButtonProps) {
       onClick={props.onClick}
       ariaLabel={props.ariaLabel}
       ariaExpanded={props.isExpanded}
+      ariaPressed={props.isPressed}
     >
       {props.kind === "icon" ? (
         <span className={styles.contentIcon} aria-hidden="true">

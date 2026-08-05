@@ -7,6 +7,8 @@ export type ButtonProps = {
   children: ReactNode;
   /** Forwarded to `aria-expanded` for disclosure-style buttons. */
   ariaExpanded?: boolean | undefined;
+  /** Forwarded to `aria-pressed` for toggle-style buttons. */
+  ariaPressed?: boolean | undefined;
   /** Accessible label for icon-only or visually abbreviated buttons. */
   ariaLabel?: string | undefined;
   /** Local footprint, radius, and layout classes belong to consumers. */
@@ -44,6 +46,7 @@ export function Button({
   children,
   ariaExpanded,
   ariaLabel,
+  ariaPressed,
   ref,
   className,
   disabled = false,
@@ -59,6 +62,7 @@ export function Button({
       onClick={onClick}
       aria-label={ariaLabel}
       aria-expanded={ariaExpanded}
+      aria-pressed={ariaPressed}
       disabled={disabled}
     >
       <span className={joinClassNames(styles.surface, surfaceClassName)}>{children}</span>
