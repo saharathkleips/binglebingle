@@ -12,6 +12,10 @@
   --instruction-tile-long-edge: 2.5rem;
   --instruction-tile-short-edge: calc(var(--instruction-tile-long-edge) * 2 / 3);
   --instruction-tile-font-size: 1.1rem;
+  --instruction-tile-radius: 4px;
+  --instruction-tile-border-width: 1px;
+  --instruction-tile-depth-step: 0.5px;
+  --instruction-tile-cast-shadow-distance: 1.5px;
 
   position: relative;
   background: var(--color-surface);
@@ -100,6 +104,10 @@
   --tile-visual-long-edge: var(--instruction-tile-long-edge);
   --tile-visual-short-edge: var(--instruction-tile-short-edge);
   --tile-font-size: var(--instruction-tile-font-size);
+  --tile-radius: var(--instruction-tile-radius);
+  --tile-border-width: var(--instruction-tile-border-width);
+  --tile-depth-step: var(--instruction-tile-depth-step);
+  --tile-cast-shadow-distance: var(--instruction-tile-cast-shadow-distance);
 }
 
 .poolTile {
@@ -107,6 +115,10 @@
   --tile-visual-long-edge: var(--instruction-tile-long-edge);
   --tile-visual-short-edge: var(--instruction-tile-short-edge);
   --tile-font-size: var(--instruction-tile-font-size);
+  --tile-radius: var(--instruction-tile-radius);
+  --tile-border-width: var(--instruction-tile-border-width);
+  --tile-depth-step: var(--instruction-tile-depth-step);
+  --tile-cast-shadow-distance: var(--instruction-tile-cast-shadow-distance);
 }
 
 /* ── Equations ── */
