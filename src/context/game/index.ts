@@ -78,9 +78,9 @@ export type SubmissionAction =
 export type SubmitGuessCommitPayload = {
   /** Per-slot evaluation for the submitted guess. */
   evaluation: GuessRecord;
-  /** Submission after correct/present slots are kept and absent slots are cleared. */
+  /** Submission after correct slots are kept and present/absent slots are cleared. */
   submission: readonly SubmissionSlot[];
-  /** Pool after absent tiles are decomposed and returned. */
+  /** Pool after present tiles return unchanged and absent tiles return decomposed. */
   pool: readonly Tile[];
 };
 
@@ -88,8 +88,8 @@ export type SubmitGuessCommitPayload = {
  * Actions for round progression: submitting a guess, committing an already prepared submit
  * transition, or resetting the round.
  *
- * - `ROUND_SUBMISSION_SUBMIT` — evaluate the current submission, record the result; correct/present
- *   slots remain filled, absent tiles are fully decomposed and returned to the pool
+ * - `ROUND_SUBMISSION_SUBMIT` — evaluate the current submission, record the result; correct slots
+ *   remain filled, present tiles return unchanged, absent tiles return fully decomposed
  * - `ROUND_SUBMISSION_COMMIT` — commit a precomputed submit transition produced by domain logic
  * - `ROUND_RESET` — restore the pool and clear the submission for a new attempt
  */

@@ -29,20 +29,22 @@ function filledSlot(syllable: string, tileId: number): SubmissionSlot {
 // ---------------------------------------------------------------------------
 
 describe("prepareSubmitGuessTransition", () => {
-  it("returns absent decomposed tiles grouped by source slot", () => {
+  it("returns present tiles unchanged and absent tiles decomposed, grouped by source slot", () => {
     const state = makeState({
-      submission: [filledSlot("까", 0), filledSlot("나", 1)],
+      submission: [filledSlot("까", 0), filledSlot("가", 1)],
     });
 
     const transition = prepareSubmitGuessTransition(state);
 
-    expect(transition.returnedTilesBySlot).toHaveLength(1);
+    expect(transition.returnedTilesBySlot).toHaveLength(2);
     expect(transition.returnedTilesBySlot[0]?.slotIndex).toBe(0);
     expect(transition.returnedTilesBySlot[0]?.tiles).toEqual([
       { id: 0, character: character({ choseong: "ㄱ" }) },
       { id: 2, character: character({ choseong: "ㄱ" }) },
       { id: 3, character: character({ jungseong: "ㅏ" }) },
     ]);
+    expect(transition.returnedTilesBySlot[1]?.slotIndex).toBe(1);
+    expect(transition.returnedTilesBySlot[1]?.tiles).toEqual([{ id: 1, character: character("가") }]);
   });
 });
 
@@ -86,15 +88,18 @@ describe("handleSubmitGuess", () => {
     expect(next.submission[1]?.state).toBe("EMPTY");
   });
 
-  it("keeps PRESENT slots filled after submission", () => {
+  it("returns PRESENT tiles to the pool unchanged and empties their slots", () => {
     // [나, 가] against "가나" → [PRESENT, PRESENT]
     const state = makeState({
       submission: [filledSlot("나", 0), filledSlot("가", 1)],
     });
     const next = handleSubmitGuess(state);
-    expect(next.submission[0]?.state).toBe("FILLED");
-    expect(next.submission[0]).toEqual(filledSlot("나", 0));
-    expect(next.pool.some((t) => t.id === 0)).toBe(false);
+    expect(next.submission[0]?.state).toBe("EMPTY");
+    expect(next.submission[1]?.state).toBe("EMPTY");
+    expect(next.pool).toEqual([
+      { id: 0, character: character("나") },
+      { id: 1, character: character("가") },
+    ]);
   });
 
   it("returns ABSENT tiles to the pool and empties their slots", () => {
