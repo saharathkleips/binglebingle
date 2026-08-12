@@ -89,90 +89,92 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
           ×
         </button>
 
-        <header className={styles.header}>
-          {/* Spin the jamo pieces round and round to find the hidden word! */}
-          <p className={styles.lede}>자모 조각을 빙글빙글 돌려 숨은 낱말을 찾아요!</p>
-          <div className={styles.pool} aria-label="처음 자모 조각">
-            {POOL_CHARACTERS.map((character, index) => (
-              <CharacterTile
-                key={index}
-                character={character}
-                element="span"
-                className={styles.poolTile}
-              />
-            ))}
-          </div>
-        </header>
+        <div className={styles.content}>
+          <header className={styles.header}>
+            {/* Spin the jamo pieces round and round to find the hidden word! */}
+            <p className={styles.lede}>자모 조각을 빙글빙글 돌려 숨은 낱말을 찾아요!</p>
+            <div className={styles.pool} aria-label="처음 자모 조각">
+              {POOL_CHARACTERS.map((character, index) => (
+                <CharacterTile
+                  key={index}
+                  character={character}
+                  element="span"
+                  className={styles.poolTile}
+                />
+              ))}
+            </div>
+          </header>
 
-        <section className={styles.instructionSection} aria-label="글자 만들기">
-          {/* Rotate, snap together, and new syllables appear. */}
-          <p className={styles.label}>돌리고 착! 합치면 새 글자가 돼요.</p>
-          <InstructionEquation
-            characters={[
-              EXAMPLE_CHARACTERS.ㅏ,
-              EXAMPLE_CHARACTERS.ㅜ,
-              EXAMPLE_CHARACTERS.ㅓ,
-              EXAMPLE_CHARACTERS.ㅗ,
-            ]}
-            operators={["→", "→", "→"]}
-          />
-          <InstructionEquation
-            characters={[
-              EXAMPLE_CHARACTERS.ㅗ,
-              EXAMPLE_CHARACTERS.ㅏ,
-              EXAMPLE_CHARACTERS.ㅘ,
-              EXAMPLE_CHARACTERS.ㅣ,
-              EXAMPLE_CHARACTERS.ㅙ,
-            ]}
-            operators={["+", "=", "+", "="]}
-          />
-
-          <InstructionEquation
-            characters={[EXAMPLE_CHARACTERS.ㅇ, EXAMPLE_CHARACTERS.ㅙ, EXAMPLE_CHARACTERS.왜]}
-            operators={["+", "="]}
-          />
-        </section>
-
-        <section className={styles.instructionSection} aria-label="추측 제출">
-          {/* Empty slots are okay! Submit to reveal clues. */}
-          <p className={styles.label}>빈칸도 괜찮아요! 제출하면 단서가 나와요.</p>
-          <div className={styles.submissionRevealExample}>
-            <SlotRow
-              tiles={[
-                { character: EXAMPLE_CHARACTERS.라 },
-                null,
-                { character: EXAMPLE_CHARACTERS.왜 },
+          <section className={styles.instructionSection} aria-label="글자 만들기">
+            {/* Rotate, snap together, and new syllables appear. */}
+            <p className={styles.label}>돌리고 착! 합치면 새 글자가 돼요.</p>
+            <InstructionEquation
+              characters={[
+                EXAMPLE_CHARACTERS.ㅏ,
+                EXAMPLE_CHARACTERS.ㅜ,
+                EXAMPLE_CHARACTERS.ㅓ,
+                EXAMPLE_CHARACTERS.ㅗ,
               ]}
+              operators={["→", "→", "→"]}
             />
-            <div className={styles.downArrow} aria-hidden="true">
-              ↓
-            </div>
-            <ResultRow results={INCOMPLETE_GUESS_RESULT} />
-          </div>
-          <dl className={styles.legend}>
-            <div className={styles.legendItem}>
-              {/* Green: exactly right. */}
-              <dt>초록</dt>
-              <dd>딱 맞아요</dd>
-            </div>
-            <div className={styles.legendItem}>
-              {/* Yellow: the position is different. */}
-              <dt>노랑</dt>
-              <dd>자리가 달라요</dd>
-            </div>
-            <div className={styles.legendItem}>
-              {/* Gray: not in the word. */}
-              <dt>회색</dt>
-              <dd>낱말에 없어요</dd>
-            </div>
-          </dl>
-        </section>
+            <InstructionEquation
+              characters={[
+                EXAMPLE_CHARACTERS.ㅗ,
+                EXAMPLE_CHARACTERS.ㅏ,
+                EXAMPLE_CHARACTERS.ㅘ,
+                EXAMPLE_CHARACTERS.ㅣ,
+                EXAMPLE_CHARACTERS.ㅙ,
+              ]}
+              operators={["+", "=", "+", "="]}
+            />
 
-        <section className={styles.instructionSection} aria-label="성공">
-          <ResultRow results={FINAL_GUESS_RESULT} />
-          {/* Turn every slot green to win! */}
-          <p className={styles.label}>모든 칸이 초록이면 성공이에요!</p>
-        </section>
+            <InstructionEquation
+              characters={[EXAMPLE_CHARACTERS.ㅇ, EXAMPLE_CHARACTERS.ㅙ, EXAMPLE_CHARACTERS.왜]}
+              operators={["+", "="]}
+            />
+          </section>
+
+          <section className={styles.instructionSection} aria-label="추측 제출">
+            {/* Empty slots are okay! Submit to reveal clues. */}
+            <p className={styles.label}>빈칸도 괜찮아요! 제출하면 단서가 나와요.</p>
+            <div className={styles.submissionRevealExample}>
+              <SlotRow
+                tiles={[
+                  { character: EXAMPLE_CHARACTERS.라 },
+                  null,
+                  { character: EXAMPLE_CHARACTERS.왜 },
+                ]}
+              />
+              <div className={styles.downArrow} aria-hidden="true">
+                ↓
+              </div>
+              <ResultRow results={INCOMPLETE_GUESS_RESULT} />
+            </div>
+            <dl className={styles.legend}>
+              <div className={styles.legendItem}>
+                {/* Green: exactly right. */}
+                <dt>초록</dt>
+                <dd>딱 맞아요</dd>
+              </div>
+              <div className={styles.legendItem}>
+                {/* Yellow: the position is different. */}
+                <dt>노랑</dt>
+                <dd>자리가 달라요</dd>
+              </div>
+              <div className={styles.legendItem}>
+                {/* Gray: not in the word. */}
+                <dt>회색</dt>
+                <dd>낱말에 없어요</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section className={styles.instructionSection} aria-label="성공">
+            <ResultRow results={FINAL_GUESS_RESULT} />
+            {/* Turn every slot green to win! */}
+            <p className={styles.label}>모든 칸이 초록이면 성공이에요!</p>
+          </section>
+        </div>
       </div>
     </div>
   );
