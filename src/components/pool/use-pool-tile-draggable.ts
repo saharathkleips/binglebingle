@@ -14,8 +14,10 @@ import {
 import {
   DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE,
   DATA_POOL_ATTRIBUTE,
+  DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE,
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_TILE_ID_ATTRIBUTE,
+  dataAttributeSelector,
 } from "../../lib/dom-data-attributes";
 import {
   findDropTarget as findDataAttributeDropTarget,
@@ -61,6 +63,7 @@ export function usePoolTileDraggable({
 }: UsePoolTileDraggableOptions) {
   const lastOverRef = useRef<Element | null>(null);
   const poolOverflowElementRef = useRef<HTMLElement | null>(null);
+  const sourceStartRectRef = useRef<DOMRect | null>(null);
   const tileIdRef = useLatestRef(tileId);
   const callbacksRef = useLatestRef({
     isTappable,
@@ -81,6 +84,7 @@ export function usePoolTileDraggable({
         dragClickables: true,
         onDragStart: function onDragStart(this: Draggable) {
           const draggedElement = this.target as HTMLElement;
+          sourceStartRectRef.current = draggedElement.getBoundingClientRect();
           poolOverflowElementRef.current = allowPoolDragOverflow(draggedElement);
           animatePickUp(draggedElement);
         },
@@ -88,6 +92,7 @@ export function usePoolTileDraggable({
           updatePoolDragFeedback({
             draggable: this,
             lastOverRef,
+            sourceStartRect: sourceStartRectRef.current,
             sourceTileId: tileIdRef.current,
             callbacks: callbacksRef.current,
           });
@@ -96,7 +101,12 @@ export function usePoolTileDraggable({
           const draggedElement = this.target as HTMLElement;
           clearDragFeedback(lastOverRef, draggedElement);
 
-          const dropTarget = getCurrentPoolDropTarget(this, tileIdRef.current);
+          const dropTarget = getCurrentPoolDropTarget(
+            this,
+            tileIdRef.current,
+            sourceStartRectRef.current,
+          );
+          sourceStartRectRef.current = null;
 
           // Drop callbacks are authoritative; invalid compose attempts still notify Pool
           // so it can reject the drop before this tile animates back.
@@ -149,6 +159,8 @@ type PoolDragFeedbackOptions = {
   draggable: Draggable;
   /** Last highlighted drop target so feedback can be moved or cleared. */
   lastOverRef: React.MutableRefObject<Element | null>;
+  /** Source tile rect captured before Draggable transforms it. */
+  sourceStartRect: DOMRect | null;
   /** Stable ID of the dragged source tile. */
   sourceTileId: number;
   /** Pool-owned drop and feedback callbacks. */
@@ -156,16 +168,18 @@ type PoolDragFeedbackOptions = {
 };
 
 const POOL_SELECTOR = `[${DATA_POOL_ATTRIBUTE}="true"]`;
+const POOL_TILE_OVERLAP_DROP_RATIO = 0.5;
 const NO_DROP_FEEDBACK = { canDrop: false, preview: null } satisfies DropTargetFeedback;
 
 function updatePoolDragFeedback({
   draggable,
   lastOverRef,
+  sourceStartRect,
   sourceTileId,
   callbacks,
 }: PoolDragFeedbackOptions) {
   const draggedElement = draggable.target as HTMLElement;
-  const dropTarget = getCurrentPoolDropTarget(draggable, sourceTileId);
+  const dropTarget = getCurrentPoolDropTarget(draggable, sourceTileId, sourceStartRect);
   const dropTargetFeedback = getFeedbackForDropTarget(dropTarget, callbacks);
   const validDropTarget = dropTargetFeedback.canDrop ? dropTarget : null;
 
@@ -178,9 +192,19 @@ function updatePoolDragFeedback({
   lastOverRef.current = validDropTarget;
 }
 
-function getCurrentPoolDropTarget(draggable: Draggable, sourceTileId: number): Element | null {
+function getCurrentPoolDropTarget(
+  draggable: Draggable,
+  sourceTileId: number,
+  sourceStartRect: DOMRect | null,
+): Element | null {
   const elements = document.elementsFromPoint?.(draggable.pointerX, draggable.pointerY) ?? [];
-  return findPoolDropTarget(elements, sourceTileId);
+  const pointerDropTarget = findPoolDropTarget(elements, sourceTileId);
+  if (pointerDropTarget !== null) return pointerDropTarget;
+
+  return findOverlappingPoolTileDropTarget(
+    getTranslatedRect(draggable.target as HTMLElement, sourceStartRect, draggable.x, draggable.y),
+    sourceTileId,
+  );
 }
 
 function getFeedbackForDropTarget(
@@ -209,10 +233,72 @@ function updateSourceDragFeedback(
 
 function findPoolDropTarget(elements: Element[], sourceTileId: number): Element | null {
   return findDataAttributeDropTarget(elements, {
-    acceptedAttributes: [DATA_SLOT_INDEX_ATTRIBUTE, DATA_TILE_ID_ATTRIBUTE],
-    excludedAttribute: DATA_TILE_ID_ATTRIBUTE,
+    acceptedAttributes: [
+      DATA_SLOT_INDEX_ATTRIBUTE,
+      DATA_TILE_ID_ATTRIBUTE,
+      DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE,
+    ],
+    excludedAttributes: [DATA_TILE_ID_ATTRIBUTE, DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE],
     excludedValue: String(sourceTileId),
   });
+}
+
+function findOverlappingPoolTileDropTarget(
+  sourceRect: DOMRect,
+  sourceTileId: number,
+): Element | null {
+  const sourceArea = sourceRect.width * sourceRect.height;
+  if (sourceArea <= 0) return null;
+
+  const candidates = document.querySelectorAll(
+    dataAttributeSelector(DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE),
+  );
+  let bestTarget: Element | null = null;
+  let bestOverlapArea = 0;
+
+  candidates.forEach((candidate) => {
+    if (!(candidate instanceof HTMLElement)) return;
+    if (candidate.getAttribute(DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE) === String(sourceTileId)) return;
+
+    const candidateRect = candidate.getBoundingClientRect();
+    const candidateArea = candidateRect.width * candidateRect.height;
+    const overlapArea = getRectIntersectionArea(sourceRect, candidateRect);
+    const normalizedOverlapArea = overlapArea / Math.min(sourceArea, candidateArea);
+    if (normalizedOverlapArea > bestOverlapArea) {
+      bestTarget = candidate;
+      bestOverlapArea = normalizedOverlapArea;
+    }
+  });
+
+  return bestOverlapArea >= POOL_TILE_OVERLAP_DROP_RATIO ? bestTarget : null;
+}
+
+function getTranslatedRect(
+  sourceElement: HTMLElement,
+  sourceStartRect: DOMRect | null,
+  x: number,
+  y: number,
+): DOMRect {
+  if (sourceStartRect === null) return sourceElement.getBoundingClientRect();
+
+  return new DOMRect(
+    sourceStartRect.x + x,
+    sourceStartRect.y + y,
+    sourceStartRect.width,
+    sourceStartRect.height,
+  );
+}
+
+function getRectIntersectionArea(firstRect: DOMRect, secondRect: DOMRect): number {
+  const width = Math.max(
+    0,
+    Math.min(firstRect.right, secondRect.right) - Math.max(firstRect.left, secondRect.left),
+  );
+  const height = Math.max(
+    0,
+    Math.min(firstRect.bottom, secondRect.bottom) - Math.max(firstRect.top, secondRect.top),
+  );
+  return width * height;
 }
 
 function clearDragFeedback(
@@ -236,9 +322,9 @@ function acceptDrop(
     return acceptSlotDrop({ dropTarget, sourceElement, sourceTileId, slotIndex, callbacks });
   }
 
-  const targetTileId = parseDropTargetNumber(dropTarget, DATA_TILE_ID_ATTRIBUTE);
-  if (targetTileId !== null) {
-    return callbacks.onDropOnTile(targetTileId);
+  const targetTile = findDropTargetTile(dropTarget);
+  if (targetTile !== null) {
+    return callbacks.onDropOnTile(targetTile.tileId);
   }
 
   return false;

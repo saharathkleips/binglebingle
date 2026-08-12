@@ -14,7 +14,10 @@ import {
   popPendingTileSnapBack,
 } from "../../lib/animation/snap-back-animations";
 import { CharacterTile } from "../tile/CharacterTile";
-import { DATA_TILE_ID_ATTRIBUTE } from "../../lib/dom-data-attributes";
+import {
+  DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE,
+  DATA_TILE_ID_ATTRIBUTE,
+} from "../../lib/dom-data-attributes";
 import { useTileFeedback } from "../tile/use-tile-feedback";
 import type { Tile } from "../../context/game";
 import { usePoolTileDraggable } from "./use-pool-tile-draggable";
@@ -98,7 +101,7 @@ export function PoolTile({
   });
 
   return (
-    <div className={styles.cell}>
+    <div className={styles.cell} {...{ [DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE]: tile.id }}>
       <CharacterTile
         character={tile.character}
         dataAttributes={{ [DATA_TILE_ID_ATTRIBUTE]: tile.id }}

@@ -44,7 +44,9 @@ describe("prepareSubmitGuessTransition", () => {
       { id: 3, character: character({ jungseong: "ㅏ" }) },
     ]);
     expect(transition.returnedTilesBySlot[1]?.slotIndex).toBe(1);
-    expect(transition.returnedTilesBySlot[1]?.tiles).toEqual([{ id: 1, character: character("가") }]);
+    expect(transition.returnedTilesBySlot[1]?.tiles).toEqual([
+      { id: 1, character: character("가") },
+    ]);
   });
 });
 

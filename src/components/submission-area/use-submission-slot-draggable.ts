@@ -224,7 +224,7 @@ function findSlotDropTarget(
   return (
     findDataAttributeDropTarget(elements, {
       acceptedAttributes: [DATA_SLOT_INDEX_ATTRIBUTE],
-      excludedAttribute: DATA_SLOT_INDEX_ATTRIBUTE,
+      excludedAttributes: [DATA_SLOT_INDEX_ATTRIBUTE],
       excludedValue: String(selfSlotIndex),
     }) ?? findSlotDropTargetByPoint(selfSlotIndex, pointerX, pointerY)
   );
