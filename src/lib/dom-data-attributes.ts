@@ -7,6 +7,8 @@
 
 /** Stable game tile ID on a rendered tile element. */
 export const DATA_TILE_ID_ATTRIBUTE = "data-tile-id";
+/** Stable game tile ID on a pool tile's full interactive hitbox. */
+export const DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE = "data-pool-tile-hitbox-id";
 /** Zero-based submission slot index on slot hitboxes and filled tiles. */
 export const DATA_SLOT_INDEX_ATTRIBUTE = "data-slot-index";
 /** Active drop feedback marker for pool tile targets. */

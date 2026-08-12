@@ -4,4 +4,9 @@
   height: var(--tile-hitbox-size);
   flex: 0 0 auto;
   place-items: center;
+
+  &[data-drop-pool-target-active="true"] [data-tile-border] {
+    opacity: 1;
+    animation-play-state: running;
+  }
 }

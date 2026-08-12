@@ -1,8 +1,8 @@
 /**
  * @file submission-return-snap-backs.ts
  *
- * Records snap-back animations for submitted tiles that decompose and return to
- * the pool after an absent guess result.
+ * Records snap-back animations for submitted tiles that return to the pool after
+ * present/absent guess results. Present tiles return unchanged; absent tiles may decompose.
  */
 
 import type { ReturnedTilesForSlot } from "../../context/game/round-actions";

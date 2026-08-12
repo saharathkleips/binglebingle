@@ -20,10 +20,9 @@ import {
   DATA_INPUT_LOCKED_ATTRIBUTE,
   DATA_POOL_ATTRIBUTE,
   DATA_SLOT_INDEX_ATTRIBUTE,
-  DATA_TILE_ID_ATTRIBUTE,
 } from "../../lib/dom-data-attributes";
 import { PoolTile } from "./PoolTile";
-import { parseDropTargetNumber } from "../tile/drop-target-helpers";
+import { findDropTargetTile } from "../tile/drop-target-helpers";
 import type { SubmissionSlot, Tile as TileType } from "../../context/game";
 import styles from "./Pool.module.css";
 
@@ -105,8 +104,10 @@ export function Pool() {
 
     if (target.hasAttribute(DATA_SLOT_INDEX_ATTRIBUTE)) return { canDrop: true, preview: null };
 
-    const targetId = parseTileId(target);
-    if (targetId === null) return { canDrop: false, preview: null };
+    const targetTile = findDropTargetTile(target);
+    if (targetTile === null) return { canDrop: false, preview: null };
+
+    const targetId = targetTile.tileId;
 
     const composedCharacter = getComposedCharacter(sourceTile, targetId);
     return composedCharacter === null
@@ -165,10 +166,6 @@ export function Pool() {
 
 function canTapTile(tile: TileType): boolean {
   return getNextRotation(tile.character) !== null || decompose(tile.character) !== null;
-}
-
-function parseTileId(element: Element): number | null {
-  return parseDropTargetNumber(element, DATA_TILE_ID_ATTRIBUTE);
 }
 
 function getNextMissingTileId(

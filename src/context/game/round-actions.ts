@@ -96,8 +96,8 @@ function initialPoolCharacterSortValue(character: Character): string {
 
 /**
  * Evaluates the current submission against the target word and records the result.
- * Correct and present slots remain filled; absent tiles are fully decomposed
- * (without normalizing) and returned to the pool.
+ * Correct slots remain filled; present tiles return unchanged to the pool; absent
+ * tiles are fully decomposed (without normalizing) and returned to the pool.
  *
  * @param state - Current game state
  * @returns Next game state
@@ -148,28 +148,30 @@ export function prepareSubmitGuessTransition(state: GameState): SubmitGuessTrans
     result: evaluation[slotIndex]?.result,
   }));
 
-  // Correct and present slots remain filled; absent slots are cleared.
+  // Correct slots remain filled; present and absent slots are cleared.
   const newSubmission: readonly SubmissionSlot[] = pairs.map(({ slot, result }) =>
-    slot.state === "FILLED" && result !== "CORRECT" && result !== "PRESENT"
-      ? { state: "EMPTY" as const }
-      : slot,
+    slot.state === "FILLED" && result !== "CORRECT" ? { state: "EMPTY" as const } : slot,
   );
 
   // Collect the tiles being returned to the pool.
-  const absentSlots = pairs.flatMap(({ slot, slotIndex, result }) =>
-    slot.state === "FILLED" && result !== "CORRECT" && result !== "PRESENT"
-      ? [{ slot, slotIndex }]
+  const returningSlots = pairs.flatMap(({ slot, slotIndex, result }) =>
+    slot.state === "FILLED" && result !== "CORRECT" && result !== undefined
+      ? [{ slot, slotIndex, result }]
       : [],
   );
 
-  // Fully decompose absent tiles without normalizing. A composed jamo (e.g. ㄲ)
-  // expands to its parts (ㄱ, ㄱ); extra parts from decomposition get fresh IDs.
+  // Present tiles return unchanged. Absent tiles fully decompose without normalizing:
+  // a composed jamo (e.g. ㄲ) expands to its parts (ㄱ, ㄱ), and extra parts get fresh IDs.
   const usedIds = new Set([
     ...state.pool.map((tile) => tile.id),
-    ...absentSlots.map(({ slot }) => slot.tileId),
+    ...returningSlots.map(({ slot }) => slot.tileId),
     ...newSubmission.flatMap((slot) => (slot.state === "FILLED" ? [slot.tileId] : [])),
   ]);
-  const returnedTilesBySlot = absentSlots.map(({ slot, slotIndex }) => {
+  const returnedTilesBySlot = returningSlots.map(({ slot, slotIndex, result }) => {
+    if (result === "PRESENT") {
+      return { slotIndex, tiles: [{ id: slot.tileId, character: slot.character }] };
+    }
+
     const parts = fullDecompose([slot.character]);
     const tiles = parts.map((character, partIndex) => {
       if (partIndex === 0) return { id: slot.tileId, character };

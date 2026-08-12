@@ -146,21 +146,21 @@ describe("handleCharacterDecompose", () => {
     expect(resolved).toContain("ㅏ");
   });
 
-  it("keeps the original tile id for the first part and appends the second part with the next-available id", () => {
+  it("keeps the original tile id for the first part and inserts the second part to its right", () => {
     // Pool: [combined(id 0), standalone(id 2), standalone(id 3)]
-    // Splitting id 0: original keeps id 0 (parts[0]), new tile gets id 1 (next available), appended at end
+    // Splitting id 0: original keeps id 0 (parts[0]), new tile gets id 1 (next available), inserted to the right
     const state = makeState([
       tile(0, character("가")!),
       tile(2, character({ choseong: "ㄱ" })!),
       tile(3, character({ jungseong: "ㅏ" })!),
     ]);
     const next = handleCharacterDecompose(state, { tileId: 0 });
-    expect(next.pool.map((t) => t.id)).toEqual([0, 2, 3, 1]);
+    expect(next.pool.map((t) => t.id)).toEqual([0, 1, 2, 3]);
   });
 
-  it("updates the original tile in place and appends the extra tile to the end", () => {
+  it("updates the original tile in place and inserts the extra tile before following tiles", () => {
     // Pool: [standalone(id 0), combined(id 1), standalone(id 2)]
-    // Splitting id 1: original keeps id 1 (parts[0]), new tile gets id 3 (next available), appended at end
+    // Splitting id 1: original keeps id 1 (parts[0]), new tile gets id 3 (next available), inserted to the right
     const state = makeState([
       tile(0, character({ choseong: "ㄴ" })!),
       tile(1, character("가")!),
@@ -170,8 +170,8 @@ describe("handleCharacterDecompose", () => {
     expect(next.pool).toHaveLength(4);
     expect(next.pool[0]!.id).toBe(0);
     expect(next.pool[1]!.id).toBe(1);
-    expect(next.pool[2]!.id).toBe(2);
-    expect(next.pool[3]!.id).toBe(3);
+    expect(next.pool[2]!.id).toBe(3);
+    expect(next.pool[3]!.id).toBe(2);
   });
 
   it("does not assign an id already held by a filled submission slot", () => {

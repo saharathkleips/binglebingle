@@ -7,6 +7,7 @@
 import {
   DATA_DROP_POOL_TARGET_ACTIVE_ATTRIBUTE,
   DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE,
+  DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE,
   DATA_TILE_ID_ATTRIBUTE,
   dataAttributeSelector,
 } from "../../lib/dom-data-attributes";
@@ -15,9 +16,9 @@ import {
 export type DropTargetQuery = {
   /** Data attributes that identify acceptable drop targets. */
   acceptedAttributes: readonly string[];
-  /** Optional attribute used to exclude the dragged source from target matching. */
-  excludedAttribute?: string;
-  /** Optional attribute value paired with `excludedAttribute` for self-exclusion. */
+  /** Optional attributes used to exclude the dragged source from target matching. */
+  excludedAttributes?: readonly string[];
+  /** Optional attribute value paired with `excludedAttributes` for self-exclusion. */
   excludedValue?: string;
 };
 
@@ -143,16 +144,18 @@ function isDropTarget(element: Element, query: DropTargetQuery): boolean {
   if (!(element instanceof HTMLElement)) return false;
 
   const isExcluded =
-    query.excludedAttribute !== undefined &&
     query.excludedValue !== undefined &&
-    element.getAttribute(query.excludedAttribute) === query.excludedValue;
+    query.excludedAttributes?.some(
+      (attribute) => element.getAttribute(attribute) === query.excludedValue,
+    );
   if (isExcluded) return false;
 
   return query.acceptedAttributes.some((attribute) => element.hasAttribute(attribute));
 }
 
 function getDropTargetActiveAttribute(element: Element) {
-  return element.hasAttribute(DATA_TILE_ID_ATTRIBUTE)
+  return element.hasAttribute(DATA_TILE_ID_ATTRIBUTE) ||
+    element.hasAttribute(DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE)
     ? DATA_DROP_POOL_TARGET_ACTIVE_ATTRIBUTE
     : DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE;
 }

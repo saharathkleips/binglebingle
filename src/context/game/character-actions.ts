@@ -61,8 +61,8 @@ export function handleCharacterCompose(
 
 /**
  * Decomposes a multi-jamo pool tile back into two individual tiles.
- * The new tiles are inserted in place of the original, assigned the smallest
- * available ids. Existing tile ids are preserved.
+ * The original tile becomes the first part and the new second-part tile is
+ * inserted immediately to its right. Existing tile ids are preserved.
  * No-op if the tile is not found or cannot be decomposed.
  *
  * @param state - Current game state
@@ -81,10 +81,14 @@ export function handleCharacterDecompose(
   const idB = nextMissingId(state.pool, state.submission);
   return {
     ...state,
-    pool: [
-      ...state.pool.map((t) => (t.id === tileId ? { ...t, character: parts[0] } : t)),
-      { id: idB, character: parts[1] },
-    ],
+    pool: state.pool.flatMap((t) =>
+      t.id === tileId
+        ? [
+            { ...t, character: parts[0] },
+            { id: idB, character: parts[1] },
+          ]
+        : [t],
+    ),
   };
 }
 

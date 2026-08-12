@@ -14,6 +14,7 @@ import {
   DATA_DROP_PREVIEW_ATTRIBUTE,
   DATA_DROP_SOURCE_ACTIVE_ATTRIBUTE,
   DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE,
+  DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE,
   DATA_SLOT_HITBOX_ATTRIBUTE,
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_TILE_INTERACTIVE_ATTRIBUTE,
@@ -105,6 +106,109 @@ describe("PoolTile drag", () => {
     );
 
     dragToElementCenter(getTileById(0), getTileById(1));
+
+    await expect.poll(() => onDropOnTile.mock.calls.length).toBe(1);
+    expect(onDropOnTile).toHaveBeenCalledWith(1);
+  });
+
+  it("calls onDropOnTile when dropped on the larger target hitbox", async () => {
+    const onDropOnTile = vi.fn(() => true);
+    const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
+    await render(
+      <div
+        style={
+          {
+            "--tile-hitbox-size": "80px",
+            "--tile-visual-short-edge": "20px",
+            "--tile-visual-long-edge": "40px",
+            display: "flex",
+            gap: "100px",
+          } as React.CSSProperties
+        }
+      >
+        <PoolTile {...tileProps({ onDropOnTile })} />
+        <PoolTile
+          tile={targetTile}
+          isTappable={false}
+          onTap={vi.fn()}
+          onDropOnTile={vi.fn(() => true)}
+          onDropOnSlot={vi.fn(() => true)}
+          getDropTargetFeedback={vi.fn(() => ({ canDrop: true, preview: null }))}
+        />
+      </div>,
+    );
+    const targetHitbox = getTileById(1).closest(`[${DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE}="1"]`);
+    expect(targetHitbox).toBeInstanceOf(HTMLElement);
+    const targetRect = targetHitbox!.getBoundingClientRect();
+    const targetX = targetRect.right - 2;
+    const targetY = targetRect.top + targetRect.height / 2;
+
+    dragSequence(getTileById(0), [
+      { type: "pointerdown", clientX: 0, clientY: 0 },
+      { type: "pointermove", clientX: 10, clientY: 0 },
+      { type: "pointermove", clientX: targetX, clientY: targetY },
+      { type: "pointerup", clientX: targetX, clientY: targetY },
+    ]);
+
+    await expect.poll(() => onDropOnTile.mock.calls.length).toBe(1);
+    expect(onDropOnTile).toHaveBeenCalledWith(1);
+  });
+
+  it("calls onDropOnTile when the dragged tile overlaps a target even if the pointer does not", async () => {
+    const onDropOnTile = vi.fn(() => true);
+    const targetTile = tile(1, character({ jungseong: "ㅏ" })!);
+    await render(
+      <div style={{ display: "flex", gap: "100px" }}>
+        <div
+          style={
+            {
+              "--tile-hitbox-size": "80px",
+              "--tile-visual-short-edge": "80px",
+              "--tile-visual-long-edge": "80px",
+            } as React.CSSProperties
+          }
+        >
+          <PoolTile {...tileProps({ onDropOnTile })} />
+        </div>
+        <div
+          style={
+            {
+              "--tile-hitbox-size": "40px",
+              "--tile-visual-short-edge": "40px",
+              "--tile-visual-long-edge": "40px",
+            } as React.CSSProperties
+          }
+        >
+          <PoolTile
+            tile={targetTile}
+            isTappable={false}
+            onTap={vi.fn()}
+            onDropOnTile={vi.fn(() => true)}
+            onDropOnSlot={vi.fn(() => true)}
+            getDropTargetFeedback={vi.fn(() => ({ canDrop: true, preview: null }))}
+          />
+        </div>
+      </div>,
+    );
+    const sourceElement = getTileById(0);
+    const targetHitbox = getTileById(1).closest(`[${DATA_POOL_TILE_HITBOX_ID_ATTRIBUTE}="1"]`);
+    expect(targetHitbox).toBeInstanceOf(HTMLElement);
+    const sourceRect = sourceElement.getBoundingClientRect();
+    const targetRect = targetHitbox!.getBoundingClientRect();
+    const sourcePointerOffsetX = 1;
+    const pointerDownX = sourceRect.left + sourcePointerOffsetX;
+    const pointerY = sourceRect.top + sourceRect.height / 2;
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const dropX = targetCenterX - sourceRect.width / 2 + sourcePointerOffsetX;
+
+    expect(dropX).toBeLessThan(targetRect.left);
+
+    dragSequence(sourceElement, [
+      { type: "pointerdown", clientX: pointerDownX, clientY: pointerY },
+      { type: "pointermove", clientX: pointerDownX + 10, clientY: pointerY },
+      { type: "pointermove", clientX: dropX, clientY: pointerY },
+      { type: "pointerup", clientX: dropX, clientY: pointerY },
+    ]);
 
     await expect.poll(() => onDropOnTile.mock.calls.length).toBe(1);
     expect(onDropOnTile).toHaveBeenCalledWith(1);
