@@ -53,6 +53,8 @@ export const DATA_SUBMISSION_ANIMATING_ATTRIBUTE = "data-submission-animating";
 export const DATA_SLOT_DRAGGING_ATTRIBUTE = "data-slot-dragging";
 /** Filled slot wrapper marker while a tile snap-back is placing into it. */
 export const DATA_SLOT_PLACING_ATTRIBUTE = "data-slot-placing";
+/** Optional local stacking context for tile animation clones, used by demos and overlays. */
+export const DATA_TILE_ANIMATION_LAYER_ATTRIBUTE = "data-tile-animation-layer";
 /** Tile text element marker used when animation clones temporarily override text. */
 export const DATA_TILE_TEXT_ATTRIBUTE = "data-tile-text";
 /** Tile surface marker used by animation helpers for visual state. */

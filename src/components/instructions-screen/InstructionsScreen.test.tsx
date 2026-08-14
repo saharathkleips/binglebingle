@@ -21,7 +21,9 @@ describe("InstructionsScreen", () => {
   it("renders the goal text with the initial jamo pool", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
     const dialog = screen.getByRole("dialog", { name: "게임 방법" });
-    await expect.element(dialog).toHaveTextContent("숨은 낱말");
+    await expect.element(dialog).toHaveTextContent("빙글빙글 하는 법");
+    await expect.element(dialog).toHaveTextContent("자모를 돌리고 합쳐");
+    await expect.element(dialog).toHaveTextContent("숨은 낱말을 맞혀요");
     await expect.element(dialog).toHaveTextContent("ㅇ");
     await expect.element(dialog).toHaveTextContent("ㄱ");
     await expect.element(dialog).toHaveTextContent("ㄹ");
@@ -39,22 +41,24 @@ describe("InstructionsScreen", () => {
     await expect.element(section).toHaveTextContent("왜");
   });
 
-  it("renders the submission section with an incomplete guess", async () => {
+  it("renders the submission section with a slot-filling demo and clue legend", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
     const section = screen.getByRole("region", { name: "추측 제출" });
-    await expect.element(section).toHaveTextContent("빈칸도 괜찮아요");
-    await expect.element(section).toHaveTextContent("라");
-    await expect.element(section).toHaveTextContent("왜");
+    await expect.element(section).toHaveTextContent("칸에 끌어다 놓고 추측해요");
+    await expect.element(section).toHaveTextContent("빙");
+    await expect.element(section).toHaveTextContent("글");
+    await expect.element(section).toHaveTextContent("색으로 단서를 확인해요");
     await expect.element(section).toHaveTextContent("노랑");
     await expect.element(screen.getByLabelText("빈칸")).toBeInTheDocument();
   });
 
-  it("renders the success section with 왜가리 all correct", async () => {
+  it("renders tips for submitting guesses", async () => {
     const screen = await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
-    const section = screen.getByRole("region", { name: "성공" });
-    await expect.element(section).toHaveTextContent("왜");
-    await expect.element(section).toHaveTextContent("가");
-    await expect.element(section).toHaveTextContent("리");
+    const section = screen.getByRole("region", { name: "팁" });
+    await expect.element(section).toHaveTextContent("빈칸이 있어도 제출할 수 있어요");
+    await expect.element(section).toHaveTextContent("진짜 낱말이 아니어도 괜찮아요");
+    await expect.element(section).toHaveTextContent("몇 번이든 추측할 수 있어요");
+    await expect.element(section).toHaveTextContent("정답은 사전 낱말이에요");
   });
 
   it("calls onClose when the close button is clicked", async () => {

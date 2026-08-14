@@ -8,6 +8,7 @@
 import {
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_SLOT_STATE_ATTRIBUTE,
+  DATA_TILE_ANIMATION_LAYER_ATTRIBUTE,
   DATA_TILE_ID_ATTRIBUTE,
   DATA_TILE_SURFACE_ATTRIBUTE,
   DATA_TILE_TEXT_ATTRIBUTE,
@@ -77,6 +78,7 @@ export function recordTileSnapBack(
 
   const fromRect = element.getBoundingClientRect();
   const clone = element.cloneNode(true) as HTMLElement; // DOM clone preserves the rendered tile surface.
+  copyTilePresentationVariables(element, clone);
   const shouldApplyCloneTextOnStart = options.cloneTextTiming === "on-start";
   if (options.cloneText !== undefined && !shouldApplyCloneTextOnStart) {
     setCloneTileText(clone, options.cloneText);
@@ -93,8 +95,9 @@ export function recordTileSnapBack(
   clone.style.pointerEvents = "none";
   clone.style.visibility =
     options.initialVisibility === "hidden-until-start" ? "hidden" : "visible";
-  clone.style.zIndex = "10000";
-  if (typeof document !== "undefined") document.body.appendChild(clone);
+  const cloneParent = getTileAnimationCloneParent(element);
+  clone.style.zIndex = isLocalTileAnimationCloneParent(cloneParent) ? "2" : "10000";
+  cloneParent?.appendChild(clone);
 
   const cleanupTimer = setTimeout(
     () => {
@@ -234,6 +237,20 @@ function removeTileSnapBackSnapshot(snapshot: TileSnapBackSnapshot): void {
   snapshot.clone.remove();
 }
 
+function getTileAnimationCloneParent(element: HTMLElement): HTMLElement | null {
+  if (typeof document === "undefined") return null;
+  if (typeof element.closest !== "function") return document.body;
+
+  const animationLayer = element.closest<HTMLElement>(
+    dataAttributeSelector(DATA_TILE_ANIMATION_LAYER_ATTRIBUTE),
+  );
+  return animationLayer ?? document.body;
+}
+
+function isLocalTileAnimationCloneParent(cloneParent: HTMLElement | null): boolean {
+  return typeof document !== "undefined" && cloneParent !== null && cloneParent !== document.body;
+}
+
 function getSnapBackFallbackCleanupDelayMs(delaySeconds: number): number {
   return (
     (delaySeconds + SNAP_BACK_ANIMATION.duration) * 1000 + SNAP_BACK_FALLBACK_CLEANUP_BUFFER_MS
@@ -247,6 +264,27 @@ function setCloneTileText(clone: HTMLElement, text: string): void {
   if (textElement === null) return;
 
   textElement.textContent = text;
+}
+
+function copyTilePresentationVariables(source: HTMLElement, clone: HTMLElement): void {
+  if (typeof getComputedStyle !== "function") return;
+
+  const computedStyle = getComputedStyle(source);
+  for (let index = 0; index < computedStyle.length; index++) {
+    const propertyName = computedStyle.item(index);
+    if (!shouldCopyTilePresentationVariable(propertyName)) continue;
+
+    const propertyValue = computedStyle.getPropertyValue(propertyName);
+    if (propertyValue !== "") clone.style.setProperty(propertyName, propertyValue);
+  }
+}
+
+function shouldCopyTilePresentationVariable(propertyName: string): boolean {
+  return (
+    propertyName.startsWith("--tile-") ||
+    propertyName === "--font-family-tile" ||
+    propertyName === "--font-weight-tile"
+  );
 }
 
 function applyArrivalLift(element: HTMLElement): void {
