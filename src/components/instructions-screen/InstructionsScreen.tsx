@@ -1,8 +1,23 @@
+import { useRef, useState } from "react";
 import type { Character } from "../../lib/character";
+import type { GameState } from "../../context/game";
+import { GameProvider } from "../../context/game/GameContext";
+import { useGame } from "../../context/game/GameContext";
+import { recordTileSnapBack } from "../../lib/animation/snap-back-animations";
+import { animateComposePulse } from "../../lib/animation/tile-animations";
+import { animatePickUp } from "../../lib/animation/drag-animations";
+import { gsap, useGSAP } from "../../lib/animation/register";
+import {
+  dataAttributeSelector,
+  DATA_SLOT_INDEX_ATTRIBUTE,
+  DATA_TILE_ANIMATION_LAYER_ATTRIBUTE,
+  DATA_TILE_ID_ATTRIBUTE,
+} from "../../lib/dom-data-attributes";
+import { createWord } from "../../lib/word";
+import { Pool } from "../pool/Pool";
+import { SubmissionArea } from "../submission-area/SubmissionArea";
 import type { EvaluatedCharacter } from "../../lib/engine";
-import { Lotus } from "../decoration/Lotus";
 import { HistoryCard } from "../history-area/HistoryCard";
-import { CharacterTile } from "../tile/CharacterTile";
 import styles from "./InstructionsScreen.module.css";
 
 type InstructionsScreenProps = {
@@ -12,53 +27,72 @@ type InstructionsScreenProps = {
   onClose: () => void;
 };
 
-/** Example submission-slot data used by the instructions walkthrough. */
-type ExampleSlotCard = {
-  /** Character shown in the example guess row. */
-  character: Character;
-};
-
-// Full jamo pool for the example answer 왜가리.
-// 왜 = ㅇ + ㅙ (ㅗ+ㅏ+ㅣ), 가 = ㄱ+ㅏ, 리 = ㄹ+ㅣ
-const POOL_CHARACTERS = [
-  { kind: "CHOSEONG_ONLY", choseong: "ㅇ" },
-  { kind: "CHOSEONG_ONLY", choseong: "ㄱ" },
-  { kind: "CHOSEONG_ONLY", choseong: "ㄹ" },
-  { kind: "JUNGSEONG_ONLY", jungseong: "ㅏ" },
-  { kind: "JUNGSEONG_ONLY", jungseong: "ㅏ" },
-  { kind: "JUNGSEONG_ONLY", jungseong: "ㅏ" },
-  { kind: "JUNGSEONG_ONLY", jungseong: "ㅣ" },
-  { kind: "JUNGSEONG_ONLY", jungseong: "ㅣ" },
-] satisfies readonly Character[];
-
 const EXAMPLE_CHARACTERS = {
   ㄱ: { kind: "CHOSEONG_ONLY", choseong: "ㄱ" },
   ㄹ: { kind: "CHOSEONG_ONLY", choseong: "ㄹ" },
   ㅇ: { kind: "CHOSEONG_ONLY", choseong: "ㅇ" },
+  ㅎ: { kind: "CHOSEONG_ONLY", choseong: "ㅎ" },
   ㅏ: { kind: "JUNGSEONG_ONLY", jungseong: "ㅏ" },
   ㅗ: { kind: "JUNGSEONG_ONLY", jungseong: "ㅗ" },
   ㅜ: { kind: "JUNGSEONG_ONLY", jungseong: "ㅜ" },
   ㅓ: { kind: "JUNGSEONG_ONLY", jungseong: "ㅓ" },
+  ㅡ: { kind: "JUNGSEONG_ONLY", jungseong: "ㅡ" },
   ㅘ: { kind: "JUNGSEONG_ONLY", jungseong: "ㅘ" },
   ㅙ: { kind: "JUNGSEONG_ONLY", jungseong: "ㅙ" },
   ㅣ: { kind: "JUNGSEONG_ONLY", jungseong: "ㅣ" },
+  아: { kind: "OPEN_SYLLABLE", choseong: "ㅇ", jungseong: "ㅏ" },
+  하: { kind: "OPEN_SYLLABLE", choseong: "ㅎ", jungseong: "ㅏ" },
+  해: { kind: "OPEN_SYLLABLE", choseong: "ㅎ", jungseong: "ㅐ" },
+  빙: { kind: "FULL_SYLLABLE", choseong: "ㅂ", jungseong: "ㅣ", jongseong: "ㅇ" },
+  글: { kind: "FULL_SYLLABLE", choseong: "ㄱ", jungseong: "ㅡ", jongseong: "ㄹ" },
   가: { kind: "OPEN_SYLLABLE", choseong: "ㄱ", jungseong: "ㅏ" },
+  나: { kind: "OPEN_SYLLABLE", choseong: "ㄴ", jungseong: "ㅏ" },
+  다: { kind: "OPEN_SYLLABLE", choseong: "ㄷ", jungseong: "ㅏ" },
   라: { kind: "OPEN_SYLLABLE", choseong: "ㄹ", jungseong: "ㅏ" },
   왜: { kind: "OPEN_SYLLABLE", choseong: "ㅇ", jungseong: "ㅙ" },
   리: { kind: "OPEN_SYLLABLE", choseong: "ㄹ", jungseong: "ㅣ" },
 } satisfies Record<string, Character>;
 
-const INCOMPLETE_GUESS_RESULT = [
-  { character: EXAMPLE_CHARACTERS.라, result: "ABSENT" },
-  { result: "ABSENT" },
-  { character: EXAMPLE_CHARACTERS.왜, result: "PRESENT" },
-] satisfies readonly EvaluatedCharacter[];
+const DEMO_TARGET_WORD = createWord("왜가리");
+if (DEMO_TARGET_WORD === null) throw new Error("Instruction demo word must be valid Korean.");
 
-const FINAL_GUESS_RESULT = [
-  { character: EXAMPLE_CHARACTERS.왜, result: "CORRECT" },
-  { character: EXAMPLE_CHARACTERS.가, result: "CORRECT" },
-  { character: EXAMPLE_CHARACTERS.리, result: "CORRECT" },
-] satisfies readonly EvaluatedCharacter[];
+const DEMO_ANIMATION_TIME_SCALE = 1;
+const DEMO_POINTER_TARGET_OFFSET_RATIO = 0.3;
+const DEMO_ROTATION_TOTAL_DURATION = 1.2;
+const DEMO_INITIAL_ORIENTATION_DELAY = 0.6;
+const DEMO_DRAG_DURATION = 0.75;
+const DEMO_DROP_COMMIT_DELAY = 0.03;
+const DEMO_AFTER_DROP_PAUSE = 0.25;
+const DEMO_LOOP_RETURN_DURATION = 0.45;
+const DEMO_LOOP_END_PAUSE = 0.7;
+
+const COMPOSITION_DEMO_INITIAL_STATE = {
+  targetWord: DEMO_TARGET_WORD,
+  submission: [{ state: "EMPTY" }, { state: "EMPTY" }, { state: "EMPTY" }],
+  history: [],
+  pool: [
+    { id: 0, character: EXAMPLE_CHARACTERS.ㅎ },
+    { id: 1, character: EXAMPLE_CHARACTERS.ㅏ },
+    { id: 2, character: EXAMPLE_CHARACTERS.ㅣ },
+  ],
+} satisfies GameState;
+
+const ROTATION_DEMO_INITIAL_STATE = {
+  targetWord: DEMO_TARGET_WORD,
+  submission: [{ state: "EMPTY" }, { state: "EMPTY" }, { state: "EMPTY" }],
+  history: [],
+  pool: [{ id: 0, character: EXAMPLE_CHARACTERS.ㅏ }],
+} satisfies GameState;
+
+const GUESS_DEMO_INITIAL_STATE = {
+  targetWord: DEMO_TARGET_WORD,
+  submission: [{ state: "EMPTY" }, { state: "EMPTY" }, { state: "EMPTY" }],
+  history: [],
+  pool: [
+    { id: 0, character: EXAMPLE_CHARACTERS.빙 },
+    { id: 1, character: EXAMPLE_CHARACTERS.글 },
+  ],
+} satisfies GameState;
 
 /**
  * Full-screen overlay explaining the game mechanic via a worked example.
@@ -89,145 +123,478 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
           ×
         </button>
 
-        <header className={styles.header}>
-          {/* Spin the jamo pieces round and round to find the hidden word! */}
-          <p className={styles.lede}>자모 조각을 빙글빙글 돌려 숨은 낱말을 찾아요!</p>
-          <div className={styles.pool} aria-label="처음 자모 조각">
-            {POOL_CHARACTERS.map((character, index) => (
-              <CharacterTile
-                key={index}
-                character={character}
-                element="span"
-                className={styles.poolTile}
-              />
-            ))}
-          </div>
-        </header>
+        <div className={styles.content}>
+          <header className={styles.header}>
+            {/* How to play Binglebingle. */}
+            <p className={styles.lede}>빙글빙글 하는 법</p>
+            {/* Rotate and combine jamo to make characters and guess the hidden word. */}
+            <p className={styles.label}>자모를 돌리고 합쳐, 모든 조각으로 숨은 낱말을 맞혀요!</p>
+          </header>
 
-        <section className={styles.instructionSection} aria-label="글자 만들기">
-          {/* Rotate, snap together, and new syllables appear. */}
-          <p className={styles.label}>돌리고 착! 합치면 새 글자가 돼요.</p>
-          <InstructionEquation
-            characters={[
-              EXAMPLE_CHARACTERS.ㅏ,
-              EXAMPLE_CHARACTERS.ㅜ,
-              EXAMPLE_CHARACTERS.ㅓ,
-              EXAMPLE_CHARACTERS.ㅗ,
-            ]}
-            operators={["→", "→", "→"]}
-          />
-          <InstructionEquation
-            characters={[
-              EXAMPLE_CHARACTERS.ㅗ,
-              EXAMPLE_CHARACTERS.ㅏ,
-              EXAMPLE_CHARACTERS.ㅘ,
-              EXAMPLE_CHARACTERS.ㅣ,
-              EXAMPLE_CHARACTERS.ㅙ,
-            ]}
-            operators={["+", "=", "+", "="]}
-          />
+          <section className={styles.instructionSection} aria-label="글자 만들기">
+            <div className={styles.gestureDemo}>
+              <span className={styles.visuallyHidden}>ㅇ ㄱ ㄹ ㅏ ㅜ ㅓ ㅗ ㅘ ㅙ 왜 하 해 ㅎ</span>
+              <GestureDemoCard title="끌어 합치기 · 톡 눌러 나누기">
+                <CompositionDemoStage />
+              </GestureDemoCard>
+              <GestureDemoCard title="톡 눌러 돌리기">
+                <RotationDemoStage />
+              </GestureDemoCard>
+            </div>
+          </section>
 
-          <InstructionEquation
-            characters={[EXAMPLE_CHARACTERS.ㅇ, EXAMPLE_CHARACTERS.ㅙ, EXAMPLE_CHARACTERS.왜]}
-            operators={["+", "="]}
-          />
-        </section>
+          <section className={styles.instructionSection} aria-label="추측 제출">
+            <div className={styles.submissionInstructionGrid}>
+              <div className={styles.submissionInstructionColumn}>
+                <p className={styles.label}>칸에 끌어다 놓고 추측해요.</p>
+                <span className={styles.visuallyHidden} aria-label="빈칸" />
+                <GuessDemoStage />
+              </div>
+              <div className={styles.submissionInstructionColumn}>
+                <p className={styles.label}>색으로 단서를 확인해요.</p>
+                <ClueLegend />
+              </div>
+            </div>
+          </section>
 
-        <section className={styles.instructionSection} aria-label="추측 제출">
-          {/* Empty slots are okay! Submit to reveal clues. */}
-          <p className={styles.label}>빈칸도 괜찮아요! 제출하면 단서가 나와요.</p>
-          <div className={styles.submissionRevealExample}>
-            <SlotRow
-              tiles={[
-                { character: EXAMPLE_CHARACTERS.라 },
-                null,
-                { character: EXAMPLE_CHARACTERS.왜 },
-              ]}
-            />
-            <div className={styles.downArrow} aria-hidden="true">
-              ↓
-            </div>
-            <ResultRow results={INCOMPLETE_GUESS_RESULT} />
-          </div>
-          <dl className={styles.legend}>
-            <div className={styles.legendItem}>
-              {/* Green: exactly right. */}
-              <dt>초록</dt>
-              <dd>딱 맞아요</dd>
-            </div>
-            <div className={styles.legendItem}>
-              {/* Yellow: the position is different. */}
-              <dt>노랑</dt>
-              <dd>자리가 달라요</dd>
-            </div>
-            <div className={styles.legendItem}>
-              {/* Gray: not in the word. */}
-              <dt>회색</dt>
-              <dd>낱말에 없어요</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section className={styles.instructionSection} aria-label="성공">
-          <ResultRow results={FINAL_GUESS_RESULT} />
-          {/* Turn every slot green to win! */}
-          <p className={styles.label}>모든 칸이 초록이면 성공이에요!</p>
-        </section>
+          <section className={styles.instructionSection} aria-label="팁">
+            <p className={styles.label}>알아두면 좋아요.</p>
+            <ul className={styles.tipList}>
+              <li>빈칸이 있어도 제출할 수 있어요.</li>
+              <li>진짜 낱말이 아니어도 괜찮아요.</li>
+              <li>몇 번이든 추측할 수 있어요.</li>
+              <li>정답은 사전 낱말이에요.</li>
+            </ul>
+          </section>
+        </div>
       </div>
     </div>
   );
 }
 
-function InstructionEquation({
-  characters,
-  operators,
+function GestureDemoCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className={styles.gestureDemoCard}>
+      <p className={styles.gestureDemoTitle}>{title}</p>
+      {children}
+    </div>
+  );
+}
+
+function CompositionDemoStage() {
+  const [animationCycle, setAnimationCycle] = useState(0);
+
+  return (
+    <div className={styles.demoStage} aria-label="합치고 나누기 애니메이션">
+      <GameProvider key={animationCycle} initialState={COMPOSITION_DEMO_INITIAL_STATE}>
+        <CompositionDemoAnimation onComplete={() => setAnimationCycle((cycle) => cycle + 1)} />
+      </GameProvider>
+    </div>
+  );
+}
+
+function RotationDemoStage() {
+  const [animationCycle, setAnimationCycle] = useState(0);
+
+  return (
+    <div className={styles.demoStage} aria-label="돌리기 애니메이션">
+      <GameProvider key={animationCycle} initialState={ROTATION_DEMO_INITIAL_STATE}>
+        <RotationDemoAnimation onComplete={() => setAnimationCycle((cycle) => cycle + 1)} />
+      </GameProvider>
+    </div>
+  );
+}
+
+function CompositionDemoAnimation({ onComplete }: { onComplete: () => void }) {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const pointerRef = useRef<HTMLSpanElement>(null);
+  const { dispatch } = useGame();
+
+  useGSAP(
+    () => {
+      if (stageRef.current === null || pointerRef.current === null) return;
+      const stageElement = stageRef.current;
+      const pointerElement = pointerRef.current;
+      setPointerOverTile(stageElement, pointerElement, 0);
+
+      const timeline = gsap.timeline({ defaults: { ease: "power2.inOut" }, onComplete });
+      timeline.timeScale(DEMO_ANIMATION_TIME_SCALE);
+      timeline.to({}, { duration: DEMO_INITIAL_ORIENTATION_DELAY });
+      dragTile(timeline, stageElement, pointerElement, 1, 0, () => {
+        dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId: 0, incomingId: 1 } });
+        pulseTile(stageElement, 0);
+      });
+      dragTile(timeline, stageElement, pointerElement, 2, 0, () => {
+        dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId: 0, incomingId: 2 } });
+        pulseTile(stageElement, 0);
+      });
+      tapTile(timeline, stageElement, pointerElement, 0, () => clickTile(stageElement, 0));
+      tapTile(timeline, stageElement, pointerElement, 0, () => clickTile(stageElement, 0));
+      movePointerToTile(timeline, stageElement, pointerElement, 0, DEMO_LOOP_RETURN_DURATION);
+      timeline.to({}, { duration: DEMO_LOOP_END_PAUSE });
+
+      return () => timeline.kill();
+    },
+    { scope: stageRef },
+  );
+
+  return <DemoPoolShell stageRef={stageRef} pointerRef={pointerRef} />;
+}
+
+function RotationDemoAnimation({ onComplete }: { onComplete: () => void }) {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const pointerRef = useRef<HTMLSpanElement>(null);
+
+  useGSAP(
+    () => {
+      if (stageRef.current === null || pointerRef.current === null) return;
+      const stageElement = stageRef.current;
+      const pointerElement = pointerRef.current;
+      setPointerOverTile(stageElement, pointerElement, 0);
+
+      const timeline = gsap.timeline({ defaults: { ease: "power2.inOut" }, onComplete });
+      timeline.timeScale(DEMO_ANIMATION_TIME_SCALE);
+      timeline.to({}, { duration: DEMO_INITIAL_ORIENTATION_DELAY });
+      rotateTile(timeline, stageElement, pointerElement, 0, 4, DEMO_ROTATION_TOTAL_DURATION);
+      movePointerToTile(timeline, stageElement, pointerElement, 0, DEMO_LOOP_RETURN_DURATION);
+      timeline.to({}, { duration: DEMO_LOOP_END_PAUSE });
+
+      return () => timeline.kill();
+    },
+    { scope: stageRef },
+  );
+
+  return <DemoPoolShell stageRef={stageRef} pointerRef={pointerRef} />;
+}
+
+function GuessDemoStage() {
+  const [animationCycle, setAnimationCycle] = useState(0);
+
+  return (
+    <div
+      className={`${styles.demoStage} ${styles.guessDemoStage}`}
+      aria-label="추측 만들기 애니메이션"
+    >
+      <GameProvider key={animationCycle} initialState={GUESS_DEMO_INITIAL_STATE}>
+        <GuessDemoAnimation onComplete={() => setAnimationCycle((cycle) => cycle + 1)} />
+      </GameProvider>
+    </div>
+  );
+}
+
+function GuessDemoAnimation({ onComplete }: { onComplete: () => void }) {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const pointerRef = useRef<HTMLSpanElement>(null);
+  const { dispatch } = useGame();
+
+  useGSAP(
+    () => {
+      if (stageRef.current === null || pointerRef.current === null) return;
+      const stageElement = stageRef.current;
+      const pointerElement = pointerRef.current;
+      setPointerOverTile(stageElement, pointerElement, 0);
+
+      const timeline = gsap.timeline({ defaults: { ease: "power2.inOut" }, onComplete });
+      timeline.timeScale(DEMO_ANIMATION_TIME_SCALE);
+      timeline.to({}, { duration: DEMO_INITIAL_ORIENTATION_DELAY });
+      dragTileToSlot(timeline, stageElement, pointerElement, 0, 0, () => {
+        dispatch({ type: "SUBMISSION_SLOT_INSERT", payload: { tileId: 0, slotIndex: 0 } });
+      });
+      dragTileToSlot(timeline, stageElement, pointerElement, 1, 2, () => {
+        dispatch({ type: "SUBMISSION_SLOT_INSERT", payload: { tileId: 1, slotIndex: 2 } });
+      });
+      timeline.to({}, { duration: DEMO_LOOP_END_PAUSE });
+      tapTile(timeline, stageElement, pointerElement, 0, () => clickTile(stageElement, 0));
+      tapTile(timeline, stageElement, pointerElement, 1, () => clickTile(stageElement, 1));
+      movePointerToTile(timeline, stageElement, pointerElement, 0, DEMO_LOOP_RETURN_DURATION);
+      timeline.to({}, { duration: DEMO_LOOP_END_PAUSE });
+
+      return () => timeline.kill();
+    },
+    { scope: stageRef },
+  );
+
+  return <DemoPoolShell stageRef={stageRef} pointerRef={pointerRef} hasSubmissionArea />;
+}
+
+function DemoPoolShell({
+  stageRef,
+  pointerRef,
+  hasSubmissionArea = false,
 }: {
-  characters: readonly Character[];
-  operators: readonly string[];
+  stageRef: React.RefObject<HTMLDivElement | null>;
+  pointerRef: React.RefObject<HTMLSpanElement | null>;
+  hasSubmissionArea?: boolean;
 }) {
   return (
-    <div className={styles.equation}>
-      {characters.map((character, index) => (
-        <span key={index} className={styles.equationItem}>
-          {index > 0 ? <span className={styles.operator}>{operators[index - 1]}</span> : null}
-          <InstructionCharacterTile character={character} />
-        </span>
-      ))}
+    <div
+      className={styles.demoPoolShell}
+      ref={stageRef}
+      {...{ [DATA_TILE_ANIMATION_LAYER_ATTRIBUTE]: true }}
+    >
+      {hasSubmissionArea ? <SubmissionArea isSubmitVisible={false} /> : null}
+      <Pool />
+      <DemoPointer pointerRef={pointerRef} />
     </div>
   );
 }
 
-function InstructionCharacterTile({ character }: { character: Character }) {
-  return <CharacterTile character={character} element="span" className={styles.poolTile} />;
-}
-
-function SlotRow({ tiles }: { tiles: (ExampleSlotCard | null)[] }) {
+function DemoPointer({ pointerRef }: { pointerRef: React.RefObject<HTMLSpanElement | null> }) {
   return (
-    <div className={styles.slotRow}>
-      {tiles.map((tile, index) =>
-        tile === null ? (
-          <span key={index} className={styles.emptySlot} aria-label="빈칸">
-            <Lotus />
-          </span>
-        ) : (
-          <CharacterTile
-            key={index}
-            character={tile.character}
-            element="span"
-            className={styles.slotTile}
-          />
-        ),
-      )}
-    </div>
+    <span className={styles.demoPointer} ref={pointerRef} aria-hidden="true">
+      <svg className={styles.demoPointerIcon} viewBox="0 0 32 32" focusable="false">
+        <path
+          d="M10.25 2.75C8.6 2.75 7.25 4.1 7.25 5.75v11.4l-1.1-1.1a3.03 3.03 0 0 0-4.28 4.29l7.3 7.3A6.25 6.25 0 0 0 13.58 29.5h7.17A6.25 6.25 0 0 0 27 23.25V14.5a3 3 0 0 0-4.4-2.65A3 3 0 0 0 18 10.25a3 3 0 0 0-4.75-2.43V5.75c0-1.65-1.35-3-3-3Z"
+          className={styles.demoPointerFill}
+        />
+        <path
+          d="M10.25 4.75c.55 0 1 .45 1 1v11.5h2V10.5a1 1 0 1 1 2 0v7h2v-4.25a1 1 0 1 1 2 0v4.25h2V14.5a1 1 0 1 1 2 0v8.75a4.25 4.25 0 0 1-4.25 4.25h-7.17a4.25 4.25 0 0 1-3-1.24l-7.3-7.3a1.03 1.03 0 0 1 1.46-1.46l4.51 4.5h1.75V5.75c0-.55.45-1 1-1Z"
+          className={styles.demoPointerPalm}
+        />
+      </svg>
+    </span>
   );
 }
 
-function ResultRow({ results }: { results: readonly EvaluatedCharacter[] }) {
+function setPointerOverTile(
+  stageElement: HTMLElement,
+  pointerElement: HTMLElement,
+  tileId: number,
+) {
+  const tileElement = getDemoTile(stageElement, tileId);
+  if (tileElement !== null) gsap.set(pointerElement, getPointerPosition(stageElement, tileElement));
+}
+
+function movePointerToTile(
+  timeline: gsap.core.Timeline,
+  stageElement: HTMLElement,
+  pointerElement: HTMLElement,
+  tileId: number,
+  duration: number,
+) {
+  timeline.add(() => {
+    const tileElement = getDemoTile(stageElement, tileId);
+    if (tileElement === null) return;
+
+    gsap.to(pointerElement, {
+      ...getPointerPosition(stageElement, tileElement),
+      duration,
+      ease: "power2.inOut",
+    });
+  });
+  timeline.to({}, { duration });
+}
+
+function dragTile(
+  timeline: gsap.core.Timeline,
+  stageElement: HTMLElement,
+  pointerElement: HTMLElement,
+  sourceTileId: number,
+  targetTileId: number,
+  onDrop: () => void,
+) {
+  dragTileToTarget(
+    timeline,
+    stageElement,
+    pointerElement,
+    sourceTileId,
+    () => getDemoTile(stageElement, targetTileId),
+    onDrop,
+  );
+}
+
+function dragTileToSlot(
+  timeline: gsap.core.Timeline,
+  stageElement: HTMLElement,
+  pointerElement: HTMLElement,
+  sourceTileId: number,
+  slotIndex: number,
+  onDrop: () => void,
+) {
+  dragTileToTarget(
+    timeline,
+    stageElement,
+    pointerElement,
+    sourceTileId,
+    () => getDemoSlot(stageElement, slotIndex),
+    onDrop,
+    {
+      onBeforeDrop: (sourceElement) => {
+        recordTileSnapBack(sourceTileId, sourceElement, { shouldLiftOnArrival: true });
+      },
+    },
+  );
+}
+
+function dragTileToTarget(
+  timeline: gsap.core.Timeline,
+  stageElement: HTMLElement,
+  pointerElement: HTMLElement,
+  sourceTileId: number,
+  getTargetElement: () => HTMLElement | null,
+  onDrop: () => void,
+  options: { onBeforeDrop?: (sourceElement: HTMLElement) => void } = {},
+) {
+  movePointerToTile(timeline, stageElement, pointerElement, sourceTileId, 0.35);
+  timeline.add(() => {
+    const sourceElement = getDemoTile(stageElement, sourceTileId);
+    if (sourceElement === null) return;
+
+    gsap.set(sourceElement, { zIndex: 2 });
+    animatePickUp(sourceElement);
+  });
+  timeline.to(
+    {},
+    {
+      duration: 0.01,
+      onComplete: () => {
+        const sourceElement = getDemoTile(stageElement, sourceTileId);
+        const targetElement = getTargetElement();
+        if (sourceElement === null || targetElement === null) return;
+
+        const { x, y } = getCenteredTileTranslation(sourceElement, targetElement);
+        const targetPointerPosition = getPointerPosition(stageElement, targetElement);
+        gsap.to(sourceElement, {
+          x,
+          y,
+          scale: 1.08,
+          duration: DEMO_DRAG_DURATION,
+          ease: "power2.inOut",
+        });
+        gsap.to(pointerElement, {
+          x: targetPointerPosition.x,
+          y: targetPointerPosition.y,
+          duration: DEMO_DRAG_DURATION,
+          ease: "power2.inOut",
+        });
+      },
+    },
+  );
+  timeline.to({}, { duration: DEMO_DRAG_DURATION + DEMO_DROP_COMMIT_DELAY });
+  timeline.add(() => {
+    const sourceElement = getDemoTile(stageElement, sourceTileId);
+    if (sourceElement !== null) {
+      options.onBeforeDrop?.(sourceElement);
+      gsap.set(sourceElement, { clearProps: "all" });
+    }
+    onDrop();
+  });
+  timeline.to({}, { duration: DEMO_AFTER_DROP_PAUSE });
+}
+
+function tapTile(
+  timeline: gsap.core.Timeline,
+  stageElement: HTMLElement,
+  pointerElement: HTMLElement,
+  tileId: number,
+  onTap: () => void,
+) {
+  movePointerToTile(timeline, stageElement, pointerElement, tileId, 0.35);
+  tapPointer(timeline, pointerElement, onTap, 0.55);
+}
+
+function rotateTile(
+  timeline: gsap.core.Timeline,
+  stageElement: HTMLElement,
+  pointerElement: HTMLElement,
+  tileId: number,
+  rotationCount: number,
+  totalDuration: number,
+) {
+  const durationPerRotation = totalDuration / rotationCount;
+
+  movePointerToTile(timeline, stageElement, pointerElement, tileId, durationPerRotation);
+  for (let rotationIndex = 0; rotationIndex < rotationCount; rotationIndex++) {
+    tapPointer(
+      timeline,
+      pointerElement,
+      () => clickTile(stageElement, tileId),
+      durationPerRotation,
+    );
+  }
+}
+
+function tapPointer(
+  timeline: gsap.core.Timeline,
+  pointerElement: HTMLElement,
+  onTap: () => void,
+  totalDuration: number,
+) {
+  timeline.to(pointerElement, { scale: 0.88, duration: totalDuration * 0.18 });
+  timeline.add(onTap);
+  timeline.to(pointerElement, { scale: 1, duration: totalDuration * 0.22 });
+  timeline.to({}, { duration: totalDuration * 0.6 });
+}
+
+function clickTile(stageElement: HTMLElement, tileId: number) {
+  getDemoTile(stageElement, tileId)?.click();
+}
+
+function pulseTile(stageElement: HTMLElement, tileId: number) {
+  const tileElement = getDemoTile(stageElement, tileId);
+  if (tileElement !== null) animateComposePulse(tileElement);
+}
+
+function getDemoTile(stageElement: HTMLElement, tileId: number): HTMLElement | null {
+  return stageElement.querySelector(dataAttributeSelector(DATA_TILE_ID_ATTRIBUTE, tileId));
+}
+
+function getDemoSlot(stageElement: HTMLElement, slotIndex: number): HTMLElement | null {
+  return stageElement.querySelector(dataAttributeSelector(DATA_SLOT_INDEX_ATTRIBUTE, slotIndex));
+}
+
+function getCenteredTileTranslation(sourceElement: HTMLElement, targetElement: HTMLElement) {
+  const sourceRect = sourceElement.getBoundingClientRect();
+  const targetRect = targetElement.getBoundingClientRect();
+  return {
+    x: targetRect.left + targetRect.width / 2 - (sourceRect.left + sourceRect.width / 2),
+    y: targetRect.top + targetRect.height / 2 - (sourceRect.top + sourceRect.height / 2),
+  };
+}
+
+function getPointerPosition(stageElement: HTMLElement, targetElement: HTMLElement) {
+  const stageRect = stageElement.getBoundingClientRect();
+  const targetRect = targetElement.getBoundingClientRect();
+  return {
+    x:
+      targetRect.left -
+      stageRect.left +
+      targetRect.width * (0.5 + DEMO_POINTER_TARGET_OFFSET_RATIO),
+    y:
+      targetRect.top - stageRect.top + targetRect.height * (0.5 + DEMO_POINTER_TARGET_OFFSET_RATIO),
+  };
+}
+
+function ClueLegend() {
   return (
-    <div className={styles.resultRow}>
-      {results.map((evaluated, index) => (
-        <HistoryCard key={index} evaluated={evaluated} />
-      ))}
+    <dl className={styles.clueLegend}>
+      <ClueLegendItem evaluated={{ character: EXAMPLE_CHARACTERS.가, result: "CORRECT" }}>
+        <dt>초록</dt>
+        <dd>딱 맞아요</dd>
+      </ClueLegendItem>
+      <ClueLegendItem evaluated={{ character: EXAMPLE_CHARACTERS.나, result: "PRESENT" }}>
+        <dt>노랑</dt>
+        <dd>자리가 달라요</dd>
+      </ClueLegendItem>
+      <ClueLegendItem evaluated={{ character: EXAMPLE_CHARACTERS.다, result: "ABSENT" }}>
+        <dt>회색</dt>
+        <dd>낱말에 없어요</dd>
+      </ClueLegendItem>
+    </dl>
+  );
+}
+
+function ClueLegendItem({
+  evaluated,
+  children,
+}: {
+  evaluated: EvaluatedCharacter;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={styles.clueLegendItem}>
+      <HistoryCard evaluated={evaluated} />
+      <div>{children}</div>
     </div>
   );
 }
