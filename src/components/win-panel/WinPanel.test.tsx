@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render } from "vitest-browser-react";
 import { WinPanel } from "./WinPanel";
 import { GameProvider } from "../../context/game/GameContext";
@@ -21,12 +21,21 @@ function wonState(guessCount: number): GameState {
   };
 }
 
-async function renderWinPanel(state: GameState) {
+async function renderWinPanel(state: GameState, props: { shareDate?: string | undefined } = {}) {
   return render(
     <GameProvider initialState={state}>
-      <WinPanel />
+      <WinPanel {...props} />
     </GameProvider>,
   );
+}
+
+function mockClipboard() {
+  const clipboard = { writeText: vi.fn<Clipboard["writeText"]>().mockResolvedValue(undefined) };
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: clipboard,
+  });
+  return clipboard;
 }
 
 describe("WinPanel", () => {
@@ -60,5 +69,15 @@ describe("WinPanel", () => {
   it("renders the share button", async () => {
     const screen = await renderWinPanel(wonState(1));
     await expect.element(screen.getByRole("button", { name: "공유" })).not.toBeDisabled();
+  });
+
+  it("copies the share summary", async () => {
+    const clipboard = mockClipboard();
+    const screen = await renderWinPanel(wonState(2), { shareDate: "2026-08-15" });
+
+    await screen.getByRole("button", { name: "공유" }).click();
+
+    expect(clipboard.writeText).toHaveBeenCalledWith("빙글빙글 8/15 · 3칸 · 2회\n🟩🟩🟩\n🟩🟩🟩");
+    await expect.element(screen.getByRole("button", { name: "복사됨" })).toBeInTheDocument();
   });
 });
