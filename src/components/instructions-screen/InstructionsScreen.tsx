@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { Character } from "../../lib/character";
 import type { GameState } from "../../context/game";
 import { GameProvider } from "../../context/game/GameContext";
@@ -71,9 +71,9 @@ const COMPOSITION_DEMO_INITIAL_STATE = {
   submission: [{ state: "EMPTY" }, { state: "EMPTY" }, { state: "EMPTY" }],
   history: [],
   pool: [
-    { id: 0, character: EXAMPLE_CHARACTERS.ㅎ },
-    { id: 1, character: EXAMPLE_CHARACTERS.ㅏ },
-    { id: 2, character: EXAMPLE_CHARACTERS.ㅣ },
+    { id: 1000, character: EXAMPLE_CHARACTERS.ㅎ },
+    { id: 1001, character: EXAMPLE_CHARACTERS.ㅏ },
+    { id: 1002, character: EXAMPLE_CHARACTERS.ㅣ },
   ],
 } satisfies GameState;
 
@@ -81,7 +81,7 @@ const ROTATION_DEMO_INITIAL_STATE = {
   targetWord: DEMO_TARGET_WORD,
   submission: [{ state: "EMPTY" }, { state: "EMPTY" }, { state: "EMPTY" }],
   history: [],
-  pool: [{ id: 0, character: EXAMPLE_CHARACTERS.ㅏ }],
+  pool: [{ id: 2000, character: EXAMPLE_CHARACTERS.ㅏ }],
 } satisfies GameState;
 
 const GUESS_DEMO_INITIAL_STATE = {
@@ -89,8 +89,8 @@ const GUESS_DEMO_INITIAL_STATE = {
   submission: [{ state: "EMPTY" }, { state: "EMPTY" }, { state: "EMPTY" }],
   history: [],
   pool: [
-    { id: 0, character: EXAMPLE_CHARACTERS.빙 },
-    { id: 1, character: EXAMPLE_CHARACTERS.글 },
+    { id: 3000, character: EXAMPLE_CHARACTERS.빙 },
+    { id: 3001, character: EXAMPLE_CHARACTERS.글 },
   ],
 } satisfies GameState;
 
@@ -215,22 +215,22 @@ function CompositionDemoAnimation({ onComplete }: { onComplete: () => void }) {
       if (stageRef.current === null || pointerRef.current === null) return;
       const stageElement = stageRef.current;
       const pointerElement = pointerRef.current;
-      setPointerOverTile(stageElement, pointerElement, 0);
+      setPointerOverTile(stageElement, pointerElement, 1000);
 
       const timeline = gsap.timeline({ defaults: { ease: "power2.inOut" }, onComplete });
       timeline.timeScale(DEMO_ANIMATION_TIME_SCALE);
       timeline.to({}, { duration: DEMO_INITIAL_ORIENTATION_DELAY });
-      dragTile(timeline, stageElement, pointerElement, 1, 0, () => {
-        dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId: 0, incomingId: 1 } });
-        pulseTile(stageElement, 0);
+      dragTile(timeline, stageElement, pointerElement, 1001, 1000, () => {
+        dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId: 1000, incomingId: 1001 } });
+        pulseTile(stageElement, 1000);
       });
-      dragTile(timeline, stageElement, pointerElement, 2, 0, () => {
-        dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId: 0, incomingId: 2 } });
-        pulseTile(stageElement, 0);
+      dragTile(timeline, stageElement, pointerElement, 1002, 1000, () => {
+        dispatch({ type: "CHARACTER_COMPOSE", payload: { targetId: 1000, incomingId: 1002 } });
+        pulseTile(stageElement, 1000);
       });
-      tapTile(timeline, stageElement, pointerElement, 0, () => clickTile(stageElement, 0));
-      tapTile(timeline, stageElement, pointerElement, 0, () => clickTile(stageElement, 0));
-      movePointerToTile(timeline, stageElement, pointerElement, 0, DEMO_LOOP_RETURN_DURATION);
+      tapTile(timeline, stageElement, pointerElement, 1000, () => clickTile(stageElement, 1000));
+      tapTile(timeline, stageElement, pointerElement, 1000, () => clickTile(stageElement, 1000));
+      movePointerToTile(timeline, stageElement, pointerElement, 1000, DEMO_LOOP_RETURN_DURATION);
       timeline.to({}, { duration: DEMO_LOOP_END_PAUSE });
 
       return () => timeline.kill();
@@ -250,13 +250,13 @@ function RotationDemoAnimation({ onComplete }: { onComplete: () => void }) {
       if (stageRef.current === null || pointerRef.current === null) return;
       const stageElement = stageRef.current;
       const pointerElement = pointerRef.current;
-      setPointerOverTile(stageElement, pointerElement, 0);
+      setPointerOverTile(stageElement, pointerElement, 2000);
 
       const timeline = gsap.timeline({ defaults: { ease: "power2.inOut" }, onComplete });
       timeline.timeScale(DEMO_ANIMATION_TIME_SCALE);
       timeline.to({}, { duration: DEMO_INITIAL_ORIENTATION_DELAY });
-      rotateTile(timeline, stageElement, pointerElement, 0, 4, DEMO_ROTATION_TOTAL_DURATION);
-      movePointerToTile(timeline, stageElement, pointerElement, 0, DEMO_LOOP_RETURN_DURATION);
+      rotateTile(timeline, stageElement, pointerElement, 2000, 4, DEMO_ROTATION_TOTAL_DURATION);
+      movePointerToTile(timeline, stageElement, pointerElement, 2000, DEMO_LOOP_RETURN_DURATION);
       timeline.to({}, { duration: DEMO_LOOP_END_PAUSE });
 
       return () => timeline.kill();
@@ -292,21 +292,21 @@ function GuessDemoAnimation({ onComplete }: { onComplete: () => void }) {
       if (stageRef.current === null || pointerRef.current === null) return;
       const stageElement = stageRef.current;
       const pointerElement = pointerRef.current;
-      setPointerOverTile(stageElement, pointerElement, 0);
+      setPointerOverTile(stageElement, pointerElement, 3000);
 
       const timeline = gsap.timeline({ defaults: { ease: "power2.inOut" }, onComplete });
       timeline.timeScale(DEMO_ANIMATION_TIME_SCALE);
       timeline.to({}, { duration: DEMO_INITIAL_ORIENTATION_DELAY });
-      dragTileToSlot(timeline, stageElement, pointerElement, 0, 0, () => {
-        dispatch({ type: "SUBMISSION_SLOT_INSERT", payload: { tileId: 0, slotIndex: 0 } });
+      dragTileToSlot(timeline, stageElement, pointerElement, 3000, 0, () => {
+        dispatch({ type: "SUBMISSION_SLOT_INSERT", payload: { tileId: 3000, slotIndex: 0 } });
       });
-      dragTileToSlot(timeline, stageElement, pointerElement, 1, 2, () => {
-        dispatch({ type: "SUBMISSION_SLOT_INSERT", payload: { tileId: 1, slotIndex: 2 } });
+      dragTileToSlot(timeline, stageElement, pointerElement, 3001, 2, () => {
+        dispatch({ type: "SUBMISSION_SLOT_INSERT", payload: { tileId: 3001, slotIndex: 2 } });
       });
       timeline.to({}, { duration: DEMO_LOOP_END_PAUSE });
-      tapTile(timeline, stageElement, pointerElement, 0, () => clickTile(stageElement, 0));
-      tapTile(timeline, stageElement, pointerElement, 1, () => clickTile(stageElement, 1));
-      movePointerToTile(timeline, stageElement, pointerElement, 0, DEMO_LOOP_RETURN_DURATION);
+      tapTile(timeline, stageElement, pointerElement, 3000, () => clickTile(stageElement, 3000));
+      tapTile(timeline, stageElement, pointerElement, 3001, () => clickTile(stageElement, 3001));
+      movePointerToTile(timeline, stageElement, pointerElement, 3000, DEMO_LOOP_RETURN_DURATION);
       timeline.to({}, { duration: DEMO_LOOP_END_PAUSE });
 
       return () => timeline.kill();
@@ -326,6 +326,16 @@ function DemoPoolShell({
   pointerRef: React.RefObject<HTMLSpanElement | null>;
   hasSubmissionArea?: boolean;
 }) {
+  useLayoutEffect(() => {
+    const stageElement = stageRef.current;
+    if (stageElement === null) return;
+
+    stageElement.querySelectorAll("button").forEach((button) => {
+      button.tabIndex = -1;
+      button.setAttribute("aria-hidden", "true");
+    });
+  });
+
   return (
     <div
       className={styles.demoPoolShell}
