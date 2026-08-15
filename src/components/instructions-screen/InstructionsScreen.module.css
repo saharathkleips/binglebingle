@@ -163,7 +163,10 @@
 
 .gestureDemo {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(
+    2,
+    minmax(calc(3 * var(--instruction-tile-long-edge) + 2 * 0.375rem + 2px), 1fr)
+  );
   gap: 1rem;
   align-items: stretch;
 }
@@ -173,6 +176,10 @@
   flex-direction: column;
   gap: 0.375rem;
   min-width: 0;
+}
+
+.gestureDemoCard > .demoStage {
+  flex: 1;
 }
 
 .gestureDemoTitle {
@@ -186,9 +193,11 @@
 .demoStage {
   --demo-pointer-x: 0;
   --demo-pointer-y: 0;
-  --tile-gap: 0.5rem;
+  --tile-gap: 0.3125rem;
 
+  box-sizing: border-box;
   position: relative;
+  min-width: calc(3 * var(--tile-hitbox-size) + 2 * var(--tile-gap) + 2px);
   min-height: 5.75rem;
   overflow: hidden;
   border: 1px dashed var(--color-border);
@@ -203,9 +212,11 @@
 }
 
 .demoPoolShell [data-pool="true"] {
+  flex-wrap: nowrap;
   justify-content: flex-start;
   padding-block-start: 1.25rem;
-  padding-inline-end: 2.75rem;
+  padding-inline: 0 0;
+  padding-inline-start: 0.375rem;
 }
 
 .guessDemoStage {
@@ -220,7 +231,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: 0.5rem;
-  padding-block: 1.25rem 0.75rem;
+  padding-block: 1.75rem 0.75rem;
 }
 
 .guessDemoStage [data-pool="true"] {
@@ -338,5 +349,13 @@
 
   & li::marker {
     color: var(--color-chrome-foreground);
+  }
+}
+
+@media (max-width: 23.125rem) {
+  .gestureDemo,
+  .submissionInstructionGrid,
+  .tipList {
+    grid-template-columns: 1fr;
   }
 }
