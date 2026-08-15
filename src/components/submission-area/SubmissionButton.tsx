@@ -4,6 +4,7 @@
  * Renders the button used to submit the current guess.
  */
 
+import { type Ref } from "react";
 import { Button, ButtonText } from "../button/Button";
 import Hills2 from "./hills-2.svg?react";
 import Hills3 from "./hills-3.svg?react";
@@ -17,6 +18,8 @@ export type SubmissionButtonProps = {
   label?: string;
   /** Called when the player activates the submit button. */
   onSubmit: () => void;
+  /** Ref for consumers that need to measure or animate the native button. */
+  ref?: Ref<HTMLButtonElement> | undefined;
 };
 
 /**
@@ -24,9 +27,15 @@ export type SubmissionButtonProps = {
  *
  * @param props - See {@link SubmissionButtonProps}.
  */
-export function SubmissionButton({ isDisabled, label = "도전", onSubmit }: SubmissionButtonProps) {
+export function SubmissionButton({
+  isDisabled,
+  label = "도전",
+  onSubmit,
+  ref,
+}: SubmissionButtonProps) {
   return (
     <Button
+      ref={ref}
       className={styles.button}
       surfaceClassName={styles.surface}
       onClick={onSubmit}

@@ -110,6 +110,18 @@ describe("WinPanel", () => {
     await expect.element(screen.getByRole("button", { name: "복사됨" })).toBeInTheDocument();
   });
 
+  it("plays compact confetti after copying the share summary", async () => {
+    mockClipboard();
+    const screen = await renderWinPanel(wonState(2), { shareDate: "2026-08-15" });
+
+    await screen.getByRole("button", { name: "공유" }).click();
+
+    expect(triggerJamoConfetti).toHaveBeenCalledWith({
+      originElement: expect.any(HTMLButtonElement),
+      variant: "feedback",
+    });
+  });
+
   it("does not repeat the automatic celebration for the same won game", async () => {
     await renderWinPanel(wonState(1), { celebrationScope: "same-game" });
     await expect.poll(() => triggerJamoConfetti).toHaveBeenCalledTimes(1);
