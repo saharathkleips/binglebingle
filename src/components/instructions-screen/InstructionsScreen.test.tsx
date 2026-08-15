@@ -50,7 +50,7 @@ describe("InstructionsScreen", () => {
     await expect.element(section).toHaveTextContent("글");
     await expect.element(section).toHaveTextContent("색으로 단서를 확인해요");
     await expect.element(section).toHaveTextContent("노랑");
-    await expect.element(screen.getByLabelText("빈칸")).toBeInTheDocument();
+    await expect.element(screen.getByLabelText(/가운데 빈칸을 남겨요/)).toBeInTheDocument();
   });
 
   it("renders tips for submitting guesses", async () => {

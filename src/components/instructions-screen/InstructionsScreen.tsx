@@ -133,8 +133,14 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
           </header>
 
           <section className={styles.instructionSection} aria-label="글자 만들기">
-            <div className={styles.gestureDemo}>
-              <span className={styles.visuallyHidden}>ㅇ ㄱ ㄹ ㅏ ㅜ ㅓ ㅗ ㅘ ㅙ 왜 하 해 ㅎ</span>
+            <p className={styles.visuallyHidden} id="character-building-demo-description">
+              합치기 예시는 ㅎ, ㅏ, ㅣ 조각으로 해를 만들고 다시 나눠요. 돌리기 예시는 ㅏ를 돌려 ㅓ,
+              ㅗ, ㅜ 모양을 확인해요. ㅇ, ㄱ, ㄹ, ㅘ, ㅙ, 왜 같은 조합도 만들 수 있어요.
+            </p>
+            <div
+              className={styles.gestureDemo}
+              aria-describedby="character-building-demo-description"
+            >
               <GestureDemoCard title="끌어 합치기 · 톡 눌러 나누기">
                 <CompositionDemoStage />
               </GestureDemoCard>
@@ -148,7 +154,6 @@ export function InstructionsScreen({ isOpen, onClose }: InstructionsScreenProps)
             <div className={styles.submissionInstructionGrid}>
               <div className={styles.submissionInstructionColumn}>
                 <p className={styles.label}>칸에 끌어다 놓고 추측해요.</p>
-                <span className={styles.visuallyHidden} aria-label="빈칸" />
                 <GuessDemoStage />
               </div>
               <div className={styles.submissionInstructionColumn}>
@@ -274,7 +279,7 @@ function GuessDemoStage() {
   return (
     <div
       className={`${styles.demoStage} ${styles.guessDemoStage}`}
-      aria-label="추측 만들기 애니메이션"
+      aria-label="추측 만들기 애니메이션: 빙 조각을 첫 칸에 놓고 글 조각을 셋째 칸에 놓아 가운데 빈칸을 남겨요"
     >
       <GameProvider key={animationCycle} initialState={GUESS_DEMO_INITIAL_STATE}>
         <GuessDemoAnimation onComplete={() => setAnimationCycle((cycle) => cycle + 1)} />
