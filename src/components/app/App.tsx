@@ -158,6 +158,7 @@ function DailyGameApp({
       onStateChange={handleStateChange}
       instructionsDisclosure={instructionsDisclosure}
       celebrationScope={`${dailyGameData.date}:${activeDifficulty}`}
+      shareDate={dailyGameData.date}
     />
   );
 }
@@ -235,6 +236,8 @@ type GameAppProps = {
   instructionsDisclosure: InstructionsDisclosure;
   /** Stable scope for suppressing duplicate automatic win celebrations. */
   celebrationScope?: string | undefined;
+  /** Local puzzle date used in copied share text. */
+  shareDate?: string | undefined;
 };
 
 function GameApp({
@@ -244,6 +247,7 @@ function GameApp({
   onStateChange,
   instructionsDisclosure,
   celebrationScope,
+  shareDate,
 }: GameAppProps) {
   return (
     <GameProvider initialState={initialState} onStateChange={onStateChange}>
@@ -253,20 +257,26 @@ function GameApp({
         instructionsDisclosure={instructionsDisclosure}
         isGameReady
       >
-        <GameContent celebrationScope={celebrationScope} />
+        <GameContent celebrationScope={celebrationScope} shareDate={shareDate} />
       </AppShell>
     </GameProvider>
   );
 }
 
-function GameContent({ celebrationScope }: { celebrationScope?: string | undefined }) {
+function GameContent({
+  celebrationScope,
+  shareDate,
+}: {
+  celebrationScope?: string | undefined;
+  shareDate?: string | undefined;
+}) {
   const { state } = useGame();
 
   if (isWon(state.history)) {
     return (
       <>
         <SubmissionArea isInteractionDisabled isSubmitVisible={false} isWinDanceEnabled />
-        <WinPanel celebrationScope={celebrationScope} />
+        <WinPanel celebrationScope={celebrationScope} shareDate={shareDate} />
       </>
     );
   }
