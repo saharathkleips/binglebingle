@@ -42,14 +42,17 @@ const JAMO_CONFETTI_COLORS = [
   "var(--color-confetti-blossom)",
 ] as const;
 
-const PARTICLE_COUNT = 200;
+const CELEBRATION_PARTICLE_COUNT = 200;
+const FEEDBACK_PARTICLE_COUNT = 64;
 const CENTER_PARTICLE_INTERVAL = 4;
 const MIN_CENTER_TRAVEL_DISTANCE = 28;
 const MAX_CENTER_TRAVEL_DISTANCE = 120;
 const MIN_TRAVEL_DISTANCE = 140;
 const MAX_TRAVEL_DISTANCE = 340;
+const FEEDBACK_DISTANCE_SCALE = 0.34;
 const MIN_DURATION = 1.35;
 const MAX_DURATION = 2.15;
+const FEEDBACK_DURATION_SCALE = 0.58;
 const BASELINE_VIEWPORT_WIDTH = 390;
 const BASELINE_VIEWPORT_HEIGHT = 700;
 const BASELINE_VIEWPORT_DIAGONAL = Math.hypot(BASELINE_VIEWPORT_WIDTH, BASELINE_VIEWPORT_HEIGHT);
@@ -58,8 +61,11 @@ const MAX_DISTANCE_SCALE = 2.35;
 const MAX_FONT_SCALE = 1.18;
 const PARTICLE_FONT_SIZE_REM = 1.6;
 
+type JamoConfettiVariant = "celebration" | "feedback";
+
 type ConfettiMetrics = {
   distanceScale: number;
+  durationScale: number;
   fontScale: number;
   particleCount: number;
 };
@@ -75,13 +81,18 @@ type ParticleMotion = {
 export type JamoConfettiOptions = {
   /** Element whose center is used as the burst origin. */
   originElement: HTMLElement;
+  /** Burst size tuned for either the full win celebration or compact UI feedback. */
+  variant?: JamoConfettiVariant | undefined;
 };
 
 /** Starts a one-shot jamo confetti burst and returns a cleanup function. */
-export function triggerJamoConfetti({ originElement }: JamoConfettiOptions): () => void {
+export function triggerJamoConfetti({
+  originElement,
+  variant = "celebration",
+}: JamoConfettiOptions): () => void {
   if (typeof window === "undefined" || shouldReduceMotion()) return () => {};
 
-  const metrics = getResponsiveConfettiMetrics();
+  const metrics = getResponsiveConfettiMetrics(variant);
   const originRect = originElement.getBoundingClientRect();
   const originX = originRect.left + originRect.width / 2;
   const originY = originRect.top + originRect.height / 2;
@@ -155,7 +166,7 @@ function createParticleTimeline(
         scale: randomBetween(0.85, 1.28),
         opacity: 1,
         rotate: randomBetween(-180, 180),
-        duration: motion.duration * 0.3,
+        duration: motion.duration * metrics.durationScale * 0.3,
         ease: "power2.out",
       },
     )
@@ -163,17 +174,17 @@ function createParticleTimeline(
       x: motion.travelX + driftX,
       y: motion.fallY,
       rotate: randomBetween(-360, 360),
-      duration: motion.duration * 0.7,
+      duration: motion.duration * metrics.durationScale * 0.7,
       ease: "sine.inOut",
     })
     .to(
       particle,
       {
         opacity: 0,
-        duration: motion.duration * 0.14,
+        duration: motion.duration * metrics.durationScale * 0.14,
         ease: "power1.in",
       },
-      motion.duration * 0.86,
+      motion.duration * metrics.durationScale * 0.86,
     );
 }
 
@@ -208,16 +219,30 @@ function getParticleMotion(particleIndex: number, metrics: ConfettiMetrics): Par
   };
 }
 
-function getResponsiveConfettiMetrics(): ConfettiMetrics {
+function getResponsiveConfettiMetrics(variant: JamoConfettiVariant): ConfettiMetrics {
   const viewportDiagonal = Math.hypot(window.innerWidth, window.innerHeight);
-  const distanceScale = clamp(viewportDiagonal / BASELINE_VIEWPORT_DIAGONAL, 1, MAX_DISTANCE_SCALE);
-  const particleScale = clamp(Math.sqrt(distanceScale), 1, MAX_PARTICLE_SCALE);
-  const fontScale = clamp(Math.sqrt(distanceScale), 1, MAX_FONT_SCALE);
+  const responsiveDistanceScale = clamp(
+    viewportDiagonal / BASELINE_VIEWPORT_DIAGONAL,
+    1,
+    MAX_DISTANCE_SCALE,
+  );
+  const particleScale = clamp(Math.sqrt(responsiveDistanceScale), 1, MAX_PARTICLE_SCALE);
+  const fontScale = clamp(Math.sqrt(responsiveDistanceScale), 1, MAX_FONT_SCALE);
+
+  if (variant === "feedback") {
+    return {
+      distanceScale: responsiveDistanceScale * FEEDBACK_DISTANCE_SCALE,
+      durationScale: FEEDBACK_DURATION_SCALE,
+      fontScale: fontScale * 0.52,
+      particleCount: Math.round(FEEDBACK_PARTICLE_COUNT * particleScale),
+    };
+  }
 
   return {
-    distanceScale,
+    distanceScale: responsiveDistanceScale,
+    durationScale: 1,
     fontScale,
-    particleCount: Math.round(PARTICLE_COUNT * particleScale),
+    particleCount: Math.round(CELEBRATION_PARTICLE_COUNT * particleScale),
   };
 }
 

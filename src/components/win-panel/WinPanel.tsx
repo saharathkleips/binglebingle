@@ -30,6 +30,7 @@ type WinPanelProps = {
 export function WinPanel({ celebrationScope = "standalone", shareDate }: WinPanelProps = {}) {
   const { state } = useGame();
   const winCardButtonRef = useRef<HTMLButtonElement>(null);
+  const shareButtonRef = useRef<HTMLButtonElement>(null);
   const [shareLabel, setShareLabel] = useState("공유");
   const score = calculateScore(state.history);
   const scoreLabel = `${score.guessCount}번째 시도 성공!`;
@@ -38,8 +39,18 @@ export function WinPanel({ celebrationScope = "standalone", shareDate }: WinPane
   useEffect(() => {
     if (hasAutoCelebratedWin(winKey)) return undefined;
 
-    markAutoCelebratedWin(winKey);
-    return triggerElementConfetti(winCardButtonRef.current);
+    let cleanupConfetti: (() => void) | undefined;
+    const timeout = window.setTimeout(() => {
+      if (hasAutoCelebratedWin(winKey) || winCardButtonRef.current === null) return;
+
+      markAutoCelebratedWin(winKey);
+      cleanupConfetti = triggerElementConfetti(winCardButtonRef.current);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeout);
+      cleanupConfetti?.();
+    };
   }, [winKey]);
 
   function handleWinCardClick() {
@@ -52,6 +63,7 @@ export function WinPanel({ celebrationScope = "standalone", shareDate }: WinPane
     try {
       await writeClipboardText(shareText);
       setShareLabel("복사됨");
+      triggerShareConfetti(shareButtonRef.current);
     } catch {
       setShareLabel("복사 실패");
     }
@@ -80,7 +92,12 @@ export function WinPanel({ celebrationScope = "standalone", shareDate }: WinPane
           </span>
         </span>
       </Button>
-      <SubmissionButton isDisabled={false} label={shareLabel} onSubmit={handleShare} />
+      <SubmissionButton
+        ref={shareButtonRef}
+        isDisabled={false}
+        label={shareLabel}
+        onSubmit={handleShare}
+      />
     </section>
   );
 }
@@ -127,4 +144,9 @@ async function writeClipboardText(text: string): Promise<void> {
 function triggerElementConfetti(element: HTMLElement | null): (() => void) | undefined {
   if (element === null) return undefined;
   return triggerJamoConfetti({ originElement: element });
+}
+
+function triggerShareConfetti(element: HTMLElement | null): (() => void) | undefined {
+  if (element === null) return undefined;
+  return triggerJamoConfetti({ originElement: element, variant: "feedback" });
 }
