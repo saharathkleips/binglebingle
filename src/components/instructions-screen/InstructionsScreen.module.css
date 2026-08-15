@@ -249,7 +249,8 @@
   z-index: 4;
   width: 2rem;
   height: 2rem;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(1px 1px 0 var(--color-system-depth))
+    drop-shadow(2px 2px 0 var(--color-system-shadow));
   pointer-events: none;
 }
 
@@ -258,8 +259,11 @@
   transform: translate(-32%, -9%);
 }
 
-.demoPointerFill {
-  fill: var(--color-border);
+.demoPointerStroke {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-linejoin: round;
+  stroke-width: 4px;
 }
 
 .demoPointerPalm {

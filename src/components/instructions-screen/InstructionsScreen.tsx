@@ -18,6 +18,7 @@ import { Pool } from "../pool/Pool";
 import { SubmissionArea } from "../submission-area/SubmissionArea";
 import type { EvaluatedCharacter } from "../../lib/engine";
 import { HistoryCard } from "../history-area/HistoryCard";
+import { DemoPointerIcon } from "./DemoPointerIcon";
 import styles from "./InstructionsScreen.module.css";
 
 type InstructionsScreenProps = {
@@ -352,16 +353,7 @@ function DemoPoolShell({
 function DemoPointer({ pointerRef }: { pointerRef: React.RefObject<HTMLSpanElement | null> }) {
   return (
     <span className={styles.demoPointer} ref={pointerRef} aria-hidden="true">
-      <svg className={styles.demoPointerIcon} viewBox="0 0 32 32" focusable="false">
-        <path
-          d="M10.25 2.75C8.6 2.75 7.25 4.1 7.25 5.75v11.4l-1.1-1.1a3.03 3.03 0 0 0-4.28 4.29l7.3 7.3A6.25 6.25 0 0 0 13.58 29.5h7.17A6.25 6.25 0 0 0 27 23.25V14.5a3 3 0 0 0-4.4-2.65A3 3 0 0 0 18 10.25a3 3 0 0 0-4.75-2.43V5.75c0-1.65-1.35-3-3-3Z"
-          className={styles.demoPointerFill}
-        />
-        <path
-          d="M10.25 4.75c.55 0 1 .45 1 1v11.5h2V10.5a1 1 0 1 1 2 0v7h2v-4.25a1 1 0 1 1 2 0v4.25h2V14.5a1 1 0 1 1 2 0v8.75a4.25 4.25 0 0 1-4.25 4.25h-7.17a4.25 4.25 0 0 1-3-1.24l-7.3-7.3a1.03 1.03 0 0 1 1.46-1.46l4.51 4.5h1.75V5.75c0-.55.45-1 1-1Z"
-          className={styles.demoPointerPalm}
-        />
-      </svg>
+      <DemoPointerIcon className={styles.demoPointerIcon} />
     </span>
   );
 }
