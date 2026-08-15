@@ -485,7 +485,7 @@ function dragTileToTarget(
     const sourceElement = getDemoTile(stageElement, sourceTileId);
     if (sourceElement !== null) {
       options.onBeforeDrop?.(sourceElement);
-      gsap.set(sourceElement, { clearProps: "all" });
+      gsap.set(sourceElement, { visibility: "hidden" });
     }
     onDrop();
   });
