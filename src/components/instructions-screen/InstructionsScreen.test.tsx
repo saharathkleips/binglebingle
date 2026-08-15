@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "vitest-browser-react";
 import { getRequiredElement } from "../../test-utils/dom-selectors";
+import { DATA_TILE_ID_ATTRIBUTE } from "../../lib/dom-data-attributes";
 import { InstructionsScreen } from "./InstructionsScreen";
 
 function instructionsBackdrop(): HTMLElement {
@@ -87,5 +88,18 @@ describe("InstructionsScreen", () => {
     const dialog = screen.getByRole("dialog", { name: "게임 방법" });
     await expect.element(dialog).toHaveAttribute("role", "dialog");
     await expect.element(dialog).toHaveAttribute("aria-modal", "true");
+  });
+
+  it("keeps animated demo tiles out of the tab order", async () => {
+    await render(<InstructionsScreen isOpen={true} onClose={() => {}} />);
+    const demoButtons = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(`button[${DATA_TILE_ID_ATTRIBUTE}]`),
+    );
+
+    expect(demoButtons.length).toBeGreaterThan(0);
+    demoButtons.forEach((button) => {
+      expect(button.tabIndex).toBe(-1);
+      expect(button.getAttribute("aria-hidden")).toBe("true");
+    });
   });
 });
