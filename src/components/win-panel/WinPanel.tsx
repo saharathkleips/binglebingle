@@ -38,8 +38,18 @@ export function WinPanel({ celebrationScope = "standalone", shareDate }: WinPane
   useEffect(() => {
     if (hasAutoCelebratedWin(winKey)) return undefined;
 
-    markAutoCelebratedWin(winKey);
-    return triggerElementConfetti(winCardButtonRef.current);
+    let cleanupConfetti: (() => void) | undefined;
+    const timeout = window.setTimeout(() => {
+      if (hasAutoCelebratedWin(winKey) || winCardButtonRef.current === null) return;
+
+      markAutoCelebratedWin(winKey);
+      cleanupConfetti = triggerElementConfetti(winCardButtonRef.current);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeout);
+      cleanupConfetti?.();
+    };
   }, [winKey]);
 
   function handleWinCardClick() {
