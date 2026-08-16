@@ -1,0 +1,191 @@
+.scene {
+  --font-family-ui: "Binglebingle Asset Tile", "Noto Sans KR", sans-serif;
+  --font-family-tile: "Binglebingle Asset Tile", "Noto Sans KR", sans-serif;
+  --asset-tile-base-hitbox-size: 72px;
+  --asset-tile-base-gap: 10px;
+  --asset-tile-base-submission-history-gap: 12px;
+  --asset-tile-base-radius: 8px;
+  --asset-tile-base-border-width: 2px;
+  --asset-tile-base-font-size: 34px;
+  --asset-tile-base-depth-step: 1px;
+  --asset-tile-base-cast-shadow-distance: 7px;
+
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--color-app-background);
+}
+
+.backgroundConfetti,
+.foregroundConfetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.backgroundConfetti {
+  z-index: 0;
+}
+
+.foregroundConfetti {
+  z-index: 2;
+}
+
+.confettiParticle {
+  position: absolute;
+  left: var(--confetti-left);
+  top: var(--confetti-top);
+  color: var(--confetti-color);
+  font-family: var(--font-family-tile);
+  font-size: var(--confetti-size);
+  font-weight: var(--font-weight-tile);
+  line-height: 1;
+  opacity: var(--confetti-opacity);
+  text-shadow: 2px 2px 0 rgb(0 0 0 / 0.26);
+  transform: translate(-50%, -50%) rotate(var(--confetti-rotation));
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 52px;
+  transform: translateY(-4px);
+}
+
+.title,
+.callToAction,
+.historyWord {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  --asset-tile-scale: 2.8;
+  --tile-hitbox-size: calc(var(--asset-tile-base-hitbox-size) * var(--asset-tile-scale));
+  --tile-gap: calc(var(--asset-tile-base-gap) * var(--asset-tile-scale));
+  --tile-submission-history-gap: calc(
+    var(--asset-tile-base-submission-history-gap) * var(--asset-tile-scale)
+  );
+  --tile-radius: calc(var(--asset-tile-base-radius) * var(--asset-tile-scale));
+  --tile-border-width: calc(var(--asset-tile-base-border-width) * var(--asset-tile-scale));
+  --tile-font-size: calc(var(--asset-tile-base-font-size) * var(--asset-tile-scale));
+  --tile-depth-step: calc(var(--asset-tile-base-depth-step) * var(--asset-tile-scale));
+  --tile-cast-shadow-distance: calc(
+    var(--asset-tile-base-cast-shadow-distance) * var(--asset-tile-scale)
+  );
+  --tile-visual-long-edge: var(--tile-hitbox-size);
+  --tile-visual-short-edge: calc(var(--tile-hitbox-size) * 2 / 3);
+  --tile-depth-stack:
+    var(--tile-depth-step) var(--tile-depth-step) 0 var(--color-tile-depth),
+    calc(var(--tile-depth-step) * 2) calc(var(--tile-depth-step) * 2) 0 var(--color-tile-depth),
+    calc(var(--tile-depth-step) * 3) calc(var(--tile-depth-step) * 3) 0 var(--color-tile-depth);
+  --tile-cast-shadow: var(--tile-cast-shadow-distance) var(--tile-cast-shadow-distance) 0
+    var(--color-tile-shadow);
+  --tile-lift-distance: calc(var(--tile-depth-step) * 3);
+  --tile-shadow-stack: var(--tile-depth-stack), var(--tile-cast-shadow);
+
+  gap: calc(var(--tile-gap) * 1.35);
+}
+
+.titleTile {
+  flex: none;
+}
+
+.titleTile:nth-child(1) {
+  transform: rotate(-4deg);
+}
+
+.titleTile:nth-child(2) {
+  transform: rotate(2deg) translateY(4px);
+}
+
+.titleTile:nth-child(3) {
+  transform: rotate(-2deg) translateY(-3px);
+}
+
+.titleTile:nth-child(4) {
+  transform: rotate(3deg) translateY(3px);
+}
+
+.description {
+  margin: 0 0 -10px;
+  color: var(--color-text);
+  font-family: var(--font-family-ui);
+  font-size: 62px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 3px 0 rgb(255 255 255 / 0.78);
+}
+
+.callToAction {
+  --asset-tile-scale: 2;
+  --tile-hitbox-size: calc(var(--asset-tile-base-hitbox-size) * var(--asset-tile-scale));
+  --tile-gap: calc(var(--asset-tile-base-gap) * var(--asset-tile-scale));
+  --tile-submission-history-gap: calc(
+    var(--asset-tile-base-submission-history-gap) * var(--asset-tile-scale)
+  );
+  --tile-radius: calc(var(--asset-tile-base-radius) * var(--asset-tile-scale));
+  --tile-border-width: calc(var(--asset-tile-base-border-width) * var(--asset-tile-scale));
+  --tile-font-size: calc(var(--asset-tile-base-font-size) * var(--asset-tile-scale));
+  --tile-depth-step: calc(var(--asset-tile-base-depth-step) * var(--asset-tile-scale));
+  --tile-cast-shadow-distance: calc(
+    var(--asset-tile-base-cast-shadow-distance) * var(--asset-tile-scale)
+  );
+  --tile-visual-long-edge: var(--tile-hitbox-size);
+  --tile-visual-short-edge: calc(var(--tile-hitbox-size) * 2 / 3);
+  --tile-depth-stack:
+    var(--tile-depth-step) var(--tile-depth-step) 0 var(--color-tile-depth),
+    calc(var(--tile-depth-step) * 2) calc(var(--tile-depth-step) * 2) 0 var(--color-tile-depth),
+    calc(var(--tile-depth-step) * 3) calc(var(--tile-depth-step) * 3) 0 var(--color-tile-depth);
+  --tile-cast-shadow: var(--tile-cast-shadow-distance) var(--tile-cast-shadow-distance) 0
+    var(--color-tile-shadow);
+  --tile-lift-distance: calc(var(--tile-depth-step) * 3);
+  --tile-shadow-stack: var(--tile-depth-stack), var(--tile-cast-shadow);
+  --history-empty-card-motif-opacity: 0.5;
+  --history-empty-card-motif-saturation: 0.5;
+
+  gap: calc(var(--asset-tile-base-gap) * var(--asset-tile-scale) * 1.7);
+}
+
+.historyWord {
+  gap: var(--tile-submission-history-gap);
+}
+
+.callToAction :global(.history-card-inhwi-decorated) {
+  /* The shared history-card ornament bleed is tuned in fixed px for app-sized cards.
+     Scale that bleed with the asset card size so the SVG remains cropped the same way. */
+  --asset-history-card-inhwi-inline-bleed: calc(4px * var(--asset-tile-scale));
+  --asset-history-card-inhwi-block-bleed: calc(-2px * var(--asset-tile-scale));
+  --history-card-inhwi-width: calc(100% + var(--asset-history-card-inhwi-inline-bleed));
+  --history-card-inhwi-block-offset: var(--asset-history-card-inhwi-block-bleed);
+}
+
+.historyWord:first-child :global([data-history-card]):nth-child(1) {
+  transform: rotate(-3deg) translateY(-1px);
+}
+
+.historyWord:first-child :global([data-history-card]):nth-child(2) {
+  transform: rotate(2deg) translateY(3px);
+}
+
+.historyWord:last-child :global([data-history-card]):nth-child(1) {
+  transform: rotate(-2deg) translateY(-2px);
+}
+
+.historyWord:last-child :global([data-history-card]):nth-child(2) {
+  transform: rotate(1deg) translateY(3px);
+}
+
+.historyWord:last-child :global([data-history-card]):nth-child(3) {
+  transform: rotate(3deg) translateY(-1px);
+}
+
+.callToAction > :global([data-slot-state="empty"]) {
+  transform: rotate(-2deg) translateY(4px);
+}

@@ -3,30 +3,48 @@ import { createRoot } from "react-dom/client";
 import "../index.css";
 import "./asset-generation.css";
 import { FaviconPreview } from "./FaviconPreview";
+import { SocialPreview } from "./SocialPreview";
 
-type GeneratedAssetKind = "favicon";
+type GeneratedAssetKind = "favicon" | "social-preview";
 
-const DEFAULT_PREVIEW_SIZE = 512;
-const assetKind = parseAssetKind(new URLSearchParams(window.location.search).get("asset"));
-const size = parsePreviewSize(new URLSearchParams(window.location.search).get("size"));
+const DEFAULT_FAVICON_SIZE = 512;
+const DEFAULT_SOCIAL_PREVIEW_WIDTH = 1200;
+const DEFAULT_SOCIAL_PREVIEW_HEIGHT = 630;
+const searchParams = new URLSearchParams(window.location.search);
+const assetKind = parseAssetKind(searchParams.get("asset"));
+const size = parsePositiveInteger(searchParams.get("size"), "size", DEFAULT_FAVICON_SIZE);
+const width = parsePositiveInteger(
+  searchParams.get("width"),
+  "width",
+  DEFAULT_SOCIAL_PREVIEW_WIDTH,
+);
+const height = parsePositiveInteger(
+  searchParams.get("height"),
+  "height",
+  DEFAULT_SOCIAL_PREVIEW_HEIGHT,
+);
 const rootElement = document.getElementById("root");
 
 if (rootElement === null) throw new Error("Missing generated asset root element.");
 
 createRoot(rootElement).render(
-  <StrictMode>{assetKind === "favicon" ? <FaviconPreview size={size} /> : null}</StrictMode>,
+  <StrictMode>
+    {assetKind === "favicon" ? <FaviconPreview size={size} /> : null}
+    {assetKind === "social-preview" ? <SocialPreview width={width} height={height} /> : null}
+  </StrictMode>,
 );
 
 function parseAssetKind(value: string | null): GeneratedAssetKind {
   if (value === "favicon" || value === null) return "favicon";
+  if (value === "social-preview") return "social-preview";
   throw new Error(`Unsupported generated asset: ${value}`);
 }
 
-function parsePreviewSize(value: string | null): number {
-  if (value === null) return DEFAULT_PREVIEW_SIZE;
-  const size = Number(value);
-  if (!Number.isInteger(size) || size <= 0) {
-    throw new Error(`Asset preview size must be a positive integer, received: ${value}`);
+function parsePositiveInteger(value: string | null, name: string, fallback: number): number {
+  if (value === null) return fallback;
+  const parsedValue = Number(value);
+  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
+    throw new Error(`Asset preview ${name} must be a positive integer, received: ${value}`);
   }
-  return size;
+  return parsedValue;
 }
