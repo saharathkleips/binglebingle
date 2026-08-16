@@ -58,7 +58,7 @@ const confettiColors = [
 ] as const;
 
 const BACKGROUND_CONFETTI_SEED = 0x3d9a71;
-const FOREGROUND_CONFETTI_SEED = 0xc0ffee;
+const FOREGROUND_CONFETTI_SEED = 0x7a9d3f;
 const BACKGROUND_CONFETTI_COUNT = 440;
 const FOREGROUND_CONFETTI_COUNT = 110;
 
@@ -89,13 +89,17 @@ const backgroundConfettiParticles = generateConfettiParticles({
   minimumSize: 14,
   seed: BACKGROUND_CONFETTI_SEED,
 });
+// Keep full-color foreground jamo off the main content. Background confetti
+// still sits behind these areas, but foreground glyphs should not cross text or tiles.
+const foregroundConfettiExclusionAreas = [
+  { maximumLeft: 79, maximumTop: 46.5, minimumLeft: 21.2, minimumTop: 6.8 },
+  { maximumLeft: 74, maximumTop: 57.4, minimumLeft: 26, minimumTop: 45 },
+  { maximumLeft: 90.2, maximumTop: 92.8, minimumLeft: 9.8, minimumTop: 57 },
+] as const satisfies readonly ConfettiExclusionArea[];
+
 const foregroundConfettiParticles = generateConfettiParticles({
   count: FOREGROUND_CONFETTI_COUNT,
-  excludedAreas: [
-    // Keep full-color foreground jamo off the main content. Background confetti
-    // still sits behind this area, but foreground glyphs should not cross text or tiles.
-    { maximumLeft: 84, maximumTop: 96, minimumLeft: 16, minimumTop: 6 },
-  ],
+  excludedAreas: foregroundConfettiExclusionAreas,
   maximumOpacity: 1,
   maximumSize: 58,
   minimumOpacity: 1,
