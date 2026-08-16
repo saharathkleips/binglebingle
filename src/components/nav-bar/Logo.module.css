@@ -114,7 +114,7 @@
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 389px) {
   .logoButton {
     --logo-width: 4.5rem;
     --logo-min-height: 1.65rem;

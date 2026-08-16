@@ -38,7 +38,7 @@
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 389px) {
   .navBar {
     --nav-actions-gap: 0.125rem;
     --nav-action-cluster-gap: 0;
