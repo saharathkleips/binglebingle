@@ -149,6 +149,8 @@
   --tile-shadow-stack: var(--tile-depth-stack), var(--tile-cast-shadow);
   --history-empty-card-motif-opacity: 0.5;
   --history-empty-card-motif-saturation: 0.5;
+  --history-card-layered-text-depth-offset: calc(1px * var(--asset-tile-scale));
+  --history-card-layered-text-stroke-width: calc(1px * var(--asset-tile-scale));
 
   gap: calc(var(--asset-tile-base-gap) * var(--asset-tile-scale) * 1.7);
 }
