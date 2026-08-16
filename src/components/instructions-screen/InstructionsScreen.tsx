@@ -427,7 +427,7 @@ function dragTileToSlot(
     onDrop,
     {
       onBeforeDrop: (sourceElement) => {
-        recordTileSnapBack(sourceTileId, sourceElement, { shouldLiftOnArrival: true });
+        recordTileSnapBack(sourceTileId, sourceElement);
       },
     },
   );

@@ -51,8 +51,6 @@ export const DATA_INPUT_LOCKED_ATTRIBUTE = "data-input-locked";
 export const DATA_SUBMISSION_ANIMATING_ATTRIBUTE = "data-submission-animating";
 /** Filled slot wrapper marker while its tile is being dragged. */
 export const DATA_SLOT_DRAGGING_ATTRIBUTE = "data-slot-dragging";
-/** Filled slot wrapper marker while a tile snap-back is placing into it. */
-export const DATA_SLOT_PLACING_ATTRIBUTE = "data-slot-placing";
 /** Optional local stacking context for tile animation clones, used by demos and overlays. */
 export const DATA_TILE_ANIMATION_LAYER_ATTRIBUTE = "data-tile-animation-layer";
 /** Tile text element marker used when animation clones temporarily override text. */
@@ -65,6 +63,8 @@ export const DATA_TILE_BORDER_ATTRIBUTE = "data-tile-border";
 export const DATA_SLOT_STATE_ATTRIBUTE = "data-slot-state";
 /** Interactive tile marker. */
 export const DATA_TILE_INTERACTIVE_ATTRIBUTE = "data-tile-interactive";
+/** Temporarily suppresses hover lift until the pointer leaves a newly placed tile. */
+export const DATA_TILE_HOVER_SUPPRESSED_ATTRIBUTE = "data-tile-hover-suppressed";
 
 /**
  * Builds a CSS selector for elements carrying a shared data attribute.

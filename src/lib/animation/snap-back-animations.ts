@@ -9,18 +9,15 @@ import {
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_SLOT_STATE_ATTRIBUTE,
   DATA_TILE_ANIMATION_LAYER_ATTRIBUTE,
+  DATA_TILE_HOVER_SUPPRESSED_ATTRIBUTE,
   DATA_TILE_ID_ATTRIBUTE,
-  DATA_TILE_SURFACE_ATTRIBUTE,
   DATA_TILE_TEXT_ATTRIBUTE,
   dataAttributeSelector,
 } from "../dom-data-attributes";
 import { scheduleNextFrame } from "./frame-scheduler";
-import { SNAP_BACK_ANIMATION } from "./motion-tokens";
+import { ACCEPTED_DROP_ANIMATION, SNAP_BACK_ANIMATION } from "./motion-tokens";
 import { gsap } from "./register";
 
-const ARRIVAL_LIFT_TRANSFORM =
-  "translate(calc(var(--tile-hover-offset) * -1), calc(var(--tile-hover-offset) * -1))";
-const ARRIVAL_LIFT_SHADOW = "var(--tile-shadow-stack-lifted)";
 const SNAP_BACK_CLONE_STRIPPED_ATTRIBUTES = [
   "id",
   DATA_SLOT_INDEX_ATTRIBUTE,
@@ -31,8 +28,6 @@ const SNAP_BACK_FALLBACK_CLEANUP_BUFFER_MS = 1000;
 
 /** Options captured when recording a cross-owner tile snap-back. */
 export type TileSnapBackOptions = {
-  /** Whether the destination tile should briefly adopt the hover lift after arrival. */
-  shouldLiftOnArrival?: boolean;
   /** Optional text to show on the traveling clone when it represents a newly-created tile. */
   cloneText?: string;
   /** When to apply `cloneText` to the traveling clone. Defaults to `immediate`. */
@@ -49,8 +44,6 @@ export type TileSnapBackSnapshot = {
   clone: HTMLElement;
   /** Fallback cleanup timer in case the consuming animation never runs. */
   cleanupTimer: ReturnType<typeof setTimeout>;
-  /** Whether the destination tile should briefly adopt the hover lift after arrival. */
-  shouldLiftOnArrival: boolean;
   /** Optional text to apply to the clone when its tween starts. */
   cloneTextOnStart?: string;
   /** Delay before the traveling clone starts moving to its destination. */
@@ -85,6 +78,7 @@ export function recordTileSnapBack(
   }
   SNAP_BACK_CLONE_STRIPPED_ATTRIBUTES.forEach((attribute) => clone.removeAttribute(attribute));
   clone.setAttribute("aria-hidden", "true");
+  clone.setAttribute(DATA_TILE_HOVER_SUPPRESSED_ATTRIBUTE, "true");
   clone.style.position = "fixed";
   clone.style.left = `${fromRect.left}px`;
   clone.style.top = `${fromRect.top}px`;
@@ -114,7 +108,6 @@ export function recordTileSnapBack(
     ...(options.cloneText !== undefined && shouldApplyCloneTextOnStart
       ? { cloneTextOnStart: options.cloneText }
       : {}),
-    shouldLiftOnArrival: options.shouldLiftOnArrival === true,
     delay: options.delay ?? 0,
   });
 }
@@ -195,13 +188,8 @@ export function animateSnapBackFromRect(
 ): gsap.core.Tween {
   const toRect = element.getBoundingClientRect();
   const { clone } = snapshot;
+  const settleTileLiftSuppression = suppressTileLiftUntilSettled(element);
   element.style.visibility = "hidden";
-  if (snapshot.shouldLiftOnArrival) {
-    syncArrivalLiftVariables(clone, element);
-    applyArrivalLift(clone);
-    applyArrivalLift(element);
-  }
-
   let hasCleanedUp = false;
   const cleanup = () => {
     if (hasCleanedUp) return;
@@ -209,7 +197,7 @@ export function animateSnapBackFromRect(
     hasCleanedUp = true;
     clone.remove();
     element.style.visibility = "";
-    if (snapshot.shouldLiftOnArrival) clearArrivalLiftOnNextFrame(element);
+    settleTileLiftSuppression();
   };
 
   return gsap.to(clone, {
@@ -218,7 +206,7 @@ export function animateSnapBackFromRect(
     width: toRect.width,
     height: toRect.height,
     delay: snapshot.delay,
-    ...SNAP_BACK_ANIMATION,
+    ...ACCEPTED_DROP_ANIMATION,
     onStart: () => {
       if (snapshot.cloneTextOnStart !== undefined)
         setCloneTileText(clone, snapshot.cloneTextOnStart);
@@ -257,6 +245,32 @@ function getSnapBackFallbackCleanupDelayMs(delaySeconds: number): number {
   );
 }
 
+function suppressTileLiftUntilSettled(element: HTMLElement): () => void {
+  const hasFocus = typeof document !== "undefined" && document.activeElement === element;
+
+  element.setAttribute(DATA_TILE_HOVER_SUPPRESSED_ATTRIBUTE, "true");
+  if (hasFocus) element.blur();
+
+  let hasSettled = false;
+  const clearSuppression = () => element.removeAttribute(DATA_TILE_HOVER_SUPPRESSED_ATTRIBUTE);
+  const clearWhenPointerLeaves = () =>
+    element.addEventListener("pointerleave", clearSuppression, { once: true });
+
+  return () => {
+    if (hasSettled) return;
+    hasSettled = true;
+
+    scheduleNextFrame(() => {
+      if (typeof element.matches === "function" && element.matches(":hover")) {
+        clearWhenPointerLeaves();
+        return;
+      }
+
+      clearSuppression();
+    });
+  };
+}
+
 function setCloneTileText(clone: HTMLElement, text: string): void {
   const textElement = clone.querySelector<HTMLElement>(
     dataAttributeSelector(DATA_TILE_TEXT_ATTRIBUTE),
@@ -285,41 +299,4 @@ function shouldCopyTilePresentationVariable(propertyName: string): boolean {
     propertyName === "--font-family-tile" ||
     propertyName === "--font-weight-tile"
   );
-}
-
-function applyArrivalLift(element: HTMLElement): void {
-  const surface = findTileSurface(element);
-  if (surface === null) return;
-
-  const previousTransition = surface.style.transition;
-  surface.style.transition = "none";
-  surface.style.transform = ARRIVAL_LIFT_TRANSFORM;
-  surface.style.boxShadow = ARRIVAL_LIFT_SHADOW;
-  void surface.offsetWidth;
-  surface.style.transition = previousTransition;
-}
-
-function syncArrivalLiftVariables(clone: HTMLElement, destinationElement: HTMLElement): void {
-  if (typeof getComputedStyle !== "function") return;
-
-  const destinationLiftMultiplier = getComputedStyle(destinationElement)
-    .getPropertyValue("--tile-hover-lift-multiplier")
-    .trim();
-  if (destinationLiftMultiplier === "") return;
-
-  clone.style.setProperty("--tile-hover-lift-multiplier", destinationLiftMultiplier);
-}
-
-function clearArrivalLiftOnNextFrame(element: HTMLElement): void {
-  scheduleNextFrame(() => {
-    const surface = findTileSurface(element);
-    if (surface === null) return;
-
-    surface.style.transform = "";
-    surface.style.boxShadow = "";
-  });
-}
-
-function findTileSurface(element: HTMLElement): HTMLElement | null {
-  return element.querySelector<HTMLElement>(dataAttributeSelector(DATA_TILE_SURFACE_ATTRIBUTE));
 }

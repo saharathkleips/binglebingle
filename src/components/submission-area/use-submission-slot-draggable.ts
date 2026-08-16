@@ -6,14 +6,12 @@
 
 import { useRef } from "react";
 import { Draggable, gsap, useGSAP } from "../../lib/animation/register";
-import { animatePickUp, animateReposition } from "../../lib/animation/drag-animations";
-import { MOTION_DURATION_SLOT_ENTRANCE } from "../../lib/animation/motion-tokens";
+import { animateReposition } from "../../lib/animation/drag-animations";
 import {
   animateSnapBackFromRect,
   popPendingTileSnapBack,
   recordTileSnapBack,
 } from "../../lib/animation/snap-back-animations";
-import { animateEntranceScale } from "../../lib/animation/tile-animations";
 import type { TileSnapBackSnapshot } from "../../lib/animation/snap-back-animations";
 import {
   DATA_DROP_SLOT_TARGET_ACTIVE_ATTRIBUTE,
@@ -21,7 +19,6 @@ import {
   DATA_SLOT_DRAGGING_ATTRIBUTE,
   DATA_SLOT_HITBOX_ATTRIBUTE,
   DATA_SLOT_INDEX_ATTRIBUTE,
-  DATA_SLOT_PLACING_ATTRIBUTE,
   DATA_SUBMISSION_SLOTS_ATTRIBUTE,
 } from "../../lib/dom-data-attributes";
 import {
@@ -81,30 +78,26 @@ export function useSubmissionSlotDraggable({
       if (filledTileId !== null) {
         const pendingSnapshot = popPendingTileSnapBack(filledTileId);
         if (pendingSnapshot !== null) {
+          const destinationElement = buttonRef.current;
           deferredSnapshot = pendingSnapshot;
+          destinationElement.style.visibility = "hidden";
           deferredSnapBackFrame = requestAnimationFrame(() => {
             deferredSnapBackFrame = null;
             if (!buttonRef.current) {
               pendingSnapshot.clone.remove();
               deferredSnapshot = null;
+              destinationElement.style.visibility = "";
               return;
             }
 
             deferredSnapshot = null;
-            setSlotPlacingAttribute(buttonRef.current);
             activeSnapBackTween = animateSnapBackFromRect(
               buttonRef.current,
               pendingSnapshot,
               () => {
                 activeSnapBackTween = null;
-                if (buttonRef.current) removeSlotPlacingAttribute(buttonRef.current);
               },
             );
-          });
-        } else {
-          animateEntranceScale(buttonRef.current, undefined, {
-            fromScale: 0.6,
-            duration: MOTION_DURATION_SLOT_ENTRANCE,
           });
         }
       }
@@ -117,7 +110,6 @@ export function useSubmissionSlotDraggable({
           hasDraggedRef.current = true;
           const element = this.target as HTMLElement;
           setSlotDraggingAttribute(element);
-          animatePickUp(element);
         },
         onDrag: function onDrag(this: Draggable) {
           const elements = document.elementsFromPoint?.(this.pointerX, this.pointerY) ?? [];
@@ -149,8 +141,10 @@ export function useSubmissionSlotDraggable({
           );
           if (slotTarget !== null) {
             if (filledTileId !== null) {
-              recordTileSnapBack(filledTileId, element, { shouldLiftOnArrival: true });
+              recordTileSnapBack(filledTileId, element);
             }
+            blurElement(element);
+            blurDropTargetTile(slotTarget);
             recordDisplacedTileSnapBack(slotTarget);
             callbacksRef.current.onDropOnSlot(parseSlotIndex(slotTarget));
             finishCompletedDrop(element);
@@ -182,12 +176,14 @@ export function useSubmissionSlotDraggable({
 
       return () => {
         if (deferredSnapBackFrame !== null) cancelAnimationFrame(deferredSnapBackFrame);
-        if (deferredSnapshot !== null) deferredSnapshot.clone.remove();
+        if (deferredSnapshot !== null) {
+          deferredSnapshot.clone.remove();
+          if (buttonRef.current) buttonRef.current.style.visibility = "";
+        }
         activeSnapBackTween?.kill();
         clearSlotDropTargetHighlight(lastOverRef);
         if (buttonRef.current) {
           removeSlotDraggingAttribute(buttonRef.current);
-          removeSlotPlacingAttribute(buttonRef.current);
         }
         draggableInstances.forEach((draggableInstance) => draggableInstance.kill());
       };
@@ -196,7 +192,10 @@ export function useSubmissionSlotDraggable({
   );
 
   function finishCompletedDrop(element: HTMLElement) {
+    gsap.killTweensOf(element);
     gsap.set(element, { clearProps: "all" });
+    blurElement(element);
+    blurSubmissionTileFocusAfterPointerSequence(element);
     resetDragClickGuardAfterClick();
   }
 
@@ -273,6 +272,28 @@ function recordDisplacedTileSnapBack(dropTarget: Element): void {
   recordTileSnapBack(displacedTile.tileId, displacedTile.element);
 }
 
+function blurDropTargetTile(dropTarget: Element): void {
+  const displacedTile = findDropTargetTile(dropTarget);
+  if (displacedTile === null) return;
+
+  blurElement(displacedTile.element);
+}
+
+function blurElement(element: HTMLElement): void {
+  element.blur();
+}
+
+function blurSubmissionTileFocusAfterPointerSequence(element: HTMLElement): void {
+  const blurSubmissionTiles = () => {
+    const slotsContainer = element.closest(`[${DATA_SUBMISSION_SLOTS_ATTRIBUTE}]`);
+    slotsContainer?.querySelectorAll("button").forEach((button) => button.blur());
+  };
+
+  window.setTimeout(blurSubmissionTiles, 0);
+  window.requestAnimationFrame(() => window.requestAnimationFrame(blurSubmissionTiles));
+  window.setTimeout(blurSubmissionTiles, 100);
+}
+
 /**
  * Returns true when the pointer has left every slot hitbox. A filled slot's tile remains
  * a child of the slots row while transformed, so only the fixed hitbox elements count.
@@ -310,12 +331,4 @@ function setSlotDraggingAttribute(element: HTMLElement) {
 
 function removeSlotDraggingAttribute(element: HTMLElement) {
   element.parentElement?.removeAttribute(DATA_SLOT_DRAGGING_ATTRIBUTE);
-}
-
-function setSlotPlacingAttribute(element: HTMLElement) {
-  element.parentElement?.setAttribute(DATA_SLOT_PLACING_ATTRIBUTE, "true");
-}
-
-function removeSlotPlacingAttribute(element: HTMLElement) {
-  element.parentElement?.removeAttribute(DATA_SLOT_PLACING_ATTRIBUTE);
 }

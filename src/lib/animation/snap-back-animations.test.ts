@@ -12,6 +12,7 @@ import {
 import {
   DATA_SLOT_INDEX_ATTRIBUTE,
   DATA_SLOT_STATE_ATTRIBUTE,
+  DATA_TILE_HOVER_SUPPRESSED_ATTRIBUTE,
   DATA_TILE_ID_ATTRIBUTE,
   DATA_TILE_TEXT_ATTRIBUTE,
   dataAttributeSelector,
@@ -23,9 +24,9 @@ import {
  */
 type MockElementOptions = {
   clone?: HTMLElement;
-  surface?: HTMLElement | null;
   textElement?: { textContent: string };
   onRemove?: () => void;
+  isHovered?: boolean | (() => boolean);
 };
 
 function mockStyle(): CSSStyleDeclaration {
@@ -59,20 +60,37 @@ function mockElement(options: MockElementOptions = {}): HTMLElement {
     setAttribute: vi.fn(),
     removeAttribute: vi.fn(),
     remove: vi.fn(options.onRemove),
+    matches: (selector: string) => {
+      const isHovered =
+        typeof options.isHovered === "function" ? options.isHovered() : options.isHovered;
+      return selector === ":hover" && isHovered === true;
+    },
+    addEventListener: vi.fn(),
     querySelector: (selector: string) => {
       if (selector === dataAttributeSelector(DATA_TILE_TEXT_ATTRIBUTE)) {
         return options.textElement ?? null;
       }
-      return options.surface ?? null;
+      return null;
     },
   };
 
   return element as unknown as HTMLElement;
 }
 
-function mockSurface(): HTMLElement {
-  const surface = { style: mockStyle(), offsetWidth: 100 };
-  return surface as unknown as HTMLElement;
+function stubAnimationFrames(): Array<FrameRequestCallback> {
+  const callbacks: Array<FrameRequestCallback> = [];
+  vi.stubGlobal(
+    "requestAnimationFrame",
+    vi.fn((callback: FrameRequestCallback) => {
+      callbacks.push(callback);
+      return callbacks.length;
+    }),
+  );
+  return callbacks;
+}
+
+function runAnimationFrames(callbacks: Array<FrameRequestCallback>): void {
+  callbacks.splice(0).forEach((callback) => callback(0));
 }
 
 afterEach(() => {
@@ -86,19 +104,12 @@ describe("tile snap-back registry", () => {
 
     expect(hasPendingTileSnapBack(7)).toBe(true);
     expect(shouldSuppressTileEntranceForSnapBack(7)).toBe(true);
-    expect(popPendingTileSnapBack(7)).toMatchObject({ shouldLiftOnArrival: false });
+    expect(popPendingTileSnapBack(7)).toMatchObject({ clone: expect.anything() });
     expect(hasPendingTileSnapBack(7)).toBe(false);
     expect(shouldSuppressTileEntranceForSnapBack(7)).toBe(true);
 
     clearTileEntranceSnapBackSuppressions([7]);
     expect(shouldSuppressTileEntranceForSnapBack(7)).toBe(false);
-  });
-
-  it("stores the arrival lift hint when requested", () => {
-    recordTileSnapBack(9, mockElement(), { shouldLiftOnArrival: true });
-
-    expect(popPendingTileSnapBack(9)).toMatchObject({ shouldLiftOnArrival: true });
-    clearTileEntranceSnapBackSuppressions([9]);
   });
 
   it("stores delayed clone-text updates for animation start", () => {
@@ -188,7 +199,7 @@ describe("tile snap-back registry", () => {
 });
 
 describe("animateSnapBackFromRect", () => {
-  it("returns a GSAP Tween with snap-back timing", () => {
+  it("returns a GSAP Tween with accepted-drop timing", () => {
     const sourceElement = mockElement();
     recordTileSnapBack(8, sourceElement);
     const snapshot = popPendingTileSnapBack(8);
@@ -196,34 +207,84 @@ describe("animateSnapBackFromRect", () => {
 
     const tween = animateSnapBackFromRect(mockElement(), snapshot);
     expect(tween).toBeInstanceOf(gsap.core.Tween);
-    expect(tween.vars.duration).toBe(0.3);
-    expect(tween.vars.ease).toBe("back.out(1.2)");
+    expect(tween.vars.duration).toBe(0.26);
+    expect(tween.vars.ease).toBe("power3.out");
     tween.kill();
   });
 
-  it("runs completion callbacks and clears arrival lift with the timeout fallback", () => {
-    vi.useFakeTimers();
-    vi.stubGlobal("getComputedStyle", () => ({
-      getPropertyValue: (property: string) =>
-        property === "--tile-hover-lift-multiplier" ? " 2 " : "",
-    }));
-    const cloneSurface = mockSurface();
-    const destinationSurface = mockSurface();
-    const clone = mockElement({ surface: cloneSurface });
-    const destinationElement = mockElement({ surface: destinationSurface });
+  it("runs completion callbacks", () => {
+    const clone = mockElement();
+    const destinationElement = mockElement();
     const onComplete = vi.fn();
-    recordTileSnapBack(14, mockElement({ clone }), { shouldLiftOnArrival: true });
+    recordTileSnapBack(14, mockElement({ clone }));
     const snapshot = popPendingTileSnapBack(14);
     if (snapshot === null) throw new Error("Expected a pending snap-back snapshot.");
 
     const tween = animateSnapBackFromRect(destinationElement, snapshot, onComplete);
     tween.vars.onComplete?.();
-    vi.runOnlyPendingTimers();
 
-    expect(clone.style.setProperty).toHaveBeenCalledWith("--tile-hover-lift-multiplier", "2");
     expect(onComplete).toHaveBeenCalledOnce();
-    expect(destinationSurface.style.transform).toBe("");
-    expect(destinationSurface.style.boxShadow).toBe("");
+  });
+
+  it("suppresses hover lift on a destination until the pointer leaves", () => {
+    const animationFrameCallbacks = stubAnimationFrames();
+    const clone = mockElement();
+    const destinationElement = mockElement({ isHovered: true });
+    recordTileSnapBack(19, mockElement({ clone }));
+    const snapshot = popPendingTileSnapBack(19);
+    if (snapshot === null) throw new Error("Expected a pending snap-back snapshot.");
+
+    const tween = animateSnapBackFromRect(destinationElement, snapshot);
+    tween.vars.onComplete?.();
+    runAnimationFrames(animationFrameCallbacks);
+
+    expect(destinationElement.setAttribute).toHaveBeenCalledWith(
+      DATA_TILE_HOVER_SUPPRESSED_ATTRIBUTE,
+      "true",
+    );
+    expect(destinationElement.addEventListener).toHaveBeenCalledWith(
+      "pointerleave",
+      expect.any(Function),
+      { once: true },
+    );
+
+    expect(destinationElement.removeAttribute).not.toHaveBeenCalledWith(
+      DATA_TILE_HOVER_SUPPRESSED_ATTRIBUTE,
+    );
+
+    const pointerLeaveListener = vi.mocked(destinationElement.addEventListener).mock.calls[0]?.[1];
+    if (typeof pointerLeaveListener !== "function") {
+      throw new Error("Expected a pointerleave listener.");
+    }
+    pointerLeaveListener(new Event("pointerleave"));
+
+    expect(destinationElement.removeAttribute).toHaveBeenCalledWith(
+      DATA_TILE_HOVER_SUPPRESSED_ATTRIBUTE,
+    );
+  });
+
+  it("keeps hover lift suppressed when the destination becomes hovered before the settling frame", () => {
+    const animationFrameCallbacks = stubAnimationFrames();
+    let isHovered = false;
+    const clone = mockElement();
+    const destinationElement = mockElement({ isHovered: () => isHovered });
+    recordTileSnapBack(20, mockElement({ clone }));
+    const snapshot = popPendingTileSnapBack(20);
+    if (snapshot === null) throw new Error("Expected a pending snap-back snapshot.");
+
+    const tween = animateSnapBackFromRect(destinationElement, snapshot);
+    tween.vars.onComplete?.();
+    isHovered = true;
+    runAnimationFrames(animationFrameCallbacks);
+
+    expect(destinationElement.removeAttribute).not.toHaveBeenCalledWith(
+      DATA_TILE_HOVER_SUPPRESSED_ATTRIBUTE,
+    );
+    expect(destinationElement.addEventListener).toHaveBeenCalledWith(
+      "pointerleave",
+      expect.any(Function),
+      { once: true },
+    );
   });
 
   it("applies deferred clone text when snap-back movement starts", () => {
@@ -253,21 +314,6 @@ describe("animateSnapBackFromRect", () => {
     const tween = animateSnapBackFromRect(destinationElement, snapshot);
     tween.vars.onComplete?.();
     tween.vars.onInterrupt?.();
-
-    expect(clone.remove).toHaveBeenCalledOnce();
-  });
-
-  it("ignores missing tile surfaces when clearing arrival lift", () => {
-    vi.useFakeTimers();
-    const clone = mockElement();
-    const destinationElement = mockElement({ surface: null });
-    recordTileSnapBack(16, mockElement({ clone }), { shouldLiftOnArrival: true });
-    const snapshot = popPendingTileSnapBack(16);
-    if (snapshot === null) throw new Error("Expected a pending snap-back snapshot.");
-
-    const tween = animateSnapBackFromRect(destinationElement, snapshot);
-    tween.vars.onComplete?.();
-    vi.runOnlyPendingTimers();
 
     expect(clone.remove).toHaveBeenCalledOnce();
   });
