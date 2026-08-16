@@ -271,14 +271,14 @@ body {
 .history-card-layered-text-depth {
   color: var(--color-system-depth);
   -webkit-text-fill-color: var(--color-system-depth);
-  -webkit-text-stroke: 1px var(--color-system-depth);
-  transform: translateY(1px);
+  -webkit-text-stroke: var(--history-card-layered-text-stroke-width, 1px) var(--color-system-depth);
+  transform: translateY(var(--history-card-layered-text-depth-offset, 1px));
 }
 
 .history-card-layered-text-outline {
   color: var(--color-border);
   -webkit-text-fill-color: var(--color-border);
-  -webkit-text-stroke: 1px var(--color-border);
+  -webkit-text-stroke: var(--history-card-layered-text-stroke-width, 1px) var(--color-border);
 }
 
 .history-card-layered-text-label {

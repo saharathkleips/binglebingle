@@ -1,5 +1,7 @@
 # 빙글빙글
 
+![](public/share-preview.png)
+
 ## 라이선스 및 이용 안내 (License & Usage)
 
 이 프로젝트는 CC BY-NC 4.0 라이선스 (크리에이티브 커먼즈 저작자표시-비영리 4.0)에 따라 배포됩니다.  

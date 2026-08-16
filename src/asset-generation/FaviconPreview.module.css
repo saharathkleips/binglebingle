@@ -1,0 +1,48 @@
+.scene {
+  /* Match the app tile proportions and scale the tile until its depth/shadow fits the canvas. */
+  --favicon-size: min(100vw, 100vh);
+  --font-family-tile: "Binglebingle Asset Tile", "Noto Sans KR", sans-serif;
+  --favicon-depth-step: max(1px, calc(var(--favicon-size) * 0.012));
+  --favicon-cast-shadow-distance: 0px;
+  --favicon-shadow-extent: max(
+    calc(var(--favicon-depth-step) * 3),
+    var(--favicon-cast-shadow-distance)
+  );
+  --tile-hitbox-size: calc(var(--favicon-size) - var(--favicon-shadow-extent));
+  --tile-gap: calc(var(--tile-hitbox-size) * 0.09);
+  --tile-submission-history-gap: var(--tile-gap);
+  --tile-radius: calc(var(--tile-hitbox-size) * 0.09);
+  --tile-border-width: max(1px, calc(var(--tile-hitbox-size) * 0.023));
+  --tile-font-size: calc(var(--tile-hitbox-size) * 0.56);
+  --tile-depth-step: var(--favicon-depth-step);
+  --tile-cast-shadow-distance: var(--favicon-cast-shadow-distance);
+  --tile-visual-long-edge: var(--tile-hitbox-size);
+  --tile-visual-short-edge: calc(var(--tile-hitbox-size) * 2 / 3);
+  --tile-depth-stack:
+    var(--tile-depth-step) var(--tile-depth-step) 0 var(--color-tile-depth),
+    calc(var(--tile-depth-step) * 2) calc(var(--tile-depth-step) * 2) 0 var(--color-tile-depth),
+    calc(var(--tile-depth-step) * 3) calc(var(--tile-depth-step) * 3) 0 var(--color-tile-depth);
+  --tile-cast-shadow: 0 0 0 transparent;
+  --tile-lift-distance: calc(var(--tile-depth-step) * 3);
+  --tile-shadow-stack: var(--tile-depth-stack), var(--tile-cast-shadow);
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent;
+}
+
+.scene[data-favicon-size="16"] {
+  /* Sub-pixel depth keeps the stack legible without swallowing the 16px canvas. */
+  --favicon-depth-step: 0.5px;
+}
+
+.scene[data-favicon-size="32"] {
+  /* The 32px icon can carry a little more relief, but less than the full app tile. */
+  --favicon-depth-step: 0.75px;
+}
+
+.tile {
+  flex: none;
+}
