@@ -3,7 +3,7 @@
   --favicon-size: min(100vw, 100vh);
   --font-family-tile: "Binglebingle Asset Tile", "Noto Sans KR", sans-serif;
   --favicon-depth-step: max(1px, calc(var(--favicon-size) * 0.012));
-  --favicon-cast-shadow-distance: calc(var(--favicon-depth-step) * 3);
+  --favicon-cast-shadow-distance: 0px;
   --favicon-shadow-extent: max(
     calc(var(--favicon-depth-step) * 3),
     var(--favicon-cast-shadow-distance)
@@ -22,8 +22,7 @@
     var(--tile-depth-step) var(--tile-depth-step) 0 var(--color-tile-depth),
     calc(var(--tile-depth-step) * 2) calc(var(--tile-depth-step) * 2) 0 var(--color-tile-depth),
     calc(var(--tile-depth-step) * 3) calc(var(--tile-depth-step) * 3) 0 var(--color-tile-depth);
-  --tile-cast-shadow: var(--tile-cast-shadow-distance) var(--tile-cast-shadow-distance) 0
-    var(--color-tile-shadow);
+  --tile-cast-shadow: 0 0 0 transparent;
   --tile-lift-distance: calc(var(--tile-depth-step) * 3);
   --tile-shadow-stack: var(--tile-depth-stack), var(--tile-cast-shadow);
 
@@ -32,6 +31,16 @@
   justify-content: center;
   overflow: hidden;
   background: transparent;
+}
+
+.scene[data-favicon-size="16"] {
+  /* Sub-pixel depth keeps the stack legible without swallowing the 16px canvas. */
+  --favicon-depth-step: 0.5px;
+}
+
+.scene[data-favicon-size="32"] {
+  /* The 32px icon can carry a little more relief, but less than the full app tile. */
+  --favicon-depth-step: 0.75px;
 }
 
 .tile {

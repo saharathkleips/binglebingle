@@ -14,6 +14,7 @@ export function FaviconPreview({ size }: FaviconPreviewProps) {
       aria-label="Generated favicon preview"
       className={styles.scene}
       data-asset-preview="favicon"
+      data-favicon-size={size}
       style={{ width: `${size}px`, height: `${size}px` }}
     >
       <CharacterTile
