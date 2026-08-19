@@ -10,7 +10,7 @@ const POINTER_PATH =
 
 export function DemoPointerIcon({ className }: DemoPointerIconProps) {
   return (
-    <svg className={className} viewBox="0 0 32 32" focusable="false">
+    <svg className={className} viewBox="-4 -4 40 40" focusable="false">
       <path d={POINTER_PATH} className={styles.demoPointerStroke} />
       <path d={POINTER_PATH} className={styles.demoPointerPalm} />
     </svg>

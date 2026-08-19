@@ -51,13 +51,26 @@
     touch-action: none;
   }
 
-  &[data-tile-interactive="true"]:is(:hover, :focus-visible) > [data-tile-surface] {
-    transform: translate(calc(var(--tile-hover-offset) * -1), calc(var(--tile-hover-offset) * -1));
-    box-shadow: var(--tile-shadow-stack-lifted);
-  }
+  @media (hover: hover) and (pointer: fine) {
+    &[data-tile-interactive="true"]:not([data-tile-hover-suppressed="true"]):is(
+        :hover,
+        :focus-visible
+      )
+      > [data-tile-surface] {
+      transform: translate(
+        calc(var(--tile-hover-offset) * -1),
+        calc(var(--tile-hover-offset) * -1)
+      );
+      box-shadow: var(--tile-shadow-stack-lifted);
+    }
 
-  &[data-tile-interactive="true"]:is(:hover, :focus-visible) [data-tile-border] {
-    animation-play-state: running;
+    &[data-tile-interactive="true"]:not([data-tile-hover-suppressed="true"]):is(
+        :hover,
+        :focus-visible
+      )
+      [data-tile-border] {
+      animation-play-state: running;
+    }
   }
 
   &:is([data-drop-pool-target-active="true"], [data-drop-slot-target-active="true"])

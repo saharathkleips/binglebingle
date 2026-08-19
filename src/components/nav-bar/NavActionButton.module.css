@@ -44,7 +44,7 @@
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 389px) {
   .button {
     --nav-action-font-size: 0.9rem;
     --nav-action-surface-size: 1.7rem;

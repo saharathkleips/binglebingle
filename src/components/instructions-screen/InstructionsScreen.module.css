@@ -199,7 +199,7 @@
   position: relative;
   min-width: calc(3 * var(--tile-hitbox-size) + 2 * var(--tile-gap) + 2px);
   min-height: 5.75rem;
-  overflow: hidden;
+  overflow: visible;
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
@@ -260,13 +260,18 @@
   z-index: 4;
   width: 2rem;
   height: 2rem;
+  overflow: visible;
   filter: drop-shadow(1px 1px 0 var(--color-system-depth))
     drop-shadow(2px 2px 0 var(--color-system-shadow));
   pointer-events: none;
 }
 
 .demoPointerIcon {
-  /* The SVG fingertip is near this point; keep the hotspot, not the icon box, on the tile center. */
+  /* The SVG includes extra viewBox padding so Safari/mobile does not clip the stroke. */
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  overflow: visible;
   transform: translate(-32%, -9%);
 }
 
@@ -278,7 +283,7 @@
 }
 
 .demoPointerPalm {
-  fill: var(--color-surface);
+  fill: #fff;
 }
 
 @media (prefers-reduced-motion: reduce) {

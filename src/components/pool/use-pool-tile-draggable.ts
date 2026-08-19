@@ -350,7 +350,7 @@ function acceptSlotDrop({
   slotIndex,
   callbacks,
 }: SlotDropOptions): boolean {
-  recordTileSnapBack(sourceTileId, sourceElement, { shouldLiftOnArrival: true });
+  recordTileSnapBack(sourceTileId, sourceElement);
   const displacedTileId = recordDisplacedTileSnapBack(dropTarget);
   const isAccepted = callbacks.onDropOnSlot(slotIndex);
   if (!isAccepted) {

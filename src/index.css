@@ -2,6 +2,7 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -125,7 +126,7 @@ body {
   --tile-radius: 4px;
   --tile-border-width: 1px;
   --tile-font-size: 20px;
-  --tile-depth-step: 1px;
+  --tile-depth-step: calc(2px / 3);
   --tile-cast-shadow-distance: 3px;
   --history-min-visible-rows: 2.25;
   --history-empty-card-motif-opacity: 0.5;
@@ -319,7 +320,7 @@ body {
     --tile-border-width: 1px;
     --tile-font-size: 22px;
     --tile-depth-step: 1px;
-    --tile-cast-shadow-distance: 4px;
+    --tile-cast-shadow-distance: 5px;
   }
 }
 

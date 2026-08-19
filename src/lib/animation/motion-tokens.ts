@@ -13,14 +13,14 @@ export const MOTION_DURATION_FAST = 0.14;
 /** Drag pick-up timing; intentionally close to CSS `--motion-duration-fast` hover lift. */
 export const MOTION_DURATION_PICK_UP = 0.15;
 
-/** Filled submission slot entrance timing. */
-export const MOTION_DURATION_SLOT_ENTRANCE = 0.2;
-
 /** Default timing for medium-weight UI motion such as history-row shifts. */
 export const MOTION_DURATION_MEDIUM = 0.22;
 
-/** Shared failed-drop and cross-owner snap-back travel timing. */
+/** Shared failed-drop snap-back travel timing. */
 export const MOTION_DURATION_SNAP = 0.3;
+
+/** Accepted drop travel timing from a released tile into its rendered destination. */
+export const MOTION_DURATION_ACCEPTED_DROP = 0.26;
 
 /** Tunable timings for the submitted-slots-to-history reveal sequence. */
 export const SUBMISSION_HISTORY_REVEAL_TIMING = {
@@ -68,8 +68,14 @@ export const MOTION_EASE_SNAP = "back.out(1.2)";
 /** Larger overshoot for elements entering from a hidden or small state. */
 export const MOTION_EASE_ENTRANCE = "back.out(1.7)";
 
-/** Shared tween options for failed-drop and cross-owner snap-back motion. */
+/** Shared tween options for failed-drop motion. */
 export const SNAP_BACK_ANIMATION = {
   duration: MOTION_DURATION_SNAP,
   ease: MOTION_EASE_SNAP,
+} as const;
+
+/** Smooth, non-overshooting travel for accepted drops into stable destinations. */
+export const ACCEPTED_DROP_ANIMATION = {
+  duration: MOTION_DURATION_ACCEPTED_DROP,
+  ease: MOTION_EASE_DECISIVE_OUT,
 } as const;
