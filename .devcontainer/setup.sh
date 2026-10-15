@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euxo pipefail
-exec > /tmp/post-create.log 2>&1
+exec > >(tee /tmp/post-create.log) 2>&1
 
 WORKSPACE_DIR="${1:-$(pwd)}"
 HOME_DIR="/home/node"
